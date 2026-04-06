@@ -28,11 +28,11 @@
                                 </button>
                             </div>
                         </div>
-                        <input type="submit" value="Masuk" class=" bg-blue-main py-2 px-4 rounded-full text-white transition-all duration-200 hover:bg-blue-secondary hover:scale-105 active:scale-95" >
+                        <input type="submit" value="Masuk" class=" bg-blue-main py-2 px-4 rounded-full text-white transition-all duration-200 hover:bg-blue-deep-solid hover:scale-105 active:scale-95" >
                     </form>
                 </div>
                 <!-- banner -->
-                <div class="hidden md:flex flex-1" >
+                <div class="hidden lg:flex flex-1" >
                     <img src="{{ asset('assets/img/skenda-profil.jpeg')}}" alt="" class="rounded-4xl shadow" >
                 </div>
             </div>

@@ -1,0 +1,61 @@
+@props([
+    'href',
+    'icon' // contoh: dashboard, checklist, dll
+])
+
+@php
+    $active = request()->url() === $href;
+
+    // mapping icon
+    $icons = [
+        'dashboard' => [
+            'active' => 'mdi:view-dashboard',
+            'inactive' => 'mdi:view-dashboard-outline'
+        ],
+        'absenMurid' => [
+            'active' => 'mdi:account-check',
+            'inactive' => 'mdi:account-check-outline'
+        ],
+        'absenGuru' => [
+            'active' => 'mdi:account-multiple-check',
+            'inactive' => 'mdi:account-multiple-check-outline'
+        ],
+        'dataMurid' => [
+            'active' => 'mdi:user-card-details',
+            'inactive' => 'mdi:user-card-details-outline'
+        ],
+        'dataGuru' => [
+            'active' => 'mdi:user-badge',
+            'inactive' => 'mdi:user-badge-outline'
+        ],
+        'dataKelasJurusan' => [
+            'active' => 'mdi:academic-cap',
+            'inactive' => 'mdi:academic-cap-outline'
+        ]
+    ];
+
+    $iconName = $icons[$icon] ?? null;
+@endphp
+
+<li>
+    <a 
+        wire:navigate
+        href="{{ $href }}"
+        {{ $attributes->merge([
+            'class' => 'transition-all duration-150 px-4 py-2 rounded-xl capitalize font-semibold flex items-center gap-4 ' . 
+                        ($active 
+                            ? 'bg-blue-deep-solid text-white' 
+                            : 'hover:bg-blue-deep-solid text-gray-200')
+        ]) }}
+    >
+        @if($iconName)
+            <iconify-icon 
+                icon="{{ $active ? $iconName['active'] : $iconName['inactive'] }}"
+                width="24"
+                height="24">
+            </iconify-icon>
+        @endif
+
+        {{ $slot }}
+    </a>
+</li>

@@ -15,6 +15,7 @@
     /* Color */
     --color-blue-dark: #021024;
     --color-blue-deep: #052659;
+    --color-blue-deep-solid: #105192;
     --color-blue-main: #5483B3;
     --color-blue-soft: #7DA0CA;
     --color-blue-light: #C1E8FF;
@@ -22,8 +23,4 @@
 
 @utility font-heading {
     font-family: var(--font-heading);
-}
-
-body::-webkit-scrollbar {
-    display: none;
 }
