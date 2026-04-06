@@ -10,7 +10,7 @@
                         <img src="{{ asset('assets/img/logo_smkn_2.png') }}" class="w-14" alt="">
                         <div class="text-center" >
                             <h1 class="text-2xl font-bold text-blue-deep capitalize font-heading">selamat datang di ICT</h1>
-                            <p class="text-xs text-blue-dark" >Silahkan isi nama dan password Anda</p>
+                            <p class="text-xs text-gray-500" >Silahkan isi nama dan password Anda</p>
                         </div>
                     </div>
 
