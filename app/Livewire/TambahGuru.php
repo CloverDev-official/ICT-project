@@ -5,11 +5,11 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
-class DataGuru extends Component
-{
+class TambahGuru extends Component
+{   
     #[Layout('Layouts.app')]
     public function render()
     {
-        return view('livewire.data-guru');
+        return view('livewire.tambah-guru');
     }
 }

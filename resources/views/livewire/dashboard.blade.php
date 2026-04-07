@@ -53,7 +53,19 @@
                     <p class="text-sm text-gray-500">Pantau kehadiran Murid | {{ $dateNow ?? 'Tanggal sekarang' }}</p>
                 </div>
 
-                <div x-data="selectClass()" class="relative w-40">
+                <div x-data="{
+                
+                    open: false,
+
+                    selected: '',
+
+                    select(item) {
+                        this.selected =  item
+                        this.open = false
+                    
+                    }
+                
+                }" class="relative w-40">
     
                     <!-- Button -->
                     <div @click="open = !open"
@@ -69,18 +81,16 @@
                         @click.outside="open = false"
                         x-transition
                         class="absolute mt-2 w-full h-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto z-50 scroll-thin">
+                            @foreach ( [ 'Semua Kelas', 'X PPLG A', 'X PPLG B', 'XI PPLG A', 'XI PPLG B', 'XII PPLG A', 'XII PPLG B' ] as $kelas )
+                                <div @click="select('{{ $kelas }}')"
+                                    class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                                    
+                                    <span>{{ $kelas }}</span>
 
-                        <template x-for="item in classes" :key="item">
-                            <div @click="select(item)"
-                                class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                                
-                                <span x-text="item"></span>
-
-                                <!-- icon check -->                                
-                                <iconify-icon x-show="selected === item"  icon="lineicons:check" width="24" height="24"></iconify-icon>
-                            </div>
-                        </template>
-
+                                    <!-- icon check -->                                
+                                    <iconify-icon x-show="selected === '{{ $kelas }}'"  icon="lineicons:check" width="24" height="24"></iconify-icon>
+                                </div>                          
+                            @endforeach
                     </div>
                 </div>
             </div>
@@ -139,25 +149,4 @@
             </a>
         </div>
     </div>
-    <script>
-        function selectClass() {
-            return {
-                open: false,
-                selected: '',
-                classes: [
-                    'Semua Kelas',
-                    'X PPLG A',
-                    'X PPLG B',
-                    'XI PPLG A',
-                    'XI PPLG B',
-                    'XII PPLG A',
-                    'XII PPLG B'
-                ],
-                select(item) {
-                    this.selected = item
-                    this.open = false
-                }
-            }
-        }
-    </script>
 </div>
