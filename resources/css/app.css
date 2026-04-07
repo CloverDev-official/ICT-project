@@ -24,3 +24,21 @@
 @utility font-heading {
     font-family: var(--font-heading);
 }
+
+
+/* hanya berlaku di dropdown */
+.scroll-hidden::-webkit-scrollbar {
+    display: none;
+}
+
+/* hanya berlaku di dropdown */
+.scroll-thin::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb {
+    background: #5483B3;
+    border-radius: 10px;
+}
+
+

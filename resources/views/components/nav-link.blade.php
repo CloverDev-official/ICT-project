@@ -1,6 +1,6 @@
 @props([
     'href',
-    'icon' // contoh: dashboard, checklist, dll
+    'icon'
 ])
 
 @php
@@ -39,14 +39,15 @@
 
 <li>
     <a 
-        wire:navigate
         href="{{ $href }}"
+        wire:navigate
         {{ $attributes->merge([
             'class' => 'transition-all duration-150 px-4 py-2 rounded-xl capitalize font-semibold flex items-center gap-4 ' . 
                         ($active 
                             ? 'bg-blue-deep-solid text-white' 
                             : 'hover:bg-blue-deep-solid text-gray-200')
         ]) }}
+        
     >
         @if($iconName)
             <iconify-icon 
