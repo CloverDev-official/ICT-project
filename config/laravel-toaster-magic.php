@@ -11,6 +11,6 @@ return [
         "gradient_enable" => false, // Available for: default, material, ios, glassmorphism, neon themes
         "color_mode" => false // Color mode (true or false)
     ],
-    'livewire_enabled' => false,
-    'livewire_version' => 'v3'
+    'livewire_enabled' => true,
+    'livewire_version' => 'v4'
 ];

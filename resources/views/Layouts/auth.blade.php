@@ -21,6 +21,8 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        {!! ToastMagic::styles() !!}
+
         @livewireStyles
     </head>
     <body class="cursor-auto" >
@@ -30,5 +32,7 @@
         <script>
             AOS.init();
         </script>
+
+        {!! ToastMagic::scripts() !!}
     </body>
 </html>
