@@ -18,6 +18,8 @@
         <!-- AOS JS -->
         <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        
+        {!! ToastMagic::styles() !!}
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -74,5 +76,7 @@
         <script>
             AOS.init();
         </script>
+
+        {!! ToastMagic::scripts() !!}
     </body>
 </html>
