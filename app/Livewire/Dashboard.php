@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 class Dashboard extends Component
 {
-    #[Layout('Layouts.app')]
     public function render()
     {   
         Carbon::setLocale('id');
