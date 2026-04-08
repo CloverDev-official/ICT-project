@@ -35,7 +35,11 @@ class Create extends Component
 
     public function mount(): void
     {
-        $this->rombel = Rombel::query()->orderBy("nama")->get();
+        $this->rombel = Rombel::query()
+            ->with(["tingkatKelas", "jurusan", "indeksRombel"])
+            ->get()
+            ->sortBy(fn($r) => $r->nama)
+            ->values();
     }
 
     public function store()
@@ -43,9 +47,9 @@ class Create extends Component
         $validate = ValidateMagic::run(
             [
                 "nama" => "required",
-                "nipd" => "unique:murid|required" . $this->murid->id,
+                "nipd" => "required|unique:murid,nipd",
                 "jk" => "in:L,P|required",
-                "nisn" => "unique:murid|required" . $this->murid->id,
+                "nisn" => "required|unique:murid,nisn",
                 "tempat_lahir" => "required",
                 "tanggal_lahir" => "date|required",
                 "agama" => "nullable",
@@ -55,7 +59,7 @@ class Create extends Component
                 "kelurahan" => "nullable",
                 "kecamatan" => "nullable",
                 "hp" => "nullable",
-                "email" => "nullable|unique:murid,email" . $this->murid->id,
+                "email" => "nullable|email|unique:murid,email",
                 "nama_ayah" => "nullable",
                 "nama_ibu" => "nullable",
                 "nama_wali" => "nullable",
