@@ -9,11 +9,7 @@ class GuruRombel extends Model
 {
     protected $table = 'guru_rombel';
 
-    protected $fillable = [
-        'guru_id',
-        'rombel_id',
-        'role',
-    ];
+    protected $fillable = ['guru_id', 'rombel_id'];
 
     /**
      * Relasi ke Guru
