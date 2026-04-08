@@ -43,9 +43,10 @@ class Guru extends Model
      */
     public function rombel()
     {
-        return $this->belongsToMany(Rombel::class, 'guru_rombel')
-                    ->withPivot('role')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            Rombel::class,
+            'guru_rombel',
+        )->withTimestamps();
     }
 
     /**
