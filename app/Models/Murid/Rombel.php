@@ -48,8 +48,10 @@ class Rombel extends Model
 
     public function getNamaLengkapAttribute()
     {
-        return $this->tingkatKelas->nama . ' ' .
-            $this->jurusan->nama . ' ' .
-            $this->indeksRombel->nama;
+        return optional($this->tingkatKelas)->nama .
+            ' ' .
+            optional($this->jurusan)->nama .
+            ' ' .
+            optional($this->indeksRombel)->nama;
     }
 }
