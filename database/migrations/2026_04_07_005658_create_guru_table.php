@@ -40,6 +40,16 @@ return new class extends Migration
             $table->string('email')->nullable()->unique();
             $table->timestamps();
         });
+
+        Schema::create('guru_rombel', function (Blueprint $table) {
+            $table->id();
+            $table->enum('role', ['wali_kelas', 'mapel', 'pembimbing']);
+            $table->foreignId('guru_id')->constrained('guru')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('rombel_id')->constrained('rombel')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->timestamps();
+
+            $table->unique(['guru_id', 'rombel_id']);
+        });
     }
 
     /**
@@ -47,6 +57,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('guru_rombel');
         Schema::dropIfExists('guru');
     }
 };
