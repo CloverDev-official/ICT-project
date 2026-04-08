@@ -65,7 +65,8 @@
                     this.selectedLabel = label;
                     this.open = false;
                 }
-            }" class="relative w-full">
+            }" 
+            class="relative w-full">
 
                 <label class="text-sm text-gray-600">Kelas</label>
 

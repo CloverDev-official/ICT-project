@@ -149,30 +149,19 @@
     </div>
     <!-- table murid -->
     <div x-data="{
-        selected: [],
-    
-        toggleAll(e) {
-            if (e.target.checked) {
-                this.selected = this.muridList.map(m => m.id)
-            } else {
-                this.selected = []
+            selected: [],
+            muridList: @js($listMurid),
+
+            toggleAll(e) {
+                if (e.target.checked) {
+                    this.selected = this.muridList.map(m => m.id)
+                } else {
+                    this.selected = []
+                }
             }
-        },
-    
-        deleteSelected() {
-            if (this.selected.length === 0) {
-                alert('Tidak ada data dipilih')
-                return
-            }
-    
-            if (confirm('Yakin ingin menghapus data yang dipilih?')) {
-                this.muridList = this.muridList.filter(
-                    murid => !this.selected.includes(murid.id)
-                )
-                this.selected = []
-            }
-        }
-    }" class="mt-2 bg-white p-4 rounded-xl shadow-sm">
+        }"
+
+        class="mt-2 bg-white p-4 rounded-xl shadow-sm">
 
         <!-- tombol hapus -->
         <div class="mb-3 flex items-center gap-3 relative" x-data="{ openModalColon: false }">
@@ -198,37 +187,37 @@
                         <th class="px-4 py-3">
                             <input type="checkbox" @click="toggleAll">
                         </th>
-                        <th class="px-4 py-3">No</th>
-                        <th class="px-4 py-3">Nama Murid</th>
-                        <th class="px-4 py-3">NIPD</th>
-                        <th class="px-4 py-3">NISN</th>
-                        <th class="px-4 py-3">Jenis Kelamin</th>
-                        <th class="px-4 py-3">Tempat Lahir</th>
-                        <th class="px-4 py-3">Tanggal Lahir</th>
-                        <th class="px-4 py-3">Agama</th>
-                        <th class="px-4 py-3">Alamat</th>
-                        <th class="px-4 py-3">RT</th>
-                        <th class="px-4 py-3">RW</th>
-                        <th class="px-4 py-3">Kelurahan</th>
-                        <th class="px-4 py-3">Kecamatan</th>
-                        <th class="px-4 py-3">Kelas</th>
-                        <th class="px-4 py-3">No HP</th>
-                        <th class="px-4 py-3">Email</th>
-                        <th class="px-4 py-3">Nama Ayah</th>
-                        <th class="px-4 py-3">Nama Ibu</th>
-                        <th class="px-4 py-3">Nama Wali</th>
-                        <th class="px-4 py-3">Kelas</th>
-                        <th class="px-4 py-3">Aksi</th>
+                        <th class="text-center px-4 py-3">No</th>
+                        <th class="text-center px-4 py-3">Nama Murid</th>
+                        <th class="text-center px-4 py-3">NIPD</th>
+                        <th class="text-center px-4 py-3">NISN</th>
+                        <th class="text-center px-4 py-3">Jenis Kelamin</th>
+                        <th class="text-center px-4 py-3">Tempat Lahir</th>
+                        <th class="text-center px-4 py-3">Tanggal Lahir</th>
+                        <th class="text-center px-4 py-3">Agama</th>
+                        <th class="text-center px-4 py-3">Alamat</th>
+                        <th class="text-center px-4 py-3">RT</th>
+                        <th class="text-center px-4 py-3">RW</th>
+                        <th class="text-center px-4 py-3">Kelurahan</th>
+                        <th class="text-center px-4 py-3">Kecamatan</th>
+                        <th class="text-center px-4 py-3">Kelas</th>
+                        <th class="text-center px-4 py-3">No HP</th>
+                        <th class="text-center px-4 py-3">Email</th>
+                        <th class="text-center px-4 py-3">Nama Ayah</th>
+                        <th class="text-center px-4 py-3">Nama Ibu</th>
+                        <th class="text-center px-4 py-3">Nama Wali</th>
+                        <th class="text-center px-4 py-3">Kelas</th>
+                        <th class="text-center px-4 py-3">Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
 
                     @foreach ($listMurid as $index => $murid)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 border-b border-gray-200">
 
                             <td class="px-4 py-3">
-                                <input type="checkbox" value="{{ $murid['id'] }}">
+                                <input type="checkbox" value="{{ $murid['id'] }}" x-model="selected" >
                             </td>
 
                             <td class="px-4 py-3">{{ $index + 1 }}</td>
@@ -250,12 +239,73 @@
                             <td class="px-4 py-3">{{ $murid['ayah'] }}</td>
                             <td class="px-4 py-3">{{ $murid['ibu'] }}</td>
                             <td class="px-4 py-3">{{ $murid['wali'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['kelassementara'] }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-center gap-2">
+                                    <!-- edit -->
+                                    <a href="{{route('edit-murid')}}">
+                                        <button class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-500 active:scale-95" >
+                                            <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
+                                        </button>
+                                    </a>
+    
+                                    <!-- hapus -->
+                                    <div x-data="{openModal: false}" >
+                                        <button @click="openModal = !openModal "  class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-600 active:scale-95" >
+                                            <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
+                                        </button>
 
+                                        <div 
+                                                x-show="openModal"
+                                                x-transition
+                                                class="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50"
+                                            >
+
+                                                <div 
+                                                    @click.outside="openModal = false"
+                                                    class="bg-white rounded-lg shadow-lg w-96 p-6"
+                                                >
+
+                                                    <h2 class="text-lg font-semibold mb-4">
+                                                        Hapus Data Murid
+                                                    </h2>
+
+                                                    <p class="text-gray-600 mb-6">
+                                                        Apakah kamu yakin ingin menghapus data murid ini? (nama muridnya),
+                                                        Data yang dihapus tidak dapat dikembalikan.
+                                                    </p>
+
+                                                    <div class="flex justify-end gap-3">
+                                                        
+                                                        <!-- Batal -->
+                                                        <button 
+                                                            @click="openModal = false"
+                                                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                                                            Batal
+                                                        </button>
+
+                                                        <!-- Hapus -->
+                                                        <button 
+                                                            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                                                            Hapus
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+
+                                    <!-- qr -->
+                                    <div>
+                                        <button class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep active:scale-95" >
+                                            <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                            </td>
                         </tr>
                     @endforeach
-
                 </tbody>
-
             </table>
         </div>
     </div>
