@@ -2,12 +2,14 @@
 
 namespace App\Models\Murid;
 
+use Database\Factories\MuridFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Murid extends Model
 {
-    use HasUlids;
+    /** @use HasFactory<\Database\Factories\MuridFactory> */
+    use HasFactory;
 
     protected $table = 'murid';
 
@@ -37,6 +39,11 @@ class Murid extends Model
         'tanggal_lahir' => 'date',
     ];
 
+    protected static function newFactory(): MuridFactory
+    {
+        return MuridFactory::new();
+    }
+
     /**
      * Relasi ke Rombel
      */
@@ -46,8 +53,8 @@ class Murid extends Model
     }
 
     /**
-    * Relasi ke status absen
-    */
+     * Relasi ke status absen
+     */
     public function statusAbsen()
     {
         return $this->hasMany(StatusAbsenMurid::class);
