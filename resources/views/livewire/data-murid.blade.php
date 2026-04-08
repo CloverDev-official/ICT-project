@@ -35,6 +35,8 @@
         
         }" class="relative w-full">
             <label class="text-sm text-gray-600 capitalize font-semibold">tingkat</label>
+
+            <input type="hidden" x-model="selected" wire:model.live="filterTingkat">
             <!-- Button -->
             <div @click="open = !open"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
@@ -77,6 +79,8 @@
         
         }" class="relative w-full">
             <label class="text-sm text-gray-600 capitalize font-semibold">jurusan</label>
+
+            <input type="hidden" x-model="selected" wire:model.live="filterJurusan">
             <!-- Button -->
             <div @click="open = !open"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
@@ -90,7 +94,7 @@
             <!-- Dropdown -->
             <div x-show="open" @click.outside="open = false" x-transition
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                @foreach (['Semua jurusan', 'Pemograman Perangkat Lunak dan Gim ', 'Animasi', 'Pekerjaan Sosial', 'Broadcasting dan Film', 'Teknik Furnitur', 'Desain Komunikasi Visual', 'Teknik Kimia Industri', 'Teknik Jaringan Komputer Telekomunikasi'] as $jurusan)
+                @foreach ($jurusanRombel as $jurusan)
                     <div @click="select('{{ $jurusan }}')"
                         class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
@@ -119,6 +123,8 @@
         
         }" class="relative w-full">
             <label class="text-sm text-gray-600 capitalize font-semibold">kelas</label>
+
+            <input type="hidden" x-model="selected" wire:model.live="filterKelas">
             <!-- Button -->
             <div @click="open = !open"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
@@ -206,7 +212,6 @@
                         <th class="text-center px-4 py-3">Nama Ayah</th>
                         <th class="text-center px-4 py-3">Nama Ibu</th>
                         <th class="text-center px-4 py-3">Nama Wali</th>
-                        <th class="text-center px-4 py-3">Kelas</th>
                         <th class="text-center px-4 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -233,13 +238,12 @@
                             <td class="px-4 py-3">{{ $murid['rw'] }}</td>
                             <td class="px-4 py-3">{{ $murid['kelurahan'] }}</td>
                             <td class="px-4 py-3">{{ $murid['kecamatan'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['kelas'] }}</td>
+                            <td class="px-4 py-3">{{ $murid->rombel?->nama_lengkap ?? '-' }}</td>
                             <td class="px-4 py-3">{{ $murid['hp'] }}</td>
                             <td class="px-4 py-3">{{ $murid['email'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['ayah'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['ibu'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['wali'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['kelassementara'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['nama_ayah'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['nama_ibu'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['nama_wali'] }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-2">
                                     <!-- edit -->
