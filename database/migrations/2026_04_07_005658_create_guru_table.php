@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -43,9 +42,16 @@ return new class extends Migration
 
         Schema::create('guru_rombel', function (Blueprint $table) {
             $table->id();
-            $table->enum('role', ['wali_kelas', 'mapel', 'pembimbing']);
-            $table->foreignId('guru_id')->constrained('guru')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('rombel_id')->constrained('rombel')->cascadeOnDelete()->cascadeOnUpdate();
+            $table
+                ->foreignId('guru_id')
+                ->constrained('guru')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+            $table
+                ->foreignId('rombel_id')
+                ->constrained('rombel')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
 
             $table->unique(['guru_id', 'rombel_id']);
