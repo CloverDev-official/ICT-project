@@ -1,10 +1,9 @@
 <div>
     <div class="flex items-center justify-start gap-5">
         <!-- btn tambah data siswa -->
-        <a 
-            href="{{ route('tambah-murid') }}"
-            wire:navigate>
-            <button class="px-4 py-2 rounded-lg bg-emerald-600 text-white transition-all duration-200 hover:bg-emerald-700 active:scale-95 flex items-center justify-center gap-1 capitalize " >
+        <a href="{{ route('tambah-murid') }}" wire:navigate>
+            <button
+                class="px-4 py-2 rounded-lg bg-emerald-600 text-white transition-all duration-200 hover:bg-emerald-700 active:scale-95 flex items-center justify-center gap-1 capitalize ">
                 <iconify-icon icon="line-md:plus" width="20" height="20"></iconify-icon>
                 tambah data murid
             </button>
@@ -12,25 +11,26 @@
 
         <!-- btn import CSV -->
         <a href="" wire:navigate>
-            <button class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize " >
+            <button
+                class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize ">
                 <iconify-icon icon="line-md:file-import" width="20" height="20"></iconify-icon>
                 import CSV
             </button>
-        </a> 
+        </a>
     </div>
 
     <!-- kategori -->
     <div class="mt-5 bg-white p-4 rounded-xl shadow-sm grid grid-cols-2 md:grid-cols-3 gap-5">
         <!-- tingkat -->
         <div x-data="{
-            open:false,
-
+            open: false,
+        
             selected: '',
-
+        
             select(item) {
                 this.selected = item
                 this.open = false
-            
+        
             }
         
         }" class="relative w-full">
@@ -38,41 +38,41 @@
             <!-- Button -->
             <div @click="open = !open"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
-                
+
                 <span x-text="selected ? selected : 'Semua Tingkat'" class="text-gray-700 text-sm"></span>
 
-                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
             </div>
 
             <!-- Dropdown -->
-            <div x-show="open"
-                @click.outside="open = false"
-                x-transition
+            <div x-show="open" @click.outside="open = false" x-transition
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                    @foreach (['Semua Tingkat', 'X', 'XI', 'XII'] as $tingkat )
-                        <div @click="select('{{ $tingkat}}')"
-                            class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                            
-                            <span>{{ $tingkat }}</span>
+                @foreach ($tingkatRombel as $tingkat)
+                    <div @click="select('{{ $tingkat }}')"
+                        class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
-                            <!-- icon check -->                                
-                            <iconify-icon x-show="selected === '{{ $tingkat }}'"  icon="lineicons:check" width="24" height="24"></iconify-icon>
-                        </div>                        
-                    @endforeach
+                        <span>{{ $tingkat }}</span>
+
+                        <!-- icon check -->
+                        <iconify-icon x-show="selected === '{{ $tingkat }}'" icon="lineicons:check" width="24"
+                            height="24"></iconify-icon>
+                    </div>
+                @endforeach
 
             </div>
         </div>
 
         <!-- jurusan -->
         <div x-data="{
-            open:false,
-
+            open: false,
+        
             selected: '',
-
+        
             select(item) {
                 this.selected = item
                 this.open = false
-            
+        
             }
         
         }" class="relative w-full">
@@ -80,41 +80,41 @@
             <!-- Button -->
             <div @click="open = !open"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
-                
+
                 <span x-text="selected ? selected : 'Semua jurusan'" class="text-gray-700 text-sm"></span>
 
-                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
             </div>
 
             <!-- Dropdown -->
-            <div x-show="open"
-                @click.outside="open = false"
-                x-transition
+            <div x-show="open" @click.outside="open = false" x-transition
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                    @foreach (['Semua jurusan', 'Pemograman Perangkat Lunak dan Gim ', 'Animasi', 'Pekerjaan Sosial', 'Broadcasting dan Film', 'Teknik Furnitur', 'Desain Komunikasi Visual', 'Teknik Kimia Industri', 'Teknik Jaringan Komputer Telekomunikasi' ] as $jurusan )
-                        <div @click="select('{{ $jurusan}}')"
-                            class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                            
-                            <span>{{ $jurusan }}</span>
+                @foreach (['Semua jurusan', 'Pemograman Perangkat Lunak dan Gim ', 'Animasi', 'Pekerjaan Sosial', 'Broadcasting dan Film', 'Teknik Furnitur', 'Desain Komunikasi Visual', 'Teknik Kimia Industri', 'Teknik Jaringan Komputer Telekomunikasi'] as $jurusan)
+                    <div @click="select('{{ $jurusan }}')"
+                        class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
-                            <!-- icon check -->                                
-                            <iconify-icon x-show="selected === '{{ $jurusan }}'"  icon="lineicons:check" width="24" height="24"></iconify-icon>
-                        </div>                        
-                    @endforeach
+                        <span>{{ $jurusan }}</span>
+
+                        <!-- icon check -->
+                        <iconify-icon x-show="selected === '{{ $jurusan }}'" icon="lineicons:check" width="24"
+                            height="24"></iconify-icon>
+                    </div>
+                @endforeach
 
             </div>
         </div>
 
         <!-- kelas -->
         <div x-data="{
-            open:false,
-
+            open: false,
+        
             selected: '',
-
+        
             select(item) {
                 this.selected = item
                 this.open = false
-            
+        
             }
         
         }" class="relative w-full">
@@ -122,75 +122,70 @@
             <!-- Button -->
             <div @click="open = !open"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
-                
+
                 <span x-text="selected ? selected : 'Semua kelas'" class="text-gray-700 text-sm"></span>
 
-                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
             </div>
 
             <!-- Dropdown -->
-            <div x-show="open"
-                @click.outside="open = false"
-                x-transition
+            <div x-show="open" @click.outside="open = false" x-transition
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                    @foreach (['Semua Kelas', 'X PPLG A', 'X PPLG B', 'XI PPLG A', 'XI PPLG B', 'XII PPLG A', 'XI PPLG A'] as $kelas )
-                        <div @click="select('{{ $kelas}}')"
-                            class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                            
-                            <span>{{ $kelas }}</span>
+                @foreach ($listRombel->pluck('nama_lengkap') as $rombel)
+                    <div @click="select('{{ $rombel }}')"
+                        class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
-                            <!-- icon check -->                                
-                            <iconify-icon x-show="selected === '{{ $kelas }}'"  icon="lineicons:check" width="24" height="24"></iconify-icon>
-                        </div>                        
-                    @endforeach
+                        <span>{{ $rombel }}</span>
+
+                        <!-- icon check -->
+                        <iconify-icon x-show="selected === '{{ $rombel }}'" icon="lineicons:check" width="24"
+                            height="24"></iconify-icon>
+                    </div>
+                @endforeach
 
             </div>
         </div>
     </div>
     <!-- table murid -->
-    <div
-        x-data="{
-            selected: [],
-
-            toggleAll(e){
-                if(e.target.checked){
-                    this.selected = this.muridList.map(m => m.id)
-                }else{
-                    this.selected = []
-                }
-            },
-
-            deleteSelected(){
-                if(this.selected.length === 0){
-                    alert('Tidak ada data dipilih')
-                    return
-                }
-
-                if(confirm('Yakin ingin menghapus data yang dipilih?')){
-                    this.muridList = this.muridList.filter(
-                        murid => !this.selected.includes(murid.id)
-                    )
-                    this.selected = []
-                }
+    <div x-data="{
+        selected: [],
+    
+        toggleAll(e) {
+            if (e.target.checked) {
+                this.selected = this.muridList.map(m => m.id)
+            } else {
+                this.selected = []
             }
-        }"
-        class="mt-2 bg-white p-4 rounded-xl shadow-sm"
-        >
+        },
+    
+        deleteSelected() {
+            if (this.selected.length === 0) {
+                alert('Tidak ada data dipilih')
+                return
+            }
+    
+            if (confirm('Yakin ingin menghapus data yang dipilih?')) {
+                this.muridList = this.muridList.filter(
+                    murid => !this.selected.includes(murid.id)
+                )
+                this.selected = []
+            }
+        }
+    }" class="mt-2 bg-white p-4 rounded-xl shadow-sm">
 
         <!-- tombol hapus -->
-        <div class="mb-3 flex items-center gap-3 relative" x-data="{ openModalColon: false }" >
+        <div class="mb-3 flex items-center gap-3 relative" x-data="{ openModalColon: false }">
 
-            <button
-                @click="openModalColon = !openModalColon"
-                class="p-2 rounded-lg text-gray-500 duration-200 transition-all hover:bg-blue-deep-solid hover:text-white active:scale-95 flex items-center justify-center "
-                >
-                    <iconify-icon icon="lineicons:menu-meatballs-1" width="25" height="24"></iconify-icon>
+            <button @click="openModalColon = !openModalColon"
+                class="p-2 rounded-lg text-gray-500 duration-200 transition-all hover:bg-blue-deep-solid hover:text-white active:scale-95 flex items-center justify-center ">
+                <iconify-icon icon="lineicons:menu-meatballs-1" width="25" height="24"></iconify-icon>
             </button>
 
-            <livewire:components.modal.modal-colon/>
+            <livewire:components.modal.modal-colon />
 
             <span class="text-sm text-gray-500">
-            <span x-text="selected.length"></span> dipilih
+                <span x-text="selected.length"></span> dipilih
             </span>
 
         </div>
@@ -227,40 +222,39 @@
                     </tr>
                 </thead>
 
-            <tbody>
+                <tbody>
 
-                @foreach($muridList as $index => $murid)
+                    @foreach ($listMurid as $index => $murid)
+                        <tr class="hover:bg-gray-50">
 
-                    <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <input type="checkbox" value="{{ $murid['id'] }}">
+                            </td>
 
-                        <td class="px-4 py-3">
-                        <input type="checkbox" value="{{ $murid['id'] }}">
-                        </td>
+                            <td class="px-4 py-3">{{ $index + 1 }}</td>
+                            <td class="px-4 py-3">{{ $murid['nama'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['nipd'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['nisn'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['jk'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['tempat_lahir'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['tanggal_lahir'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['agama'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['alamat'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['rt'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['rw'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['kelurahan'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['kecamatan'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['kelas'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['hp'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['email'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['ayah'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['ibu'] }}</td>
+                            <td class="px-4 py-3">{{ $murid['wali'] }}</td>
 
-                        <td class="px-4 py-3">{{ $index + 1 }}</td>
-                        <td class="px-4 py-3">{{ $murid['nama'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['nipd'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['nisn'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['jk'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['tempat_lahir'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['tanggal_lahir'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['agama'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['alamat'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['rt'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['rw'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['kelurahan'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['kecamatan'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['kelas'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['hp'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['email'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['ayah'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['ibu'] }}</td>
-                        <td class="px-4 py-3">{{ $murid['wali'] }}</td>
+                        </tr>
+                    @endforeach
 
-                    </tr>
-                @endforeach
-
-            </tbody>
+                </tbody>
 
             </table>
         </div>
