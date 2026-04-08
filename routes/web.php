@@ -10,6 +10,8 @@ use App\Livewire\AbsensiMurid;
 use App\Livewire\AbsensiGuru;
 use App\Livewire\DataGuru;
 use App\Livewire\DataKelasJurusan;
+use App\Livewire\EditGuru;
+use App\Livewire\EditMurid;
 use App\Livewire\TambahGuru;
 
 Route::get('/', Login::class)->name('login');
@@ -22,11 +24,13 @@ Route::prefix('admin')->group(function () {
     route::prefix('/data-murid')->group(function () {
         Route::get('/', IndexMurid::class)->name('data-murid');
         Route::get('/create', CreateMurid::class)->name('tambah-murid');
+        Route::get('/edit', EditMurid::class)->name('edit-murid');
     });
 
     route::prefix('/data-guru')->group(function () {
         Route::get('/', DataGuru::class)->name('data-guru');
         Route::get('/create', TambahGuru::class)->name('tambah-guru');
+        Route::get('/edit', EditGuru::class)->name('edit-guru');
     });
 
     Route::get('/data-kelas-jurusan', DataKelasJurusan::class)->name(
