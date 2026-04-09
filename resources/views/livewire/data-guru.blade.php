@@ -98,7 +98,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach ($this -> gurus as $guru)
+                    @foreach ($listGuru as $index -> $guru)
                         <tr class="hover:bg-gray-50">
 
                             <td class="px-4 py-3    ">
@@ -106,43 +106,43 @@
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ ($this->gurus->currentPage() - 1) * $this->gurus->perPage() + $loop->iteration }}
+                                {{ $index + 1}}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->nama }}
+                                {{ $guru['nama'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->nuptk }}
+                                {{ $guru['nuptk'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->jk }}
+                                {{ $guru['jk'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->tempat_lahir }}
+                                {{ $guru['tempat_lahir'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->tanggal_lahir }}
+                                {{ $guru['tanggal_lahir'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->nip }}
+                                {{ $guru['nip'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->status_kepegawaian }}
+                                {{ $guru['status_kepegawaian'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->jenis_ptk }}
+                                {{ $guru['jenis_ptk'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->agama }}
+                                {{ $guru['agama'] }}
                             </td>
 
                             <td class="px-4 py-3">

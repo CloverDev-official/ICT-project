@@ -49,26 +49,24 @@
             <!-- Kelas (rombel) -->
             <div x-data="{
                 open: false,
-                selectedId: @entangle('rombel_id'),
+                selectedId: null,
                 selectedLabel: '',
                 init() {
-                    this.setLabelFromId(this.selectedId);
-                    this.$watch('selectedId', (val) => this.setLabelFromId(val));
-                },
-                setLabelFromId(id) {
-                    if (!id) { this.selectedLabel = ''; return; }
-                    const el = this.$refs['opt-' + id];
-                    this.selectedLabel = el ? el.dataset.label : '';
+                    this.$nextTick(() => {
+                        this.selectedId = $wire.get('rombel_id');
+                    });
                 },
                 select(id, label) {
                     this.selectedId = id;
                     this.selectedLabel = label;
+                    $wire.set('rombel_id', id);
                     this.open = false;
                 }
             }" 
+            @click.outside="open = false"
             class="relative w-full">
 
-                <label class="text-sm text-gray-600">Kelas</label>
+                <h1 class="text-sm text-gray-600">Kelas</h1>
 
                 <!-- Button -->
                 <div @click="open = !open"
@@ -80,18 +78,18 @@
                         icon="lineicons:chevron-up" width="25" height="24">
                     </iconify-icon>
                 </div>
+                
 
                 <!-- Dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
+                <div x-show="open" x-cloak x-transition
                     class="absolute mt-2 w-full h-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto z-50 scroll-thin">
 
                     @foreach ($rombel as $r)
-                        <div x-ref="opt-{{ $r->id }}" data-label="{{ $r->nama }}"
-                            @click="select({{ $r->id }}, @js($r->nama))"
+                        <div @click="select({{ $r->id }}, @js($r->nama_lengkap))"
                             class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
                             :class="selectedId == {{ $r->id }} ? 'bg-blue-deep-solid text-white' : ''">
 
-                            <span>{{ $r->nama }}</span>
+                            <span>{{ $r->nama_lengkap }}</span>
 
                             <iconify-icon x-show="selectedId == {{ $r->id }}" icon="lineicons:check"
                                 width="24" height="24"></iconify-icon>
@@ -107,57 +105,63 @@
 
             <!-- Jenis Kelamin -->
             <div x-data="{
-                open: false,
-            
-                selected: @entangle('jk'),
-            
-                label() {
-                    return this.selected === 'L' ? 'Laki-laki' : (this.selected === 'P' ? 'Perempuan' : '');
-                },
-            
-                select(val) {
-                    this.selected = val
-                    this.open = false
-                }
-            
-            }" class="relative w-full">
-                <label class="text-sm text-gray-600">Jenis Kelamin</label>
-                <!-- Button -->
-                <div @click="open = !open"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
+                    open: false,
+                    selected: null,
 
-                    <span x-text="label() ? label() : 'Pilih Jenis Kelamin'" class="text-gray-700 text-sm"></span>
+                    init() {
+                        this.selected = $wire.get('jk');
+                        $wire.watch('jk', (val) => {
+                            this.selected = val;
+                        });
+                    },
 
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
-                </div>
+                    label() {
+                        return this.selected === 'L' ? 'Laki-laki' : (this.selected === 'P' ? 'Perempuan' : 'Pilih Jenis Kelamin');
+                    },
 
-                <!-- Dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute mt-2 w-full h-20 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                    <div @click="select('L')"
-                        class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                    select(val) {
+                        this.selected = val;
+                        $wire.set('jk', val);
+                        this.open = false;
+                    }
+                }" 
+                class="relative w-full">
+                    <h1 class="text-sm text-gray-600">Jenis Kelamin</h1>
+                    <!-- Button -->
+                    <div @click="open = !open"
+                        class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
 
-                        <span>Laki-laki</span>
+                        <span x-text="label() ? label() : 'Pilih Jenis Kelamin'" class="text-gray-700 text-sm"></span>
 
-                        <iconify-icon x-show="selected === 'L'" icon="lineicons:check" width="24"
-                            height="24"></iconify-icon>
+                        <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                            icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
                     </div>
 
-                    <div @click="select('P')"
-                        class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                    <!-- Dropdown -->
+                    <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
+                        class="absolute mt-2 w-full h-20 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                        <div @click="select('L')"
+                            class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
-                        <span>Perempuan</span>
+                            <span>Laki-laki</span>
 
-                        <iconify-icon x-show="selected === 'P'" icon="lineicons:check" width="24"
-                            height="24"></iconify-icon>
+                            <iconify-icon x-show="selected === 'L'" icon="lineicons:check" width="24"
+                                height="24"></iconify-icon>
+                        </div>
+
+                        <div @click="select('P')"
+                            class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+
+                            <span>Perempuan</span>
+
+                            <iconify-icon x-show="selected === 'P'" icon="lineicons:check" width="24"
+                                height="24"></iconify-icon>
+                        </div>
                     </div>
 
-                </div>
-
-                @error('jk')
-                    <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
-                @enderror
+                    @error('jk')
+                        <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                    @enderror
             </div>
 
             <!-- No HP -->

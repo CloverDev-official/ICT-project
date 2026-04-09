@@ -25,53 +25,16 @@
 
         @livewireStyles
     </head>
-    <body class="cursor-auto flex justify-start h-screen bg-blue-50 overflow-hidden">
-        <aside class="hidden md:block w-64 bg-blue-deep p-4 rounded-tr-4xl h-screen overflow-y-auto shadow-[6px_0_15px_rgba(0,0,0,0.1)]" >
-            <div class="flex items-center justify-center gap-4 pt-4">
-                <img src="{{ asset('assets/img/logo_smkn_2.png')}}" class="w-10" alt="">
-                <h1 class="bg-blue- text-start text-white text-shadow-2xs text-sm font-semibold uppercase">
-                    Operator Petugas Absensi
-                </h1>
+    <body class="cursor-auto bg-blue-50 overflow-hidden" x-data="{openside: false}" x-init="$watch('open', value => sidebarOpen = value)" >
+        <main class="h-screen flex justify-start" >
+            <livewire:components.sidebar/>
+            <div class="flex-1 flex flex-col min-h-0 overflow-y-auto" >
+                <div class="p-4">
+                    <livewire:components.header/>
+                    {{ $slot }}
+                </div>
             </div>
-            <hr class="text-white mt-5" >
-            <ul class="mt-5 flex flex-col gap-2" >
-                <li>
-                    <x-nav-link href="{{ route('dashboard') }}" icon="dashboard">
-                        Dashboard
-                    </x-nav-link>
-                </li>
-                <li>
-                    <x-nav-link href="{{ route('absensi-murid') }}" icon="absenMurid">
-                        absensi murid
-                    </x-nav-link>
-                </li>
-                <li>
-                    <x-nav-link href="{{ route('absensi-guru') }}" icon="absenGuru">
-                        absensi guru
-                    </x-nav-link>
-                </li>
-                <li>
-                    <x-nav-link href="{{ route('data-murid') }}" icon="dataMurid">
-                        data murid
-                    </x-nav-link>
-                </li>
-                <li>
-                    <x-nav-link href="{{ route('data-guru') }}" icon="dataGuru">
-                        data guru
-                    </x-nav-link>
-                </li>
-                <li>
-                    <x-nav-link href="{{ route('data-kelas-jurusan') }}" icon="dataKelasJurusan">
-                        data kelas & jurusan
-                    </x-nav-link>
-                </li>
-            </ul>
-        </aside>
-        <main class="flex-1 flex flex-col min-h-0 p-4 overflow-y-auto" >
-            <livewire:components.header/>
-            {{ $slot }}
         </main>
-
         @livewireScripts
         <script>
             AOS.init();

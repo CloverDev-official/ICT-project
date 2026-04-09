@@ -124,9 +124,9 @@
                     <p class="text-sm text-gray-500">Statistik kehadiran 7 hari terakhir | {{ $dateNow ?? 'Tanggal sekarang' }}</p>
                 </div>
             </div>
-            <!-- Chart untuk guru -->
+            <!-- Chart untuk murid -->
             <div id="chart-tingkat-kehadiran-murid" class="h-64"></div>
-            <a wire:navigate href="{{ route('data-guru') }}" class="relative flex items-end transition-colors duration-200 hover:text-blue-deep-solid" >
+            <a wire:navigate href="{{ route('data-murid') }}" class="relative flex items-end transition-colors duration-200 hover:text-blue-deep-solid" >
                 <p class="font-semibold text-sm" >Lihat data</p>
                 <iconify-icon class="absolute top-[2px] left-[3.8rem] rotate-180" icon="lineicons:chevron-left" width="20" height="20"></iconify-icon>
             </a>            
