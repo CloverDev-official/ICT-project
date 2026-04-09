@@ -48,7 +48,7 @@
             </div>
 
             <!-- Dropdown -->
-            <div x-show="open" @click.outside="open = false" x-transition
+            <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
                 @foreach ($tingkatRombel as $tingkat)
                     <div @click="select('{{ $tingkat }}')"
@@ -92,7 +92,7 @@
             </div>
 
             <!-- Dropdown -->
-            <div x-show="open" @click.outside="open = false" x-transition
+            <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
                 @foreach ($jurusanRombel as $jurusan)
                     <div @click="select('{{ $jurusan }}')"
@@ -136,7 +136,7 @@
             </div>
 
             <!-- Dropdown -->
-            <div x-show="open" @click.outside="open = false" x-transition
+            <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
                 class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
                 @foreach ($listRombel->pluck('nama_lengkap') as $rombel)
                     <div @click="select('{{ $rombel }}')"
@@ -188,7 +188,7 @@
         <div class="overflow-x-auto table-auto md:table-fixed rounded-t-lg">
             <table class="min-w-full text-sm text-left text-gray-600">
 
-                <thead class="bg-blue-main text-white uppercase text-xs">
+                <thead class="bg-blue-main border border-gray-200 text-white uppercase text-xs">
                     <tr>
                         <th class="px-4 py-3">
                             <input type="checkbox" @click="toggleAll">
@@ -219,88 +219,53 @@
                 <tbody>
 
                     @foreach ($listMurid as $index => $murid)
-                        <tr class="hover:bg-gray-50 border-b border-gray-200">
+                        <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
 
                             <td class="px-4 py-3">
                                 <input type="checkbox" value="{{ $murid['id'] }}" x-model="selected" >
                             </td>
 
-                            <td class="px-4 py-3">{{ $index + 1 }}</td>
-                            <td class="px-4 py-3">{{ $murid['nama'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['nipd'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['nisn'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['jk'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['tempat_lahir'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['tanggal_lahir'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['agama'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['alamat'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['rt'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['rw'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['kelurahan'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['kecamatan'] }}</td>
-                            <td class="px-4 py-3">{{ $murid->rombel?->nama_lengkap ?? '-' }}</td>
-                            <td class="px-4 py-3">{{ $murid['hp'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['email'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['nama_ayah'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['nama_ibu'] }}</td>
-                            <td class="px-4 py-3">{{ $murid['nama_wali'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $index + 1 }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['nama'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['nipd'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['nisn'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['jk'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['tempat_lahir'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['tanggal_lahir'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['agama'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['alamat'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['rt'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['rw'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['kelurahan'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['kecamatan'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->rombel?->nama_lengkap ?? '-' }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['hp'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['email'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['nama_ayah'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['nama_ibu'] }}</td>
+                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid['nama_wali'] }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-2">
                                     <!-- edit -->
                                     <a href="{{route('edit-murid')}}">
-                                        <button class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-500 active:scale-95" >
+                                        <button class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
                                             <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
                                         </button>
                                     </a>
     
                                     <!-- hapus -->
                                     <div x-data="{openModal: false}" >
-                                        <button @click="openModal = !openModal "  class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-600 active:scale-95" >
+                                        <button @click="openModal = !openModal "  class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-700 active:scale-95" >
                                             <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
                                         </button>
 
-                                        <div 
-                                                x-show="openModal"
-                                                x-transition
-                                                class="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50"
-                                            >
-
-                                                <div 
-                                                    @click.outside="openModal = false"
-                                                    class="bg-white rounded-lg shadow-lg w-96 p-6"
-                                                >
-
-                                                    <h2 class="text-lg font-semibold mb-4">
-                                                        Hapus Data Murid
-                                                    </h2>
-
-                                                    <p class="text-gray-600 mb-6">
-                                                        Apakah kamu yakin ingin menghapus data murid ini? (nama muridnya),
-                                                        Data yang dihapus tidak dapat dikembalikan.
-                                                    </p>
-
-                                                    <div class="flex justify-end gap-3">
-                                                        
-                                                        <!-- Batal -->
-                                                        <button 
-                                                            @click="openModal = false"
-                                                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
-                                                            Batal
-                                                        </button>
-
-                                                        <!-- Hapus -->
-                                                        <button 
-                                                            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                                                            Hapus
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <!-- modal peringatan hapus murid -->
+                                        <livewire:components.modal.modal-hapus-murid/>
                                     </div>
 
                                     <!-- qr -->
                                     <div>
-                                        <button class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep active:scale-95" >
+                                        <button class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep hover:text-gray-400 active:scale-95" >
                                             <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
                                         </button>
                                     </div>

@@ -139,6 +139,8 @@ class Create extends Component
 
     public function render()
     {
-        return view("livewire.tambah-murid");
+        return view("livewire.tambah-murid", [
+            'rombel' => $this->rombel,
+        ]);
     }
 }

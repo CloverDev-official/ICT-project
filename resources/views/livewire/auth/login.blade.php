@@ -1,4 +1,4 @@
-<div  class="bg-linear-to-t/hsl from-blue-deep  to-blue-light scroll-hidden">
+<div  class="bg-linear-to-t/hsl from-blue-deep  to-blue-light scroll-hidden p-4">
     <div class="min-h-screen flex items-center justify-center">
         <div data-aos="fade-up" data-aos-duration="800" class="bg-white p-4 rounded-4xl shadow-lg drop-shadow-2xl md:w-md lg:w-3xl">
             <div class="flex justify-between">
