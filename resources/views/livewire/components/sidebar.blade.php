@@ -11,36 +11,123 @@
             </div>
         </div>
         <hr class="text-white mt-5" >
-        <ul class="mt-5 flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scroll-thin" >
+        <ul class="mt-5 flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scroll-thin">
+
+            <!-- dashboard -->
             <li>
                 <x-nav-link href="{{ route('dashboard') }}" icon="dashboard">
                     Dashboard
                 </x-nav-link>
             </li>
-            <li>
-                <x-nav-link href="{{ route('absensi-murid') }}" icon="absenMurid">
-                    absensi murid
-                </x-nav-link>
+
+            <!-- group laporan -->
+            <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
+                <!-- button -->
+                <button 
+                    @click="open = !open"
+                    class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                >
+                    <span class="flex gap-2 items-center capitalize">
+                        <iconify-icon :icon="open ? 'mdi:folder-text' : 'mdi:folder-text-outline'" width="24" height="24"></iconify-icon>
+                        laporan
+                    </span>
+
+                    <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                </button>
             </li>
-            <li>
-                <x-nav-link href="{{ route('absensi-guru') }}" icon="absenGuru">
-                    absensi guru
-                </x-nav-link>
+
+            <!-- Group Absensi  -->
+            <li x-data="{open: {{ request()->routeIs('absensi-*') ? 'true' : 'false' }}}" >
+
+                <!-- button -->
+                <button 
+                    @click="open = !open"
+                    class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                >
+                    <span class="flex gap-2 items-center capitalize">
+                        <iconify-icon :icon="open ? 'mdi:folder-check' : 'mdi:folder-check-outline'" width="24" height="24"></iconify-icon>
+                        Absensi
+                    </span>
+
+                    <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                </button>
+
+                <!-- list -->
+                <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;" >
+                    <li>
+                        <x-nav-link href="{{ route('absensi-murid') }}" icon="absenMurid">
+                            absensi murid
+                        </x-nav-link>
+                    </li>
+                
+                    <li>
+                        <x-nav-link href="{{ route('absensi-guru') }}" icon="absenGuru">
+                            absensi guru
+                        </x-nav-link>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <x-nav-link href="{{ route('data-murid') }}" icon="dataMurid">
-                    data murid
-                </x-nav-link>
+
+            <!-- GROUP DATA -->
+            <li x-data="{ open: {{ request()->routeIs('data-*') ? 'true' : 'false' }} }">
+
+                <button 
+                    @click="open = !open"
+                    class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                >
+                    <span class="flex gap-2 items-center capitalize">
+                        <iconify-icon :icon="open ? 'mdi:folder-account' : 'mdi:folder-account-outline'" width="24" height="24"></iconify-icon> 
+                        Data Master
+                    </span>
+
+                    <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                </button>
+
+                <!-- list -->
+                <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;">
+
+                    <li>
+                        <x-nav-link href="{{ route('data-murid') }}" icon="dataMurid">
+                            data murid
+                        </x-nav-link>
+                    </li>
+
+                    <li>
+                        <x-nav-link href="{{ route('data-guru') }}" icon="dataGuru">
+                            data guru
+                        </x-nav-link>
+                    </li>
+
+                    <li>
+                        <x-nav-link href="{{ route('data-kelas') }}" icon="dataKelas">
+                            data kelas 
+                        </x-nav-link>
+                    </li>
+
+                    <li>
+                        <x-nav-link href="{{ route('data-jurusan') }}" icon="dataJurusan">
+                            data jurusan
+                        </x-nav-link>
+                    </li>
+
+                </ul>
+
             </li>
-            <li>
-                <x-nav-link href="{{ route('data-guru') }}" icon="dataGuru">
-                    data guru
-                </x-nav-link>
-            </li>
-            <li>
-                <x-nav-link href="{{ route('data-kelas-jurusan') }}" icon="dataKelasJurusan">
-                    data kelas & jurusan
-                </x-nav-link>
+
+            <!-- group pengaturan -->
+            <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
+                <!-- button -->
+                <button 
+                    @click="open = !open"
+                    class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                >
+                    <span class="flex gap-2 items-center capitalize">
+                        <iconify-icon :icon="open ? 'mdi:folder-cog' : 'mdi:folder-cog-outline'" width="24" height="24"></iconify-icon>
+                        pengaturan
+                    </span>
+
+                    <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                </button>
             </li>
         </ul>
         <div class="p-4" >
@@ -79,35 +166,117 @@
                 </div>
                 <hr class="text-white mt-5" >
                 <ul class="mt-5 flex flex-col gap-2 flex-1 overflow-y-auto scroll-thin" >
+
+                    <!-- dashboard -->
                     <li>
                         <x-nav-link href="{{ route('dashboard') }}" icon="dashboard">
                             Dashboard
                         </x-nav-link>
                     </li>
-                    <li>
-                        <x-nav-link href="{{ route('absensi-murid') }}" icon="absenMurid">
-                            absensi murid
-                        </x-nav-link>
+
+                    <!-- group laporan -->
+                    <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
+                        <!-- button -->
+                        <button 
+                            @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                        >
+                            <span class="flex gap-2 items-center capitalize">
+                                <iconify-icon :icon="open ? 'mdi:folder-text' : 'mdi:folder-text-outline'" width="24" height="24"></iconify-icon>
+                                laporan
+                            </span>
+
+                            <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                        </button>
                     </li>
-                    <li>
-                        <x-nav-link href="{{ route('absensi-guru') }}" icon="absenGuru">
-                            absensi guru
-                        </x-nav-link>
+
+                    <!-- Group Absensi  -->
+                    <li x-data="{open: {{ request()->routeIs('absensi-*') ? 'true' : 'false' }}}" >
+
+                        <!-- button -->
+                        <button 
+                            @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                        >
+                            <span class="flex gap-2 items-center capitalize">
+                                <iconify-icon :icon="open ? 'mdi:folder-check' : 'mdi:folder-check-outline'" width="24" height="24"></iconify-icon>
+                                Absensi
+                            </span>
+
+                            <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                        </button>
+
+                        <!-- list -->
+                        <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;" >
+                            <li>
+                                <x-nav-link href="{{ route('absensi-murid') }}" icon="absenMurid">
+                                    absensi murid
+                                </x-nav-link>
+                            </li>
+                        
+                            <li>
+                                <x-nav-link href="{{ route('absensi-guru') }}" icon="absenGuru">
+                                    absensi guru
+                                </x-nav-link>
+                            </li>
+                        </ul>
                     </li>
-                    <li>
-                        <x-nav-link href="{{ route('data-murid') }}" icon="dataMurid">
-                            data murid
-                        </x-nav-link>
+
+                    <!-- group data -->
+                    <li x-data="{open: {{ request()->routeIs('data-*') ? 'true' : 'false' }}}" >
+
+                        <!-- button -->
+                        <button 
+                        @click="open = !open"
+                        class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"    
+                        >
+                            <span class="flex gap-2 items-center capitalize">
+                                <iconify-icon icon="lineicons:folder" width="20" height="20"></iconify-icon> 
+                                Data Master
+                            </span>
+
+                            <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                        </button>
+
+                        <!-- list -->
+                        <ul  x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;">
+                            <li>
+                                <x-nav-link href="{{ route('data-murid') }}" icon="dataMurid">
+                                    data murid
+                                </x-nav-link>
+                            </li>
+                            <li>
+                                <x-nav-link href="{{ route('data-guru') }}" icon="dataGuru">
+                                    data guru
+                                </x-nav-link>
+                            </li>
+                            <li>
+                                <x-nav-link href="{{ route('data-kelas') }}" icon="dataKelas">
+                                    data kelas
+                                </x-nav-link>
+                            </li>
+                            <li>
+                                <x-nav-link href="{{ route('data-jurusan') }}" icon="dataJurusan">
+                                    data Jurusan
+                                </x-nav-link>
+                            </li>
+                        </ul>
                     </li>
-                    <li>
-                        <x-nav-link href="{{ route('data-guru') }}" icon="dataGuru">
-                            data guru
-                        </x-nav-link>
-                    </li>
-                    <li>
-                        <x-nav-link href="{{ route('data-kelas-jurusan') }}" icon="dataKelasJurusan">
-                            data kelas & jurusan
-                        </x-nav-link>
+
+                    <!-- group pengaturan -->
+                    <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
+                        <!-- button -->
+                        <button 
+                            @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                        >
+                            <span class="flex gap-2 items-center capitalize">
+                                <iconify-icon :icon="open ? 'mdi:folder-cog' : 'mdi:folder-cog-outline'" width="24" height="24"></iconify-icon>
+                                pengaturan
+                            </span>
+
+                            <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                        </button>
                     </li>
                 </ul>
                 <hr class="text-white mb-5" >
