@@ -9,7 +9,8 @@ use App\Livewire\Dashboard;
 use App\Livewire\AbsensiMurid;
 use App\Livewire\AbsensiGuru;
 use App\Livewire\DataGuru;
-use App\Livewire\DataKelasJurusan;
+use App\Livewire\DataJurusan;
+use App\Livewire\DataKelas;
 use App\Livewire\EditGuru;
 use App\Livewire\EditMurid;
 use App\Livewire\TambahGuru;
@@ -33,7 +34,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/edit', EditGuru::class)->name('edit-guru');
     });
 
-    Route::get('/data-kelas-jurusan', DataKelasJurusan::class)->name(
-        'data-kelas-jurusan',
+    Route::get('/data-kelas', DataKelas::class)->name(
+        'data-kelas',
     );
+
+    Route::get('/data-jurusan', DataJurusan::class)->name('data-jurusan');
 });

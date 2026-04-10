@@ -28,7 +28,11 @@
             'active' => 'mdi:user-badge',
             'inactive' => 'mdi:user-badge-outline'
         ],
-        'dataKelasJurusan' => [
+        'dataKelas' => [
+            'active' => 'heroicons:user-group-solid',
+            'inactive' => 'heroicons:user-group'
+        ],
+        'dataJurusan' => [
             'active' => 'mdi:academic-cap',
             'inactive' => 'mdi:academic-cap-outline'
         ]
