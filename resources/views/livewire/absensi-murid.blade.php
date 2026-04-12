@@ -181,8 +181,8 @@
                 <thead class="bg-blue-main border border-gray-200 text-white uppercase text-xs" >
                     <tr>
                         <th class="capitalize text-center px-4 py-3">no.</th>
-                        <th class="capitalize text-center px-4 py-3">NUPTK</th>
-                        <th class="capitalize text-center px-4 py-3">nama guru</th>
+                        <th class="capitalize text-center px-4 py-3">NIPD</th>
+                        <th class="capitalize text-center px-4 py-3">nama Murid</th>
                         <th class="capitalize text-center px-4 py-3">kehadiran</th>
                         <th class="capitalize text-center px-4 py-3">jam masuk</th>
                         <th class="capitalize text-center px-4 py-3">jam pulang</th>
@@ -192,20 +192,21 @@
                 </thead>
                 <tbody>
                     <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200" > 
-                        <td class="border-r border-gray-200 px-4 py-3" >1</td>
-                        <td class="border-r border-gray-200 px-4 py-3" >ghaizan</td>
-                        <td class="border-r border-gray-200 px-4 py-3" >hadir</td>
-                        <td class="border-r border-gray-200 px-4 py-3" >07.00</td>
-                        <td class="border-r border-gray-200 px-4 py-3" >16.30</td>
-                        <td class="border-r border-gray-200 px-4 py-3" >-</td>
-                        <td class="border-r border-gray-200 px-4 py-3" >
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >1</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >11122</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >ghaizan</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >hadir</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >07.00</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >16.30</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >-</td>
+                        <td class="border-r text-center border-gray-200 px-4 py-3" >
                             <div x-data="{openModal: false}" class="flex items-center justify-center">
                                 <!-- button -->
                                 <button @click="open = !open" class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
                                         <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
                                         Edit
                                 </button>
-                                <livewire:components.modal.modal-edit-absen/>
+                                <livewire:components.modal.modal-edit-absen-murid />
                             </div>
                         </td>
                     </tr>
