@@ -44,12 +44,6 @@ return new class extends Migration
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->foreignId('mapil_id')
-                ->nullable()
-                ->constrained('mapil')
-                ->nullOnDelete()
-                ->cascadeOnUpdate();
-
             $table->timestamps();
         });
     }
