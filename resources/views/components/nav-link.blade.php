@@ -12,6 +12,14 @@
             'active' => 'mdi:view-dashboard',
             'inactive' => 'mdi:view-dashboard-outline'
         ],
+        'rekapAbsenMurid' => [
+            'active' => 'mdi:account-file-text',
+            'inactive' => 'mdi:account-file-text-outline'
+        ],
+        'rekapAbsenGuru' => [
+            'active' => 'mdi:account-file',
+            'inactive' => 'mdi:account-file-outline'
+        ],
         'absenMurid' => [
             'active' => 'mdi:account-check',
             'inactive' => 'mdi:account-check-outline'
@@ -46,7 +54,7 @@
         href="{{ $href }}"
         wire:navigate
         {{ $attributes->merge([
-            'class' => 'transition-all duration-150 px-4 py-2 rounded-xl capitalize font-semibold flex items-center gap-4 ' . 
+            'class' => 'transition-all duration-150 px-4 py-2 rounded-xl capitalize font-semibold flex items-center gap-2 ' . 
                         ($active 
                             ? 'bg-blue-deep-solid text-white' 
                             : 'hover:bg-blue-deep-solid text-gray-200')

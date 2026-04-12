@@ -2,13 +2,14 @@
     x-show="openModal"
     x-transition
     style="display: none;"
-    class="fixed inset-0 flex items-center justify-center bg-black/30">
+    class="fixed inset-0 flex items-center justify-center bg-black/30 p-4">
 
     <div
         @click.outside="openModal = false"
         class="bg-white rounded-xl shadow-lg w-[420px] p-6">
 
-        <h2 class="text-lg font-semibold mb-4">
+        <h2 class="text-lg flex items-center justify-center gap-1 font-semibold mb-4">
+            <iconify-icon icon="lineicons:pencil-1" width="24" height="24"></iconify-icon>
             Edit Kehadiran
         </h2>
 
@@ -83,7 +84,7 @@
             </button>
 
             <button
-                class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                class="px-4 py-2 text-sm bg-blue-main text-white rounded-lg hover:bg-blue-deep-solid">
                 Simpan
             </button>
 

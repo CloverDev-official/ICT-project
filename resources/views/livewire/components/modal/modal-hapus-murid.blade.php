@@ -7,7 +7,8 @@
         @click.outside="openModal = false"
         class="bg-white rounded-lg shadow-lg w-96 p-6">
 
-        <h2 class="text-lg font-semibold mb-4">
+        <h2 class="flex items-center text-lg font-semibold mb-4">
+            <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
             Hapus Data Murid
         </h2>
 
