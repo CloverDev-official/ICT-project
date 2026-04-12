@@ -2,15 +2,11 @@
 
 namespace App\Models\Murid;
 
-use Database\Factories\MuridFactory;
+use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Murid extends Model
 {
-    /** @use HasFactory<\Database\Factories\MuridFactory> */
-    use HasFactory;
-
     protected $table = 'murid';
 
     protected $fillable = [
@@ -39,11 +35,6 @@ class Murid extends Model
         'tanggal_lahir' => 'date',
     ];
 
-    protected static function newFactory(): MuridFactory
-    {
-        return MuridFactory::new();
-    }
-
     /**
      * Relasi ke Rombel
      */
@@ -57,6 +48,6 @@ class Murid extends Model
      */
     public function statusAbsen()
     {
-        return $this->hasMany(StatusAbsenMurid::class);
+        return $this->hasMany(AbsenMurid::class);
     }
 }

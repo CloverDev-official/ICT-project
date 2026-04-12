@@ -4,9 +4,9 @@ namespace App\Models\Murid;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StatusAbsenMurid extends Model
+class AbsenMurid extends Model
 {
-    protected $table = 'status_absen_murid';
+    protected $table = 'absen_murid';
 
     protected $fillable = [
         'murid_id',
@@ -14,6 +14,7 @@ class StatusAbsenMurid extends Model
         'waktu_masuk',
         'waktu_keluar',
         'keterangan',
+        'tanggal',
     ];
 
     protected $casts = [
