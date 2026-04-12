@@ -2,7 +2,9 @@
 
 namespace App\Models\Guru;
 
-use App\Models\Murid\Rombel;
+use App\Models\Guru\Rombel\GuruRombel;
+use App\Models\Guru\Rombel\RoleGuruRombel;
+use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 
@@ -32,6 +34,7 @@ class Guru extends Model
         'telepon',
         'hp',
         'email',
+        'password'
     ];
 
     protected $casts = [
@@ -43,10 +46,7 @@ class Guru extends Model
      */
     public function rombel()
     {
-        return $this->belongsToMany(
-            Rombel::class,
-            'guru_rombel',
-        )->withTimestamps();
+        return $this->belongsToMany(Rombel::class, 'guru_rombel')->withTimestamps();
     }
 
     /**
@@ -62,6 +62,18 @@ class Guru extends Model
      */
     public function statusAbsen()
     {
-        return $this->hasMany(StatusAbsenGuru::class);
+        return $this->hasMany(AbsenGuru::class);
+    }
+
+    public function roleGuruRombel()
+    {
+        return $this->hasManyThrough(
+            RoleGuruRombel::class,
+            GuruRombel::class,
+            'guru_id',
+            'guru_rombel_id',
+            'id',
+            'id'
+        );
     }
 }

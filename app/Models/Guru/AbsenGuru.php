@@ -4,9 +4,9 @@ namespace App\Models\Guru;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StatusAbsenGuru extends Model
+class AbsenGuru extends Model
 {
-    protected $table = 'status_absen_guru';
+    protected $table = 'absen_guru';
 
     protected $fillable = [
         'guru_id',
@@ -14,6 +14,7 @@ class StatusAbsenGuru extends Model
         'waktu_masuk',
         'waktu_keluar',
         'keterangan',
+        'tanggal',
     ];
 
     protected $casts = [
