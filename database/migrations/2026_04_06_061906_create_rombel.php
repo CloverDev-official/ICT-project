@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tingkat_kelas', function (Blueprint $table) {
+        Schema::create('tingkat', function (Blueprint $table) {
             $table->id();
             $table->string('nama')->unique();
             $table->timestamps();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('indeks_rombel', function (Blueprint $table) {
+        Schema::create('indeks', function (Blueprint $table) {
             $table->id();
             $table->string('nama')->unique();
             $table->timestamps();
@@ -31,12 +31,12 @@ return new class extends Migration
 
         Schema::create('rombel', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tingkat_kelas_id')->constrained('tingkat_kelas')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('tingkat_id')->constrained('tingkat')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('jurusan_id')->constrained('jurusan')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('indeks_rombel_id')->constrained('indeks_rombel')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('indeks_id')->constrained('indeks')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
 
-            $table->unique(['tingkat_kelas_id', 'jurusan_id', 'indeks_rombel_id']);
+            $table->unique(['tingkat_id', 'jurusan_id', 'indeks_id']);
 
         });
     }
@@ -47,8 +47,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('rombel');
-        Schema::dropIfExists('indeks_rombel');
+        Schema::dropIfExists('indeks');
         Schema::dropIfExists('jurusan');
-        Schema::dropIfExists('tingkat_kelas');
+        Schema::dropIfExists('tingkat');
     }
 };

@@ -37,21 +37,25 @@ return new class extends Migration {
             $table->string('telepon')->nullable();
             $table->string('hp')->nullable();
             $table->string('email')->nullable()->unique();
+            $table->string('password');
             $table->timestamps();
         });
 
         Schema::create('guru_rombel', function (Blueprint $table) {
             $table->id();
+
             $table
                 ->foreignId('guru_id')
                 ->constrained('guru')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
+                
             $table
                 ->foreignId('rombel_id')
                 ->constrained('rombel')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
+
             $table->timestamps();
 
             $table->unique(['guru_id', 'rombel_id']);
