@@ -18,7 +18,7 @@ class MuridFactory extends Factory
         $jk = fake()->randomElement(['L', 'P']);
 
         return [
-            'public_id' => (string) Str::ulid(),
+            'ulid' => (string) Str::ulid(),
 
             'nama' =>
                 $jk === 'L' ? fake()->name('male') : fake()->name('female'),

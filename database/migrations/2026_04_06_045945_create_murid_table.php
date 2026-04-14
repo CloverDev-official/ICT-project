@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('murid', function (Blueprint $table) {
             $table->id();
-            $table->ulid('public_id')->unique();
+            $table->ulid('ulid')->unique();
 
             $table->string('nama');
             $table->string('nipd')->unique();

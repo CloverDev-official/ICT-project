@@ -5,6 +5,7 @@ namespace App\Models\Murid;
 use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Murid extends Model
 {
@@ -13,7 +14,7 @@ class Murid extends Model
     protected $table = 'murid';
 
     protected $fillable = [
-        'public_id',
+        'ulid',
         'nama',
         'nipd',
         'jk',
@@ -41,8 +42,8 @@ class Murid extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            if (!$model->public_id) {
-                $model->public_id = \Str::ulid();
+            if (!$model->ulid) {
+                $model->ulid = (string) Str::ulid();
             }
         });
     }
@@ -61,5 +62,10 @@ class Murid extends Model
     public function statusAbsen()
     {
         return $this->hasMany(AbsenMurid::class);
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'ulid';
     }
 }
