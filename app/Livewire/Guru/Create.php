@@ -155,6 +155,6 @@ class Create extends Component
 
     public function render()
     {
-        return view("livewire.tambah-guru");
+        return view("livewire.guru.tambah-guru");
     }
 }

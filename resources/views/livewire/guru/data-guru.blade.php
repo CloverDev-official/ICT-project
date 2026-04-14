@@ -22,51 +22,70 @@
     <div
         x-data="{
             selected: [],
+            muridList: @js($listMurid->pluck('ulid')),
 
-            toggleAll(e){
-                if(e.target.checked){
-                    this.selected = this.muridList.map(m => m.id)
-                }else{
-                    this.selected = []
-                }
-            },
-
-            deleteSelected(){
-                if(this.selected.length === 0){
-                    alert('Tidak ada data dipilih')
-                    return
-                }
-
-                if(confirm('Yakin ingin menghapus data yang dipilih?')){
-                    this.muridList = this.muridList.filter(
-                        murid => !this.selected.includes(murid.id)
-                    )
+            toggleAll(e) {
+                if (e.target.checked) {
+                    this.selected = this.muridList
+                } else {
                     this.selected = []
                 }
             }
         }"
-        class="mt-2 bg-white p-4 rounded-xl shadow-sm"
-        >
 
-        <!-- tombol hapus -->
-        <div class="mb-3 flex items-center gap-3 relative" x-data="{ openModalColon: false }" >
+        class="mt-2 bg-white p-4 rounded-xl shadow-sm">
 
-            <button
-                @click="openModalColon = !openModalColon"
-                class="p-2 rounded-lg text-gray-500 duration-200 transition-all hover:bg-blue-deep-solid hover:text-white active:scale-95 flex items-center justify-center "
-                >
-                    <iconify-icon icon="lineicons:menu-meatballs-1" width="25" height="24"></iconify-icon>
-            </button>
+            <div class="flex justify-between items-center gap-4 mb-5">
+                <!-- tombol hapus -->
+                <div class="mb-3 flex items-center gap-3 relative" x-data="{ openModalColon: false }" >
+        
+                    <button
+                        @click="openModalColon = !openModalColon"
+                        class="p-2 rounded-lg text-gray-500 duration-200 transition-all hover:bg-blue-deep-solid hover:text-white active:scale-95 flex items-center justify-center "
+                        >
+                            <iconify-icon icon="lineicons:menu-meatballs-1" width="25" height="24"></iconify-icon>
+                    </button>
+        
+                    <livewire:components.modal.modal-colon/>
+        
+                    <span class="text-sm text-gray-500">
+                    <span x-text="selected.length"></span> dipilih
+                    </span>
+        
+                </div>
+                <!-- input search -->
+                <div class="relative w-40 md:w-sm">
+                    <input 
+                        type="search"
+                        name="search"
+                        wire:model.live.debounce.500ms="search"
+                        placeholder="Cari Nama Guru..."
+                        class="w-full text-sm mt-1 px-4 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-xl
+                        hover:border-blue-500
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
+                        transition"
+                    />
 
-            <livewire:components.modal.modal-colon/>
+                    <div class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
+                        <iconify-icon icon="mdi:account-search-outline" width="20" height="20"></iconify-icon>
+                    </div>
+                </div>
+            </div>
 
-            <span class="text-sm text-gray-500">
-            <span x-text="selected.length"></span> dipilih
-            </span>
+        <div
+            x-data="{
+                openModalDelete: false,
+                selectedMuridUlid: null,
 
-        </div>
-
-        <div class="overflow-x-auto table-auto md:table-fixed rounded-t-lg">
+                selectedMurid(muridUlid) {
+                    this.selectedMuridUlid = muridUlid
+                },
+                
+                toggleDelete() {
+                    this.openModalDelete = !this.openModalDelete
+                }
+            }"
+            class="overflow-x-auto table-auto md:table-fixed rounded-t-lg">
             <table class="min-w-full text-sm text-left text-gray-600">
 
                 <thead class="bg-blue-main text-white uppercase text-xs">
@@ -99,10 +118,10 @@
 
                 <tbody>
                     @foreach ($listGuru as $index -> $guru)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
 
                             <td class="px-4 py-3    ">
-                                <input type="checkbox">
+                                <input type="checkbox" value="{{ $guru->ulid }}" :checked="selected.includes('{{ $guru->ulid }}')"x-model="selected" > 
                             </td>
 
                             <td class="px-4 py-3">
@@ -190,27 +209,29 @@
                                 </a>
 
                                 <!-- hapus -->
-                                <a href="{{route('edit-guru')}}">
-                                    <button class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-600 active:scale-95" >
-                                        <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
+                                    <button
+                                        type="button"
+                                        @click="
+                                            selectedGuru('{{ $guru->ulid }}');
+                                            toggleDelete();
+                                            $dispatch( 'open-delete-guru', { ulid: selectedGuruUlid });
+                                        "
+                                        class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-600 active:scale-95" >
+                                            <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
                                     </button>
-                                </a>
 
                                 <!-- qr -->
-                                <a href="{{route('edit-guru')}}">
+                                <div>
                                     <button class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep active:scale-95" >
                                         <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
                                     </button>
-                                </a>
+                                </div>
                             </td>
 
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-            <div class="mt-4">
-                {{ $this->gurus->links() }}
-            </div>
         </div>
     </div>
 </div>

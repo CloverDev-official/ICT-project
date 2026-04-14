@@ -21,6 +21,6 @@ class DataGuru extends Component
 
     public function render()
     {   
-        return view('livewire.data-guru');
+        return view('livewire.guru.data-guru');
     }
 }
