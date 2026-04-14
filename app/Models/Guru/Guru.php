@@ -5,12 +5,12 @@ namespace App\Models\Guru;
 use App\Models\Guru\Rombel\GuruRombel;
 use App\Models\Guru\Rombel\RoleGuruRombel;
 use App\Models\Murid\Rombel\Rombel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 
 class Guru extends Model
 {
-    use HasUlids;
+    use HasFactory;
 
     protected $table = 'guru';
 
@@ -40,6 +40,15 @@ class Guru extends Model
     protected $casts = [
         'tanggal_lahir' => 'date',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (!$model->public_id) {
+                $model->public_id = \Str::ulid();
+            }
+        });
+    }
 
     /**
      * Relasi ke Rombel (Many to Many)

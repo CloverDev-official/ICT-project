@@ -4,7 +4,8 @@ namespace App\Livewire\Guru;
 
 use App\Helpers\ValidateMagic;
 use App\Models\Guru\Guru;
-use App\Models\Murid\Rombel;
+use App\Models\Guru\Rombel\GuruRombel;
+use App\Models\Murid\Rombel\Rombel;
 use Livewire\Component;
 
 class Create extends Component
@@ -33,13 +34,13 @@ class Create extends Component
     public ?string $hp = null;
     public ?string $email = null;
 
-    public ?int $rombel_id = null;
+    public int $rombel_id = null;
     public $rombel = [];
 
     public function mount(): void
     {
         $this->rombel = Rombel::query()
-            ->with(["tingkatKelas", "jurusan", "indeksRombel"])
+            ->with(["tingkat", "jurusan", "indeks"])
             ->get()
             ->sortBy(fn($r) => $r->nama)
             ->values();
@@ -74,7 +75,7 @@ class Create extends Component
                 "hp" => "nullable",
                 "email" => "nullable|email|unique:guru,email",
 
-                "rombel_id" => "nullable|exists:rombel,id",
+                "rombel_id" => "required|exists:rombel,id",
             ],
             [
                 "nama.required" => "Nama wajib diisi.",
@@ -90,7 +91,7 @@ class Create extends Component
                 "nip.unique" => "NIP sudah digunakan.",
                 "email.unique" => "Email sudah digunakan.",
 
-                "guru_rombel_id.exists" => "Rombel yang dipilih tidak valid.",
+                "rombel_id.exists" => "Rombel yang dipilih tidak valid.",
             ],
         );
 
@@ -124,6 +125,11 @@ class Create extends Component
             "email" => $this->email,
         ]);
 
+        GuruRombel::create([
+            "guru_id" => $guru->id,
+            "rombel_id" => $this->rombel_id,
+        ]);
+
         $this->reset([
             "nama",
             "nuptk",
@@ -143,7 +149,7 @@ class Create extends Component
             "telepon",
             "hp",
             "email",
-            "guru_rombel_id",
+            "rombel_id",
         ]);
     }
 

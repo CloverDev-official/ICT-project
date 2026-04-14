@@ -4,7 +4,7 @@ namespace App\Livewire\Guru;
 
 use App\Helpers\ValidateMagic;
 use App\Models\Guru\Guru;
-use App\Models\Murid\Rombel;
+use App\Models\Murid\Rombel\Rombel;
 use Livewire\Component;
 
 class Edit extends Component
@@ -35,7 +35,7 @@ class Edit extends Component
     public ?string $hp = null;
     public ?string $email = null;
 
-    public ?int $guru_rombel_id = null;
+    public ?int $rombel_id = null;
 
     public $rombel = [];
 
@@ -43,10 +43,8 @@ class Edit extends Component
     {
         $this->guru = Guru::query()->findOrFail($id);
 
-        $this->guru_rombel_id = $this->guru->guru_rombel_id;
-
         $this->rombel = Rombel::query()
-            ->with(["tingkatKelas", "jurusan", "indeksRombel"])
+            ->with(["tingkat", "jurusan", "indeks"])
             ->get()
             ->sortBy(fn($r) => $r->nama)
             ->values();
@@ -78,7 +76,7 @@ class Edit extends Component
             "hp" => $this->guru->hp,
             "email" => $this->guru->email,
 
-            "guru_rombel_id" => $this->guru_rombel_id,
+            "rombel_id" => $this->guru->rombel()->first()?->id,
         ]);
     }
 
@@ -114,7 +112,6 @@ class Edit extends Component
                     "nullable|email|unique:guru,email," . $this->guru->id,
 
                 "rombel_id" => "nullable|exists:rombel,id",
-                "role" => "nullable|in:wali_kelas,mapel,pembimbing",
             ],
             [
                 "nama.required" => "Nama wajib diisi.",
@@ -130,8 +127,7 @@ class Edit extends Component
                 "nip.unique" => "NIP sudah digunakan.",
                 "email.unique" => "Email sudah digunakan.",
 
-                "guru_rombel_id.exists" => "Rombel yang dipilih tidak valid.",
-                "role.in" => "Role rombel tidak valid.",
+                "rombel_id.exists" => "Rombel yang dipilih tidak valid.",
             ],
         );
 
@@ -163,7 +159,7 @@ class Edit extends Component
             "telepon" => $this->telepon,
             "hp" => $this->hp,
             "email" => $this->email,
-            "guru_rombel_id" => $this->guru_rombel_id,
+            "rombel_id" => $this->rombel_id,
         ]);
     }
 
