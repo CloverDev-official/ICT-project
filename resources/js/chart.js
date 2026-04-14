@@ -201,11 +201,11 @@ function initCharts() {
     // =========================
     // LINE CHART REKAP MURID
     // =========================
-    const rekapDom = document.getElementById("chart-rekap-absen-murid");
+    const rekapMuridDom = document.getElementById("chart-rekap-absen-murid");
 
-    if (rekapDom) {
+    if (rekapMuridDom) {
 
-        const rekapChart = echarts.init(rekapDom);
+        const rekapChart = echarts.init(rekapMuridDom);
 
         rekapChart.setOption({
 
