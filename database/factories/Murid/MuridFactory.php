@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Murid;
 
 use App\Models\Murid\Murid;
 use Illuminate\Database\Eloquent\Factories\Factory;

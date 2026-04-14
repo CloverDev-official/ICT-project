@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel;
+use App\Models\Murid\Rombel\Rombel;
 
 class MuridSeeder extends Seeder
 {

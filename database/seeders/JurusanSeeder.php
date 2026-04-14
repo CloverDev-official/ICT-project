@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Murid\Jurusan;
+use App\Models\Murid\Rombel\Jurusan;
 use Illuminate\Database\Seeder;
 
 class JurusanSeeder extends Seeder

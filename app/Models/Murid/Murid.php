@@ -3,10 +3,13 @@
 namespace App\Models\Murid;
 
 use App\Models\Murid\Rombel\Rombel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Murid extends Model
 {
+
+    use HasFactory;
     protected $table = 'murid';
 
     protected $fillable = [
@@ -34,6 +37,15 @@ class Murid extends Model
     protected $casts = [
         'tanggal_lahir' => 'date',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (!$model->public_id) {
+                $model->public_id = \Str::ulid();
+            }
+        });
+    }
 
     /**
      * Relasi ke Rombel

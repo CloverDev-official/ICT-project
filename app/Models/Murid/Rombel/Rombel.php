@@ -46,4 +46,22 @@ class Rombel extends Model
     {
         return $this->hasMany(Murid::class);
     }
+
+    public function getNamaLengkapAttribute()
+    {
+        return trim(
+            ($this->tingkat->nama ?? '') . ' ' .
+            ($this->jurusan->nama ?? '') . ' ' .
+            ($this->indeks->nama ?? '')
+        );
+    }
+
+    public static function getListNamaLengkap()
+    {
+        return self::with(['tingkat', 'jurusan', 'indeks'])
+            ->get()
+            ->mapWithKeys(fn ($r) => [
+                $r->id => $r->nama_lengkap
+            ]);
+    }
 }

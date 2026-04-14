@@ -27,9 +27,9 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
-            TingkatKelasSeeder::class,
+            TingkatSeeder::class,
             JurusanSeeder::class,
-            IndeksRombelSeeder::class,
+            IndeksSeeder::class,
             RombelSeeder::class,
         ]);
 
