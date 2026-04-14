@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Murid;
 
+use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel;
+use App\Models\Murid\Rombel\Rombel;
 use Livewire\Component;
 
 class Create extends Component
@@ -36,7 +37,7 @@ class Create extends Component
     public function mount(): void
     {
         $this->rombel = Rombel::query()
-            ->with(["tingkatKelas", "jurusan", "indeksRombel"])
+            ->with(["tingkat", "jurusan", "indeks"])
             ->get()
             ->sortBy(fn($r) => $r->nama)
             ->values();
@@ -115,6 +116,8 @@ class Create extends Component
             "rombel_id" => $this->rombel_id,
         ]);
 
+        ToastMagic::success("Menambahkan Murid", "Berhasil menambahkan murid $this->nama.");
+
         $this->reset([
             "nama",
             "nipd",
@@ -139,8 +142,6 @@ class Create extends Component
 
     public function render()
     {
-        return view("livewire.tambah-murid", [
-            'rombel' => $this->rombel,
-        ]);
+        return view("livewire.murid.tambah-murid");
     }
 }

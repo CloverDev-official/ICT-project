@@ -4,7 +4,7 @@ namespace App\Livewire\Murid;
 
 use App\Helpers\ValidateMagic;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel;
+use App\Models\Murid\Rombel\Rombel;
 use Livewire\Component;
 
 class Edit extends Component
@@ -34,22 +34,25 @@ class Edit extends Component
 
     public $rombel = [];
 
-    public function mount(int $id): void
+    public function mount($muridUlid): void
     {
-        $this->murid = Murid::findOrFail($id);
+        $this->murid = Murid::where('ulid', $muridUlid)->firstOrFail();
 
-        $this->rombel = Rombel::query()->orderBy("nama")->get();
-
+        $this->rombel = Rombel::query()
+            ->with(["tingkat", "jurusan", "indeks"])
+            ->get()
+            ->sortBy(fn($r) => $r->nama)
+            ->values();
+        
         $this->fill([
             "nama" => $this->murid->nama ?? "",
             "nipd" => $this->murid->nipd ?? "",
             "jk" => $this->murid->jk ?? "",
             "nisn" => $this->murid->nisn ?? "",
             "tempat_lahir" => $this->murid->tempat_lahir ?? "",
-            "tanggal_lahir" => $this->murid->tanggal_lahir
+            "tanggal_lahir" => $this->murid->tanggal_lahir 
                 ? (string) $this->murid->tanggal_lahir
                 : null,
-
             "agama" => $this->murid->agama,
             "alamat" => $this->murid->alamat,
             "rt" => $this->murid->rt,
@@ -151,6 +154,6 @@ class Edit extends Component
 
     public function render()
     {
-        return view("livewire.edit-murid");
+        return view("livewire.murid.edit-murid");
     }
 }
