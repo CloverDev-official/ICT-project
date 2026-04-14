@@ -4,10 +4,6 @@ use App\Livewire\Murid\Index as IndexMurid;
 use App\Livewire\Murid\Create as CreateMurid;
 use App\Livewire\Murid\Edit as EditMurid;
 
-use App\Livewire\Murid\Index as IndexGuru;
-use App\Livewire\Murid\Create as CreateGuru;
-use App\Livewire\Murid\Edit as EditGuru;
-
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
@@ -50,9 +46,9 @@ Route::prefix('admin')->group(function () {
 
     // data guru
     route::prefix('/data-guru')->group(function () {
-        Route::get('/', IndexGuru::class)->name('data-guru');
-        Route::get('/create', CreateGuru::class)->name('tambah-guru');
-        Route::get('/edit', EditGuru::class)->name('edit-guru');
+        Route::get('/', DataGuru::class)->name('data-guru');
+        Route::get('/create', TambahGuru::class)->name('tambah-guru');
+        Route::get('/edit', EditMurid::class)->name('edit-guru');
     });
 
     Route::get('/data-kelas', DataKelas::class)->name(
