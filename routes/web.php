@@ -2,6 +2,11 @@
 
 use App\Livewire\Murid\Index as IndexMurid;
 use App\Livewire\Murid\Create as CreateMurid;
+use App\Livewire\Murid\Edit as EditMurid;
+
+use App\Livewire\Murid\Index as IndexGuru;
+use App\Livewire\Murid\Create as CreateGuru;
+use App\Livewire\Murid\Edit as EditGuru;
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Auth\Login;
@@ -11,8 +16,6 @@ use App\Livewire\AbsensiGuru;
 use App\Livewire\DataGuru;
 use App\Livewire\DataJurusan;
 use App\Livewire\DataKelas;
-use App\Livewire\EditGuru;
-use App\Livewire\EditMurid;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
 use App\Livewire\TambahGuru;
@@ -24,25 +27,31 @@ Route::prefix('admin')->group(function () {
     // dashboard
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
-    // absensi
-    Route::get('/absensi-murid', AbsensiMurid::class)->name('absensi-murid');
-    Route::get('/absensi-guru', AbsensiGuru::class)->name('absensi-guru');
-
+    
     // laporan
-    Route::get('/rekap-absen-murid', RekapAbsenMurid::class)->name('rekap-absen-murid');
-    Route::get('/rekap-absen-guru', RekapAbsenGuru::class)->name('rekap-absen-guru');
+    route::prefix('/rekap')->group(function () {
+        Route::get('/absen-murid', RekapAbsenMurid::class)->name('rekap-absen-murid');
+        Route::get('/absen-guru', RekapAbsenGuru::class)->name('rekap-absen-guru');
+    });
+
+    
+    // absensi
+    route::prefix('/absensi')->group(function () {
+        Route::get('/murid', AbsensiMurid::class)->name('absensi-murid');
+        Route::get('/guru', AbsensiGuru::class)->name('absensi-guru');
+    });
     
     // data  murid
     route::prefix('/data-murid')->group(function () {
         Route::get('/', IndexMurid::class)->name('data-murid');
         Route::get('/create', CreateMurid::class)->name('tambah-murid');
-        Route::get('/edit', EditMurid::class)->name('edit-murid');
+        Route::get('/edit/{muridUlid}', EditMurid::class)->name('edit-murid');
     });
 
     // data guru
     route::prefix('/data-guru')->group(function () {
-        Route::get('/', DataGuru::class)->name('data-guru');
-        Route::get('/create', TambahGuru::class)->name('tambah-guru');
+        Route::get('/', IndexGuru::class)->name('data-guru');
+        Route::get('/create', CreateGuru::class)->name('tambah-guru');
         Route::get('/edit', EditGuru::class)->name('edit-guru');
     });
 
