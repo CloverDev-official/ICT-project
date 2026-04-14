@@ -165,6 +165,6 @@ class Edit extends Component
 
     public function render()
     {
-        return view("livewire.edit-guru");
+        return view("livewire.guru.edit-guru");
     }
 }

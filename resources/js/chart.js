@@ -209,11 +209,6 @@ function initCharts() {
 
         rekapChart.setOption({
 
-            title: {
-                text: "Laporan Kehadiran Murid",
-                left: "center"
-            },
-
             tooltip: { trigger: "axis" },
 
             toolbox: {
@@ -227,7 +222,7 @@ function initCharts() {
                 left: 40,
                 right: 20,
                 bottom: 40,
-                top: 90
+                top: 60
             },
 
             xAxis: {
@@ -264,8 +259,99 @@ function initCharts() {
                 }
             }]
         });
+
+        window.addEventListener("resize", () => {
+            rekapChart.resize();
+        });
+
+    }
+
+    // =========================
+    // CHART KEHADIRAN PER KELAS
+    // =========================
+    const chartKelasDom = document.getElementById("chart-kehadiran-kelas");
+    
+    if (chartKelasDom) {
+    
+        const chartKelas = echarts.init(chartKelasDom);
+    
+        chartKelas.setOption({
+    
+            tooltip: {
+                trigger: "axis"
+            },
+    
+            legend: {
+                bottom: 0
+            },
+    
+            grid: {
+                left: 40,
+                right: 20,
+                bottom: 50,
+                top: 30
+            },
+    
+            xAxis: {
+                type: "category",
+                data: [
+                    "X PPLG A",
+                    "X PPLG B",
+                    "XI PPLG A",
+                    "XI PPLG B",
+                    "XII PPLG A",
+                    "XII PPLG B"
+                ]
+            },
+    
+            yAxis: {
+                type: "value"
+            },
+    
+            series: [
+    
+                {
+                    name: "Hadir",
+                    type: "bar",
+                    stack: "total",
+                    data: [30, 28, 32, 29, 31, 27],
+                    itemStyle: { color: "#22c55e" }
+                },
+    
+                {
+                    name: "Izin",
+                    type: "bar",
+                    stack: "total",
+                    data: [2, 3, 1, 2, 2, 1],
+                    itemStyle: { color: "#eab308" }
+                },
+    
+                {
+                    name: "Sakit",
+                    type: "bar",
+                    stack: "total",
+                    data: [1, 1, 0, 1, 1, 0],
+                    itemStyle: { color: "#3b82f6" }
+                },
+    
+                {
+                    name: "Alfa",
+                    type: "bar",
+                    stack: "total",
+                    data: [1, 2, 1, 1, 0, 2],
+                    itemStyle: { color: "#ef4444" }
+                }
+    
+            ]
+        });
+    
+        window.addEventListener("resize", () => {
+            chartKelas.resize();
+        });
+    
     }
 }
+
 
 
 // ============================

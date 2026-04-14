@@ -1,9 +1,9 @@
 <div
     x-data="{ openModalDelete: false }"
     x-show="openModalDelete"
-    x-on:open-delete-murid.window="
+    x-on:open-delete-guru.window="
         openModalDelete = true;
-        $wire.loadMurid($event.detail.ulid);
+        $wire.loadGuru($event.detail.ulid);
     "
     x-on:close-modal.window="openModalDelete = false"
     x-transition
@@ -14,11 +14,11 @@
 
         <h2 class="flex items-center text-lg font-semibold mb-4 capitalize">
             <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
-            Hapus Data Murid
+            Hapus Data guru
         </h2>
 
         <p class="text-gray-600 mb-6">
-            Apakah kamu yakin ingin menghapus data murid ini? "{{ $murid->nama ?? '-' }}",
+            Apakah kamu yakin ingin menghapus data guru ini? "{{ $guru->nama ?? '-' }}",
             Data yang dihapus tidak dapat dikembalikan.
         </p>
 

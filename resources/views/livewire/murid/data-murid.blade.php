@@ -127,58 +127,58 @@
 
         <!-- kelas -->
         <div
-        x-data="{
-            open: false,
-            selectedId: @entangle('filterIndeks').live,
-            selectedLabel: null,
+            x-data="{
+                open: false,
+                selectedId: @entangle('filterIndeks').live,
+                selectedLabel: null,
 
-            toggle() {
-                this.open = !this.open
-            },
+                toggle() {
+                    this.open = !this.open
+                },
 
-            select(id, label) {
-                this.selectedId = id
-                this.selectedLabel = label
-                this.open = false
-            }
-        }"
-        class="relative w-full"
-        >
-            <label class="text-sm text-gray-600 capitalize font-semibold">Kelas</label>
+                select(id, label) {
+                    this.selectedId = id
+                    this.selectedLabel = label
+                    this.open = false
+                }
+            }"
+            class="relative w-full">
+                <label class="text-sm text-gray-600 capitalize font-semibold">Kelas</label>
 
-            <div @click="toggle()"
-                class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                <span x-text="selectedLabel ?? 'Semua Kelas'" class="text-gray-700 text-sm"></span>
-                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                    icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
-            </div>
-
-            <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-
-                <div
-                    @click.prevent="select(null, 'Semua Kelas')"
-                    class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
-                >
-                    <span>Semua Kelas</span>
-                    <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                <div @click="toggle()"
+                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                    <span x-text="selectedLabel ?? 'Semua Kelas'" class="text-gray-700 text-sm"></span>
+                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
                 </div>
 
-                @foreach ($this->filteredRombel as $rombel)
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
                     <div
-                        @click.prevent="select({{ (int) $rombel->id }}, @js($rombel->nama_lengkap))"
+                        @click.prevent="select(null, 'Semua Kelas')"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
                     >
-                        <span>{{ $rombel->nama_lengkap }}</span>
-                        <iconify-icon x-show="selectedId == {{ (int) $rombel->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                        <span>Semua Kelas</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
-                @endforeach
 
-            </div>
+                    @foreach ($this->filteredRombel as $rombel)
+                        <div
+                            @click.prevent="select({{ (int) $rombel->id }}, @js($rombel->nama_lengkap))"
+                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
+                        >
+                            <span>{{ $rombel->nama_lengkap }}</span>
+                            <iconify-icon x-show="selectedId == {{ (int) $rombel->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                        </div>
+                    @endforeach
+
+                </div>
         </div>
     </div>
     <!-- table murid -->
-    <div x-data="{
+    <div 
+        x-data="{
             selected: [],
             muridList: @js($listMurid->pluck('ulid')),
 
@@ -275,30 +275,87 @@
                 <tbody>
                     @foreach ($listMurid as $index => $murid)
                         <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
-
+                            <!-- select hapus murid -->
                             <td class="px-4 py-3">
                                 <input type="checkbox" value="{{ $murid->ulid }}" :checked="selected.includes('{{ $murid->ulid }}')"x-model="selected" >
                             </td>
-
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $index + 1 }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->nama }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->nipd }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->nisn }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->jk }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->tempat_lahir }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->tanggal_lahir }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->agama }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->alamat }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->rt }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->rw }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->kelurahan }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->kecamatan }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->rombel?->nama_lengkap ?? '-' }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->hp }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->email }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->nama_ayah }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->nama_ibu }}</td>
-                            <td class="border-r border-gray-200 px-4 py-3">{{ $murid->nama_wali }}</td>
+                            <!-- nomor urutan murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $index + 1 }}
+                            </td>
+                            <!-- nama murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->nama }}
+                            </td>
+                            <!-- nipd murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->nipd }}
+                            </td>
+                            <!-- nisn murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->nisn }}
+                            </td>
+                            <!-- jenis kelamin murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->jk }}
+                            </td>
+                            <!-- tempat lahir -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->tempat_lahir }}
+                            </td>
+                            <!-- tanggal lahir -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->tanggal_lahir }}
+                            </td>
+                            <!-- agama -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->agama }}
+                            </td>
+                            <!-- alamat -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->alamat }}
+                            </td>
+                            <!-- rt -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->rt }}
+                            </td>
+                            <!-- rw -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->rw }}
+                            </td>
+                            <!-- kelurahan -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->kelurahan }}
+                            </td>
+                            <!-- kecamatan -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->kecamatan }}
+                            </td>
+                            <!-- kelas murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->rombel?->nama_lengkap ?? '-' }}
+                            </td>
+                            <!-- nomer telepon murid -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->hp }}
+                            </td>
+                            <!-- email -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->email }}
+                            </td>
+                            <!-- nama ayah -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->nama_ayah }}
+                            </td>
+                            <!-- nama ibu -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->nama_ibu }}
+                            </td>
+                            <!-- nama wali -->
+                            <td class="border-r border-gray-200 px-4 py-3">
+                                {{ $murid->nama_wali }}
+                            </td>
+                            <!-- crud -->
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-2">
                                     <!-- edit -->
@@ -308,6 +365,7 @@
                                         </button>
                                     </a>
 
+                                    <!-- hapus -->
                                     <button
                                         type="button"
                                         @click="
@@ -331,10 +389,8 @@
                             </td>
                         </tr>
                     @endforeach
-
-                    <!-- modal peringatan hapus murid -->
-                    
                 </tbody>
+                <!-- modal peringatan hapus murid -->
                 <livewire:murid.delete/>
             </table>
         </div>
