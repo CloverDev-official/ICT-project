@@ -399,6 +399,6 @@
                 <livewire:murid.delete/>
             </table>
         </div>
-        {{ $listMurid->links() }}
+        {{ $listMurid->links('livewire.components.pagination') }}
     </div>
 </div>

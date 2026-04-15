@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
-    
+
     public int $perPage = 20;
 
     public bool $showDelete = false;
@@ -52,7 +52,7 @@ class Index extends Component
     {
         return Jurusan::query()
             ->whereIn('id', function ($q) {
-                $q->from('rombel') // <- pastikan benar sesuai nama tabel
+                $q->from('rombel')
                     ->select('jurusan_id')
                     ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
                     ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks))
@@ -66,7 +66,7 @@ class Index extends Component
     {
         return Indeks::query()
             ->whereIn('id', function ($q) {
-                $q->from('rombel') // <- pastikan benar sesuai nama tabel
+                $q->from('rombel')
                     ->select('indeks_id')
                     ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
                     ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
