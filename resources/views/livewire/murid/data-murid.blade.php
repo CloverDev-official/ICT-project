@@ -60,7 +60,7 @@
                     <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                 </div>
 
-                @foreach ($tingkatRombel as $tingkat)
+                @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
                     <div
                         @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
@@ -163,13 +163,13 @@
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach ($this->filteredRombel as $rombel)
+                    @foreach ($filteredIndeks as $indeks)
                         <div
-                            @click.prevent="select({{ (int) $rombel->id }}, @js($rombel->nama_lengkap))"
+                            @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
                             class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
                         >
-                            <span>{{ $rombel->nama_lengkap }}</span>
-                            <iconify-icon x-show="selectedId == {{ (int) $rombel->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                            <span>{{ $indeks->nama }}</span>
+                            <iconify-icon x-show="selectedId == {{ (int) $indeks->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
                         </div>
                     @endforeach
 
@@ -180,11 +180,16 @@
     <div 
         x-data="{
             selected: [],
-            muridList: @js($listMurid->pluck('ulid')),
+            
+            getPageUlids() {
+                return Array.from(
+                    this.$root.querySelectorAll('.murid-row-checkbox')
+                ).map(el => el.value)
+            },
 
             toggleAll(e) {
                 if (e.target.checked) {
-                    this.selected = this.muridList
+                    this.selected = this.getPageUlids()
                 } else {
                     this.selected = []
                 }
@@ -277,7 +282,7 @@
                         <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
                             <!-- select hapus murid -->
                             <td class="px-4 py-3">
-                                <input type="checkbox" value="{{ $murid->ulid }}" :checked="selected.includes('{{ $murid->ulid }}')"x-model="selected" >
+                                <input type="checkbox" class="murid-row-checkbox" value="{{ $murid->ulid }}" :checked="selected.includes('{{ $murid->ulid }}')"x-model="selected" >
                             </td>
                             <!-- nomor urutan murid -->
                             <td class="border-r border-gray-200 px-4 py-3">
@@ -394,5 +399,6 @@
                 <livewire:murid.delete/>
             </table>
         </div>
+        {{ $listMurid->links() }}
     </div>
 </div>

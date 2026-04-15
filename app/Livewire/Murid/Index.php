@@ -3,131 +3,144 @@
 namespace App\Livewire\Murid;
 
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Indeks;
+use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
-    public $showDelete = false;
-    public $listRombel;
-    public $tingkatRombel;
-
-    public $filteredRombel;
-    public $filteredJurusan;
-    public $listMurid;
+    use WithPagination;
     
+    public int $perPage = 20;
+
+    public bool $showDelete = false;
+
+    public $listRombel;
+    public $filteredJurusan;
+    public $filteredIndeks;
+
     public ?string $search = null;
-    public ?int $filterRombel = null;
+    public ?int $filterIndeks = null;
     public ?int $filterTingkat = null;
     public ?int $filterJurusan = null;
 
     public function mount(): void
     {
-        $this->listRombel = $this->getAllRombel();
-        $this->tingkatRombel = $this->getTingkatRombel();
-
-        $this->refreshData();
+        $this->listRombel = $this->getRombel();
+        $this->refreshFilterOptions();
     }
 
-    private function getAllRombel()
+    private function rombelBaseQuery()
     {
-        return Rombel::with(['tingkat', 'jurusan', 'indeks'])->get();
+        return Rombel::query()
+            ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
+            ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
+            ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
     }
 
-    private function getTingkatRombel()
+    private function getRombel()
     {
-        return $this->listRombel
-            ->pluck('tingkat')
-            ->filter()
-            ->unique('id');
+        return $this->rombelBaseQuery()
+            ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
+            ->get();
     }
 
-    private function baseRombelFilter()
+    private function getAvailableJurusan()
     {
-        return $this->listRombel
-            ->when($this->filterTingkat, fn ($q) =>
-                $q->where('tingkat_id', $this->filterTingkat)
-            );
+        return Jurusan::query()
+            ->whereIn('id', function ($q) {
+                $q->from('rombel') // <- pastikan benar sesuai nama tabel
+                    ->select('jurusan_id')
+                    ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
+                    ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks))
+                    ->distinct();
+            })
+            ->orderBy('nama')
+            ->get(['id', 'nama']);
     }
 
-    private function getFilteredJurusan()
+    private function getAvailableIndeks()
     {
-        return $this->baseRombelFilter()
-            ->pluck('jurusan')
-            ->filter()
-            ->unique('id');
-    }
-
-    private function getFilteredRombel()
-    {
-        return $this->baseRombelFilter()
-            ->when($this->filterJurusan, fn ($q) =>
-                $q->where('jurusan_id', $this->filterJurusan)
-            );
+        return Indeks::query()
+            ->whereIn('id', function ($q) {
+                $q->from('rombel') // <- pastikan benar sesuai nama tabel
+                    ->select('indeks_id')
+                    ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
+                    ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
+                    ->distinct();
+            })
+            ->orderBy('nama')
+            ->get(['id', 'nama']);
     }
 
     private function getMurid()
     {
         return Murid::query()
-            ->with(['rombel.tingkat', 'rombel.jurusan', 'rombel.indeks'])
-            ->when($this->search, fn ($q) =>
-                $q->where(function ($q) {
-                    $q->where('nama', 'like', '%' . $this->search . '%')
-                    ->orWhere('nipd', 'like', '%' . $this->search . '%')
-                    ->orWhere('nisn', 'like', '%' . $this->search . '%');
-                })
-            )
-            ->when($this->filterTingkat, fn ($q) =>
-                $q->whereHas('rombel', fn ($q) =>
-                    $q->where('tingkat_id', $this->filterTingkat)
-                )
-            )
-            ->when($this->filterJurusan, fn ($q) =>
-                $q->whereHas('rombel', fn ($q) =>
-                    $q->where('jurusan_id', $this->filterJurusan)
-                )
-            )
-            ->when($this->filterRombel, fn ($q) =>
-                $q->where('rombel_id', $this->filterRombel)
-            )
+            ->with([
+                'rombel:id,tingkat_id,jurusan_id,indeks_id,nama',
+                'rombel.tingkat:id,nama',
+                'rombel.jurusan:id,nama',
+                'rombel.indeks:id,nama',
+            ])
+            ->when($this->search, function ($q) {
+                $search = trim($this->search);
+                $q->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nipd', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%");
+                });
+            })
+            ->whereHas('rombel', function ($q) {
+                $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
+                    ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
+                    ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
+            })
             ->orderBy('nama')
-            ->get();
+            ->paginate($this->perPage);
     }
 
-    public function updatedFilterTingkat()
+    private function refreshFilterOptions(): void
     {
-        $this->filterRombel = null;
-        $this->refreshData();
+        $this->filteredJurusan = $this->getAvailableJurusan();
+        $this->filteredIndeks  = $this->getAvailableIndeks();
     }
 
-    public function updatedFilterJurusan()
+    public function updatedFilterTingkat(): void
     {
-        $this->filterRombel = null;
-        $this->refreshData();
+        $this->resetPage();
+        $this->refreshFilterOptions();
     }
 
-    public function updatedFilterRombel()
+    public function updatedFilterJurusan(): void
     {
-        $this->refreshData();
+        $this->resetPage();
+        $this->refreshFilterOptions();
     }
 
-    public function updatedIndeks()
+    public function updatedFilterIndeks(): void
     {
-        $this->refreshData();
+        $this->resetPage();
+        $this->refreshFilterOptions();
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
-        $this->refreshData();
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
     }
 
     #[On('murid-refresh')]
-    public function refreshData()
+    public function refreshData(): void
     {
-        $this->filteredJurusan = $this->getFilteredJurusan();
-        $this->filteredRombel  = $this->getFilteredRombel();
-        $this->listMurid       = $this->getMurid();
+        $this->resetPage();
+        $this->refreshFilterOptions();
     }
 
     public function openDelete(): void
@@ -136,9 +149,10 @@ class Index extends Component
         $this->dispatch('openModalDelete');
     }
 
-
     public function render()
     {
-        return view('livewire.murid.data-murid');
+        return view('livewire.murid.data-murid', [
+            'listMurid' => $this->getMurid(),
+        ]);
     }
 }
