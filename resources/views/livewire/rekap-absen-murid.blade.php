@@ -70,7 +70,7 @@
     
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-800">
+                <h2 class="text-xl font-semibold text-gray-800">
                     Rekap Kehadiran Murid
                 </h2>
     
@@ -92,10 +92,10 @@
     
             <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-100">
-                <h1 class="text-lg font-semibold text-gray-800">
+                <h1 class="text-xl font-semibold text-gray-800">
                     Unduh Laporan Kehadiran
                 </h1>
-                <p class="text-sm text-gray-400 mt-1">
+                <p class="text-sm text-gray-400">
                     Unduh laporan kehadiran murid berdasarkan tanggal dan kelas
                 </p>
             </div>
@@ -220,7 +220,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
 
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-lg font-semibold text-gray-800">
+            <h2 class="text-xl font-semibold text-gray-800">
                 Kehadiran per Kelas
             </h2>
         </div>
@@ -235,35 +235,286 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
 
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-lg font-semibold text-gray-800">
+            <h2 class="text-xl font-semibold text-gray-800">
                 Murid Tidak Hadir Hari Ini
             </h2>
+            <p class="text-sm text-gray-400">
+                Temukan murid yang tidak hadir berdasarkan tingkat, jurusan dan kelas
+            </p>
         </div>
+        <!-- category -->
+        <div class="flex justify-end m-4 items-center gap-4">
+            <!-- tingkat -->
+            <div 
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: 'Semua tingkat',
 
+                    select(id, label){
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+                    },
+
+                    toggle(){
+                        this.open = !this.open
+                    }
+                }"
+                class="relative w-full"
+            >
+                <!-- trigger -->
+                <div 
+                    @click="toggle()"
+                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition"
+                >
+                    <span x-text="selectedLabel" class="text-gray-700"></span>
+
+                    <iconify-icon 
+                        class="text-gray-400 transition-transform" 
+                        :class="{ 'rotate-180': open }"
+                        icon="lineicons:chevron-up" 
+                        width="20" 
+                        height="20">
+                    </iconify-icon>
+                </div>
+
+                <!-- dropdown -->
+                <div
+                    x-show="open"
+                    @click.outside="open = false"
+                    x-transition
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
+                >
+                    <!-- semua -->
+                    <div
+                        @click.prevent="select(null, 'Semua tingkat')"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
+                    >
+                        <span>Semua tingkat</span>
+                        <iconify-icon 
+                            x-show="selectedId === null" 
+                            icon="lineicons:check" 
+                            width="20" 
+                            height="20">
+                        </iconify-icon>
+                    </div>
+
+                    <!-- list -->
+                    @foreach (['X', 'XI', 'XII'] as $tingkat)
+                        <div
+                            @click.prevent="select('{{ $tingkat }}', '{{ $tingkat }}')"
+                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
+                        >
+                            <span>{{ $tingkat }}</span>
+
+                            <iconify-icon 
+                                x-show="selectedId === '{{ $tingkat }}'" 
+                                icon="lineicons:check" 
+                                width="20" 
+                                height="20">
+                            </iconify-icon>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <!-- jurusan -->
+            <div 
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: 'Semua jurusan',
+
+                    select(id, label){
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+                    },
+
+                    toggle(){
+                        this.open = !this.open
+                    }
+                }"
+                class="relative w-full"
+            >
+                <!-- trigger -->
+                <div 
+                    @click="toggle()"
+                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition"
+                >
+                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
+
+                    <iconify-icon 
+                        class="text-gray-400 transition-transform" 
+                        :class="{ 'rotate-180': open }"
+                        icon="lineicons:chevron-up" 
+                        width="20" 
+                        height="20">
+                    </iconify-icon>
+                </div>
+
+                <!-- dropdown -->
+                <div
+                    x-show="open"
+                    @click.outside="open = false"
+                    x-transition
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50"
+                >
+                    <!-- semua -->
+                    <div
+                        @click.prevent="select(null, 'Semua jurusan')"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition "
+                    >
+                        <span>Semua jurusan</span>
+                        <iconify-icon 
+                            x-show="selectedId === null" 
+                            icon="lineicons:check" 
+                            width="20" 
+                            height="20">
+                        </iconify-icon>
+                    </div>
+
+                    <!-- list -->
+                    @foreach (['Pemograman Perangkat Lunak dan Gim', 'Pekerjaan Sosial', 'Animasi', 'Broadcasting dan Film', 'Teknik Kimia Industri', 'Desain Visual Komunikasi', 'Teknik Furnitur', 'Teknik Jaringan Komputer dan Telekomunikasi'] as $jurusan)
+                        <div
+                            @click.prevent="select('{{ $jurusan }}', '{{ $jurusan }}')"
+                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
+                        >
+                            <span>{{ $jurusan }}</span>
+
+                            <iconify-icon 
+                                x-show="selectedId === '{{ $jurusan }}'" 
+                                icon="lineicons:check" 
+                                width="20" 
+                                height="20">
+                            </iconify-icon>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <!-- kelas -->
+            <div 
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: 'Semua kelas',
+
+                    select(id, label){
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+                    },
+
+                    toggle(){
+                        this.open = !this.open
+                    }
+                }"
+                class="relative w-full"
+            >
+                <!-- trigger -->
+                <div 
+                    @click="toggle()"
+                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition"
+                >
+                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
+
+                    <iconify-icon 
+                        class="text-gray-400 transition-transform" 
+                        :class="{ 'rotate-180': open }"
+                        icon="lineicons:chevron-up" 
+                        width="20" 
+                        height="20">
+                    </iconify-icon>
+                </div>
+
+                <!-- dropdown -->
+                <div
+                    x-show="open"
+                    @click.outside="open = false"
+                    x-transition
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50"
+                >
+                    <!-- semua -->
+                    <div
+                        @click.prevent="select(null, 'Semua kelas')"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition "
+                    >
+                        <span>Semua kelas</span>
+                        <iconify-icon 
+                            x-show="selectedId === null" 
+                            icon="lineicons:check" 
+                            width="20" 
+                            height="20">
+                        </iconify-icon>
+                    </div>
+
+                    <!-- list -->
+                    @foreach (['A', 'B', 'C'] as $kelas)
+                        <div
+                            @click.prevent="select('{{ $kelas }}', '{{ $kelas }}')"
+                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
+                        >
+                            <span>{{ $kelas }}</span>
+
+                            <iconify-icon 
+                                x-show="selectedId === '{{ $kelas }}'" 
+                                icon="lineicons:check" 
+                                width="20" 
+                                height="20">
+                            </iconify-icon>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <!-- input search -->
+            <div class="relative w-40 md:w-sm">
+                <input 
+                    type="search"
+                    name="search"
+                    wire:model.live.debounce.500ms="search"
+                    placeholder="Cari Nama Murid..."
+                    class="min-w-xs w-full text-sm mt-1 px-4 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-xl
+                    hover:border-blue-500
+                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
+                    transition"
+                />
+
+                <div class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
+                    <iconify-icon icon="mdi:account-search-outline" width="20" height="20"></iconify-icon>
+                </div>
+            </div>
+        </div>
         <div class="overflow-x-auto">
 
             <table class="w-full text-sm">
 
                 <thead class="bg-blue-main text-white">
-                    <tr>
-                        <th class="px-6 py-3 text-left">Nama</th>
-                        <th class="px-6 py-3 text-left">Kelas</th>
-                        <th class="px-6 py-3 text-left">Status</th>
+                    <tr  >
+                        <th class="border-gray-400 px-6 py-3">Nama</th>
+                        <th class="border-gray-400 px-6 py-3">Kelas</th>
+                        <th class="border-gray-400 px-6 py-3">Status</th>
                     </tr>
                 </thead>
 
-                <tbody class="divide-y">
+                <tbody>
 
-                    <tr>
-                        <td class="px-6 py-4">Budi</td>
-                        <td class="px-6 py-4">X PPLG A</td>
-                        <td class="px-6 py-4 text-yellow-600 font-medium">Sakit</td>
+                    <tr class="text-center hover:bg-gray-100" >
+                        <td class="border-r border-gray-200 px-6 py-4">Budi</td>
+                        <td class="border-r border-gray-200 px-6 py-4">X PPLG A</td>
+                        <td class="px-6 py-4 text-blue-500 font-semibold">Sakit</td>
                     </tr>
 
-                    <tr>
-                        <td class="px-6 py-4">Andi</td>
-                        <td class="px-6 py-4">XI PPLG B</td>
-                        <td class="px-6 py-4 text-orange-600 font-medium">Izin</td>
+                    <tr class="text-center bg-gray-50 hover:bg-gray-100" >
+                        <td class="border-r border-gray-200 px-6 py-4">Andi</td>
+                        <td class="border-r border-gray-200 px-6 py-4">XI PPLG B</td>
+                        <td class="px-6 py-4 text-amber-500 font-semibold">Izin</td>
+                    </tr>
+
+                    <tr class="text-center hover:bg-gray-100" >
+
+                        <td class="border-r border-gray-200 px-6 py-4">Anda</td>
+                        <td class="border-r border-gray-200 px-6 py-4">XI PPLG B</td>
+                        <td class="px-6 py-4 text-rose-500 font-semibold">Alfa</td>
                     </tr>
 
                 </tbody>
