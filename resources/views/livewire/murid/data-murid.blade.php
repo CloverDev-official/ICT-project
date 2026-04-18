@@ -45,8 +45,11 @@
             <div @click="toggle()"
                 class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
                 <span x-text="selectedLabel ?? 'Semua tingkat'" class="text-gray-700 text-sm"></span>
-                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                    icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                <iconify-icon 
+                    class="text-gray-400 transition-transform" 
+                    :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="25" height="24">
+                </iconify-icon>
             </div>
 
             <div x-show="open" @click.outside="open = false" x-transition style="display:none"

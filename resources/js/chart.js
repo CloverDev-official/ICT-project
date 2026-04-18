@@ -282,7 +282,8 @@ function initCharts() {
             },
     
             legend: {
-                bottom: 0
+                bottom: 0,
+                itemGap: 30
             },
     
             grid: {
@@ -316,6 +317,7 @@ function initCharts() {
                     stack: "total",
                     data: [30, 28, 32, 29, 31, 27],
                     itemStyle: { color: "#22c55e" }
+                    
                 },
     
                 {
@@ -324,6 +326,7 @@ function initCharts() {
                     stack: "total",
                     data: [2, 3, 1, 2, 2, 1],
                     itemStyle: { color: "#eab308" }
+                    
                 },
     
                 {
