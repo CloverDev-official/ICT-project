@@ -10,13 +10,16 @@
         </a>
 
         <!-- btn import CSV -->
-        <a href="" wire:navigate>
+        <div x-data="{ openModalImport: false }" >
             <button
+                @click="openModalImport = true"
                 class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize ">
                 <iconify-icon icon="line-md:file-import" width="20" height="20"></iconify-icon>
                 import CSV
             </button>
-        </a>
+            <!-- modal import murid  -->
+            <livewire:components.modal.modal-import-murid/>
+        </div>
     </div>
 
     <!-- kategori -->

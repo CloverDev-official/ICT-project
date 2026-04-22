@@ -22,11 +22,16 @@
     <div
         x-data="{
             selected: [],
-            muridList: @js($listMurid->pluck('ulid')),
+            
+            getPageUlids() {
+                return Array.from(
+                    this.$root.querySelectorAll('.guru-row-checkbox')
+                ).map(el => el.value)
+            },
 
             toggleAll(e) {
                 if (e.target.checked) {
-                    this.selected = this.muridList
+                    this.selected = this.getPageUlids()
                 } else {
                     this.selected = []
                 }
@@ -75,10 +80,10 @@
         <div
             x-data="{
                 openModalDelete: false,
-                selectedMuridUlid: null,
+                selectedGuruUlid: null,
 
-                selectedMurid(muridUlid) {
-                    this.selectedMuridUlid = muridUlid
+                selectedGuru(guruUlid) {
+                    this.selectedguruUlid = guruUlid
                 },
                 
                 toggleDelete() {
@@ -117,7 +122,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach ($listGuru as $index -> $guru)
+                    @foreach ($listGuru as $index => $guru)
                         <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
 
                             <td class="px-4 py-3    ">

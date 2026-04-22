@@ -150,7 +150,22 @@
                 </ul>
 
             </li>
+            
+            <!-- group manajemen -->
+            <li x-data="{ open: {{ request()->routeIs('manajemen-*') ? 'true' : 'false' }} }"> 
+                <!-- button -->
+                <button
+                    @click="open = !open"
+                    class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                >
+                    <span class="flex gap-2 items-center capitalize">
+                        <iconify-icon :icon="open ? 'mdi:folder-cog' : 'mdi:folder-cog-outline'" width="24" height="24"></iconify-icon>
+                        manajemen
+                    </span>
 
+                    <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                </button>
+            </li>
             <!-- group pengaturan -->
             <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
                 <!-- button -->
@@ -159,7 +174,7 @@
                     class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
                 >
                     <span class="flex gap-2 items-center capitalize">
-                        <iconify-icon :icon="open ? 'mdi:folder-cog' : 'mdi:folder-cog-outline'" width="24" height="24"></iconify-icon>
+                        <iconify-icon :icon="open ? 'mdi:gear' : 'mdi:gear-outline'" width="24" height="24"></iconify-icon>
                         pengaturan
                     </span>
 
