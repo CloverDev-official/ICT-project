@@ -4,7 +4,6 @@ namespace App\Livewire\Murid;
 
 use App\Helpers\ToastMagic;
 use App\Models\Murid\Murid;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Delete extends Component
