@@ -10,11 +10,10 @@ class MuridSeeder extends Seeder
 {
     public function run(): void
     {
-        // SQLite performance settings — ini kunci utamanya
-        DB::statement('PRAGMA synchronous = OFF');      // gak fsync tiap commit
-        DB::statement('PRAGMA cache_size = -64000');    // 64MB cache
+        DB::statement('PRAGMA synchronous = OFF');
+        DB::statement('PRAGMA cache_size = -64000');
         DB::statement('PRAGMA temp_store = MEMORY');
-        DB::statement('PRAGMA mmap_size = 268435456');  // 256MB memory-mapped I/O
+        DB::statement('PRAGMA mmap_size = 268435456');
 
         $rombelIds   = DB::table('rombel')->pluck('id')->toArray();
         $rombelCount = count($rombelIds);
@@ -26,7 +25,6 @@ class MuridSeeder extends Seeder
         $images     = $this->loadImages();
         $imageCount = count($images) ?: 1;
 
-        // Pre-generate pool data
         $POOL       = 2000;
         $maleNames  = array_map(fn() => fake()->name('male'),    range(1, $POOL));
         $femaleNames= array_map(fn() => fake()->name('female'),  range(1, $POOL));
@@ -43,13 +41,12 @@ class MuridSeeder extends Seeder
 
         DB::disableQueryLog();
 
-        // SATU transaction besar = SQLite hanya flush ke disk SEKALI
         DB::beginTransaction();
 
         try {
             for ($i = 0; $i < $total; $i++) {
                 $idx = $i % $POOL;
-                $jk  = ($i & 1) === 0 ? 'L' : 'P'; // bitwise lebih cepat dari modulo
+                $jk  = ($i & 1) === 0 ? 'L' : 'P';
 
                 $batch[] = [
                     'ulid'         => (string) Str::ulid(),

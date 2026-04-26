@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('murid', function (Blueprint $table) {
             $table->id();
             $table->ulid('ulid')->unique();
-
+            
             $table->string('nama');
             $table->string('nipd')->unique();
             $table->enum('jk', ['L', 'P']);
@@ -46,6 +46,8 @@ return new class extends Migration
                 ->cascadeOnUpdate();
 
             $table->timestamps();
+
+            $table->index(['nama', 'rombel_id']);
         });
     }
 

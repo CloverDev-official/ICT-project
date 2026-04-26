@@ -38,6 +38,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['tingkat_id', 'jurusan_id', 'indeks_id']);
+            $table->index(['tingkat_id', 'jurusan_id', 'indeks_id']);
 
         });
     }

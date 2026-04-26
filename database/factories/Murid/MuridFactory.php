@@ -22,16 +22,12 @@ class MuridFactory extends Factory
         if (!is_dir($path)) {
             throw new \Exception("Folder tidak ditemukan: " . $path);
         }
-
-        // 🔥 pakai scandir (hemat memory)
         $files = array_diff(scandir($path), ['.', '..']);
 
-        // filter hanya gambar (opsional tapi disarankan)
         $files = array_filter($files, function ($f) {
             return preg_match('/\.(jpg|jpeg|png|webp)$/i', $f);
         });
 
-        // mapping ke URL
         self::$images = array_values(array_map(
             fn ($f) => 'storage/animeFaces/images/' . $f,
             $files
@@ -55,7 +51,6 @@ class MuridFactory extends Factory
         if (self::$index >= self::$total) {
             self::$index = 0;
 
-            // optional biar variasi ulang
             shuffle(self::$images);
         }
 
@@ -73,7 +68,6 @@ class MuridFactory extends Factory
             'nama' =>
                 $jk === 'L' ? fake()->name('male') : fake()->name('female'),
 
-            // ⚠️ hindari overload faker unique
             'jk' => $jk,
             'nipd' => str_pad(self::$counter, 10, '0', STR_PAD_LEFT),
             'nisn' => str_pad(self::$counter + 500000, 10, '0', STR_PAD_LEFT),
@@ -109,7 +103,6 @@ class MuridFactory extends Factory
             'nama_ibu' => fake()->optional(0.2)->name('female'),
             'nama_wali' => fake()->optional(0.6)->name(),
 
-            // 🔥 super cepat + hemat RAM
             'image_path' => $this->getFastImage(),
 
             'rombel_id' => null,
