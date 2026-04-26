@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('setting', function (Blueprint $table) {
             $table->id();
-            $table->time('jam_masuk')->nullable();
-            $table->time('jam_keluar')->nullable();
+            $table->time('waktu_masuk')->default('07:30:00');
+            $table->time('waktu_keluar')->default('16:30:00');
             $table->timestamps();
         });
     }
