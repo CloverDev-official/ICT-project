@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        $this->call(SettingSeeder::class);
+    
         $this->call([
             TingkatSeeder::class,
             JurusanSeeder::class,

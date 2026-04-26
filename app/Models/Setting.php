@@ -9,13 +9,7 @@ class Setting extends Model
     protected $table = 'setting';
 
     protected $fillable = [
-        'waktu_masuk',
-        'waktu_keluar'
+        'key',
+        'value'
     ];
-
-    protected $casts = [
-        'waktu_masuk' => 'datetime:H:i:s',
-        'waktu_keluar' => 'datetime:H:i:s',
-    ];
-
 }

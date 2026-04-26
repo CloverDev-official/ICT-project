@@ -6,25 +6,77 @@ use App\Models\Murid\Murid;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<Murid>
- */
 class MuridFactory extends Factory
 {
     protected $model = Murid::class;
+
+    protected static $images = null;
+    protected static $total = 0;
+    protected static $index = 0;
+    protected static $counter = 1;
+
+    protected function loadImages()
+    {
+        $path = storage_path('app/public/animeFaces/images');
+
+        if (!is_dir($path)) {
+            throw new \Exception("Folder tidak ditemukan: " . $path);
+        }
+
+        // 🔥 pakai scandir (hemat memory)
+        $files = array_diff(scandir($path), ['.', '..']);
+
+        // filter hanya gambar (opsional tapi disarankan)
+        $files = array_filter($files, function ($f) {
+            return preg_match('/\.(jpg|jpeg|png|webp)$/i', $f);
+        });
+
+        // mapping ke URL
+        self::$images = array_values(array_map(
+            fn ($f) => 'storage/animeFaces/images/' . $f,
+            $files
+        ));
+
+        shuffle(self::$images);
+
+        self::$total = count(self::$images);
+    }
+
+    protected function getFastImage()
+    {
+        if (self::$images === null) {
+            $this->loadImages();
+        }
+
+        $img = self::$images[self::$index];
+
+        self::$index++;
+
+        if (self::$index >= self::$total) {
+            self::$index = 0;
+
+            // optional biar variasi ulang
+            shuffle(self::$images);
+        }
+
+        return $img;
+    }
 
     public function definition(): array
     {
         $jk = fake()->randomElement(['L', 'P']);
 
+        self::$counter++;
         return [
             'ulid' => (string) Str::ulid(),
 
             'nama' =>
                 $jk === 'L' ? fake()->name('male') : fake()->name('female'),
-            'nipd' => fake()->unique()->numerify('##########'),
+
+            // ⚠️ hindari overload faker unique
             'jk' => $jk,
-            'nisn' => fake()->unique()->numerify('##########'),
+            'nipd' => str_pad(self::$counter, 10, '0', STR_PAD_LEFT),
+            'nisn' => str_pad(self::$counter + 500000, 10, '0', STR_PAD_LEFT),
 
             'tempat_lahir' => fake()->city(),
             'tanggal_lahir' => fake()
@@ -50,12 +102,15 @@ class MuridFactory extends Factory
 
             'hp' => fake()->optional(0.25)->numerify('08##########'),
             'email' => fake()->boolean(60)
-                ? fake()->unique()->safeEmail()
+                ? fake()->safeEmail()
                 : null,
 
             'nama_ayah' => fake()->optional(0.2)->name('male'),
             'nama_ibu' => fake()->optional(0.2)->name('female'),
             'nama_wali' => fake()->optional(0.6)->name(),
+
+            // 🔥 super cepat + hemat RAM
+            'image_path' => $this->getFastImage(),
 
             'rombel_id' => null,
         ];
