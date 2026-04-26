@@ -38,6 +38,7 @@ return new class extends Migration
             $table->string('nama_ibu')->nullable();
             $table->string('nama_wali')->nullable();
 
+            $table->string('image_path')->nullable();
             $table->foreignId('rombel_id')
                 ->nullable()
                 ->constrained('rombel')

@@ -31,6 +31,7 @@ return new class extends Migration
 
         Schema::create('rombel', function (Blueprint $table) {
             $table->id();
+            $table->string('angkatan')->nullable();
             $table->foreignId('tingkat_id')->constrained('tingkat')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('jurusan_id')->constrained('jurusan')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('indeks_id')->constrained('indeks')->cascadeOnDelete()->cascadeOnUpdate();
