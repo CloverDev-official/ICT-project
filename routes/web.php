@@ -1,8 +1,15 @@
 <?php
 
+use App\Helpers\downloadFile;
+use App\Helpers\generateQRCode;
 use App\Livewire\Murid\Index as IndexMurid;
 use App\Livewire\Murid\Create as CreateMurid;
 use App\Livewire\Murid\Edit as EditMurid;
+
+use App\Livewire\Murid\Absen\Create as CreateAbsen;
+use App\Livewire\Murid\Absen\ScanQRCode;
+
+
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Auth\Login;
@@ -17,12 +24,13 @@ use App\Livewire\RekapAbsenMurid;
 use App\Livewire\TambahGuru;
 
 Route::get('/', Login::class)->name('login');
+Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
+
 
 Route::prefix('admin')->group(function () {
 
     // dashboard
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
-
     
     // laporan
     route::prefix('/rekap')->group(function () {

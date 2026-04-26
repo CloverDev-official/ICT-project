@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Murid;
 
+use App\Helpers\DownloadFile;
+use App\Helpers\QRCodeHelper;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
@@ -33,12 +35,28 @@ class Index extends Component
         $this->refreshFilterOptions();
     }
 
+    public function generateQRCode($muridUlid)
+    {
+        $filename = "qrcode-{$muridUlid}.png";
+
+        return DownloadFile::download(
+            'image/png',
+            $filename,
+            fn () => QRCodeHelper::generate($muridUlid)
+        );
+    }
+
+    private function applyRombelFilter($q)
+    {
+        $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
+          ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
+          ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
+    }
+
     private function rombelBaseQuery()
     {
         return Rombel::query()
-            ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-            ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
-            ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
+            ->tap(fn ($q) => $this->applyRombelFilter($q));
     }
 
     private function getRombel()
@@ -53,12 +71,16 @@ class Index extends Component
         return Jurusan::query()
             ->whereIn('id', function ($q) {
                 $q->from('rombel')
-                    ->select('jurusan_id')
-                    ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-                    ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks))
-                    ->distinct();
+                ->select('jurusan_id');
+                if ($this->filterTingkat) {
+                    $q->where('tingkat_id', $this->filterTingkat);
+                }
+                if ($this->filterIndeks) {
+                    $q->where('indeks_id', $this->filterIndeks);
+                }
             })
             ->orderBy('nama')
+            ->orderBy('id')
             ->get(['id', 'nama']);
     }
 
@@ -67,12 +89,16 @@ class Index extends Component
         return Indeks::query()
             ->whereIn('id', function ($q) {
                 $q->from('rombel')
-                    ->select('indeks_id')
-                    ->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-                    ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
-                    ->distinct();
+                ->select('indeks_id');
+                if ($this->filterTingkat) {
+                    $q->where('tingkat_id', $this->filterTingkat);
+                }
+                if ($this->filterJurusan) {
+                    $q->where('jurusan_id', $this->filterJurusan);
+                }
             })
             ->orderBy('nama')
+            ->orderBy('id')
             ->get(['id', 'nama']);
     }
 
@@ -87,19 +113,22 @@ class Index extends Component
             ])
             ->when($this->search, function ($q) {
                 $search = trim($this->search);
+
                 $q->where(function ($q) use ($search) {
                     $q->where('nama', 'like', "%{$search}%")
-                        ->orWhere('nipd', 'like', "%{$search}%")
-                        ->orWhere('nisn', 'like', "%{$search}%");
+                      ->orWhere('nipd', $search)
+                      ->orWhere('nisn', $search);
                 });
             })
-            ->whereHas('rombel', function ($q) {
-                $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-                    ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
-                    ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
-            })
+            ->when(
+                $this->filterTingkat || $this->filterJurusan || $this->filterIndeks,
+                function ($q) {
+                    $q->whereHas('rombel', fn ($q) => $this->applyRombelFilter($q));
+                }
+            )
             ->orderBy('nama')
-            ->paginate($this->perPage);
+            ->orderBy('id')
+            ->fastPaginate($this->perPage);
     }
 
     private function refreshFilterOptions(): void

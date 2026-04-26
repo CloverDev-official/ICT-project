@@ -28,7 +28,7 @@
         <div
         x-data="{
             open: false,
-            selectedId: @entangle('filterTingkat').live,
+            selectedId: null,
             selectedLabel: null,
 
             toggle() {
@@ -39,6 +39,8 @@
                 this.selectedId = id
                 this.selectedLabel = label
                 this.open = false
+
+                $wire.set('filterTingkat', id)
             }
         }"
         class="relative w-full"
@@ -83,7 +85,7 @@
         <div
         x-data="{
             open: false,
-            selectedId: @entangle('filterJurusan').live,
+            selectedId: null,
             selectedLabel: null,
 
             toggle() {
@@ -94,6 +96,8 @@
                 this.selectedId = id
                 this.selectedLabel = label
                 this.open = false
+
+                $wire.set('filterJurusan', id)
             }
         }"
         class="relative w-full"
@@ -135,7 +139,7 @@
         <div
             x-data="{
                 open: false,
-                selectedId: @entangle('filterIndeks').live,
+                selectedId: null,
                 selectedLabel: null,
 
                 toggle() {
@@ -146,6 +150,8 @@
                     this.selectedId = id
                     this.selectedLabel = label
                     this.open = false
+
+                    $wire.set('filterIndeks', id)
                 }
             }"
             class="relative w-full">
@@ -390,11 +396,12 @@
                                     </button>
     
                                     <!-- qr -->
-                                    <div>
-                                        <button class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep hover:text-gray-400 active:scale-95" >
-                                            <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
-                                        </button>
-                                    </div>
+                                    <button 
+                                        wire:click="generateQRCode('{{ $murid->ulid }}')"
+                                        class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep hover:text-gray-400 active:scale-95" >
+                                        <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
+                                    </button>
+
                                 </div>
                                 
                             </td>
