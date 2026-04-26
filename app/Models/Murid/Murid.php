@@ -32,6 +32,7 @@ class Murid extends Model
         'nama_ayah',
         'nama_ibu',
         'nama_wali',
+        'image_path',
         'rombel_id',
     ];
 
