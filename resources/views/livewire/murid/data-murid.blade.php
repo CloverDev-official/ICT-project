@@ -18,7 +18,7 @@
                 import CSV
             </button>
             <!-- modal import murid  -->
-            <livewire:components.modal.modal-import-murid/>
+            <livewire:components.modal.murid.modal-import-murid/>
         </div>
     </div>
 

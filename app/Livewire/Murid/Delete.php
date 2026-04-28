@@ -35,6 +35,6 @@ class Delete extends Component
     
     public function render()
     {
-        return view('livewire.components.modal.modal-hapus-murid');
+        return view('livewire.components.modal.murid.modal-hapus-murid');
     }
 }

@@ -206,7 +206,7 @@
                                         <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
                                         Edit
                                 </button>
-                                <livewire:components.modal.modal-edit-absen-murid />
+                                <livewire:components.modal.murid.absen.modal-edit-absen-murid />
                             </div>
                         </td>
                     </tr>

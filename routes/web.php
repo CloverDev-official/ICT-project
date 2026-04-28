@@ -19,6 +19,7 @@ use App\Livewire\AbsensiGuru;
 use App\Livewire\DataGuru;
 use App\Livewire\DataJurusan;
 use App\Livewire\DataKelas;
+use App\Livewire\TambahKelas;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
 use App\Livewire\TambahGuru;
@@ -59,9 +60,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/edit', EditMurid::class)->name('edit-guru');
     });
 
-    Route::get('/data-kelas', DataKelas::class)->name(
-        'data-kelas',
-    );
+    route::prefix('/data-kelas')->group(function () {
+        route::get('/',  DataKelas::class)->name('data-kelas');
+        route::get('/create',  TambahKelas::class)->name('tambah-kelas');
+    });
 
     Route::get('/data-jurusan', DataJurusan::class)->name('data-jurusan');
 });
