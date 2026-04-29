@@ -322,7 +322,7 @@
                             </td>
                             <!-- tanggal lahir -->
                             <td class="border-r border-gray-200 px-4 py-3">
-                                {{ $murid->tanggal_lahir }}
+                                {{ $murid->tanggal_lahir->format('d-m-Y') }}
                             </td>
                             <!-- agama -->
                             <td class="border-r border-gray-200 px-4 py-3">
