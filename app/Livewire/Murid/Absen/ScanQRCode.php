@@ -77,7 +77,7 @@ class ScanQRCode extends Component
         Carbon::setLocale('id');
         $dateNow = Carbon::now()->translatedFormat('d F Y, l');
 
-        return view('livewire.murid.scan-qrcode', [
+        return view('livewire.murid.absen.scan-qrcode', [
             'dateNow' => $dateNow,
         ]);
     }
