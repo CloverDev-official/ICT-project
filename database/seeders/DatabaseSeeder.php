@@ -36,5 +36,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(MuridSeeder::class);
+
+        $this->call(AbsenMuridSeeder::class);
     }
 }
