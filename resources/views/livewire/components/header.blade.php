@@ -1,4 +1,4 @@
-<div class="flex items-start justify-between mt-2 mb-5">
+    <div class="flex items-start justify-between mt-2 mb-5">
     <div class="flex flex-col text-start ">
         <h1 class="text-lg md:text-3xl font-bold capitalize">
             {{ str_replace('-', ' ', Route::currentRouteName()) }}
@@ -8,7 +8,7 @@
         </h1>
     </div>
     <div class="flex items-center justify-end gap-5" >
-        <a href="" wire:navigate>
+        <a href="{{ route('scan-qrcode') }}" wire:navigate>
             <button class="bg-blue-deep-solid w-8 h-8  rounded-lg text-white flex items-center justify-center transition-all duration-150 hover:bg-blue-deep hover:text-gray-400 active:scale-95">
                 <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
             </button>

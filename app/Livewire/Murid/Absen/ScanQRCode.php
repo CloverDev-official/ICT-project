@@ -8,9 +8,10 @@ use App\Models\Setting;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Carbon\Carbon;
 
 class ScanQRCode extends Component
-{
+{   
     public Murid $murid;
     public $tersimpan = false;
 
@@ -72,7 +73,12 @@ class ScanQRCode extends Component
 
     #[Layout("layouts.auth")]
     public function render()
-    {
-        return view('livewire.murid.scan-qrcode');
+    {   
+        Carbon::setLocale('id');
+        $dateNow = Carbon::now()->translatedFormat('d F Y, l');
+
+        return view('livewire.murid.scan-qrcode', [
+            'dateNow' => $dateNow,
+        ]);
     }
 }

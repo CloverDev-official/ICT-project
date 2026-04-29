@@ -1,4 +1,4 @@
-<div>
+    <div>
     <!-- dekstop -->
     <aside class="hidden md:flex flex-col w-64 bg-blue-deep p-4 pb-0 rounded-tr-4xl h-screen shadow-[6px_0_15px_rgba(0,0,0,0.1)]" >
         <div class="flex items-center justify-center gap-4 pt-4">

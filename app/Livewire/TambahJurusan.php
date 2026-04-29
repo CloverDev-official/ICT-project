@@ -8,6 +8,6 @@ class TambahJurusan extends Component
 {
     public function render()
     {
-        return view('livewire.tambah-jurusan');
+        return view('livewire.jurusan.tambah-jurusan');
     }
 }

@@ -1,13 +1,19 @@
-<div class="fixed inset-0 bg-slate-900 flex flex-col overflow-hidden font-sans">
+<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-hidden font-sans">
     
-    <header class="w-full p-4 bg-slate-800 shadow-md flex justify-between items-center z-10">
-        <h1 class="text-white font-bold text-xl tracking-tight">QR<span class="text-blue-400">Scan</span></h1>
+    <header class="w-full p-4 bg-slate-900 shadow-md flex justify-between items-center z-10">
+        <div class="flex items-center justify-center gap-4">
+            <img src="{{ asset('assets/img/logo_smkn_2.png')}}" class="w-10" alt="">
+            <div>
+                <h1 class="bg-blue- text-start text-white text-shadow-2xs text-sm font-semibold uppercase">
+                    QR CODE
+                </h1>
+                <p class="text-[10px] text-gray-400 uppercase">smkn 2 banjarmasin</p>
+            </div>
+        </div>
         <div class="flex items-center space-x-2">
-            <span class="flex h-3 w-3">
-                <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-            <span class="text-gray-300 text-xs font-medium uppercase tracking-widest">Live</span>
+            <h1 class=" md:text-lg font-normal text-white">
+                {{ $dateNow ?? 'Tanggal sekarang' }}
+            </h1>
         </div>
     </header>
 
@@ -17,11 +23,11 @@
             <div class="absolute -top-2 -right-2 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-lg z-20"></div>
             <div class="absolute -bottom-2 -left-2 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-lg z-20"></div>
             <div class="absolute -bottom-2 -right-2 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-lg z-20"></div>
-
-            <div wire:ignore id="reader" class="overflow-hidden rounded-xl bg-black shadow-2xl"></div>
+            
+            <div wire:ignore id="reader" class="overflow-hidden rounded-xl bg-black min-h-full shadow-2xl text-white"></div>
         </div>
 
-        <div class="absolute bottom-10 left-0 right-0 text-center">
+        <div class="absolute text-center">
             <p class="text-slate-400 text-sm animate-pulse">Posisikan QR Code di tengah kotak</p>
         </div>
     </main>
