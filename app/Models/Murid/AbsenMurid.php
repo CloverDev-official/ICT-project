@@ -18,9 +18,9 @@ class AbsenMurid extends Model
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
-        'waktu_masuk' => 'datetime:H:i:s',
-        'waktu_keluar' => 'datetime:H:i:s',
+        'tanggal' => 'date:Y-m-d',
+        'waktu_masuk' => 'string',
+        'waktu_keluar' => 'string',
     ];
 
     /**
