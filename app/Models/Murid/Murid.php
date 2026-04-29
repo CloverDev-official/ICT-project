@@ -37,7 +37,7 @@ class Murid extends Model
     ];
 
     protected $casts = [
-        'tanggal_lahir' => 'date',
+        'tanggal_lahir' => 'date:Y-m-d',
     ];
 
     protected static function booted()
