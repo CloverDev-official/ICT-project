@@ -2,12 +2,15 @@
 
 use App\Helpers\downloadFile;
 use App\Helpers\generateQRCode;
+
 use App\Livewire\Murid\Index as IndexMurid;
 use App\Livewire\Murid\Create as CreateMurid;
 use App\Livewire\Murid\Edit as EditMurid;
 
-use App\Livewire\Murid\Absen\Create as CreateAbsen;
+use App\Livewire\Murid\Absen\Index as IndexAbsen;
 use App\Livewire\Murid\Absen\ScanQRCode;
+
+use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
 
 
 
@@ -39,14 +42,14 @@ Route::prefix('admin')->group(function () {
     
     // laporan
     route::prefix('/rekap')->group(function () {
-        Route::get('/absen-murid', RekapAbsenMurid::class)->name('rekap-absen-murid');
+        Route::get('/absen-murid', IndexRekapMurid::class)->name('rekap-absen-murid');
         Route::get('/absen-guru', RekapAbsenGuru::class)->name('rekap-absen-guru');
     });
 
     
     // absensi
     route::prefix('/absensi')->group(function () {
-        Route::get('/murid', AbsensiMurid::class)->name('absensi-murid');
+        Route::get('/murid', IndexAbsen::class)->name('absensi-murid');
         Route::get('/guru', AbsensiGuru::class)->name('absensi-guru');
     });
     
