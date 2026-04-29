@@ -17,7 +17,7 @@
                     <iconify-icon icon="mdi:file-import" width="22"></iconify-icon> 
                 </div>
                 <h1 class="text-lg font-semibold text-gray-800">
-                    Import Data Kelas
+                    Import Data Guru
                 </h1>
             </div>
 

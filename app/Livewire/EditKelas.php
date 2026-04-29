@@ -4,10 +4,10 @@ namespace App\Livewire;
 
 use Livewire\Component;
 
-class TambahJurusan extends Component
+class EditKelas extends Component
 {
     public function render()
     {
-        return view('livewire.jurusan.tambah-jurusan');
+        return view('livewire.kelas.edit-kelas');
     }
 }

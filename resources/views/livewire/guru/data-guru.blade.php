@@ -11,12 +11,16 @@
         </a>
 
         <!-- btn import CSV -->
-        <a href="" wire:navigate>
-            <button class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize " >
+        <div x-data="{ openModalImport: false }">
+            <button
+                @click="openModalImport = true"
+                class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize ">
                 <iconify-icon icon="line-md:file-import" width="20" height="20"></iconify-icon>
                 import CSV
             </button>
-        </a> 
+            <!-- modal import murid  -->
+            <livewire:components.modal.guru.modal-import-guru />
+        </div>
     </div>
     <!-- table guru -->
     <div
@@ -122,11 +126,57 @@
                 </thead>
 
                 <tbody>
+                    @php
+                        $listGuru = [
+                            [
+                                'ulid' => '01HXYZ123ABC',
+                                'nama' => 'Ghaizan',
+                                'nuptk' => '1234567890',
+                                'jk' => 'L',
+                                'tempat_lahir' => 'Samarinda',
+                                'tanggal_lahir' => '2005-01-15',
+                                'nip' => '1987654321',
+                                'status_kepegawaian' => 'PNS',
+                                'jenis_ptk' => 'Guru Mapel',
+                                'agama' => 'Islam',
+                                'alamat_jalan' => 'Jl. Ahmad Yani',
+                                'rt' => '01',
+                                'rw' => '02',
+                                'desa_kelurahan' => 'Air Putih',
+                                'kecamatan' => 'Samarinda Ulu',
+                                'kode_pos' => '75124',
+                                'telepon' => '0541123456',
+                                'hp' => '081234567890',
+                                'email' => 'ghaizan@email.com',
+                            ],
+                            [
+                                'ulid' => '01HXYZ456DEF',
+                                'nama' => 'Budi Santoso',
+                                'nuptk' => '0987654321',
+                                'jk' => 'L',
+                                'tempat_lahir' => 'Balikpapan',
+                                'tanggal_lahir' => '1990-07-20',
+                                'nip' => '1122334455',
+                                'status_kepegawaian' => 'Honorer',
+                                'jenis_ptk' => 'Guru BK',
+                                'agama' => 'Islam',
+                                'alamat_jalan' => 'Jl. Sudirman',
+                                'rt' => '03',
+                                'rw' => '01',
+                                'desa_kelurahan' => 'Gunung Bahagia',
+                                'kecamatan' => 'Balikpapan Selatan',
+                                'kode_pos' => '76114',
+                                'telepon' => '0542123456',
+                                'hp' => '082345678901',
+                                'email' => 'budi@email.com',
+                            ],
+                        ];
+                    @endphp
                     @foreach ($listGuru as $index => $guru)
                         <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
 
                             <td class="px-4 py-3    ">
-                                <input type="checkbox" value="{{ $guru->ulid }}" :checked="selected.includes('{{ $guru->ulid }}')"x-model="selected" > 
+                                <input type="checkbox"  > 
                             </td>
 
                             <td class="px-4 py-3">
@@ -170,39 +220,39 @@
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->alamat_jalan }}
+                                {{ $guru['alamat_jalan'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->rt }}
+                                {{ $guru['rt'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->rw }}
+                                {{ $guru['rw'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->desa_kelurahan }}
+                                {{ $guru['desa_kelurahan'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->kecamatan }}
+                                {{ $guru['kecamatan'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->kode_pos }}
+                                {{ $guru['kode_pos'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->telepon }}
+                                {{ $guru['telepon'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->hp }}
+                                {{ $guru['hp'] }}
                             </td>
 
                             <td class="px-4 py-3">
-                                {{ $guru->email }}
+                                {{ $guru['email'] }}
                             </td>
 
                             <td class="px-4 py-3 flex justify-center gap-2">
@@ -214,16 +264,16 @@
                                 </a>
 
                                 <!-- hapus -->
+                                <div x-data="{ openModalDelete: false }" >
                                     <button
+                                        @click="openModalDelete = true"
                                         type="button"
-                                        @click="
-                                            selectedGuru('{{ $guru->ulid }}');
-                                            toggleDelete();
-                                            $dispatch( 'open-delete-guru', { ulid: selectedGuruUlid });
-                                        "
-                                        class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-600 active:scale-95" >
-                                            <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
+                                        class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-700 active:scale-95"
+                                    >
+                                        <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
                                     </button>
+                                    <livewire:components.modal.guru.modal-hapus-guru/>
+                                </div>
 
                                 <!-- qr -->
                                 <div>

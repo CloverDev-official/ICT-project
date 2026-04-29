@@ -1,11 +1,7 @@
 <div class="flex flex-col w-full gap-5" >
     <!-- kategori -->
     <div class="bg-white p-4 rounded-lg shadow-sm" >
-        <div>
-            <h1 class="text-2xl font-bold capitalize" >daftar kategori</h1>
-            <p class="text-sm text-gray-400 line-clamp-2" >Silahkan pilih kategori agar bisa menentukan kelas yang diinginkan</p>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4" >
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <!-- tingkat -->
             <div x-data="{
                 open: false,
@@ -35,7 +31,7 @@
                 <!-- Dropdown -->
                 <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
                     class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                    @foreach ($tingkatRombel as $tingkat)
+                    @foreach ( ['X', 'XI', 'XII', 'XII'] as $tingkat)
                         <div @click="select('{{ $tingkat }}')"
                             class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
@@ -63,14 +59,14 @@
                 }
             
             }" class="relative w-full">
-                <label class="text-sm text-gray-600 capitalize font-semibold">jurusan</label>
+                <label class="text-sm text-gray-600 capitalize font-semibold ">jurusan</label>
 
                 <input type="hidden" x-model="selected" wire:model.live="filterJurusan">
                 <!-- Button -->
                 <div @click="open = !open"
                     class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
 
-                    <span x-text="selected ? selected : 'Semua jurusan'" class="text-gray-700 text-sm"></span>
+                    <span x-text="selected ? selected : 'Semua jurusan'" class="text-gray-700 text-sm line-clamp-1 "></span>
 
                     <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
                         icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
@@ -79,7 +75,7 @@
                 <!-- Dropdown -->
                 <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
                     class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                    @foreach ($jurusanRombel as $jurusan)
+                    @foreach (['Pekerjaan Sosial', 'Desain Komunikasi Visual', 'Pemograman Perangkat Lunak dan Gim'] as $jurusan)
                         <div @click="select('{{ $jurusan }}')"
                             class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
@@ -123,7 +119,7 @@
                 <!-- Dropdown -->
                 <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
                     class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                    @foreach ($listRombel->pluck('nama_lengkap') as $rombel)
+                    @foreach ( ['A', 'B', 'C'] as $rombel)
                         <div @click="select('{{ $rombel }}')"
                             class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
 
@@ -152,12 +148,7 @@
     </div>
 
     <div class="bg-white p-4 rounded-lg shadow-sm">
-        <div class="flex justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold capitalize" >daftar Absen Murid</h1>
-                <p class="text-sm text-gray-400 line-clamp-2" >daftar absen murid pada tanggal ( nanti tanggal dari yang dipilih)</p>
-            </div>
-
+        <div class="flex justify-end mb-5">
             <!-- input search -->
             <div class="relative w-40 md:w-sm">
                 <input 
@@ -191,25 +182,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200" > 
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >1</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >11122</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >ghaizan</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >hadir</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >07.00</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >16.30</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >-</td>
-                        <td class="border-r text-center border-gray-200 px-4 py-3" >
-                            <div x-data="{openModal: false}" class="flex items-center justify-center">
-                                <!-- button -->
-                                <button @click="open = !open" class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
-                                        <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
-                                        Edit
-                                </button>
-                                <livewire:components.modal.murid.absen.modal-edit-absen-murid />
-                            </div>
-                        </td>
-                    </tr>
+                    @php
+                        $dataAbsensiMurid = [
+                            [
+                                'no' => 1,
+                                'nis' => '11122',
+                                'nama' => 'ghaizan',
+                                'status' => 'hadir',
+                                'jam_masuk' => '07.00',
+                                'jam_pulang' => '16.30',
+                                'keterangan' => '-',
+                            ],
+                        ];
+                    @endphp 
+                    @foreach ( $dataAbsensiMurid as $item )
+                        <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200" > 
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['no'] }}</td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['nis'] }}/td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['nama'] }}</td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['status'] }}</td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['jam_masuk'] }}</td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['jam_pulang'] }}</td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3" >{{ $item['keterangan'] }}</td>
+                            <td class="px-4 py-3" >
+                                <div class="flex justify-center items-center">
+                                    <!-- button -->
+                                    <a href="">
+                                        <button @click="open = !open" class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
+                                                <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
+                                        </button>
+    
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>                   
+                    @endforeach
                 </tbody>
             </table>
         </div>

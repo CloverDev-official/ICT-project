@@ -8,6 +8,6 @@ class DataJurusan extends Component
 {
     public function render()
     {
-        return view('livewire.data-jurusan');
+        return view('livewire.jurusan.data-jurusan');
     }
 }

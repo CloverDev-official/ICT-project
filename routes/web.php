@@ -19,10 +19,14 @@ use App\Livewire\AbsensiGuru;
 use App\Livewire\DataGuru;
 use App\Livewire\DataJurusan;
 use App\Livewire\DataKelas;
+use App\Livewire\EditGuru;
+use App\Livewire\EditJurusan;
+use App\Livewire\EditKelas;
 use App\Livewire\TambahKelas;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
 use App\Livewire\TambahGuru;
+use App\Livewire\TambahJurusan;
 
 Route::get('/', Login::class)->name('login');
 Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
@@ -57,13 +61,19 @@ Route::prefix('admin')->group(function () {
     route::prefix('/data-guru')->group(function () {
         Route::get('/', DataGuru::class)->name('data-guru');
         Route::get('/create', TambahGuru::class)->name('tambah-guru');
-        Route::get('/edit', EditMurid::class)->name('edit-guru');
+        Route::get('/edit', EditGuru::class)->name('edit-guru');
     });
 
     route::prefix('/data-kelas')->group(function () {
         route::get('/',  DataKelas::class)->name('data-kelas');
         route::get('/create',  TambahKelas::class)->name('tambah-kelas');
+        route::get('/edit',  EditKelas::class)->name('edit-kelas');
     });
 
-    Route::get('/data-jurusan', DataJurusan::class)->name('data-jurusan');
+    route::prefix('/data-jurusan')->group( function () {
+        route::get('/', DataJurusan::class)->name('data-jurusan');
+        route::get('/create', TambahJurusan::class)->name('tambah-jurusan');
+        route::get('/edit', EditJurusan::class)->name('edit-jurusan');
+    });
+
 });
