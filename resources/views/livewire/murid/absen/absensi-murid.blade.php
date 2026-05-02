@@ -164,7 +164,6 @@
                         <th class="capitalize text-center px-4 py-3">jam masuk</th>
                         <th class="capitalize text-center px-4 py-3">jam pulang</th>
                         <th class="capitalize text-center px-4 py-3">keterangan</th>
-                        <th class="capitalize text-center px-4 py-3">aksi</th>
                     </tr>
                 </thead>
 
@@ -179,13 +178,6 @@
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->waktu_masuk }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->waktu_keluar }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->keterangan }}</td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-center items-center">
-                                    <button class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center transition-all duration-150 hover:bg-amber-600 active:scale-95">
-                                        <iconify-icon icon="lineicons:pencil-1" width="20"></iconify-icon>
-                                    </button>
-                                </div>
-                            </td>
                         </tr>                   
                     @endforeach
                 </tbody>

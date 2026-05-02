@@ -22,6 +22,119 @@
             <livewire:components.modal.guru.modal-import-guru />
         </div>
     </div>
+    <!-- kategori -->
+    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm grid grid-cols-2 gap-5">
+        <!-- tingkat -->
+        <div
+        x-data="{
+            open: false,
+            selectedId: null,
+            selectedLabel: null,
+
+            toggle() {
+                this.open = !this.open
+            },
+
+            select(id, label) {
+                this.selectedId = id
+                this.selectedLabel = label
+                this.open = false
+
+                $wire.set('filterStatus', id)
+            }
+        }"
+        class="relative w-full"
+        >
+            <label class="text-sm text-gray-600 capitalize font-semibold">Status Kepegawaian</label>
+
+            <div @click="toggle()"
+                class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                <span x-text="selectedLabel ?? 'Semua status'" class="text-gray-700 text-sm"></span>
+                <iconify-icon 
+                    class="text-gray-400 transition-transform" 
+                    :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="25" height="24">
+                </iconify-icon>
+            </div>
+
+            <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
+                <div
+                    @click.prevent="select(null, 'Semua status')"
+                    class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
+                >
+                    <span>Semua status</span>
+                    <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                </div>
+
+                @foreach (['PNS', 'Honorer'] AS $index => $status)
+                    <div
+                        click.prevent="select({{ $index }}, '{{ $status }}')"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
+                    >
+                        <span>{{ $status }}</span>
+                        <iconify-icon x-show="selectedId == {{ $index }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+
+        <!-- jenis ptk -->
+        <div
+        x-data="{
+            open: false,
+            selectedId: null,
+            selectedLabel: null,
+
+            toggle() {
+                this.open = !this.open
+            },
+
+            select(id, label) {
+                this.selectedId = id
+                this.selectedLabel = label
+                this.open = false
+
+                $wire.set('filterjenis', id)
+            }
+        }"
+        class="relative w-full"
+        >
+            <label class="text-sm text-gray-600 capitalize font-semibold">Jenis PTK</label>
+
+            <div @click="toggle()"
+                class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                <span x-text="selectedLabel ?? 'Semua jenis'" class="text-gray-700 text-sm"></span>
+                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+            </div>
+
+            <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
+                <div
+                    @click.prevent="select(null, 'Semua jenis')"
+                    class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
+                >
+                    <span>Semua jenis</span>
+                    <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                </div>
+
+                @foreach (["Guru Mapel", "Guru BK"] as $index => $jenis)
+                    <div
+                        @click.prevent="select({{ $index }}, {{ $jenis }})"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
+                    >
+                        <span>{{ $jenis }}</span>
+                        <iconify-icon x-show="selectedId == {{ $index }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+    </div>
     <!-- table guru -->
     <div
         x-data="{
