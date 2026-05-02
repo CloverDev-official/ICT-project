@@ -49,7 +49,7 @@ class ScanQRCode extends Component
 
 
         if (!$absen) {
-            $status = $now < $waktuMasuk ? 'Hadir' : 'Terlambat';
+            $status = $now < $waktuMasuk ? 'Hadir' : 'Alpa';
 
             AbsenMurid::create([
                 'murid_id' => $murid->id,

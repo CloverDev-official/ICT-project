@@ -5,7 +5,7 @@
             <img src="{{ asset('assets/img/logo_smkn_2.png')}}" class="w-10" alt="">
             <div>
                 <h1 class="bg-blue- text-start text-white text-shadow-2xs text-sm font-semibold uppercase">
-                    QR CODE
+                    Absensi Murid
                 </h1>
                 <p class="text-[10px] text-gray-400 uppercase">smkn 2 banjarmasin</p>
             </div>
@@ -49,10 +49,13 @@
                 <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
 
                     <!-- HEADER -->
-                    <div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white px-6 py-3 flex items-center justify-between">
-                        <div>
-                            <h2 class="font-bold text-lg leading-tight">KARTU PELAJAR</h2>
-                            <p class="text-xs opacity-80">Identitas Siswa</p>
+                    <div class="bg-linear-to-r from-blue-deep to-blue-deep-solid text-white px-6 py-3 flex items-center justify-between">
+                        <div class="flex items-center justify-start gap-2">
+                            <img src="{{ asset('assets/img/logo_smkn_2.png') }}" class="w-10 h-10"  alt="">
+                            <div>
+                                <h2 class="font-bold leading-tight">Absensi Murid</h2>
+                                <p class="text-xs opacity-80">SMKN 2 Banjarmasin</p>
+                            </div>
                         </div>
                         <div class="text-right text-xs opacity-80">
                             <p>ID: {{ $murid->ulid }}</p>
