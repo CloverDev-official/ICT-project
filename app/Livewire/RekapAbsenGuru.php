@@ -8,6 +8,6 @@ class RekapAbsenGuru extends Component
 {
     public function render()
     {
-        return view('livewire.rekap-absen-guru');
+        return view('livewire.guru.rekap.rekap-absen-guru');
     }
 }

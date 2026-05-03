@@ -2,11 +2,11 @@
     <!-- ================= STAT CARD ================= -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
 
-        <!-- JUMLAH MURID -->
+        <!-- JUMLAH GURU -->
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
             <div>
-                <p class="text-sm text-gray-400">Jumlah Murid</p>
-                <h3 class="text-2xl font-semibold text-gray-800">120</h3>
+                <p class="text-sm text-gray-400">Jumlah Guru</p>
+                <h3 class="text-2xl font-semibold text-gray-800">80</h3>
             </div>
 
             <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -18,7 +18,7 @@
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-400">Hadir</p>
-                <h3 class="text-2xl font-semibold text-gray-800">100</h3>
+                <h3 class="text-2xl font-semibold text-gray-800">65</h3>
             </div>
 
             <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
@@ -42,7 +42,7 @@
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-400">Izin</p>
-                <h3 class="text-2xl font-semibold text-gray-800">10</h3>
+                <h3 class="text-2xl font-semibold text-gray-800">5</h3>
             </div>
 
             <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-orange-50 text-orange-600">
@@ -71,17 +71,17 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 class="text-xl font-semibold text-gray-800">
-                    Rekap Kehadiran Murid
+                    Rekap Kehadiran Guru
                 </h2>
     
                 <span class="text-xs text-gray-400">
                     Statistik Kehadiran
                 </span>
             </div>
-
+    
             <!-- Chart -->
             <div class="p-6">
-                <div id="chart-rekap-absen-murid" class="w-full h-96"></div>
+                <div id="chart-rekap-absen-guru" class="w-full h-96"></div>
             </div>
     
         </div>
@@ -96,7 +96,7 @@
                     Unduh Laporan Kehadiran
                 </h1>
                 <p class="text-sm text-gray-400">
-                    Unduh laporan kehadiran murid berdasarkan tanggal dan kelas
+                    Unduh laporan kehadiran Guru berdasarkan tanggal dan kelas
                 </p>
             </div>
     
@@ -216,21 +216,6 @@
     
     </div>
 
-    <!-- KEHADIRAN PER KELAS -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
-
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-xl font-semibold text-gray-800">
-                Kehadiran per Kelas
-            </h2>
-        </div>
-
-        <div class="p-6">
-            <div id="chart-kehadiran-kelas" class="w-full h-96"></div>
-        </div>
-
-    </div>
-
     <!-- TABLE MURID TIDAK HADIR -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
 
@@ -243,7 +228,7 @@
             </p>
         </div>
         <!-- category -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+        <div class="flex justify-end m-4 items-center gap-4">
             <!-- STATUS -->
             <div 
                 x-data="{
@@ -318,87 +303,12 @@
                     @endforeach
                 </div>
             </div>
-
-            <!-- tingkat -->
+            <!-- Jenis PTK -->
             <div 
                 x-data="{
                     open: false,
                     selectedId: null,
-                    selectedLabel: 'Semua tingkat',
-
-                    select(id, label){
-                        this.selectedId = id
-                        this.selectedLabel = label
-                        this.open = false
-                    },
-
-                    toggle(){
-                        this.open = !this.open
-                    }
-                }"
-                class="relative w-full"
-            >
-                <!-- trigger -->
-                <div 
-                    @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition"
-                >
-                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-
-                    <iconify-icon 
-                        class="text-gray-400 transition-transform" 
-                        :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" 
-                        width="20" 
-                        height="20">
-                    </iconify-icon>
-                </div>
-
-                <!-- dropdown -->
-                <div
-                    x-show="open"
-                    @click.outside="open = false"
-                    x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
-                >
-                    <!-- semua -->
-                    <div
-                        @click.prevent="select(null, 'Semua tingkat')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
-                    >
-                        <span>Semua tingkat</span>
-                        <iconify-icon 
-                            x-show="selectedId === null" 
-                            icon="lineicons:check" 
-                            width="20" 
-                            height="20">
-                        </iconify-icon>
-                    </div>
-
-                    <!-- list -->
-                    @foreach (['X', 'XI', 'XII'] as $tingkat)
-                        <div
-                            @click.prevent="select('{{ $tingkat }}', '{{ $tingkat }}')"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
-                        >
-                            <span >{{ $tingkat }}</span>
-
-                            <iconify-icon 
-                                x-show="selectedId === '{{ $tingkat }}'" 
-                                icon="lineicons:check" 
-                                width="20" 
-                                height="20">
-                            </iconify-icon>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-            <!-- jurusan -->
-            <div 
-                x-data="{
-                    open: false,
-                    selectedId: null,
-                    selectedLabel: 'Semua jurusan',
+                    selectedLabel: 'Semua jenis PTK',
 
                     select(id, label){
                         this.selectedId = id
@@ -437,10 +347,10 @@
                 >
                     <!-- semua -->
                     <div
-                        @click.prevent="select(null, 'Semua jurusan')"
+                        @click.prevent="select(null, 'Semua Jenis PTK')"
                         class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition "
                     >
-                        <span>Semua jurusan</span>
+                        <span>Semua Jenis PTK</span>
                         <iconify-icon 
                             x-show="selectedId === null" 
                             icon="lineicons:check" 
@@ -450,89 +360,15 @@
                     </div>
 
                     <!-- list -->
-                    @foreach (['Pemograman Perangkat Lunak dan Gim', 'Pekerjaan Sosial', 'Animasi', 'Broadcasting dan Film', 'Teknik Kimia Industri', 'Desain Visual Komunikasi', 'Teknik Furnitur', 'Teknik Jaringan Komputer dan Telekomunikasi'] as $jurusan)
+                    @foreach (['Mapel', 'BK'] as $jenis)
                         <div
-                            @click.prevent="select('{{ $jurusan }}', '{{ $jurusan }}')"
+                            @click.prevent="select('{{ $jenis }}', '{{ $jenis }}')"
                             class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
                         >
-                            <span>{{ $jurusan }}</span>
+                            <span>{{ $jenis }}</span>
 
                             <iconify-icon 
-                                x-show="selectedId === '{{ $jurusan }}'" 
-                                icon="lineicons:check" 
-                                width="20" 
-                                height="20">
-                            </iconify-icon>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-            <!-- kelas -->
-            <div 
-                x-data="{
-                    open: false,
-                    selectedId: null,
-                    selectedLabel: 'Semua kelas',
-
-                    select(id, label){
-                        this.selectedId = id
-                        this.selectedLabel = label
-                        this.open = false
-                    },
-
-                    toggle(){
-                        this.open = !this.open
-                    }
-                }"
-                class="relative w-full"
-            >
-                <!-- trigger -->
-                <div 
-                    @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition"
-                >
-                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-
-                    <iconify-icon 
-                        class="text-gray-400 transition-transform" 
-                        :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" 
-                        width="20" 
-                        height="20">
-                    </iconify-icon>
-                </div>
-
-                <!-- dropdown -->
-                <div
-                    x-show="open"
-                    @click.outside="open = false"
-                    x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50"
-                >
-                    <!-- semua -->
-                    <div
-                        @click.prevent="select(null, 'Semua kelas')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition "
-                    >
-                        <span>Semua kelas</span>
-                        <iconify-icon 
-                            x-show="selectedId === null" 
-                            icon="lineicons:check" 
-                            width="20" 
-                            height="20">
-                        </iconify-icon>
-                    </div>
-
-                    <!-- list -->
-                    @foreach (['A', 'B', 'C'] as $kelas)
-                        <div
-                            @click.prevent="select('{{ $kelas }}', '{{ $kelas }}')"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
-                        >
-                            <span>{{ $kelas }}</span>
-
-                            <iconify-icon 
-                                x-show="selectedId === '{{ $kelas }}'" 
+                                x-show="selectedId === '{{ $jenis }}'" 
                                 icon="lineicons:check" 
                                 width="20" 
                                 height="20">
@@ -542,7 +378,7 @@
                 </div>
             </div>
             <!-- input search -->
-            <div class="col-span-2 md:col-span-2 md:col-start-3 relative w-full">
+            <div class="relative w-40 md:w-sm">
                 <input 
                     type="search"
                     name="search"
@@ -561,12 +397,12 @@
         </div>
         <div class="overflow-x-auto m-4 rounded-lg shadow-sm">
 
-            <table class="w-full text-sm ">
+            <table class="w-full text-sm">
 
                 <thead class="bg-blue-main text-white">
                     <tr  >
                         <th class="border-gray-400 px-6 py-3">Nama</th>
-                        <th class="border-gray-400 px-6 py-3">Kelas</th>
+                        <th class="border-gray-400 px-6 py-3">Jenis PTK</th>
                         <th class="border-gray-400 px-6 py-3">Status</th>
                     </tr>
                 </thead>
@@ -575,20 +411,20 @@
 
                     <tr class="text-center hover:bg-gray-100" >
                         <td class="border-r border-gray-200 px-6 py-4">Budi</td>
-                        <td class="border-r border-gray-200 px-6 py-4">X PPLG A</td>
+                        <td class="border-r border-gray-200 px-6 py-4">Mapel</td>
                         <td class="px-6 py-4 text-blue-500 font-semibold">Sakit</td>
                     </tr>
 
                     <tr class="text-center bg-gray-50 hover:bg-gray-100" >
                         <td class="border-r border-gray-200 px-6 py-4">Andi</td>
-                        <td class="border-r border-gray-200 px-6 py-4">XI PPLG B</td>
+                        <td class="border-r border-gray-200 px-6 py-4">BK</td>
                         <td class="px-6 py-4 text-amber-500 font-semibold">Izin</td>
                     </tr>
 
                     <tr class="text-center hover:bg-gray-100" >
 
                         <td class="border-r border-gray-200 px-6 py-4">Anda</td>
-                        <td class="border-r border-gray-200 px-6 py-4">XI PPLG B</td>
+                        <td class="border-r border-gray-200 px-6 py-4">Mapel</td>
                         <td class="px-6 py-4 text-rose-500 font-semibold">Alfa</td>
                     </tr>
 
