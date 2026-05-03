@@ -23,7 +23,7 @@
     </div>
 
     <!-- kategori -->
-    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm grid grid-cols-2 md:grid-cols-3 gap-5">
+    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm grid grid-cols-2 md:grid-cols-3 gap-5 ">
         <!-- tingkat -->
         <div
         x-data="{

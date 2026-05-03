@@ -267,6 +267,74 @@ function initCharts() {
     }
 
     // =========================
+    // LINE CHART REKAP GURU
+    // =========================
+    const rekapGuruDom = document.getElementById("chart-rekap-absen-guru");
+
+    if (rekapGuruDom) {
+
+        const rekapChart = echarts.init(rekapGuruDom);
+
+        rekapChart.setOption({
+
+            tooltip: { trigger: "axis" },
+
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+
+            grid: {
+                left: 40,
+                right: 20,
+                bottom: 40,
+                top: 60
+            },
+
+            xAxis: {
+                type: "category",
+                boundaryGap: false,
+                data: [
+                    "Januari","Februari","Maret","April","Mei","Juni",
+                    "Juli","Agustus","September","Oktober","November","Desember"
+                ]
+            },
+
+            yAxis: {
+                type: "value",
+                name: "Jumlah Guru"
+            },
+
+            series: [{
+                name: "Jumlah Hadir",
+                type: "line",
+                smooth: true,
+                data: [
+                    120,115,130,125,140,135,
+                    150,145,138,142,148,155
+                ],
+
+                lineStyle: { width: 3 },
+
+                itemStyle: {
+                    color: "#6366f1"
+                },
+
+                areaStyle: {
+                    opacity: 0.2
+                }
+            }]
+        });
+
+        window.addEventListener("resize", () => {
+            rekapChart.resize();
+        });
+
+    }
+
+    // =========================
     // CHART KEHADIRAN PER KELAS
     // =========================
     const chartKelasDom = document.getElementById("chart-kehadiran-kelas");
