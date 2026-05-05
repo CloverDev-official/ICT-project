@@ -43,7 +43,15 @@
         'dataJurusan' => [
             'active' => 'mdi:academic-cap',
             'inactive' => 'mdi:academic-cap-outline'
-        ]
+        ],
+        'manajemenWaktu' => [
+            'active' => 'mdi:timer-cog',
+            'inactive' => 'mdi:timer-cog-outline'
+        ],
+        'manajemenQR' => [
+            'active' => 'mdi:qrcode-scan',
+            'inactive' => 'mdi:qrcode'
+        ],
     ];
 
     $iconName = $icons[$icon] ?? null;

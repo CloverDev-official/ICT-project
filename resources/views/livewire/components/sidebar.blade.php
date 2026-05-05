@@ -152,7 +152,7 @@
             </li>
             
             <!-- group manajemen -->
-            <li x-data="{ open: {{ request()->routeIs('manajemen-*') ? 'true' : 'false' }} }"> 
+            <li x-data="{ open: {{ request()->routeIs(['waktu', 'generate-QR']) ? 'true' : 'false' }} }"> 
                 <!-- button -->
                 <button
                     @click="open = !open"
@@ -165,6 +165,22 @@
 
                     <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
                 </button>
+
+                <!-- list -->
+                <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;">
+
+                    <li>
+                        <x-nav-link href="{{ route('waktu') }}" icon="manajemenWaktu">
+                            waktu
+                        </x-nav-link>
+                    </li>
+
+                    <li>
+                        <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
+                            generate QR
+                        </x-nav-link>
+                    </li>
+                </ul>
             </li>
             <!-- group pengaturan -->
             <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
