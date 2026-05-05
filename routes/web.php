@@ -26,6 +26,7 @@ use App\Livewire\EditGuru;
 use App\Livewire\EditJurusan;
 use App\Livewire\EditKelas;
 use App\Livewire\Manajemen\Waktu;
+use App\Livewire\Manajemen\GenerateQR;
 use App\Livewire\TambahKelas;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
@@ -80,8 +81,12 @@ Route::prefix('admin')->group(function () {
         route::get('/edit', EditJurusan::class)->name('edit-jurusan');
     });
 
-    route::prefix('/manajemen-waktu')->group( function () {
-        route::get('/', Waktu::class)->name('waktu');
+    // manajemen group
+    route::prefix('/manajemen')->group( function () {
+
+        route::get('/waktu', Waktu::class)->name('waktu');
+        route::get('/generate-qr', GenerateQR::class)->name('generate-QR');
     });
+
 
 });
