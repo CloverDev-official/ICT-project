@@ -490,6 +490,7 @@
 
                 <thead class="bg-blue-main text-white">
                     <tr>
+                        <th class="border-gray-400 px-6 py-3">No</th>
                         <th class="border-gray-400 px-6 py-3">Nama</th>
                         <th class="border-gray-400 px-6 py-3">Kelas</th>
                         <th class="border-gray-400 px-6 py-3">Status</th>
@@ -497,7 +498,7 @@
                 </thead>
 
                 <tbody>
-                    @forelse ($listAbsen as $item)
+                    @forelse ($listAbsen as $index => $item )
                         @php
                             $statusValue = strtolower((string) $item->status);
                             $statusClass = match ($statusValue) {
@@ -509,6 +510,7 @@
                         @endphp
                         <tr
                             class="text-center {{ $loop->iteration % 2 == 0 ? 'bg-gray-50' : 'bg-white' }} hover:bg-gray-100">
+                            <td class="border-r border-gray-200 px-6 py-4">{{ $index+1 }}</td>
                             <td class="border-r border-gray-200 px-6 py-4">{{ $item->murid->nama }}</td>
                             <td class="border-r border-gray-200 px-6 py-4">
                                 {{ $item->murid->rombel->nama_lengkap ?? '-' }}</td>
