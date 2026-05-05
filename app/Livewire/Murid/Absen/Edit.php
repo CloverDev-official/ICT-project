@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Murid;
+namespace App\Livewire\Murid\Absen;
 
 use App\Helpers\ValidateMagic;
 use App\Models\Murid\Murid;
