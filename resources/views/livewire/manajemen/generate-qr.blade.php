@@ -175,7 +175,7 @@
 
         </div>
         <div class="p-4 flex justify-end" >
-            <button class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover: ">
+            <button class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
                 <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
                 Download QR CODE
             </button>
@@ -195,7 +195,7 @@
 
         </div>
         <div class="p-4 flex justify-end" >
-            <button class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover: ">
+            <button class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
                 <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
                 Download QR CODE
             </button>
