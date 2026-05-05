@@ -63,7 +63,124 @@
         </div>
 
     </div>
-    <div class="grid grid-cols-1 gap-8">
+    <div class="bg-white rounded-2xl shadow-sm p-4 grid grid-cols-2 md:grid-cols-3 gap-5">
+        <!-- TANGGAL -->
+        <div class="relative w-full">
+            <input type="date" wire:model.live="filterTanggal"
+                class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
+                hover:border-blue-500
+                focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
+                transition" />
+        </div>
+        
+        <!-- jurusan -->
+        <div x-data="{
+            open: false,
+            selectedId: null,
+            selectedLabel: 'Semua jurusan',
+        
+            select(id, label) {
+                this.selectedId = id
+                this.selectedLabel = label
+                this.open = false
+                $wire.set('filterJurusan', id)
+            },
+        
+            toggle() {
+                this.open = !this.open
+            }
+        }" class="relative w-full">
+            <!-- trigger -->
+            <div @click="toggle()"
+                class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
+
+                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="20" height="20">
+                </iconify-icon>
+            </div>
+
+            <!-- dropdown -->
+            <div x-show="open" @click.outside="open = false" x-transition
+                class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <!-- semua -->
+                <div @click.prevent="select(null, 'Semua jurusan')"
+                    class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition ">
+                    <span>Semua jurusan</span>
+                    <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
+                        height="20">
+                    </iconify-icon>
+                </div>
+
+                <!-- list -->
+                @foreach ($filteredJurusan as $jurusan)
+                    <div @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
+                        <span>{{ $jurusan->nama }}</span>
+
+                        <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check"
+                            width="20" height="20">
+                        </iconify-icon>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- kelas -->
+        <div x-data="{
+            open: false,
+            selectedId: null,
+            selectedLabel: 'Semua kelas',
+        
+            select(id, label) {
+                this.selectedId = id
+                this.selectedLabel = label
+                this.open = false
+                $wire.set('filterIndeks', id)
+            },
+        
+            toggle() {
+                this.open = !this.open
+            }
+        }" class="relative w-full">
+            <!-- trigger -->
+            <div @click="toggle()"
+                class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
+
+                <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                    icon="lineicons:chevron-up" width="20" height="20">
+                </iconify-icon>
+            </div>
+
+            <!-- dropdown -->
+            <div x-show="open" @click.outside="open = false" x-transition
+                class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <!-- semua -->
+                <div @click.prevent="select(null, 'Semua kelas')"
+                    class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition ">
+                    <span>Semua kelas</span>
+                    <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
+                        height="20">
+                    </iconify-icon>
+                </div>
+
+                <!-- list -->
+                @foreach ($filteredIndeks as $kelas)
+                    <div @click.prevent="select({{ (int) $kelas->id }}, @js($kelas->nama))"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
+                        <span>{{ $kelas->nama }}</span>
+
+                        <iconify-icon x-show="selectedId == {{ (int) $kelas->id }}" icon="lineicons:check"
+                            width="20" height="20">
+                        </iconify-icon>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    <!-- chart kehadiran -->
+    <div class="grid grid-cols-1 gap-8 mt-8">
 
         <!-- ================= CHART ================= -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" wire:ignore>
@@ -227,16 +344,7 @@
         </div>
         <!-- category -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-            <!-- TANGGAL -->
-            <div class="relative w-full">
-                <label class="block text-sm text-gray-600 font-semibold">Tanggal</label>
-                <input type="date" wire:model.live="filterTanggal"
-                    class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
-                    hover:border-blue-500
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
-                    transition" />
-            </div>
-
+        
             <!-- STATUS -->
             <div x-data="{
                 open: false,
@@ -290,162 +398,6 @@
                 </div>
             </div>
 
-            <!-- tingkat -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: 'Semua tingkat',
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-                    $wire.set('filterTingkat', id)
-                },
-            
-                toggle() {
-                    this.open = !this.open
-                }
-            }" class="relative w-full">
-                <!-- trigger -->
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="20" height="20">
-                    </iconify-icon>
-                </div>
-
-                <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                    <!-- semua -->
-                    <div @click.prevent="select(null, 'Semua tingkat')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                        <span>Semua tingkat</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
-                            height="20">
-                        </iconify-icon>
-                    </div>
-
-                    <!-- list -->
-                    @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
-                        <div @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>{{ $tingkat->nama }}</span>
-
-                            <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check"
-                                width="20" height="20">
-                            </iconify-icon>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-            <!-- jurusan -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: 'Semua jurusan',
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-                    $wire.set('filterJurusan', id)
-                },
-            
-                toggle() {
-                    this.open = !this.open
-                }
-            }" class="relative w-full">
-                <!-- trigger -->
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="20" height="20">
-                    </iconify-icon>
-                </div>
-
-                <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                    <!-- semua -->
-                    <div @click.prevent="select(null, 'Semua jurusan')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition ">
-                        <span>Semua jurusan</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
-                            height="20">
-                        </iconify-icon>
-                    </div>
-
-                    <!-- list -->
-                    @foreach ($filteredJurusan as $jurusan)
-                        <div @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>{{ $jurusan->nama }}</span>
-
-                            <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check"
-                                width="20" height="20">
-                            </iconify-icon>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-            <!-- kelas -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: 'Semua kelas',
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-                    $wire.set('filterIndeks', id)
-                },
-            
-                toggle() {
-                    this.open = !this.open
-                }
-            }" class="relative w-full">
-                <!-- trigger -->
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="20" height="20">
-                    </iconify-icon>
-                </div>
-
-                <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-                    <!-- semua -->
-                    <div @click.prevent="select(null, 'Semua kelas')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition ">
-                        <span>Semua kelas</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
-                            height="20">
-                        </iconify-icon>
-                    </div>
-
-                    <!-- list -->
-                    @foreach ($filteredIndeks as $kelas)
-                        <div @click.prevent="select({{ (int) $kelas->id }}, @js($kelas->nama))"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>{{ $kelas->nama }}</span>
-
-                            <iconify-icon x-show="selectedId == {{ (int) $kelas->id }}" icon="lineicons:check"
-                                width="20" height="20">
-                            </iconify-icon>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
             <!-- input search -->
             <div class="col-span-2 md:col-span-2 md:col-start-3 relative w-full">
                 <input type="search" name="search" wire:model.live.debounce.500ms="search"
@@ -454,13 +406,15 @@
                     hover:border-blue-500
                     focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
                     transition" />
-
+    
                 <div class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
                     <iconify-icon icon="mdi:account-search-outline" width="20" height="20"></iconify-icon>
                 </div>
             </div>
+
         </div>
-        <div class="overflow-x-auto m-4 rounded-lg shadow-sm">
+        
+        <div class="overflow-x-auto m-4 rounded-lg ">
 
             <table class="w-full text-sm ">
 
@@ -501,7 +455,9 @@
 
             </table>
         </div>
-        {{ $listAbsen->links('livewire.components.pagination') }}
+        <div class="p-4 pt-0" >
+            {{ $listAbsen->links('livewire.components.pagination') }}
+        </div>
     </div>
 </div>
 
