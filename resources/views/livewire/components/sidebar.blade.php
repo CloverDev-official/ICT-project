@@ -151,8 +151,8 @@
 
             </li>
             
-            <!-- group manajemen -->
-            <li x-data="{ open: {{ request()->routeIs(['waktu', 'generate-QR']) ? 'true' : 'false' }} }"> 
+            <!-- GROUP MANAJEMEN -->
+            <li x-data="{ open: {{ request()->routeIs(['waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
                 <!-- button -->
                 <button
                     @click="open = !open"
@@ -178,6 +178,12 @@
                     <li>
                         <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
                             generate QR
+                        </x-nav-link>
+                    </li>
+
+                    <li>
+                        <x-nav-link href="{{ route('manajemen-user') }}" icon="manajemenUser">
+                            User
                         </x-nav-link>
                     </li>
                 </ul>

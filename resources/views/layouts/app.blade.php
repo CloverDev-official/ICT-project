@@ -33,7 +33,6 @@
             </div>
         </main>
         @livewireScripts
-        <script>
             AOS.init();
         </script>
 

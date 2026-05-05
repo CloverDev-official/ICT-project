@@ -52,6 +52,11 @@
             'active' => 'mdi:qrcode-scan',
             'inactive' => 'mdi:qrcode'
         ],
+        'manajemenUser' => [
+            'active' => 'mdi:account-cog',
+            'inactive' => 'mdi:account-cog-outline'
+        ],
+
     ];
 
     $iconName = $icons[$icon] ?? null;

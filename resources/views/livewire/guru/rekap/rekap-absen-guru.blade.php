@@ -424,7 +424,8 @@
             <table class="w-full text-sm">
 
                 <thead class="bg-blue-main text-white">
-                    <tr  >
+                    <tr>
+                        <th class="border-gray-400 px-6 py-3">No</th>
                         <th class="border-gray-400 px-6 py-3">Nama</th>
                         <th class="border-gray-400 px-6 py-3">Jenis PTK</th>
                         <th class="border-gray-400 px-6 py-3">Status</th>
@@ -434,12 +435,14 @@
                 <tbody>
 
                     <tr class="text-center hover:bg-gray-100" >
+                        <td class="border-r border-gray-200 px-6 py-4">1</td>
                         <td class="border-r border-gray-200 px-6 py-4">Budi</td>
                         <td class="border-r border-gray-200 px-6 py-4">Mapel</td>
                         <td class="px-6 py-4 text-blue-500 font-semibold">Sakit</td>
                     </tr>
 
                     <tr class="text-center bg-gray-50 hover:bg-gray-100" >
+                        <td class="border-r border-gray-200 px-6 py-4">2</td>
                         <td class="border-r border-gray-200 px-6 py-4">Andi</td>
                         <td class="border-r border-gray-200 px-6 py-4">BK</td>
                         <td class="px-6 py-4 text-amber-500 font-semibold">Izin</td>
@@ -447,6 +450,7 @@
 
                     <tr class="text-center hover:bg-gray-100" >
 
+                        <td class="border-r border-gray-200 px-6 py-4">3</td>
                         <td class="border-r border-gray-200 px-6 py-4">Anda</td>
                         <td class="border-r border-gray-200 px-6 py-4">Mapel</td>
                         <td class="px-6 py-4 text-rose-500 font-semibold">Alfa</td>

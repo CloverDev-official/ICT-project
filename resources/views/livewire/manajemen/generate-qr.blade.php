@@ -158,12 +158,32 @@
             </div>
 
         </div>
-        <div class="p-4 flex justify-end">
-            <button
-                class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
-                <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
-                Download QR CODE
-            </button>
+
+        <div class="grid grid-cols-3 pt-4">
+            <!-- PROGRESS -->
+            <div class="col-span-2 md:col-span-2 mt-4">
+                <!-- info -->
+                <div class="flex justify-between text-sm mb-1">
+                    <span id="progressTextMurid" class="text-gray-600">1/1600</span>
+                    <span id="progressPercentMurid" class="text-gray-600">0%</span>
+                </div>
+    
+                <!-- bar -->
+                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div id="progressBarMurid"
+                        class="bg-blue-main h-3 rounded-full transition-all duration-300"
+                        style="width: 0%">
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 flex justify-end">
+                <button
+                    onclick="startGenerateMurid()"
+                    class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
+                    <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
+                    Download QR CODE
+                </button>
+            </div>
         </div>
     </div>
 
@@ -175,16 +195,35 @@
                 Generate semua QR CODE guru.
             </p>
         </div>
-        <!-- kategori -->
-        <div class="mt-5 border-t border-gray-200 p-4  grid grid-cols-2 md:grid-cols-3 gap-5">
 
-        </div>
-        <div class="p-4 flex justify-end">
-            <button
-                class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
-                <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
-                Download QR CODE
-            </button>
+        <div class="grid grid-cols-3 pt-4 mt-5 border-t border-gray-200">
+            <!-- PROGRESS -->
+            <div class="col-span-2 md:col-span-2 mt-4">
+                <!-- info -->
+                <div class="flex justify-between text-sm mb-1">
+                    <span id="progressTextGuru" class="text-gray-600">1/150</span>
+                    <span id="progressPercentGuru" class="text-gray-600">0%</span>
+                </div>
+    
+                <!-- bar -->
+                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div id="progressBarGuru"
+                        class="bg-blue-main h-3 rounded-full transition-all duration-300"
+                        style="width: 0%">
+                    </div>
+                </div>
+            </div>
+    
+    
+    
+            <div class="p-4 flex justify-end">
+                <button
+                    onclick="startGenerateGuru()"
+                    class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
+                    <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
+                    Download QR CODE
+                </button>
+            </div>
         </div>
     </div>
 </div>
