@@ -183,7 +183,7 @@
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->murid->nipd }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->murid->nama }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">
-                                <p class="px-6 py-1 rounded-full font-semibold capitalize {{ $statusClass }}" >
+                                <p class="text-xs px-6 py-1 rounded-full font-semibold capitalize {{ $statusClass }}" >
                                     {{ $item->status }}
                                 </p>
                             </td>
