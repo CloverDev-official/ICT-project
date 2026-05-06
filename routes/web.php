@@ -27,7 +27,10 @@ use App\Livewire\EditJurusan;
 use App\Livewire\EditKelas;
 use App\Livewire\Manajemen\Waktu;
 use App\Livewire\Manajemen\GenerateQR;
-use App\Livewire\Manajemen\ManajemenUser;
+use App\Livewire\Manajemen\User\EditUser;
+use App\Livewire\Manajemen\User\ManajemenUser;
+use App\Livewire\Manajemen\User\TambahUser;
+use App\Livewire\PilihAbsen;
 use App\Livewire\TambahKelas;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
@@ -42,6 +45,8 @@ Route::prefix('admin')->group(function () {
 
     // dashboard
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    // pilih absen
+    Route::get('/pilih-absen', PilihAbsen::class)->name('pilih-absen');
     
     // laporan
     route::prefix('/rekap')->group(function () {
@@ -86,7 +91,13 @@ Route::prefix('admin')->group(function () {
     route::prefix('/manajemen')->group( function () {
         route::get('/waktu', Waktu::class)->name('waktu');
         route::get('/generate-qr', GenerateQR::class)->name('generate-QR');
-        route::get('/manajemen-user', ManajemenUser::class)->name('manajemen-user');
+        // manajemen user group
+        route::prefix('/manajemen-user')->group( function () {
+            route::get('/', ManajemenUser::class)->name('manajemen-user');
+            route::get('/create', TambahUser::class)->name('tambah-user');
+            route::get('/edit', EditUser::class)->name('edit-user');
+            
+        });
     });
 
 

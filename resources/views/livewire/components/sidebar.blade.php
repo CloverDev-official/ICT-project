@@ -20,6 +20,12 @@
                 </x-nav-link>
             </li>
 
+            <li>
+                <x-nav-link href="{{ route('pilih-absen') }}" icon="pilihAbsen">
+                    Pilih Absen
+                </x-nav-link>
+            </li>
+
             <!-- group laporan -->
             <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
                 <!-- button -->
@@ -248,6 +254,12 @@
                         </x-nav-link>
                     </li>
 
+                    <li>
+                        <x-nav-link href="{{ route('pilih-absen') }}" icon="pilihAbsen">
+                            Pilih Absen
+                        </x-nav-link>
+                    </li>
+
                     <!-- group laporan -->
                     <li x-data="{open: {{ request()->routeIs('laporan-*') ? 'true' : 'false' }}}" >
                         <!-- button -->
@@ -263,17 +275,40 @@
                             <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
                         </button>
 
-                        <!-- LIST -->
+                        <!-- sub group rekap absen -->
                         <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;" >
-                            <li>
-                                <x-nav-link href="{{ route('rekap-absen-murid') }}" icon="rekapMurid">
-                                    rekap murid
-                                </x-nav-link>
-                            </li>
-                            <li>
-                                <x-nav-link href="{{ route('rekap-absen-guru') }}" icon="rekapGuru">
-                                    rekap  guru
-                                </x-nav-link>
+                            
+                            <!-- rekap absen -->
+                            <li x-data="{open: {{ request()->routeIs('rekap-absen-*') ? 'true' : 'false' }}}" >
+                                <!-- button -->
+                                <button 
+                                    @click="open = !open"
+                                    class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                                >
+                                    <span class="flex gap-2 items-center capitalize">
+                                        <iconify-icon :icon="open ? 'mdi:folder-check' : 'mdi:folder-check-outline'" width="24" height="24"></iconify-icon>
+                                        rekap absen
+                                    </span>
+
+                                    <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                                </button>
+
+                                <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;" >
+                                        
+                                    
+                                    <li>
+                                        <x-nav-link href="{{ route('rekap-absen-murid') }}" icon="rekapAbsenMurid">
+                                            absen murid
+                                        </x-nav-link>
+                                    </li>
+
+                                    <li>
+                                        <x-nav-link href="{{ route('rekap-absen-guru') }}" icon="rekapAbsenGuru">
+                                            absen guru 
+                                            
+                                        </x-nav-link>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </li>
@@ -319,7 +354,7 @@
                         class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"    
                         >
                             <span class="flex gap-2 items-center capitalize">
-                                <iconify-icon :icon="open ? 'lineicons:folder' : '' " width="20" height="20"></iconify-icon> 
+                                <iconify-icon :icon="open ? 'lineicons:folder' : 'mdi:folder-account-outline' " width="20" height="20"></iconify-icon> 
                                 Data Master
                             </span>
 
@@ -351,6 +386,43 @@
                         </ul>
                     </li>
 
+                    <!-- GROUP MANAJEMEN -->
+                    <li x-data="{ open: {{ request()->routeIs(['waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
+                        <!-- button -->
+                        <button
+                            @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                        >
+                            <span class="flex gap-2 items-center capitalize">
+                                <iconify-icon :icon="open ? 'mdi:folder-cog' : 'mdi:folder-cog-outline'" width="24" height="24"></iconify-icon>
+                                manajemen
+                            </span>
+
+                            <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                        </button>
+
+                        <!-- list -->
+                        <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;">
+
+                            <li>
+                                <x-nav-link href="{{ route('waktu') }}" icon="manajemenWaktu">
+                                    waktu
+                                </x-nav-link>
+                            </li>
+
+                            <li>
+                                <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
+                                    generate QR
+                                </x-nav-link>
+                            </li>
+
+                            <li>
+                                <x-nav-link href="{{ route('manajemen-user') }}" icon="manajemenUser">
+                                    User
+                                </x-nav-link>
+                            </li>
+                        </ul>
+                    </li>
                     <!-- group pengaturan -->
                     <li x-data="{open: {{ request()->routeIs('rekap-*') ? 'true' : 'false' }}}" >
                         <!-- button -->

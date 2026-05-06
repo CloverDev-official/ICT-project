@@ -12,6 +12,10 @@
             'active' => 'mdi:view-dashboard',
             'inactive' => 'mdi:view-dashboard-outline'
         ],
+        'pilihAbsen' => [
+            'active' => 'mdi:qrcode-scan',
+            'inactive' => 'mdi:qrcode'
+        ],
         'rekapAbsenMurid' => [
             'active' => 'mdi:account-file-text',
             'inactive' => 'mdi:account-file-text-outline'
