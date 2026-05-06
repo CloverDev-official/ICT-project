@@ -502,10 +502,10 @@
                         @php
                             $statusValue = strtolower((string) $item->status);
                             $statusClass = match ($statusValue) {
-                                'sakit' => 'text-amber-500',
-                                'izin' => 'text-blue-500',
-                                'alpa' => 'text-rose-500',
-                                default => 'text-gray-600',
+                                'sakit' => 'text-amber-500 bg-amber-100',
+                                'izin' => 'text-blue-500 bg-blue-100',
+                                'alpa' => 'text-rose-500 bg-rose-100',
+                                default => 'text-green-500 bg-green-100',
                             };
                         @endphp
                         <tr
@@ -514,11 +514,15 @@
                             <td class="border-r border-gray-200 px-6 py-4">{{ $item->murid->nama }}</td>
                             <td class="border-r border-gray-200 px-6 py-4">
                                 {{ $item->murid->rombel->nama_lengkap ?? '-' }}</td>
-                            <td class="px-6 py-4 font-semibold {{ $statusClass }}">{{ $item->status }}</td>
+                            <td class="px-6 py-4 font-semibold">
+                                <p class="px-6 py-1 rounded-full font-semibold capitalize {{ $statusClass }}" >
+                                    {{ $item->status }}
+                                </p>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-6 py-6 text-center text-gray-400">
+                            <td colspan="4" class="px-6 py-6 text-center text-gray-400">
                                 Data tidak ditemukan.
                             </td>
                         </tr>

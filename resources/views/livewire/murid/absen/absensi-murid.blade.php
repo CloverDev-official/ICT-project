@@ -168,18 +168,37 @@
                 </thead>
 
                 <tbody>
-                    @foreach ($listAbsen as $item)
+                    @forelse ($listAbsen as $item)
+                        @php
+                            $statusValue = strtolower((string) $item->status);
+                            $statusClass = match ($statusValue) {
+                                'sakit' => 'text-amber-500 bg-amber-100',
+                                'izin' => 'text-blue-500 bg-blue-100',
+                                'alpa' => 'text-rose-500 bg-rose-100',
+                                default => 'text-green-500 bg-green-100',
+                            };
+                        @endphp
                         <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200" > 
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->murid->nipd }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->murid->nama }}</td>
-                            <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->status }}</td>
+                            <td class="border-r text-center border-gray-200 px-4 py-3">
+                                <p class="px-6 py-1 rounded-full font-semibold capitalize {{ $statusClass }}" >
+                                    {{ $item->status }}
+                                </p>
+                            </td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->tanggal->format('d-m-Y')}}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->waktu_masuk }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->waktu_keluar }}</td>
                             <td class="border-r text-center border-gray-200 px-4 py-3">{{ $item->keterangan }}</td>
-                        </tr>                   
-                    @endforeach
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-6 text-center text-gray-400">
+                                Data tidak ditemukan.
+                            </td>
+                        </tr>                    
+                    @endforelse
                 </tbody>
             </table>
         </div>
