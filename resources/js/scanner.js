@@ -7,7 +7,7 @@ import jsQR from "jsqr";
 // =========================
 
 let animationFrame = null;
-let stream         = null;
+let stream         = null; // ← di-reuse, TIDAK di-stop saat destroy
 let videoEl        = null;
 let overlayCanvas  = null;
 let overlayCtx     = null;
@@ -16,6 +16,7 @@ let scanCtx        = null;
 let resizeObserver = null;
 let isRunning      = false;
 let lastScanTime   = 0;
+let isDestroying   = false; // ← guard double-call
 
 const SCAN_WIDTH  = 640;
 const SCAN_HEIGHT = 480;
@@ -26,10 +27,10 @@ let   scanInterval    = INTERVAL_IDLE;
 
 // =========================
 // INTERNAL CLEANUP
+// Tidak stop stream — reuse untuk reinit cepat
 // =========================
 
 function cleanup() {
-
     isRunning = false;
 
     if (animationFrame !== null) {
@@ -41,11 +42,6 @@ function cleanup() {
         videoEl.pause();
         videoEl.srcObject = null;
         videoEl = null;
-    }
-
-    if (stream !== null) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
     }
 
     if (resizeObserver !== null) {
@@ -62,24 +58,30 @@ function cleanup() {
 }
 
 // =========================
-// DESTROY (dipanggil blade)
-// Hanya cleanup + kosongkan DOM
+// DESTROY
 // =========================
 
 window.destroyScanner = () => {
+    // Guard: cegah double-call
+    if (isDestroying) return;
+    isDestroying = true;
+
     cleanup();
 
     const reader = document.getElementById("reader");
     if (reader) reader.innerHTML = "";
+
+    isDestroying = false;
 };
 
 // =========================
-// INIT (dipanggil blade)
-// TIDAK memanggil destroyScanner —
-// blade sudah atur urutannya sendiri
+// INIT
 // =========================
 
 window.initScanner = async () => {
+
+    // Guard: jangan init kalau masih running
+    if (isRunning) return;
 
     const reader = document.getElementById("reader");
     if (!reader) return;
@@ -166,18 +168,29 @@ window.initScanner = async () => {
     resizeObserver.observe(reader);
 
     // =========================
-    // CAMERA
+    // CAMERA — reuse stream kalau masih aktif
+    // Ini yang bikin reinit cepat di webcam murah
     // =========================
 
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "environment",
-                width     : { ideal: SCAN_WIDTH },
-                height    : { ideal: SCAN_HEIGHT }
-            },
-            audio: false
-        });
+        const streamOk = stream !== null
+            && stream.active
+            && stream.getTracks().every(t => t.readyState === "live");
+
+        if (!streamOk) {
+            // Stream belum ada atau sudah mati — minta baru
+            if (stream !== null) {
+                stream.getTracks().forEach(t => t.stop());
+            }
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "environment",
+                    width     : { ideal: SCAN_WIDTH },
+                    height    : { ideal: SCAN_HEIGHT }
+                },
+                audio: false
+            });
+        }
     } catch (err) {
         console.error("[scanner] Gagal akses kamera:", err);
         return;
