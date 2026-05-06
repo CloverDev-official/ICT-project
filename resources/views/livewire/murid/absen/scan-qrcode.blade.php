@@ -155,7 +155,11 @@
 
                 // optional: aktifkan scan lagi
                 window.scanned = false;
-            }, 2000);
+            }, 1500);
+        });
+
+        document.addEventListener('scanNotFound', () => {
+            window.scanned = false;
         });
     </script>
 @endscript
