@@ -20,6 +20,8 @@ return new class extends Migration
             $table->time('waktu_masuk')->nullable();
             $table->time('waktu_keluar')->nullable();
             $table->timestamps();
+
+            $table->index(['murid_id', 'tanggal']);
         });
 
         Schema::create('absen_guru', function (Blueprint $table) {
