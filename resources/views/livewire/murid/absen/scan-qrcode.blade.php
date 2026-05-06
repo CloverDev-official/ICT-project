@@ -148,13 +148,13 @@
     <script>
         window.initScanner()
         document.addEventListener('scanSuccess', () => {
+            window.destroyScanner();
+
             setTimeout(() => {
-                // reset state Livewire
                 $wire.set('tersimpan', false);
                 $wire.set('murid', null);
-
-                // optional: aktifkan scan lagi
                 window.scanned = false;
+                window.initScanner();
             }, 1500);
         });
 
