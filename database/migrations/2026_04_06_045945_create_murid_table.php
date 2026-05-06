@@ -47,7 +47,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->index(['nama', 'rombel_id']);
+            $table->index(['ulid','nama', 'rombel_id']);
         });
     }
 

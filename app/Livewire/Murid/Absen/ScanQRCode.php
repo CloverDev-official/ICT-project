@@ -5,6 +5,7 @@ namespace App\Livewire\Murid\Absen;
 use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\Murid;
 use App\Models\Setting;
+use Fruitcake\LaravelDebugbar\Facades\Debugbar;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -28,7 +29,7 @@ class ScanQRCode extends Component
         $murid = Murid::where('ulid', $muridUlid)->first();
 
         if (!$murid) {
-            logger("ULID tidak ditemukan: " . $muridUlid);
+            $this->dispatch('scanNotFound'); // ← tambah ini
             return;
         }
 
@@ -39,8 +40,10 @@ class ScanQRCode extends Component
         $waktuMasuk  = $settings['waktu_masuk'] ?? null;
         $waktuKeluar = $settings['waktu_keluar'] ?? null;
 
-        $today = now()->toDateString();
-        $now = now()->toTimeString();
+        $now = now();
+
+        $today = $now->toDateString();
+        $currentTime = $now->toTimeString();
 
         $absen = AbsenMurid::select('id', 'waktu_keluar')
             ->where('murid_id', $murid->id)
@@ -49,19 +52,18 @@ class ScanQRCode extends Component
 
 
         if (!$absen) {
-            $status = $now < $waktuMasuk ? 'Hadir' : 'Alpa';
+            $status = $currentTime < $waktuMasuk ? 'Hadir' : 'Alpa';
 
             AbsenMurid::create([
                 'murid_id' => $murid->id,
                 'tanggal' => $today,
-                'waktu_masuk' => $now,
+                'waktu_masuk' => $currentTime,
                 'status' => $status,
             ]);
         }
-        else if ($now > $waktuKeluar && !$absen->waktu_keluar) {
-            AbsenMurid::where('id', $absen->id)
-            ->update([
-                'waktu_keluar' => $now,
+        else if ($currentTime > $waktuKeluar && !$absen->waktu_keluar) {
+            $absen->update([
+                'waktu_keluar' => $currentTime,
             ]);
         }
 
