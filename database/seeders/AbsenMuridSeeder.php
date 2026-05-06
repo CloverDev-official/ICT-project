@@ -9,79 +9,98 @@ class AbsenMuridSeeder extends Seeder
 {
     public function run(): void
     {
-        // Optimasi SQLite (skip kalau MySQL)
-        DB::statement('PRAGMA synchronous = OFF');
-        DB::statement('PRAGMA cache_size = -64000');
-        DB::statement('PRAGMA temp_store = MEMORY');
-        DB::statement('PRAGMA mmap_size = 268435456');
-
         DB::disableQueryLog();
 
-        $muridIds = DB::table('murid')->pluck('id')->toArray();
-        $muridCount = count($muridIds);
-
-        if ($muridCount === 0) {
-            throw new \RuntimeException('Tabel murid kosong! Jalankan MuridSeeder dulu.');
-        }
-
         $statuses = ['Hadir', 'Sakit', 'Izin', 'Alpa'];
+        $totalHari = 7;
+        $insertChunk = 100;
+        $now = now()->toDateTimeString();
 
-        $totalHari = 7; // jumlah hari absen
-        $chunk     = 2000;
-        $batch     = [];
-        $now       = now()->toDateTimeString();
+        // hitung total murid
+        $totalMurid = DB::table('murid')->count();
+        $totalData = $totalMurid * $totalHari;
 
-        DB::beginTransaction();
+        $processed = 0;
 
-        try {
-            foreach ($muridIds as $mIndex => $muridId) {
+        echo "Total data: {$totalData}\n";
 
-                for ($d = 0; $d < $totalHari; $d++) {
+        DB::table('murid')
+            ->orderBy('id')
+            ->chunkById(500, function ($murids) use (
+                $statuses,
+                $totalHari,
+                $insertChunk,
+                $now,
+                $totalData,
+                &$processed,
+            ) {
+                $batch = [];
 
-                    $tanggal = date('Y-m-d', strtotime("-$d days"));
-                    $status  = $statuses[($mIndex + $d) % 4];
+                foreach ($murids as $mIndex => $murid) {
+                    for ($d = 0; $d < $totalHari; $d++) {
+                        $tanggal = date('Y-m-d', strtotime("-$d days"));
+                        $status = $statuses[($mIndex + $d) % 4];
 
-                    $waktuMasuk  = null;
-                    $waktuKeluar = null;
-                    $keterangan  = null;
+                        $waktuMasuk = null;
+                        $waktuKeluar = null;
+                        $keterangan = null;
 
-                    if ($status === 'Hadir') {
-                        $waktuMasuk  = sprintf('%02d:%02d:%02d', rand(7,8), rand(0,59), rand(0,59));
-                        $waktuKeluar = sprintf('%02d:%02d:%02d', rand(14,16), rand(0,59), rand(0,59));
-                    } else {
-                        $keterangan = $status;
-                    }
+                        if ($status === 'Hadir') {
+                            $waktuMasuk = sprintf(
+                                '%02d:%02d:%02d',
+                                rand(7, 8),
+                                rand(0, 59),
+                                rand(0, 59),
+                            );
+                            $waktuKeluar = sprintf(
+                                '%02d:%02d:%02d',
+                                rand(14, 16),
+                                rand(0, 59),
+                                rand(0, 59),
+                            );
+                        } else {
+                            $keterangan = $status;
+                        }
 
-                    $batch[] = [
-                        'murid_id'     => $muridId,
-                        'status'       => $status,
-                        'waktu_masuk'  => $waktuMasuk,
-                        'waktu_keluar' => $waktuKeluar,
-                        'keterangan'   => $keterangan,
-                        'tanggal'      => $tanggal,
-                        'created_at'   => $now,
-                        'updated_at'   => $now,
-                    ];
+                        $batch[] = [
+                            'murid_id' => $murid->id,
+                            'status' => $status,
+                            'waktu_masuk' => $waktuMasuk,
+                            'waktu_keluar' => $waktuKeluar,
+                            'keterangan' => $keterangan,
+                            'tanggal' => $tanggal,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
 
-                    if (count($batch) === $chunk) {
-                        DB::table('absen_murid')->insert($batch);
-                        $batch = [];
-                        echo "Inserted batch...\n";
+                        $processed++;
+
+                        // insert per chunk
+                        if (count($batch) >= $insertChunk) {
+                            DB::table('absen_murid')->insert($batch);
+                            $batch = [];
+
+                            // tampilkan progress
+                            $percent = number_format(
+                                ($processed / $totalData) * 100,
+                                2,
+                            );
+                            echo "Progress: {$processed}/{$totalData} ({$percent}%)\r";
+                        }
                     }
                 }
-            }
 
-            if (!empty($batch)) {
-                DB::table('absen_murid')->insert($batch);
-            }
+                if (!empty($batch)) {
+                    DB::table('absen_murid')->insert($batch);
 
-            DB::commit();
+                    $percent = number_format(
+                        ($processed / $totalData) * 100,
+                        2,
+                    );
+                    echo "Progress: {$processed}/{$totalData} ({$percent}%)\r";
+                }
+            });
 
-            echo "Selesai! Total data: " . ($muridCount * $totalHari) . "\n";
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        echo "\nSelesai! Total: {$processed}\n";
     }
 }
