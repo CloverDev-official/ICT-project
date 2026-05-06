@@ -1,0 +1,10 @@
+[
+  {
+    "type": "sqlite",
+    "path": "database/database.sqlite"
+  },
+  {
+    "type": "sqlite",
+    "path": "/home/neko/coding/laravel/ICT-project/database/database.sqlite"
+  }
+]
