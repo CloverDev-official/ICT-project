@@ -291,13 +291,13 @@
         <!-- Content -->
         <div class="p-6 space-y-6">
 
-            <!-- Tanggal -->
+            <!-- Bulan -->
             <div>
                 <label class="block text-sm font-medium text-gray-600 mb-2">
-                    Pilih Tanggal
+                    Pilih Bulan
                 </label>
 
-                <input type="date" wire:model.live="filterTanggal"
+                <input type="month" wire:model.live="exportBulan"
                     class="w-full px-4 py-2.5 border border-gray-300 rounded-xl 
                     focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
                     outline-none transition">
@@ -306,10 +306,13 @@
             <!-- Kelas -->
             <div x-data="{
                 open: false,
-                selected: '',
-                select(item) {
-                    this.selected = item
+                selectedId: null,
+                selectedLabel: 'Semua kelas',
+                select(id, label) {
+                    this.selectedId = id
+                    this.selectedLabel = label
                     this.open = false
+                    $wire.set('exportRombelId', id)
                 }
             }" class="relative">
 
@@ -321,7 +324,7 @@
                 <div @click="open = !open"
                     class="flex items-center justify-between px-4 py-2.5 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
 
-                    <span x-text="selected ? selected : 'Semua Kelas'" class="text-sm text-gray-700"></span>
+                    <span x-text="selectedLabel" class="text-sm text-gray-700"></span>
 
                     <iconify-icon icon="lineicons:chevron-down" width="18" class="text-gray-400 transition"
                         :class="{ 'rotate-180': open }">
@@ -333,13 +336,24 @@
                 <div x-show="open" x-transition @click.outside="open=false"
                     class="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto z-50">
 
-                    @foreach (['Semua Kelas', 'X PPLG A', 'X PPLG B', 'XI PPLG A', 'XI PPLG B', 'XII PPLG A', 'XII PPLG B'] as $kelas)
-                        <div @click="select('{{ $kelas }}')"
+                    <div @click="select(null, 'Semua kelas')"
+                        class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
+
+                        <span>Semua kelas</span>
+
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check"
+                            width="18">
+                        </iconify-icon>
+
+                    </div>
+
+                    @foreach ($listRombel as $rombel)
+                        <div @click="select({{ (int) $rombel->id }}, @js($rombel->nama_lengkap))"
                             class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
 
-                            <span>{{ $kelas }}</span>
+                            <span>{{ $rombel->nama_lengkap }}</span>
 
-                            <iconify-icon x-show="selected === '{{ $kelas }}'" icon="lineicons:check"
+                            <iconify-icon x-show="selectedId === {{ (int) $rombel->id }}" icon="lineicons:check"
                                 width="18">
                             </iconify-icon>
 
@@ -373,9 +387,13 @@
                     </button>
 
                     <button
-                        class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium transition">
+                        wire:click="exportExcel"
+                        wire:loading.attr="disabled"
+                        wire:target="exportExcel"
+                        class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed">
                         <iconify-icon icon="mdi:file-excel" width="18"></iconify-icon>
-                        Excel
+                        <span wire:loading.remove wire:target="exportExcel">Excel</span>
+                        <span wire:loading wire:target="exportExcel">Mengekspor...</span>
                     </button>
 
                 </div>
@@ -387,7 +405,7 @@
     </div>
 
     <!-- KEHADIRAN PER KELAS -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8" wire:ignore>
+    {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8" wire:ignore>
 
         <div class="px-6 py-4 border-b border-gray-100">
             <h2 class="text-xl font-semibold text-gray-800">
@@ -399,7 +417,7 @@
             <div id="chart-kehadiran-kelas" class="w-full h-96"></div>
         </div>
 
-    </div>
+    </div> --}}
 
     <!-- TABLE MURID TIDAK HADIR -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
@@ -537,3 +555,84 @@
     </div>
 </div>
 
+@script
+<script> 
+    // =========================
+    // LINE CHART REKAP MURID
+    // =========================
+    const rekapMuridDom = document.getElementById("chart-rekap-absen-murid");
+
+    if (rekapMuridDom) {
+        const chartData = @js($chartRekap);
+        const rekapChart = echarts.getInstanceByDom(rekapMuridDom) ?? echarts.init(rekapMuridDom);
+
+        rekapChart.setOption({
+            tooltip: { trigger: "axis" },
+
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {},
+                },
+            },
+
+            grid: {
+                left: 40,
+                right: 20,
+                bottom: 40,
+                top: 60,
+            },
+
+            xAxis: {
+                type: "category",
+                boundaryGap: false,
+                data: [
+                    "Januari",
+                    "Februari",
+                    "Maret",
+                    "April",
+                    "Mei",
+                    "Juni",
+                    "Juli",
+                    "Agustus",
+                    "September",
+                    "Oktober",
+                    "November",
+                    "Desember",
+                ],
+            },
+
+            yAxis: {
+                type: "value",
+                name: "Jumlah Murid",
+            },
+
+            series: [
+                {
+                    name: `Jumlah Hadir ${chartData.year}`,
+                    type: "line",
+                    smooth: true,
+                    data: chartData.data,
+
+                    lineStyle: { width: 3 },
+
+                    itemStyle: {
+                        color: "#6366f1",
+                    },
+
+                    areaStyle: {
+                        opacity: 0.2,
+                    },
+                },
+            ],
+        });
+
+        if (!rekapMuridDom.dataset.resizeBound) {
+            rekapMuridDom.dataset.resizeBound = "1";
+            window.addEventListener("resize", () => {
+                rekapChart.resize();
+            });
+        }
+    }
+</script>
+@endscript

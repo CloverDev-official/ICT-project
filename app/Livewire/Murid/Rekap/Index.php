@@ -7,9 +7,11 @@ use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
-use App\Models\Murid\Rombel\Tingkat;
+use App\Exports\Murid\RekapKehadiranExport;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Index extends Component
 {
@@ -29,10 +31,13 @@ class Index extends Component
     public ?int $filterIndeks = null;
     public ?string $filterStatus = null;
     public ?string $filterTanggal = null;
+    public ?string $exportBulan = null;
+    public ?int $exportRombelId = null;
 
     public function mount(): void
     {
         $this->filterTanggal = now()->toDateString();
+        $this->exportBulan = now()->format('Y-m');
         $this->listRombel = $this->getRombel();
         $this->refreshFilterOptions();
     }
@@ -106,21 +111,63 @@ class Index extends Component
         return $this->filterTanggal ?: now()->toDateString();
     }
 
+    private function getYearFilter(): int
+    {
+        return (int) date('Y', strtotime($this->getTanggalFilter()));
+    }
+
+    private function absenFilterBaseQuery()
+    {
+        return AbsenMurid::query()->when(
+            $this->filterTingkat ||
+                $this->filterJurusan ||
+                $this->filterIndeks,
+            function ($q) {
+                $q->whereHas(
+                    'murid.rombel',
+                    fn($q) => $this->applyRombelFilter($q),
+                );
+            },
+        );
+    }
+
     private function absenBaseQuery()
     {
-        return AbsenMurid::query()
-            ->whereDate('tanggal', $this->getTanggalFilter())
-            ->when(
-                $this->filterTingkat ||
-                    $this->filterJurusan ||
-                    $this->filterIndeks,
-                function ($q) {
-                    $q->whereHas(
-                        'murid.rombel',
-                        fn($q) => $this->applyRombelFilter($q),
-                    );
-                },
-            );
+        return $this->absenFilterBaseQuery()->whereDate(
+            'tanggal',
+            $this->getTanggalFilter(),
+        );
+    }
+
+    private function getRekapKehadiranBulanan(): array
+    {
+        $year = $this->getYearFilter();
+        $driver = DB::connection()->getDriverName();
+        $monthExpr = $driver === 'sqlite'
+            ? "CAST(strftime('%m', tanggal) AS INTEGER)"
+            : 'MONTH(tanggal)';
+
+        $rows = $this->absenFilterBaseQuery()
+            ->selectRaw("{$monthExpr} as month, COUNT(*) as total")
+            ->whereYear('tanggal', $year)
+            ->where('status', 'Hadir')
+            ->groupBy(DB::raw($monthExpr))
+            ->pluck('total', 'month');
+
+        $data = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $data[] = (int) ($rows[$month] ?? 0);
+        }
+
+        return [
+            'year' => $year,
+            'data' => $data,
+        ];
+    }
+
+    private function dispatchChartRekap(): void
+    {
+        $this->dispatch('chart-rekap-updated', chart: $this->getRekapKehadiranBulanan());
     }
 
     private function getStatistik(): array
@@ -226,18 +273,21 @@ class Index extends Component
     {
         $this->resetPage();
         $this->refreshFilterOptions();
+        $this->dispatchChartRekap();
     }
 
     public function updatedFilterJurusan(): void
     {
         $this->resetPage();
         $this->refreshFilterOptions();
+        $this->dispatchChartRekap();
     }
 
     public function updatedFilterIndeks(): void
     {
         $this->resetPage();
         $this->refreshFilterOptions();
+        $this->dispatchChartRekap();
     }
 
     public function updatedFilterStatus(): void
@@ -248,6 +298,7 @@ class Index extends Component
     public function updatedFilterTanggal(): void
     {
         $this->resetPage();
+        $this->dispatchChartRekap();
     }
 
     public function updatedSearch(): void
@@ -265,6 +316,21 @@ class Index extends Component
         return view('livewire.murid.rekap.rekap-absen-murid', [
             'listAbsen' => $this->getTidakHadir(),
             'statistik' => $this->getStatistik(),
+            'chartRekap' => $this->getRekapKehadiranBulanan(),
         ]);
+    }
+
+    public function exportExcel()
+    {
+        $bulan = $this->exportBulan ?: now()->format('Y-m');
+        $filename = "rekap-kehadiran-{$bulan}.xlsx";
+
+        return Excel::download(
+            new RekapKehadiranExport(
+                $bulan,
+                $this->exportRombelId,
+            ),
+            $filename,
+        );
     }
 }
