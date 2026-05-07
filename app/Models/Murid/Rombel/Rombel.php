@@ -9,6 +9,8 @@ class Rombel extends Model
 {
     protected $table = 'rombel';
 
+    protected $appends = ['nama_lengkap'];
+
     protected $fillable = [
         'tingkat_id',
         'jurusan_id',

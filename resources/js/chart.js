@@ -1,5 +1,8 @@
 import * as echarts from "echarts";
 
+window.echarts = echarts;
+
+
 window.initCharts = function () {
     // =========================
     // DONUT CHART MURID
