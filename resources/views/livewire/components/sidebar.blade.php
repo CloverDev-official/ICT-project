@@ -158,7 +158,7 @@
             </li>
             
             <!-- GROUP MANAJEMEN -->
-            <li x-data="{ open: {{ request()->routeIs(['waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
+            <li x-data="{ open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
                 <!-- button -->
                 <button
                     @click="open = !open"
@@ -176,7 +176,7 @@
                 <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;">
 
                     <li>
-                        <x-nav-link href="{{ route('waktu') }}" icon="manajemenWaktu">
+                        <x-nav-link href="{{ route('manajemen-waktu') }}" icon="manajemenWaktu">
                             waktu
                         </x-nav-link>
                     </li>
@@ -387,7 +387,7 @@
                     </li>
 
                     <!-- GROUP MANAJEMEN -->
-                    <li x-data="{ open: {{ request()->routeIs(['waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
+                    <li x-data="{ open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
                         <!-- button -->
                         <button
                             @click="open = !open"
@@ -405,7 +405,7 @@
                         <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;">
 
                             <li>
-                                <x-nav-link href="{{ route('waktu') }}" icon="manajemenWaktu">
+                                <x-nav-link href="{{ route('manajemen-waktu') }}" icon="manajemenWaktu">
                                     waktu
                                 </x-nav-link>
                             </li>

@@ -19,6 +19,17 @@
     --color-blue-main: #5483B3;
     --color-blue-soft: #7DA0CA;
     --color-blue-light: #C1E8FF;
+    
+    /* calendar color */
+    --color-calendar-blue: #3b82f6;
+    --color-calendar-purple: #a855f7;
+    --color-calendar-red: #ef4444;
+    --color-calendar-yellow: #febf00;
+    --color-calendar-purple-light: #f3e8ff;
+    --color-calendar-red-light: #fee2e2;
+    --color-calendar-yellow-light: #ffd966;
+    --color-calendar-mute: #9ca3af;
+
 }
 
 @utility font-heading {
@@ -39,6 +50,21 @@
 .scroll-thin::-webkit-scrollbar-thumb {
     background: #5483B3;
     border-radius: 10px;
+}
+
+
+/* untuk calendar ( halaman manajemen waktu ) */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+.calendar-cell {
+    min-height: 80px;
+    border-right: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+}
+.calendar-cell:nth-child(7n) {
+    border-right: none;
 }
 
 
