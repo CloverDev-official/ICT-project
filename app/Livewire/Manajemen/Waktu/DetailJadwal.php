@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class ManajemenWaktu extends Component
+class DetailJadwal extends Component
 {
     private const DEFAULT_MASUK = '06:30';
     private const DEFAULT_PULANG_NORMAL = '16:30';
@@ -20,6 +20,7 @@ class ManajemenWaktu extends Component
 
     public $month;
     public $year;
+
     public $selectedDate;
     public $title;
     public $masuk;
@@ -27,69 +28,27 @@ class ManajemenWaktu extends Component
 
     public $keterangan;
     public $isEditing = false;
-    // single | same_day | weekdays | fridays
     public $isCustomMode = false;
     public $scheduleMode = 'libur';
     public $isSpecialSchedule = false;
 
-    public $calendar = [];
-    public $defaultSchedule = [];
+    public $jadwal = [];
 
-    public function mount()
+    public function mount(int $month, int $year): void
     {
-        $this->month = now()->month;
-        $this->year = now()->year;
-
-        $this->generateCalendar();
-        $this->loadJadwal(); // 🔥 WAJIB
+        $this->month = $month;
+        $this->year = $year;
+        $this->loadJadwal();
     }
 
-    public function generateCalendar()
+    public function updatedMonth(): void
     {
-        $this->calendar = $this->buildCalendar($this->month, $this->year);
-        $this->defaultSchedule = $this->buildDefaultSchedules($this->month, $this->year);
+        $this->loadJadwal();
     }
 
-    private function buildCalendar(int $month, int $year): array
+    public function updatedYear(): void
     {
-        $firstDay = Carbon::create($year, $month, 1);
-        $daysInMonth = $firstDay->daysInMonth;
-        $startDay = $firstDay->dayOfWeekIso;
-
-        $calendar = [];
-        $day = 1;
-
-        for ($i = 1; $i <= 42; $i++) {
-            if ($i < $startDay || $day > $daysInMonth) {
-                $calendar[] = null;
-                continue;
-            }
-
-            $date = Carbon::create($year, $month, $day)->format('Y-m-d');
-
-            $calendar[] = [
-                'day' => $day,
-                'date' => $date,
-            ];
-
-            $day++;
-        }
-
-        return $calendar;
-    }
-
-    private function buildDefaultSchedules(int $month, int $year): array
-    {
-        $firstDay = Carbon::create($year, $month, 1);
-        $daysInMonth = $firstDay->daysInMonth;
-        $defaults = [];
-
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $date = Carbon::create($year, $month, $day)->format('Y-m-d');
-            $defaults[$date] = $this->getDefaultSchedule($date);
-        }
-
-        return $defaults;
+        $this->loadJadwal();
     }
 
     private function getDayIso(string $date): int
@@ -166,39 +125,8 @@ class ManajemenWaktu extends Component
         $this->isSpecialSchedule = false;
     }
 
-    public function nextMonth()
-    {
-        if ($this->month == 12) {
-            $this->month = 1;
-            $this->year++;
-        } else {
-            $this->month++;
-        }
-
-        $this->generateCalendar();
-        $this->loadJadwal(); // 🔥 penting
-    }
-
-    public function previousMonth()
-    {
-        if ($this->month == 1) {
-            $this->month = 12;
-            $this->year--;
-        } else {
-            $this->month--;
-        }
-
-        $this->generateCalendar();
-        $this->loadJadwal(); // 🔥 penting
-    }
-
-    #[On('jadwal-updated')]
-    public function refreshJadwal(): void
-    {
-        $this->loadJadwal();
-    }
-
-    public function selectDate($date)
+    #[On('select-date')]
+    public function selectDate(string $date): void
     {
         $this->isEditing = false;
         $this->selectedDate = $date;
@@ -240,24 +168,29 @@ class ManajemenWaktu extends Component
         $this->applyDefaultByDay($date);
     }
 
-    public function updatedScheduleMode($value)
+    #[On('open-custom')]
+    public function openCustomSchedule(string $date): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | LIBUR
-        |--------------------------------------------------------------------------
-        */
+        $this->selectedDate = $date;
+        $this->isCustomMode = true;
+        $this->isEditing = false;
+        $this->isSpecialSchedule = false;
 
+        $this->setScheduleState(
+            self::TYPE_CUSTOM,
+            self::DEFAULT_MASUK,
+            self::DEFAULT_PULANG_NORMAL,
+            '',
+            ''
+        );
+    }
+
+    public function updatedScheduleMode($value): void
+    {
         if ($value == self::TYPE_LIBUR) {
             $this->setScheduleState(self::TYPE_LIBUR, null, null, 'Hari Libur', $this->title);
             return;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | NORMAL
-        |--------------------------------------------------------------------------
-        */
 
         if ($value == self::TYPE_NORMAL) {
             $this->setScheduleState(
@@ -269,12 +202,6 @@ class ManajemenWaktu extends Component
             );
             return;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | KHUSUS
-        |--------------------------------------------------------------------------
-        */
 
         if ($value == self::TYPE_KHUSUS) {
             $this->setScheduleState(
@@ -288,19 +215,13 @@ class ManajemenWaktu extends Component
         }
     }
 
-    public function saveJadwal()
+    public function saveJadwal(): void
     {
         $this->validate([
             'selectedDate' => 'required',
         ]);
 
         $day = $this->getDayIso($this->selectedDate);
-
-        /*
-        |--------------------------------------------------------------------------
-        | CUSTOM
-        |--------------------------------------------------------------------------
-        */
 
         if ($this->isCustomMode) {
             if (
@@ -322,21 +243,14 @@ class ManajemenWaktu extends Component
 
                     'jam_pulang' => $this->scheduleMode == self::TYPE_LIBUR
                         ? null
-                        : $this->pulang,    
+                        : $this->pulang,
                     'keterangan' => $this->keterangan,
                     'tipe' => $this->scheduleMode == self::TYPE_LIBUR
                     ? self::TYPE_LIBUR
                     : self::TYPE_CUSTOM,
                 ],
             );
-        }
-        /*
-        |--------------------------------------------------------------------------
-        | SPECIAL SCHEDULE
-        |--------------------------------------------------------------------------
-        */ elseif (
-            $this->isSpecialSchedule
-        ) {
+        } elseif ($this->isSpecialSchedule) {
             JadwalAbsen::updateOrCreate(
                 ['tanggal' => $this->selectedDate],
                 [
@@ -361,14 +275,7 @@ class ManajemenWaktu extends Component
                     },
                 ],
             );
-        }
-        /*
-        |--------------------------------------------------------------------------
-        | KHUSUS
-        |--------------------------------------------------------------------------
-        */ elseif (
-            $day == 5
-        ) {
+        } elseif ($day == 5) {
             $start = Carbon::parse($this->selectedDate)->startOfYear();
             $end = Carbon::parse($this->selectedDate)->endOfYear();
 
@@ -387,12 +294,7 @@ class ManajemenWaktu extends Component
 
                 $start->addDay();
             }
-        }
-        /*
-        |--------------------------------------------------------------------------
-        | SENIN - KAMIS
-        |--------------------------------------------------------------------------
-        */ else {
+        } else {
             $start = Carbon::parse($this->selectedDate)->startOfYear();
             $end = Carbon::parse($this->selectedDate)->endOfYear();
 
@@ -427,9 +329,11 @@ class ManajemenWaktu extends Component
         ]);
 
         $this->scheduleMode = self::TYPE_LIBUR;
+
+        $this->dispatch('jadwal-updated');
     }
 
-    public function cancelEdit()
+    public function cancelEdit(): void
     {
         $this->isEditing = false;
         $this->isCustomMode = false;
@@ -438,11 +342,8 @@ class ManajemenWaktu extends Component
         $this->scheduleMode = self::TYPE_LIBUR;
     }
 
-    public $jadwal = [];
-
-    public function loadJadwal()
+    public function loadJadwal(): void
     {
-        // 🔥 cegah error kalau tabel belum ada / belum kebaca
         if (!Schema::hasTable('jadwal_absen')) {
             $this->jadwal = [];
             return;
@@ -453,25 +354,18 @@ class ManajemenWaktu extends Component
 
         $this->jadwal = JadwalAbsen::whereBetween('tanggal', [$start, $end])
             ->get()
-            ->keyBy(fn($j) => $j->tanggal->format('Y-m-d'))
+            ->keyBy(fn ($j) => $j->tanggal->format('Y-m-d'))
             ->toArray();
     }
 
-    public function editJadwal()
+    public function editJadwal(): void
     {
         $jadwal = JadwalAbsen::whereDate(
             'tanggal',
             $this->selectedDate,
         )->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | CUSTOM EVENT / LIBUR NASIONAL
-        |--------------------------------------------------------------------------
-        */
-
         if ($jadwal) {
-            // 🔥 custom event kuning
             if ($jadwal->tipe == self::TYPE_CUSTOM) {
                 $this->isCustomMode = true;
                 $this->scheduleMode = self::TYPE_CUSTOM;
@@ -486,17 +380,8 @@ class ManajemenWaktu extends Component
                 return;
             }
 
-            // 🔥 LIBUR
             if ($jadwal->tipe == self::TYPE_LIBUR) {
-
-                /*
-                |--------------------------------------------------------------------------
-                | LIBUR NASIONAL (custom merah)
-                |--------------------------------------------------------------------------
-                */
-
                 if ($jadwal->nama_acara) {
-
                     $this->isCustomMode = true;
 
                     $this->title = $jadwal->nama_acara;
@@ -511,16 +396,8 @@ class ManajemenWaktu extends Component
                     return;
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | LIBUR BIASA
-                |--------------------------------------------------------------------------
-                */
-
                 $this->isEditing = true;
-
                 $this->isSpecialSchedule = true;
-
                 $this->scheduleMode = self::TYPE_LIBUR;
 
                 $this->masuk = null;
@@ -531,12 +408,10 @@ class ManajemenWaktu extends Component
                 return;
             }
 
-            // 🔥 jadwal khusus ungu
             if ($jadwal->tipe == self::TYPE_KHUSUS) {
                 $this->isEditing = true;
 
                 $this->isSpecialSchedule = true;
-
                 $this->scheduleMode = self::TYPE_KHUSUS;
 
                 $this->masuk = $jadwal->jam_masuk;
@@ -547,12 +422,10 @@ class ManajemenWaktu extends Component
                 return;
             }
 
-            // 🔥 normal
             if ($jadwal->tipe == self::TYPE_NORMAL) {
                 $this->isEditing = true;
 
                 $this->isSpecialSchedule = true;
-
                 $this->scheduleMode = self::TYPE_NORMAL;
 
                 $this->masuk = $jadwal->jam_masuk;
@@ -564,20 +437,12 @@ class ManajemenWaktu extends Component
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT WEEKEND
-        |--------------------------------------------------------------------------
-        */
-
         $day = $this->getDayIso($this->selectedDate);
 
         if ($day >= 6) {
             $this->isEditing = true;
 
             $this->isSpecialSchedule = true;
-
-            // default weekend = libur
             $this->scheduleMode = self::TYPE_LIBUR;
 
             $this->masuk = null;
@@ -588,17 +453,10 @@ class ManajemenWaktu extends Component
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT FRIDAY
-        |--------------------------------------------------------------------------
-        */
-
         if ($day == 5) {
             $this->isEditing = true;
 
             $this->isSpecialSchedule = true;
-
             $this->scheduleMode = self::TYPE_KHUSUS;
 
             $this->masuk = self::DEFAULT_MASUK;
@@ -609,16 +467,9 @@ class ManajemenWaktu extends Component
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT NORMAL
-        |--------------------------------------------------------------------------
-        */
-
         $this->isEditing = true;
 
         $this->isSpecialSchedule = true;
-
         $this->scheduleMode = self::TYPE_NORMAL;
 
         $this->masuk = self::DEFAULT_MASUK;
@@ -627,24 +478,12 @@ class ManajemenWaktu extends Component
         $this->keterangan = 'Jadwal Normal';
     }
 
-    public function toggleHoliday()
+    public function toggleHoliday(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | JADI LIBUR
-        |--------------------------------------------------------------------------
-        */
-
         if ($this->scheduleMode != self::TYPE_LIBUR) {
             $this->setScheduleState(self::TYPE_LIBUR, null, null, 'Hari Libur', $this->title);
             return;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | JADI NORMAL
-        |--------------------------------------------------------------------------
-        */
 
         $this->setScheduleState(
             self::TYPE_NORMAL,
@@ -655,42 +494,8 @@ class ManajemenWaktu extends Component
         );
     }
 
-    public function goToday()
-    {
-        $today = now();
-
-        /*
-        |--------------------------------------------------------------------------
-        | PINDAH BULAN & TAHUN
-        |--------------------------------------------------------------------------
-        */
-
-        $this->month = $today->month;
-        $this->year = $today->year;
-
-        /*
-        |--------------------------------------------------------------------------
-        | RELOAD CALENDAR
-        |--------------------------------------------------------------------------
-        */
-
-        $this->generateCalendar();
-
-        $this->loadJadwal();
-
-        /*
-        |--------------------------------------------------------------------------
-        | AUTO SELECT HARI INI
-        |--------------------------------------------------------------------------
-        */
-
-        $this->selectDate(
-            $today->format('Y-m-d')
-        );
-    }
-
     public function render()
     {
-        return view('livewire.manajemen.waktu.manajemen-waktu');
+        return view('livewire.manajemen.waktu.detail-jadwal');
     }
 }
