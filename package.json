@@ -19,6 +19,8 @@
     },
     "dependencies": {
         "echarts": "^6.0.0",
-        "jsqr": "^1.4.0"
+        "fflate": "^0.8.2",
+        "jsqr": "^1.4.0",
+        "zxing-wasm": "^3.0.3"
     }
 }
