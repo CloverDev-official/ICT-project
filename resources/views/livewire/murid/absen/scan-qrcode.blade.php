@@ -1,23 +1,84 @@
-<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-hidden font-sans">
+<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans">
     
     <header class="w-full p-4 bg-slate-900 shadow-md flex justify-between items-center z-10">
         <div class="flex items-center justify-center gap-4">
             <img src="{{ asset('assets/img/logo_smkn_2.png')}}" class="w-10" alt="">
             <div>
                 <h1 class="bg-blue- text-start text-white text-shadow-2xs text-sm font-semibold uppercase">
-                    Absensi Murid
+                    Absensi QR
                 </h1>
                 <p class="text-[10px] text-gray-400 uppercase">smkn 2 banjarmasin</p>
             </div>
         </div>
         <div class="flex items-center space-x-2">
             <h1 class=" md:text-lg font-normal text-white">
-                {{ $dateNow ?? 'Tanggal sekarang' }}
+                Absen Masuk {{ $dateNow ?? 'Tanggal sekarang' }} <!-- namanya sesuiakan sama yang dipilih di pilih absen -->
             </h1>
         </div>
+        <!-- BACK BUTTON -->
+        <a href="{{ route('pilih-absen') }}">
+            <button 
+                class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 transition px-4 py-2 rounded-xl text-white text-sm shadow"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    class="w-4 h-4" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor">
+                    <path stroke-linecap="round" 
+                        stroke-linejoin="round" 
+                        stroke-width="2" 
+                        d="M15 19l-7-7 7-7" />
+                </svg>
+    
+                Kembali
+            </button>
+        </a>
     </header>
 
     <main class="flex-1 relative flex items-center justify-center p-4">
+        <!-- TIPS -->
+        <div class="right-10 absolute w-xs px-4 pt-4">
+            <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-4 h-80 text-white shadow-lg">
+                
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mt-1">
+                        <iconify-icon class="text-yellow-400" icon="lets-icons:lamp-fill" width="24" height="24"></iconify-icon>
+                    </div>
+
+                    <div>
+                        <h2 class="font-semibold text-lg uppercase tracking-wide">
+                            Tips Penggunaan
+                        </h2>
+                        <p class="text-sm text-slate-400">
+                            Agar QR berhasil dipindai
+                        </p>
+                    </div>
+                </div>
+
+                <ul class="space-y-2 text-slate-300 mt-4">
+                    <li class="flex items-start gap-2">
+                        <span>✔</span>
+                        <span>Pastikan QR Code terlihat jelas dan tidak buram</span>
+                    </li>
+
+                    <li class="flex items-start gap-2">
+                        <span>✔</span>
+                        <span>Arahkan kamera tepat ke tengah kotak scanner</span>
+                    </li>
+
+                    <li class="flex items-start gap-2">
+                        <span>✔</span>
+                        <span>Gunakan pencahayaan yang cukup</span>
+                    </li>
+
+                    <li class="flex items-start gap-2">
+                        <span>✔</span>
+                        <span>Jangan terlalu dekat atau terlalu jauh dari kamera</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="w-full max-w-lg aspect-square relative">
             <div class="absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-lg z-20"></div>
             <div class="absolute -top-2 -right-2 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-lg z-20"></div>
