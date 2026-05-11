@@ -20,11 +20,13 @@ use App\Livewire\Dashboard;
 use App\Livewire\AbsensiMurid;
 use App\Livewire\AbsensiGuru;
 use App\Livewire\DataGuru;
-use App\Livewire\DataJurusan;
-use App\Livewire\DataKelas;
 use App\Livewire\EditGuru;
-use App\Livewire\EditJurusan;
-use App\Livewire\EditKelas;
+use App\Livewire\Murid\Rombel\Jurusan\Index as IndexJurusan;
+use App\Livewire\Murid\Rombel\Jurusan\Create as CreateJurusan;
+use App\Livewire\Murid\Rombel\Jurusan\Edit as EditJurusanRombel;
+use App\Livewire\Murid\Rombel\Kelas\Index as IndexKelas;
+use App\Livewire\Murid\Rombel\Kelas\Create as CreateKelas;
+use App\Livewire\Murid\Rombel\Kelas\Edit as EditKelasRombel;
 use App\Livewire\Manajemen\Waktu;
 use App\Livewire\Manajemen\GenerateQR;
 use App\Livewire\Manajemen\Waktu\ManajemenWaktu;
@@ -33,11 +35,9 @@ use App\Livewire\Manajemen\User\ManajemenUser;
 use App\Livewire\Manajemen\User\TambahUser;
 use App\Livewire\Manajemen\Waktu\TambahEvent;
 use App\Livewire\PilihAbsen;
-use App\Livewire\TambahKelas;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
 use App\Livewire\TambahGuru;
-use App\Livewire\TambahJurusan;
 
 Route::get('/', Login::class)->name('login');
 Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
@@ -78,15 +78,15 @@ Route::prefix('admin')->group(function () {
     });
 
     route::prefix('/data-kelas')->group(function () {
-        route::get('/',  DataKelas::class)->name('data-kelas');
-        route::get('/create',  TambahKelas::class)->name('tambah-kelas');
-        route::get('/edit',  EditKelas::class)->name('edit-kelas');
+        route::get('/', IndexKelas::class)->name('data-kelas');
+        route::get('/create', CreateKelas::class)->name('tambah-kelas');
+        route::get('/edit/{rombelId}', EditKelasRombel::class)->name('edit-kelas');
     });
 
     route::prefix('/data-jurusan')->group( function () {
-        route::get('/', DataJurusan::class)->name('data-jurusan');
-        route::get('/create', TambahJurusan::class)->name('tambah-jurusan');
-        route::get('/edit', EditJurusan::class)->name('edit-jurusan');
+        route::get('/', IndexJurusan::class)->name('data-jurusan');
+        route::get('/create', CreateJurusan::class)->name('tambah-jurusan');
+        route::get('/edit/{jurusanId}', EditJurusanRombel::class)->name('edit-jurusan');
     });
 
     // manajemen group
