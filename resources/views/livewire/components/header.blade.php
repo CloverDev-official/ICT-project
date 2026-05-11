@@ -8,18 +8,20 @@
         </h1>
     </div>
     <div class="flex items-center justify-end gap-5" >
-        <a href="{{ route('scan-qrcode') }}" wire:navigate>
-            <button class="bg-blue-deep-solid w-8 h-8  rounded-lg text-white flex items-center justify-center transition-all duration-150 hover:bg-blue-deep hover:text-gray-400 active:scale-95">
-                <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
-            </button>
-        </a>
         <div class="hidden md:flex gap-2  justify-center items-center" >
             <div class="flex flex-col gap-0" >
                 <h1 class="text-sm font-semibold capitalize" >nama user</h1>
                 <p class="text-xs capitalize" >role user</p>
             </div>
-            <div class="w-8 h-8 rounded-full bg-white shadow-sm text-blue-deep-solid  flex items-center justify-center ">
-                <iconify-icon icon="lineicons:user-4" width="25" height="24"></iconify-icon>
+            <div x-data="{ openModal: false }" >
+                <div @click="openModal = !openModal" class="cursor-pointer w-8 h-8 rounded-full bg-white shadow-sm text-blue-deep-solid  flex items-center justify-center relative">
+                    <iconify-icon icon="lineicons:user-4" width="25" height="24"></iconify-icon>
+                </div>
+                <div x-show="openModal" @click.outside="openModal = false" x-transition class="bg-white p-2 shadow-md rounded-lg z-50 absolute top-16 right-10">
+                    <button class="bg-rose-500 rounded-lg px-4 py-2 text-white flex items-center justify-center text-sm transition-all duration-150 hover:bg-rose-600 active:scale-95" >
+                            <iconify-icon icon="lineicons:exit" width="20" height="20"></iconify-icon> Logout
+                    </button>
+                </div>
             </div>
         </div>
         <!-- button -->
