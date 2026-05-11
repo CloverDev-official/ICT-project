@@ -397,7 +397,7 @@
     
                                     <!-- qr -->
                                     <button 
-                                        wire:click="generateQRCode('{{ $murid->ulid }}')"
+                                        wire:click="generateQRCode({ 'ulid': '{{ $murid->ulid }}', 'nama': '{{ $murid->nama }}', 'nipd': '{{ $murid->nipd }}' })"
                                         class="bg-blue-deep-solid w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-blue-deep hover:text-gray-400 active:scale-95" >
                                         <iconify-icon icon="la:qrcode" width="20" height="20"></iconify-icon>
                                     </button>

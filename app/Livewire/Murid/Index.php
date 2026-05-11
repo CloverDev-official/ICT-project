@@ -35,15 +35,14 @@ class Index extends Component
         $this->refreshFilterOptions();
     }
 
-    public function generateQRCode($muridUlid)
+    public function generateQRCode($muridData)
     {
-        $filename = "qrcode-{$muridUlid}.png";
+        $filename = "{$muridData['nama']} {$muridData['nipd']}.png";
 
-        return DownloadFile::download(
-            'image/png',
-            $filename,
-            fn () => QRCodeHelper::generate($muridUlid)
-        );
+        $filename = preg_replace('/\s+/', '_', $filename);
+        $filename = preg_replace('/[\/\\\\?%*:|"<>]/', '-', $filename);
+
+        $this->dispatch('generateQRPNGDownload', text: $muridData['ulid'], filename: $filename);
     }
 
     private function applyRombelFilter($q)
