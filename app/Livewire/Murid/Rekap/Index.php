@@ -203,35 +203,7 @@ class Index extends Component
             'persentase' => $persentase,
         ];
     }
-
-    private function muridRombelIdSubquery()
-    {
-        return Murid::select('rombel_id')
-            ->whereColumn('murid.id', 'absen_murid.murid_id')
-            ->limit(1);
-    }
-
-    private function rombelFieldSubquery(string $field)
-    {
-        return Rombel::select($field)
-            ->where('rombel.id', $this->muridRombelIdSubquery())
-            ->limit(1);
-    }
-
-    private function tingkatIdSubquery()
-    {
-        return $this->rombelFieldSubquery('tingkat_id');
-    }
-
-    private function jurusanIdSubquery()
-    {
-        return $this->rombelFieldSubquery('jurusan_id');
-    }
-
-    private function indeksIdSubquery()
-    {
-        return $this->rombelFieldSubquery('indeks_id');
-    }
+    
 
     private function getTidakHadir()
     {
@@ -257,9 +229,6 @@ class Index extends Component
                 fn($q) => $q->where('status', $this->filterStatus),
                 fn($q) => $q->whereIn('status', $this->statusOptions),
             )
-            ->orderBy($this->tingkatIdSubquery())
-            ->orderBy($this->jurusanIdSubquery())
-            ->orderBy($this->indeksIdSubquery())
             ->fastPaginate($this->perPage);
     }
 
