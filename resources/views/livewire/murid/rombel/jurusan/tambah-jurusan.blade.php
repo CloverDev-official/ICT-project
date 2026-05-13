@@ -18,7 +18,7 @@
                 <label class="text-sm text-gray-600 capitalize">Nama Jurusan</label>
                 <input type="text" wire:model.defer="nama"
                     class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                    placeholder="Nama Kelas contoh : c">
+                    placeholder="Nama Jurusan contoh : Animasi">
                 @error('nama')
                     <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                 @enderror

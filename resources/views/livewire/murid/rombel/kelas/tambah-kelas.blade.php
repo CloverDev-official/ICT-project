@@ -176,6 +176,58 @@
                 @enderror
             </div>
 
+            <!-- guru -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('indeks_id', id)
+                    }
+                }"
+                class="relative w-full"
+            >
+                <label class="text-sm text-gray-600 capitalize font-semibold">Wali Kelas</label>
+
+                <div @click="toggle()"
+                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                    <span x-text="selectedLabel ?? 'Pilih Wali Kelas'" class="text-gray-700 text-sm"></span>
+                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
+                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                </div>
+
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                    @foreach ($listIndeks as $indeks)
+                        <div
+                            @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
+                        >
+                            <span>{{ $indeks->nama }}</span>
+                            <iconify-icon 
+                                x-show="selectedId == {{ (int) $indeks->id }}" 
+                                icon="lineicons:check" 
+                                width="24" 
+                                height="24">
+                            </iconify-icon>
+                        </div>
+                    @endforeach
+                </div>
+                @error('indeks_id')
+                    <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                @enderror
+            </div>
+
             <!-- btn batal & save -->
             <div class="md:col-span-2 flex justify-end gap-3 pt-4 mt-2">
                 <button type="submit"

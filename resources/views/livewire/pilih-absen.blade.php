@@ -1,62 +1,178 @@
-<div>
+<div class="space-y-6">
 
-    <!-- absen murid -->
-    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm">
-        <div>
-            <h1 class="font-semibold text-gray-800 text-2xl capitalize">Absen murid</h1>
-            <p class="text-sm text-gray-400">
-                Pilih absen murid untuk absen masuk atau absen keluar.
-            </p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-            <a href="{{ route('scan-qrcode') }}">
-                <div class="bg-emerald-500 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all duration-150 hover:bg-emerald-600 active:scale-95" >
-                    <iconify-icon icon="lineicons:enter" width="50" height="50"></iconify-icon>
-                    <div>
-                        <h1 class="text-2xl font-bold capitalize">absen masuk</h1>
-                        <p class="text-gray-100 text-center">06.30 - 08.30</p>
-                    </div>
+    <!-- HEADER -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-6 shadow-sm">
+
+        <!-- ornament -->
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-white/5"></div>
+
+        <div class="relative z-10">
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white">
+
+                    <iconify-icon
+                        icon="solar:qr-code-bold"
+                        width="34"
+                        height="34">
+                    </iconify-icon>
+
                 </div>
-            </a>
-            <a href="{ route('scan-qrcode') }">
-                <div class="bg-amber-500 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
-                    <iconify-icon icon="lineicons:exit" width="50" height="50"></iconify-icon>
-                    <div>
-                        <h1 class="text-2xl font-bold capitalize">absen keluar</h1>
-                        <p class="text-gray-100 text-center">16.30 - 17.00</p>
-                    </div>
+
+                <div>
+                    <h1 class="text-3xl font-bold text-white capitalize">
+                        Scan Absensi
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Pilih jenis absensi yang ingin dilakukan.
+                    </p>
                 </div>
-            </a>
+
+            </div>
+
         </div>
     </div>
 
-    <!-- absen guru -->
-    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm">
-        <div>
-            <h1 class="font-semibold text-gray-800 text-2xl capitalize">Absen guru</h1>
-            <p class="text-sm text-gray-400">
-                Pilih absen guru untuk absen masuk atau absen keluar.
-            </p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-            <a href="{{ route('scan-qrcode') }}">
-                <div class="bg-emerald-500 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all duration-150 hover:bg-emerald-600 active:scale-95" >
-                    <iconify-icon icon="lineicons:enter" width="50" height="50"></iconify-icon>
-                    <div>
-                        <h1 class="text-2xl font-bold capitalize">absen masuk</h1>
-                        <p class="text-gray-100 text-center">06.30 - 08.30</p>
-                    </div>
+    <!-- CARD LIST -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- ABSEN MURID -->
+        <a href="{{ route('scan-qrcode') }}"
+            class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl">
+
+            <!-- ornament -->
+            <div
+                class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 transition group-hover:scale-110">
+            </div>
+
+            <div class="relative z-10 flex h-full flex-col justify-between">
+
+                <!-- icon -->
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:user-check-bold"
+                        width="34"
+                        height="34">
+                    </iconify-icon>
+
                 </div>
-            </a>
-            <a href="{ route('scan-qrcode') }">
-                <div class="bg-amber-500 text-white p-4 rounded-xl shadow-md flex flex-col items-center justify-center gap-2 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
-                    <iconify-icon icon="lineicons:exit" width="50" height="50"></iconify-icon>
-                    <div>
-                        <h1 class="text-2xl font-bold capitalize">absen keluar</h1>
-                        <p class="text-gray-100 text-center">16.30 - 17.00</p>
+
+                <!-- content -->
+                <div class="mt-10">
+
+                    <div class="flex items-center justify-between gap-3">
+
+                        <div>
+                            <h1 class="text-2xl font-bold capitalize">
+                                Absen Murid
+                            </h1>
+
+                            <p class="mt-2 text-sm text-emerald-50">
+                                Scan QR untuk melakukan absensi masuk atau keluar siswa.
+                            </p>
+                        </div>
+
+                        <iconify-icon
+                            class="transition group-hover:translate-x-1"
+                            icon="solar:arrow-right-linear"
+                            width="28"
+                            height="28">
+                        </iconify-icon>
+
                     </div>
+
+                    <!-- jadwal -->
+                    <div
+                        class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur">
+
+                        <iconify-icon
+                            icon="solar:clock-circle-bold"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
+
+                        06.30 - 08.30
+
+                    </div>
+
                 </div>
-            </a>
-        </div>
+
+            </div>
+        </a>
+
+        <!-- ABSEN GURU -->
+        <a href="{{ route('scan-qrcode') }}"
+            class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 p-6 text-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl">
+
+            <!-- ornament -->
+            <div
+                class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 transition group-hover:scale-110">
+            </div>
+
+            <div class="relative z-10 flex h-full flex-col justify-between">
+
+                <!-- icon -->
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:users-group-rounded-bold"
+                        width="34"
+                        height="34">
+                    </iconify-icon>
+
+                </div>
+
+                <!-- content -->
+                <div class="mt-10">
+
+                    <div class="flex items-center justify-between gap-3">
+
+                        <div>
+                            <h1 class="text-2xl font-bold capitalize">
+                                Absen Guru
+                            </h1>
+
+                            <p class="mt-2 text-sm text-amber-50">
+                                Scan QR untuk melakukan absensi masuk atau keluar guru.
+                            </p>
+                        </div>
+
+                        <iconify-icon
+                            class="transition group-hover:translate-x-1"
+                            icon="solar:arrow-right-linear"
+                            width="28"
+                            height="28">
+                        </iconify-icon>
+
+                    </div>
+
+                    <!-- jadwal -->
+                    <div
+                        class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur">
+
+                        <iconify-icon
+                            icon="solar:clock-circle-bold"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
+
+                        06.30 - 08.30
+
+                    </div>
+
+                </div>
+
+            </div>
+        </a>
+
     </div>
+
 </div>

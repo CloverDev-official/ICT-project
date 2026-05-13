@@ -185,7 +185,7 @@
                             @click.prevent="select(null, 'pilih role')"
                             class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
                         >
-                            <span>pilih role</span>
+                            <span>pilih guru</span>
                             <iconify-icon 
                                 x-show="selectedId === null" 
                                 icon="lineicons:check" 

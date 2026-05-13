@@ -1,6 +1,6 @@
     <div>
     <!-- dekstop -->
-    <aside class="hidden md:flex flex-col w-64 bg-blue-deep p-4 pb-0 rounded-tr-4xl h-screen shadow-[6px_0_15px_rgba(0,0,0,0.1)]" >
+    <aside class="hidden md:flex flex-col w-64 p-4 pb-0 rounded-tr-4xl h-screen bg-gradient-to-b from-blue-deep to-[#03152d] shadow-[8px_0_30px_rgba(0,0,0,0.15)] border-r border-white/10" >
         <div class="flex items-center justify-center gap-4 pt-4">
             <img src="{{ asset('assets/img/logo_smkn_2.png')}}" class="w-10" alt="">
             <div>
@@ -72,6 +72,31 @@
                                 <x-nav-link href="{{ route('rekap-absen-guru') }}" icon="rekapAbsenGuru">
                                     absen guru 
                                     
+                                </x-nav-link>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- riwayat absen -->
+                    <li x-data="{open: {{ request()->routeIs('riwayat-absen-*') ? 'true' : 'false' }}}" >
+                        <!-- button -->
+                        <button 
+                            @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2 text-white hover:bg-blue-deep-solid rounded-lg"
+                        >
+                            <span class="flex gap-2 items-center capitalize">
+                                <iconify-icon :icon="open ? 'mdi:folder-check' : 'mdi:folder-check-outline'" width="24" height="24"></iconify-icon>
+                                riwayat absen
+                            </span>
+
+                            <iconify-icon class="transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                        </button>
+
+                        <ul x-show="open" x-transition class="ml-4 mt-2 flex flex-col gap-2" style="display: none;" >
+                                                            
+                            <li>
+                                <x-nav-link href="{{ route('riwayat-absen-murid') }}" icon="riwayatAbsenMurid">
+                                    absen murid
                                 </x-nav-link>
                             </li>
                         </ul>
@@ -158,7 +183,7 @@
             </li>
             
             <!-- GROUP MANAJEMEN -->
-            <li x-data="{ open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
+            <li x-data="{ open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran']) ? 'true' : 'false' }} }"> 
                 <!-- button -->
                 <button
                     @click="open = !open"
@@ -184,6 +209,12 @@
                     <li>
                         <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
                             generate QR
+                        </x-nav-link>
+                    </li>
+
+                    <li>
+                        <x-nav-link href="{{ route('manajemen-tahun-ajaran') }}" icon="manajemenTahunAjaran">
+                            Tahun Ajaran
                         </x-nav-link>
                     </li>
 
@@ -387,7 +418,7 @@
                     </li>
 
                     <!-- GROUP MANAJEMEN -->
-                    <li x-data="{ open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user']) ? 'true' : 'false' }} }"> 
+                    <li x-data="{ open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran']) ? 'true' : 'false' }} }"> 
                         <!-- button -->
                         <button
                             @click="open = !open"
@@ -413,6 +444,12 @@
                             <li>
                                 <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
                                     generate QR
+                                </x-nav-link>
+                            </li>
+
+                            <li>
+                                <x-nav-link href="{{ route('manajemen-tahun-ajaran') }}" icon="manajemenTahunAjaran">
+                                    Tahun Ajaran
                                 </x-nav-link>
                             </li>
 

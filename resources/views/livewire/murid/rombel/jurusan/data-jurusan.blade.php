@@ -16,137 +16,382 @@
             }
         }
     }"
+    class="space-y-6"
 >
-    <div class="flex items-center justify-start gap-5">
-        <!-- btn tambah data kelas -->
-        <a href="{{ route('tambah-jurusan') }}" wire:navigate>
-            <button
-                class="px-4 py-2 rounded-lg bg-emerald-600 text-white transition-all duration-200 hover:bg-emerald-700 active:scale-95 flex items-center justify-center gap-1 capitalize ">
-                <iconify-icon icon="line-md:plus" width="20" height="20"></iconify-icon>
-                tambah data Jurusan
-            </button>
-        </a>
 
-        <!-- btn import CSV -->
-        <div x-data="{ openModalImport: false }">
-            <button
-                @click="openModalImport = true"
-                class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize ">
-                <iconify-icon icon="line-md:file-import" width="20" height="20"></iconify-icon>
-                import CSV
-            </button>
-            <!-- modal import murid  -->
-            <livewire:components.modal.jurusan.modal-import-jurusan />
-        </div>
-    </div>
-    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm">
-        <div class="flex justify-between items-center gap-4 mb-5">
-            <!-- tombol hapus -->
-            <div class="mb-3 flex items-center gap-3 relative" x-data="{ openModalColon: false }">
-    
-                <button @click="openModalColon = !openModalColon"
-                    class="p-2 rounded-lg text-gray-500 duration-200  transition-all hover:bg-blue-deep-solid hover:text-white active:scale-95 flex items-center justify-center ">
-                    <iconify-icon icon="lineicons:menu-meatballs-1" width="25" height="24"></iconify-icon>
-                </button>
-    
-                <livewire:components.modal.modal-colon />
-    
-                <span class="text-sm text-gray-500">
-                    <span x-text="selected.length"></span> dipilih
-                </span>
-    
-            </div>
-            <!-- input search -->
-            <div class="relative w-40 md:w-sm">
-                <input 
-                    type="search"
-                    name="search"
-                    wire:model.live.debounce.500ms="search"
-                    placeholder="Cari Nama Jurusan..."
-                    class="w-full text-sm mt-1 px-4 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-xl
-                    hover:border-blue-500
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
-                    transition"
-                />
+    <!-- HEADER -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-6 shadow-lg">
 
-                <div class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
-                    <iconify-icon icon="mdi:account-search-outline" width="20" height="20"></iconify-icon>
+        <!-- effect -->
+        <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-white/4"></div>
+
+        <div
+            class="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+            <!-- title -->
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="hidden md:flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:library-bold"
+                        width="34"
+                        height="34"
+                        class="text-white">
+                    </iconify-icon>
+
                 </div>
+
+                <div>
+
+                    <h1 class="text-3xl font-bold text-white">
+                        Data Jurusan
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Kelola seluruh data jurusan sekolah dengan mudah.
+                    </p>
+
+                </div>
+
             </div>
+
+            <!-- actions -->
+            <div class="sm:flex grid grid-cols-1  gap-3 sm:flex-row">
+
+                <!-- tambah -->
+                <a href="{{ route('tambah-jurusan') }}" wire:navigate>
+
+                    <button
+                        class="w-full group flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-main shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+
+                        <iconify-icon
+                            icon="line-md:plus"
+                            width="22"
+                            height="22"
+                            class="transition duration-300 group-hover:rotate-90">
+                        </iconify-icon>
+
+                        Tambah Jurusan
+
+                    </button>
+
+                </a>
+
+                <!-- import -->
+                <div x-data="{ openModalImport: false }">
+
+                    <button
+                        @click="openModalImport = true"
+                        class="w-full flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20">
+
+                        <iconify-icon
+                            icon="line-md:file-import"
+                            width="22"
+                            height="22">
+                        </iconify-icon>
+
+                        Import CSV
+
+                    </button>
+
+                    <livewire:components.modal.jurusan.modal-import-jurusan />
+
+                </div>
+
+            </div>
+
         </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+        <!-- top -->
+        <div
+            class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+
+            <!-- left -->
+            <div>
+
+                <h2 class="text-xl font-bold text-gray-800">
+                    Daftar Jurusan
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Data seluruh jurusan yang tersedia pada sistem sekolah.
+                </p>
+
+            </div>
+
+            <!-- right -->
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+
+                <!-- selected -->
+                <div
+                    class="flex items-center gap-3">
+
+                    <!-- menu -->
+                    <div
+                        class="relative"
+                        x-data="{ openModalColon: false }">
+
+                        <button
+                            @click="openModalColon = !openModalColon"
+                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gray-100 text-gray-600 transition hover:bg-blue-main hover:text-white">
+
+                            <iconify-icon
+                                icon="lineicons:menu-meatballs-1"
+                                width="20"
+                                height="20">
+                            </iconify-icon>
+
+                        </button>
+
+                        <livewire:components.modal.modal-colon />
+
+                    </div>
+
+                    <!-- selected count -->
+                    <div
+                        class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-main">
+
+                        <span x-text="selected.length"></span>
+                        dipilih
+
+                    </div>
+
+                </div>
+
+                <!-- search -->
+                <div class="relative w-full sm:w-72">
+
+                    <input
+                        type="search"
+                        name="search"
+                        wire:model.live.debounce.500ms="search"
+                        placeholder="Cari nama jurusan..."
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-4 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+
+                    <div
+                        class="absolute inset-y-0 right-4 flex items-center text-gray-400">
+
+                        <iconify-icon
+                            icon="mdi:account-search-outline"
+                            width="22"
+                            height="22">
+                        </iconify-icon>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
         <!-- table -->
-        <div  
-        class="overflow-x-auto table-auto md:table-fixed rounded-t-lg"
-        >
-            <table class="w-full text-sm text-left text-gray-600" >
-                <thead class="bg-blue-main border border-gray-200 text-white uppercase text-xs" >
+        <div class="overflow-x-auto">
+
+            <table class="min-w-full text-sm">
+
+                <thead class="bg-gray-100 text-gray-700">
+
                     <tr>
-                        <th class="px-4 py-3" >
+
+                        <th class="px-5 py-4 text-center w-5">
                             <input type="checkbox" @click="toggleAll">
                         </th>
-                        <th class="text-center px-4 py-3">No.</th>
-                        <th class="text-center px-4 py-3">Jurusan</th>
-                        <th class="text-center px-4 py-3">Aksi</th>
+
+                        <th class="px-5 py-4 text-center font-semibold w-10">
+                            No
+                        </th>
+
+                        <th class="px-5 py-4 text-center font-semibold">
+                            Nama Jurusan
+                        </th>
+
+                        <th class="px-5 py-4 text-center font-semibold">
+                            Aksi
+                        </th>
+
                     </tr>
+
                 </thead>
+
                 <tbody>
+
                     @forelse ($listJurusan as $index => $jurusan)
-                        <tr class="{{ $loop->iteration % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 border-lr border-gray-200">
-                            
+
+                        <tr
+                            class="border-t border-gray-100 transition hover:bg-gray-50">
+
                             <!-- checkbox -->
-                            <td class="px-4 py-3 w-10">
+                            <td class="px-5 py-5 text-center">
+
                                 <input
                                     type="checkbox"
-                                    class="jurusan-row-checkbox"
+                                    class="jurusan-row-checkbox rounded border-gray-300"
                                     value="{{ $jurusan->id }}"
-                                    :checked="selected.includes('{{ $jurusan->id }}')"
-                                    x-model="selected"
-                                >
+                                    x-model="selected">
+
                             </td>
 
                             <!-- nomor -->
-                            <td class="border-r border-gray-200 px-4 py-3 text-center w-20">
+                            <td class="px-5 py-5 text-center font-medium text-gray-700">
                                 {{ $index + 1 }}
                             </td>
+
                             <!-- jurusan -->
-                            <td class="border-r border-gray-200 px-4 py-3 text-center">
-                                {{ $jurusan->nama }}
+                            <td class="px-5 py-5">
+
+                                <div class="flex justify-center items-center gap-4">
+
+                                    <!-- icon -->
+                                    <div
+                                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-main">
+
+                                        <iconify-icon
+                                            icon="solar:book-bold"
+                                            width="22"
+                                            height="22">
+                                        </iconify-icon>
+
+                                    </div>
+
+                                    <!-- text -->
+                                    <div>
+
+                                        <h2
+                                            class="font-semibold text-gray-800">
+
+                                            {{ $jurusan->nama }}
+
+                                        </h2>
+
+                                        <p
+                                            class="mt-1 text-xs text-gray-400">
+
+                                            Data jurusan aktif
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
                             </td>
 
-                            <!-- crud -->
-                            <td class="px-4 py-3">
-                                <div class="flex items-center justify-center gap-2">
+                            <!-- aksi -->
+                            <td class="px-5 py-5">
+
+                                <div
+                                    class="flex items-center justify-center gap-2">
+
                                     <!-- edit -->
-                                    <a href="{{ route('edit-jurusan', $jurusan->id) }}" wire:navigate>
-                                        <button class="bg-amber-400 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-amber-600 active:scale-95" >
-                                            <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
+                                    <a
+                                        href="{{ route('edit-jurusan', $jurusan->id) }}"
+                                        wire:navigate>
+
+                                        <button
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+
+                                            <iconify-icon
+                                                icon="lineicons:pencil-1"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
                                         </button>
+
                                     </a>
 
-                                    <!-- hapus -->
+                                    <!-- delete -->
                                     <button
                                         type="button"
                                         @click="$dispatch('open-delete-jurusan', { id: {{ (int) $jurusan->id }} })"
-                                        class="bg-rose-500 w-8 h-8 rounded-lg text-white flex items-center justify-center gap-1 transition-all duration-150 hover:bg-rose-700 active:scale-95"
-                                    >
-                                        <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
+
+                                        <iconify-icon
+                                            icon="lineicons:trash-3"
+                                            width="20"
+                                            height="20">
+                                        </iconify-icon>
+
                                     </button>
+
                                 </div>
-                                
+
                             </td>
+
                         </tr>
+
                     @empty
+
                         <tr>
-                            <td class="px-4 py-6 text-center text-gray-500" colspan="4">
-                                Tidak ada data jurusan.
+
+                            <td
+                                colspan="5"
+                                class="px-6 py-14 text-center">
+
+                                <div
+                                    class="flex flex-col items-center justify-center">
+
+                                    <div
+                                        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+
+                                        <iconify-icon
+                                            icon="solar:box-bold"
+                                            width="38"
+                                            height="38">
+                                        </iconify-icon>
+
+                                    </div>
+
+                                    <h2
+                                        class="text-lg font-bold text-gray-700">
+
+                                        Data jurusan kosong
+
+                                    </h2>
+
+                                    <p
+                                        class="mt-1 text-sm text-gray-500">
+
+                                        Belum ada data jurusan yang tersedia.
+
+                                    </p>
+
+                                </div>
+
                             </td>
+
                         </tr>
+
                     @endforelse
+
                 </tbody>
+
             </table>
+
         </div>
 
-        <livewire:murid.rombel.jurusan.delete />
-        {{ $listJurusan->links('livewire.components.pagination') }}
+        <!-- pagination -->
+        <div
+            class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+
+            {{ $listJurusan->links('livewire.components.pagination') }}
+
+        </div>
+
     </div>
+
+    <!-- modal -->
+    <livewire:murid.rombel.jurusan.delete />
+
 </div>

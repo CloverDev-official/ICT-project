@@ -24,6 +24,15 @@
             'active' => 'mdi:account-file',
             'inactive' => 'mdi:account-file-outline'
         ],
+
+        'riwayatAbsenMurid' => [
+            'active' => 'mdi:user-clock',
+            'inactive' => 'mdi:user-clock-outline'
+        ],
+        'rekapAbsenGuru' => [
+            'active' => 'mdi:account-file',
+            'inactive' => 'mdi:account-file-outline'
+        ],
         'absenMurid' => [
             'active' => 'mdi:account-check',
             'inactive' => 'mdi:account-check-outline'
@@ -59,6 +68,10 @@
         'manajemenUser' => [
             'active' => 'mdi:account-cog',
             'inactive' => 'mdi:account-cog-outline'
+        ],
+        'manajemenTahunAjaran' => [
+            'active' => 'mdi:account-school',
+            'inactive' => 'mdi:account-school-outline'
         ],
 
     ];

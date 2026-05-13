@@ -29,11 +29,14 @@ use App\Livewire\Murid\Rombel\Kelas\Create as CreateKelas;
 use App\Livewire\Murid\Rombel\Kelas\Edit as EditKelasRombel;
 use App\Livewire\Manajemen\Waktu;
 use App\Livewire\Manajemen\GenerateQR;
+use App\Livewire\Manajemen\TahunAjaran;
 use App\Livewire\Manajemen\Waktu\ManajemenWaktu;
 use App\Livewire\Manajemen\User\EditUser;
 use App\Livewire\Manajemen\User\ManajemenUser;
 use App\Livewire\Manajemen\User\TambahUser;
 use App\Livewire\Manajemen\Waktu\TambahEvent;
+use App\Livewire\Murid\Riwayat\DetailMurid;
+use App\Livewire\Murid\Riwayat\RiwayatMurid;
 use App\Livewire\PilihAbsen;
 use App\Livewire\RekapAbsenGuru;
 use App\Livewire\RekapAbsenMurid;
@@ -56,7 +59,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/absen-guru', RekapAbsenGuru::class)->name('rekap-absen-guru');
     });
 
-    
+    route::prefix('/riwayat')->group(function () {
+        Route::get('/absen-murid', RiwayatMurid::class)->name('riwayat-absen-murid');
+        Route::get('/detail-absen-murid', DetailMurid::class)->name('riwayat-detail-absen-murid');
+    });
+
     // absensi
     route::prefix('/absensi')->group(function () {
         Route::get('/murid', IndexAbsen::class)->name('absensi-murid');
@@ -97,7 +104,13 @@ Route::prefix('admin')->group(function () {
             route::get('/create', TambahEvent::class)->name('tambah-event');
         
         });
+
+        // generate
         route::get('/generate-qr', GenerateQR::class)->name('generate-QR');
+
+        // tahun ajaran
+        route::get('/tahun-ajaran', TahunAjaran::class)->name('manajemen-tahun-ajaran');
+        
         // manajemen user group
         route::prefix('/manajemen-user')->group( function () {
             route::get('/', ManajemenUser::class)->name('manajemen-user');

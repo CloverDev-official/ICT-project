@@ -22,7 +22,7 @@
 
         @livewireStyles
     </head>
-    <body class="cursor-auto" >
+    <body class="cursor-auto overflow-hidden scroll-hidden" >
         {{ $slot }}
 
         @livewireScripts

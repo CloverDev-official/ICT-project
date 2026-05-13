@@ -1,185 +1,407 @@
-<div>
-    <div class="flex items-center justify-start gap-5">
-        <!-- btn tambah data siswa -->
-        <a href="{{ route('tambah-user') }}" wire:navigate>
-            <button
-                class="px-4 py-2 rounded-lg bg-emerald-600 text-white transition-all duration-200 hover:bg-emerald-700 active:scale-95 flex items-center justify-center gap-1 capitalize ">
-                <iconify-icon icon="line-md:plus" width="20" height="20"></iconify-icon>
-                tambah user
-            </button>
-        </a>
+<div class="space-y-6">
 
-        <!-- btn import CSV -->
-        <div x-data="{ openModalImport: false }" >
-            <button
-                @click="openModalImport = true"
-                class="px-4 py-2 rounded-lg bg-blue-main text-white transition-all duration-200 hover:bg-blue-deep-solid active:scale-95 flex items-center justify-center gap-1 capitalize ">
-                <iconify-icon icon="line-md:file-import" width="20" height="20"></iconify-icon>
-                import CSV
-            </button>
-            <!-- modal import murid  -->
-            <livewire:components.modal.manajemen.user.modal-import-user/>
+    <!-- HEADER -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-6 shadow-sm">
+
+        <!-- ornament -->
+        <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-white/5"></div>
+
+        <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <!-- title -->
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white">
+
+                    <iconify-icon
+                        icon="solar:users-group-rounded-bold"
+                        width="34"
+                        height="34">
+                    </iconify-icon>
+
+                </div>
+
+                <div>
+                    <h1 class="text-3xl font-bold text-white capitalize">
+                        Manajemen User
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Kelola akun operator, wali kelas, dan pengawas.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- action -->
+            <div class="flex flex-col sm:flex-row gap-3">
+
+                <!-- tambah -->
+                <a href="{{ route('tambah-user') }}" wire:navigate>
+                    <button
+                        class="group w-full sm:w-auto rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-main shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+
+                        <div class="flex items-center justify-center gap-2">
+
+                            <iconify-icon
+                                class="transition group-hover:rotate-90"
+                                icon="line-md:plus"
+                                width="22"
+                                height="22">
+                            </iconify-icon>
+
+                            Tambah User
+
+                        </div>
+
+                    </button>
+                </a>
+
+                <!-- import -->
+                <div x-data="{ openModalImport: false }">
+
+                    <button
+                        @click="openModalImport = true"
+                        class="group w-full sm:w-auto rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20">
+
+                        <div class="flex items-center justify-center gap-2">
+
+                            <iconify-icon
+                                class="transition group-hover:-translate-y-0.5"
+                                icon="line-md:file-import"
+                                width="22"
+                                height="22">
+                            </iconify-icon>
+
+                            Import CSV
+
+                        </div>
+
+                    </button>
+
+                    <!-- modal -->
+                    <livewire:components.modal.manajemen.user.modal-import-user />
+                </div>
+
+            </div>
+
         </div>
     </div>
-    <!-- TABLE DAFTAR PETUGAS -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-5">
 
-        <!-- category -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 pt-4">
-            <!-- ROLE -->
-            <div 
-                x-data="{
-                    open: false,
-                    selectedId: null,
-                    selectedLabel: 'Semua Role',
+    <!-- TABLE -->
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-                    select(id, label){
-                        this.selectedId = id
-                        this.selectedLabel = label
-                        this.open = false
-                    },
+        <!-- FILTER -->
+        <div class="border-b border-gray-200 p-5">
 
-                    toggle(){
-                        this.open = !this.open
-                    }
-                }"
-                class="relative w-full"
-            >
-                <!-- trigger -->
-                <div 
-                    @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition"
-                >
-                    <span x-text="selectedLabel" class="text-gray-700"></span>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
 
-                    <iconify-icon 
-                        class="text-gray-400 transition-transform" 
-                        :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" 
-                        width="20" 
-                        height="20">
-                    </iconify-icon>
-                </div>
-
-                <!-- dropdown -->
+                <!-- ROLE -->
                 <div
-                    x-show="open"
-                    @click.outside="open = false"
-                    x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
-                >
-                    <!-- semua -->
+                    x-data="{
+                        open: false,
+                        selectedId: null,
+                        selectedLabel: 'Semua Role',
+
+                        select(id, label){
+                            this.selectedId = id
+                            this.selectedLabel = label
+                            this.open = false
+                        },
+
+                        toggle(){
+                            this.open = !this.open
+                        }
+                    }"
+                    class="relative w-full">
+
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">
+                        Filter Role
+                    </label>
+
+                    <!-- trigger -->
                     <div
-                        @click.prevent="select(null, 'Semua role')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
-                    >
-                        <span>Semua role</span>
-                        <iconify-icon 
-                            x-show="selectedId === null" 
-                            icon="lineicons:check" 
-                            width="20" 
+                        @click="toggle()"
+                        class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main">
+
+                        <span x-text="selectedLabel" class="text-gray-700"></span>
+
+                        <iconify-icon
+                            class="text-gray-400 transition-transform"
+                            :class="{ 'rotate-180': open }"
+                            icon="lineicons:chevron-up"
+                            width="20"
                             height="20">
                         </iconify-icon>
+
                     </div>
 
-                    <!-- list -->
-                    @foreach (['operator', 'wali kelas', 'pengawas'] as $role)
-                        <div
-                            @click.prevent="select('{{ $role }}', '{{ $role }}')"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
-                        >
-                            <span>{{ $role }}</span>
+                    <!-- dropdown -->
+                    <div
+                        x-show="open"
+                        @click.outside="open = false"
+                        x-transition
+                        class="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
 
-                            <iconify-icon 
-                                x-show="selectedId === '{{ $role }}'" 
-                                icon="lineicons:check" 
-                                width="20" 
+                        <!-- semua -->
+                        <div
+                            @click.prevent="select(null, 'Semua Role')"
+                            class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                            <span>Semua Role</span>
+
+                            <iconify-icon
+                                x-show="selectedId === null"
+                                icon="lineicons:check"
+                                width="20"
                                 height="20">
                             </iconify-icon>
+
                         </div>
-                    @endforeach
+
+                        <!-- list -->
+                        @foreach (['operator', 'wali kelas', 'pengawas'] as $role)
+
+                            <div
+                                @click.prevent="select('{{ $role }}', '{{ $role }}')"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 capitalize transition hover:bg-blue-main hover:text-white">
+
+                                <span>{{ $role }}</span>
+
+                                <iconify-icon
+                                    x-show="selectedId === '{{ $role }}'"
+                                    icon="lineicons:check"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
                 </div>
+
+                <!-- search -->
+                <div class="lg:col-span-3">
+
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">
+                        Cari User
+                    </label>
+
+                    <div class="relative">
+
+                        <input
+                            type="search"
+                            name="search"
+                            wire:model.live.debounce.500ms="search"
+                            placeholder="Cari nama user..."
+                            class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-4 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+
+                        <div
+                            class="absolute inset-y-0 right-4 flex items-center text-gray-400">
+
+                            <iconify-icon
+                                icon="mdi:account-search-outline"
+                                width="22"
+                                height="22">
+                            </iconify-icon>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <!-- input search -->
-            <div class="col-span-2 md:col-span-2 md:col-start-3 relative w-full">
-                <input 
-                    type="search"
-                    name="search"
-                    wire:model.live.debounce.500ms="search"
-                    placeholder="Cari Nama User..."
-                    class="min-w-xs w-full text-sm mt-1 px-4 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-xl
-                    hover:border-blue-500
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
-                    transition"
-                />
-
-                <div class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
-                    <iconify-icon icon="mdi:account-search-outline" width="20" height="20"></iconify-icon>
-                </div>
-            </div>
         </div>
-        <div class="overflow-x-auto m-4 rounded-lg shadow-sm">
-            <!-- TABLE -->
+
+        <!-- table -->
+        <div class="overflow-x-auto">
+
             <table class="w-full text-sm">
 
-                <thead class="bg-blue-main text-white">
+                <thead class="bg-gray-100 text-gray-700">
                     <tr>
-                        <th class="border-gray-400 px-6 py-3">No</th>
-                        <th class="border-gray-400 px-6 py-3">UserName</th>
-                        <th class="border-gray-400 px-6 py-3">nama guru</th>
-                        <th class="border-gray-400 px-6 py-3">Role</th>
-                        <th class="border-gray-400 px-6 py-3">Status</th>
-                        <th class="border-gray-400 px-6 py-3">Aksi</th>
+                        <th class="px-6 py-4 text-center font-semibold">
+                            No
+                        </th>
+
+                        <th class="px-6 py-4 text-left font-semibold">
+                            Username
+                        </th>
+
+                        <th class="px-6 py-4 text-left font-semibold">
+                            Email
+                        </th>
+
+                        <th class="px-6 py-4 text-center font-semibold">
+                            Role
+                        </th>
+
+                        <th class="px-6 py-4 text-center font-semibold">
+                            Status
+                        </th>
+
+                        <th class="px-6 py-4 text-center font-semibold">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
 
                 <tbody>
                     @foreach ([
-                        ['nama' => 'dodi', 'email' => 'op-skenda@gmail.com', 'role' => 'operator', 'status' => 'akitf'],
+                        ['nama' => 'dodi', 'email' => 'op-skenda@gmail.com', 'role' => 'operator', 'status' => 'aktif'],
                         ['nama' => 'sincung', 'email' => 'wakel@gmail.com', 'role' => 'wali kelas', 'status' => 'nonaktif'],
-                        ['nama' => 'bambang', 'email' => 'kepsek@gmail.com', 'role' => 'pengawas', 'status' => 'akitf'],
+                        ['nama' => 'bambang', 'email' => 'kepsek@gmail.com', 'role' => 'pengawas', 'status' => 'aktif'],
                     ] as $item)
+
                         @php
                             $statusValue = strtolower((string) $item['status']);
+
                             $statusClass = match ($statusValue) {
-                                'nonaktif' => 'text-rose-500 bg-rose-100',
-                                default => 'text-green-500 bg-green-100',
+                                'nonaktif' => 'bg-rose-100 text-rose-600',
+                                default => 'bg-green-100 text-green-600',
                             };
                         @endphp
-                        <tr class="text-center hover:bg-gray-100" >
-                            <td class="border-r border-gray-200 px-6 py-4">{{ $loop->iteration }}</td>
-                            <td class="border-r border-gray-200 px-6 py-4">{{$item['nama']}}</td>
-                            <td class="border-r border-gray-200 px-6 py-4">{{ $item['email'] }}</td>
-                            <td class="border-r border-gray-200 px-6 py-4">{{ $item['role'] }}</td>
-                            <td class="border-r border-gray-200 px-6 py-4 flex items-center justify-center">
-                                <p class="text-xs shadow-xs px-6 py-1 rounded-full font-semibold capitalize {{ $statusClass }}">
-                                    {{ $item['status'] }}
-                                </p>
+
+                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
+
+                            <!-- no -->
+                            <td class="px-6 py-5 text-center font-medium text-gray-700">
+                                {{ $loop->iteration }}
                             </td>
-                            <td class="border-r border-gray-200">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button class="w-8 h-8 flex items-center justify-center p-2 rounded-xl bg-blue-500  shadow-xs text-white transition-all duration-150 hover:bg-blue-600" >
-                                            <iconify-icon icon="lineicons:ban-2" width="20" height="20"></iconify-icon>
-                                    </button>
-                                    <a href="{{ route('edit-user') }}">
-                                        <button class="w-8 h-8 flex items-center justify-center p-2 rounded-xl bg-amber-400  shadow-xs text-white transition-all duration-150 hover:bg-amber-500" >
-                                                <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
-                                        </button>
-                                    </a>
-                                    <div x-data="{ openModalDelete: false }">
-                                        <button @click="openModalDelete = true" class="w-8 h-8 flex items-center justify-center p-2 rounded-xl bg-rose-500  shadow-xs text-white transition-all duration-150 hover:bg-rose-600" >
-                                                <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
-                                        </button>
-                                        <livewire:components.modal.manajemen.user.modal-hapus-user/>
+
+                            <!-- user -->
+                            <td class="px-6 py-5">
+
+                                <div class="flex items-center gap-3">
+
+                                    <div
+                                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
+
+                                        {{ substr($item['nama'], 0, 1) }}
+
                                     </div>
+
+                                    <div>
+                                        <h1 class="font-semibold capitalize text-gray-800">
+                                            {{ $item['nama'] }}
+                                        </h1>
+
+                                        <p class="text-xs text-gray-400">
+                                            User account
+                                        </p>
+                                    </div>
+
                                 </div>
+
                             </td>
-                        </tr>                   
+
+                            <!-- email -->
+                            <td class="px-6 py-5 text-gray-600">
+                                {{ $item['email'] }}
+                            </td>
+
+                            <!-- role -->
+                            <td class="px-6 py-5 text-center">
+
+                                <div
+                                    class="inline-flex rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold capitalize text-blue-600">
+
+                                    {{ $item['role'] }}
+
+                                </div>
+
+                            </td>
+
+                            <!-- status -->
+                            <td class="px-6 py-5 text-center">
+
+                                <div class="flex items-center justify-center">
+
+                                    <div
+                                        class="{{ $statusClass }} inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize">
+
+                                        <div class="h-2 w-2 rounded-full bg-current"></div>
+
+                                        {{ $item['status'] }}
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                            <!-- aksi -->
+                            <td class="px-6 py-5">
+
+                                <div class="flex items-center justify-center gap-2">
+
+                                    <!-- ban -->
+                                    <button
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-600">
+
+                                        <iconify-icon
+                                            icon="lineicons:ban-2"
+                                            width="20"
+                                            height="20">
+                                        </iconify-icon>
+
+                                    </button>
+
+                                    <!-- edit -->
+                                    <a href="{{ route('edit-user') }}">
+
+                                        <button
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+
+                                            <iconify-icon
+                                                icon="lineicons:pencil-1"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
+                                        </button>
+
+                                    </a>
+
+                                    <!-- delete -->
+                                    <div x-data="{ openModalDelete: false }">
+
+                                        <button
+                                            @click="openModalDelete = true"
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
+
+                                            <iconify-icon
+                                                icon="lineicons:trash-3"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
+                                        </button>
+
+                                        <livewire:components.modal.manajemen.user.modal-hapus-user />
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
                     @endforeach
                 </tbody>
 
             </table>
+
         </div>
+
     </div>
+
 </div>
