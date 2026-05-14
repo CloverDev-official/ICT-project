@@ -29,7 +29,7 @@
                 <div>
 
                     <h1 class="text-3xl font-bold text-white">
-                        Rekap Absensi Murid
+                        Absensi Murid
                     </h1>
 
                     <p class="mt-1 text-sm text-blue-100">

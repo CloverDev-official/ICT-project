@@ -1,168 +1,285 @@
-<div class="grid grid-cols-1 gap-5 lg:gap-10">
-    <!-- jumlah -->
-    <div class="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-4">
-        <!-- jumlah murid -->
-        <div
-            class="w-full p-6 rounded-2xl bg-linear-to-t/hsl from-blue-deep-solid  to-blue-main  shadow-lg flex items-center justify-start md:justify-center gap-8">
-            <div class="order-2 md:order-1">
-                <h4 class="text-white font-extrabold text-xl">1606 <!-- jumlah murid --> </h4>
-                <p class="text-gray-300 text-sm font-semibold capitalize">jumlah murid</p>
-            </div>
-            <div
-                class="order-1 md:order-2 w-12 h-12 p-5 rounded-full bg-blue-main text-white flex items-center justify-center shadow-md">
-                <iconify-icon icon="line-md:account-small" width="24" height="24"></iconify-icon>
-            </div>
-        </div>
-        <!-- jumlah guru -->
-        <div
-            class="w-full p-6 rounded-2xl bg-linear-to-t/hsl from-blue-deep-solid  to-blue-main shadow-lg flex items-center justify-start md:justify-center gap-8">
-            <div class="order-2 md:order-1">
-                <h4 class="text-white font-extrabold text-xl">450 <!-- jumlah guru --> </h4>
-                <p class="text-gray-300 text-sm font-semibold capitalize">jumlah guru</p>
-            </div>
-            <div
-                class="order-1 md:order-2 w-12 h-12 p-5 rounded-full bg-blue-main text-white flex items-center justify-center shadow-md">
-                <iconify-icon icon="line-md:account" width="24" height="24"></iconify-icon>
-            </div>
-        </div>
-        <!-- jumlah kelas dan jurusan -->
-        <div
-            class="w-full p-6 rounded-2xl bg-linear-to-t/hsl from-blue-deep-solid  to-blue-main shadow-lg flex items-center justify-start md:justify-center gap-8">
-            <div class="order-2 md:order-1">
-                <h4 class="text-white font-extrabold text-xl">55 / 8 <!-- jumlah kelas dan jurusan --> </h4>
-                <p class="text-gray-300 text-sm font-semibold capitalize">jumlah kelas & jurusan</p>
-            </div>
-            <div
-                class="order-1 md:order-2 w-12 h-12 p-5 rounded-full bg-blue-main text-white flex items-center justify-center shadow-md">
-                <iconify-icon icon="line-md:star" width="24" height="24"></iconify-icon>
-            </div>
-        </div>
-        <div
-            class="w-full p-6 rounded-2xl bg-linear-to-t/hsl from-blue-deep-solid  to-blue-main shadow-lg flex items-center justify-start md:justify-center gap-8">
-            <div class="order-2 md:order-1">
-                <h4 class="text-white font-extrabold text-xl">2 <!-- jumlah murid --> </h4>
-                <p class="text-gray-300 text-sm font-semibold capitalize">jumlah petugas</p>
-            </div>
-            <div
-                class="order-1 md:order-2 w-12 h-12 p-5 rounded-full bg-blue-main text-white flex items-center justify-center shadow-md">
-                <iconify-icon icon="line-md:cog-loop" width="24" height="24"></iconify-icon>
+<div class="space-y-6">
+
+    <!-- HERO -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-6 shadow-lg">
+
+        <div class="absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-white/10"></div>
+
+        <div class="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+            <div class="flex items-center gap-5">
+
+                <div
+                    class="hidden md:flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:home-smile-bold"
+                        width="34"
+                        height="34"
+                        class="text-white">
+                    </iconify-icon>
+
+                </div>
+
+                <div>
+                    <h1 class="text-3xl font-bold text-white">
+                        Dashboard Absensi
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Ringkasan data sekolah dan kehadiran hari ini.
+                    </p>
+                </div>
+
             </div>
         </div>
     </div>
-    <!-- container absensi -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <!-- absensi murid -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
 
-            <!-- Header -->
-            <div class=" flex flex-col lg:flex-row items-start lg:items-center lg:justify-between gap-4 mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Absensi Murid Hari Ini</h2>
-                    <p class="text-sm text-gray-500">Pantau kehadiran Murid | {{ $dateNow ?? 'Tanggal sekarang' }}</p>
-                </div>
+    <!-- STAT CARDS -->
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-                <div x-data="{
-                
-                    open: false,
-                
-                    selected: '',
-                
-                    select(item) {
-                        this.selected = item
-                        this.open = false
-                
-                    }
-                
-                }" class="relative w-40">
+        @foreach ([
+            ['label' => 'Jumlah Murid', 'value' => '1606', 'icon' => 'solar:users-group-rounded-bold', 'color' => 'bg-blue-100 text-blue-main'],
+            ['label' => 'Jumlah Guru', 'value' => '450', 'icon' => 'solar:user-id-bold', 'color' => 'bg-emerald-100 text-emerald-600'],
+            ['label' => 'Kelas & Jurusan', 'value' => '55 / 8', 'icon' => 'solar:buildings-2-bold', 'color' => 'bg-amber-100 text-amber-600'],
+            ['label' => 'Jumlah Petugas', 'value' => '2', 'icon' => 'solar:settings-bold', 'color' => 'bg-rose-100 text-rose-600'],
+        ] as $stat)
 
-                    <!-- Button -->
-                    <div @click="open = !open"
-                        class="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
+            <div
+                class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
 
-                        <span x-text="selected ? selected : 'Semua Kelas'" class="text-gray-700 text-sm"></span>
+                <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gray-100 blur-2xl"></div>
 
-                        <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                            icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                <div class="relative flex items-center justify-between">
+
+                    <div>
+                        <p class="text-sm text-gray-400">
+                            {{ $stat['label'] }}
+                        </p>
+
+                        <h2 class="mt-2 text-3xl font-bold text-gray-800">
+                            {{ $stat['value'] }}
+                        </h2>
                     </div>
 
-                    <!-- Dropdown -->
-                    <div x-show="open" @click.outside="open = false" x-transition
-                        class="absolute mt-2 w-full h-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto z-50 scroll-thin">
+                    <div class="{{ $stat['color'] }} flex h-14 w-14 items-center justify-center rounded-2xl">
+                        <iconify-icon icon="{{ $stat['icon'] }}" width="28" height="28"></iconify-icon>
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endforeach
+
+    </div>
+
+    <!-- ABSENSI HARI INI -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+
+        <!-- MURID -->
+        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+            <div
+                class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">
+                        Absensi Murid Hari Ini
+                    </h2>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        Pantau kehadiran murid berdasarkan kelas.
+                    </p>
+                </div>
+
+                <!-- filter kelas -->
+                <div
+                    x-data="{
+                        open: false,
+                        selected: '',
+
+                        select(item) {
+                            this.selected = item
+                            this.open = false
+                        }
+                    }"
+                    class="relative w-full lg:w-48">
+
+                    <div
+                        @click="open = !open"
+                        class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
+
+                        <span
+                            x-text="selected ? selected : 'Semua Kelas'"
+                            class="text-gray-700">
+                        </span>
+
+                        <iconify-icon
+                            icon="lineicons:chevron-up"
+                            width="20"
+                            height="20"
+                            class="text-gray-400 transition-transform"
+                            :class="{ 'rotate-180': open }">
+                        </iconify-icon>
+
+                    </div>
+
+                    <div
+                        x-show="open"
+                        x-transition
+                        @click.outside="open = false"
+                        style="display:none"
+                        class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
+
                         @foreach (['Semua Kelas', 'X PPLG A', 'X PPLG B', 'XI PPLG A', 'XI PPLG B', 'XII PPLG A', 'XII PPLG B'] as $kelas)
-                            <div @click="select('{{ $kelas }}')"
-                                class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+
+                            <div
+                                @click="select('{{ $kelas }}')"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition hover:bg-blue-main hover:text-white">
 
                                 <span>{{ $kelas }}</span>
 
-                                <!-- icon check -->
-                                <iconify-icon x-show="selected === '{{ $kelas }}'" icon="lineicons:check"
-                                    width="24" height="24"></iconify-icon>
+                                <iconify-icon
+                                    x-show="selected === '{{ $kelas }}'"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
                             </div>
+
                         @endforeach
+
                     </div>
-                </div>
-            </div>
-            <!-- Chart untuk murid -->
-            <div id="main-murid" class="h-52"></div>
-        </div>
-        <!-- absensi guru -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
 
-            <!-- Header -->
-            <div class=" flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Absensi Guru Hari Ini</h2>
-                    <p class="text-sm text-gray-500">Pantau kehadiran guru | {{ $dateNow ?? 'Tanggal sekarang' }}</p>
                 </div>
+
             </div>
-            <!-- Chart untuk guru -->
-            <div id="main-guru" class="h-52"></div>
+
+            <div class="p-6">
+                <div id="main-murid" class="h-64 w-full"></div>
+            </div>
 
         </div>
+
+        <!-- GURU -->
+        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+            <div class="border-b border-gray-200 px-6 py-5">
+
+                <h2 class="text-xl font-bold text-gray-800">
+                    Absensi Guru Hari Ini
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Pantau kehadiran guru hari ini.
+                </p>
+
+            </div>
+
+            <div class="p-6">
+                <div id="main-guru" class="h-64 w-full"></div>
+            </div>
+
+        </div>
+
     </div>
-    <!-- container tingkat kehadiran -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <!-- tingkat kehadiran murid -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
 
-            <!-- Header -->
-            <div class=" flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Tingkat Kehadiran Murid</h2>
-                    <p class="text-sm text-gray-500">Statistik kehadiran 7 hari terakhir |
-                        {{ $dateNow ?? 'Tanggal sekarang' }}</p>
-                </div>
-            </div>
-            <!-- Chart untuk murid -->
-            <div id="chart-tingkat-kehadiran-murid" class="h-64"></div>
-            <a wire:navigate href="{{ route('data-murid') }}"
-                class="relative flex items-end transition-colors duration-200 hover:text-blue-deep-solid">
-                <p class="font-semibold text-sm">Lihat data</p>
-                <iconify-icon class="absolute top-[2px] left-[3.8rem] rotate-180" icon="lineicons:chevron-left"
-                    width="20" height="20"></iconify-icon>
-            </a>
-        </div>
-        <!-- tingakt headiran guru -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
+    <!-- TINGKAT KEHADIRAN -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
-            <!-- Header -->
-            <div class=" flex items-center justify-between mb-6">
+        <!-- MURID -->
+        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+            <div
+                class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
+
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">Tingkat Kehadiran Guru</h2>
-                    <p class="text-sm text-gray-500">Statistik kehadiran 7 hari terakhir |
-                        {{ $dateNow ?? 'Tanggal sekarang' }}</p>
+                    <h2 class="text-xl font-bold text-gray-800">
+                        Tingkat Kehadiran Murid
+                    </h2>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        Statistik kehadiran 7 hari terakhir.
+                    </p>
                 </div>
+
+                <div
+                    class="rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-main">
+                    7 Hari
+                </div>
+
             </div>
-            <!-- Chart untuk guru -->
-            <div id="chart-tingkat-kehadiran-guru" class="h-64"></div>
-            <a wire:navigate href="{{ route('data-guru') }}"
-                class="relative flex items-center  transition-colors duration-200 hover:text-blue-deep-solid">
-                <p class="font-semibold text-sm">Lihat data</p>
-                <iconify-icon class="absolute top-[2px] left-[3.8rem] rotate-180" icon="lineicons:chevron-left"
-                    width="20" height="20"></iconify-icon>
-            </a>
+
+            <div class="p-6">
+                <div id="chart-tingkat-kehadiran-murid" class="h-72 w-full"></div>
+
+                <a
+                    wire:navigate
+                    href="{{ route('data-murid') }}"
+                    class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-main transition hover:bg-blue-main hover:text-white">
+
+                    Lihat Data
+
+                    <iconify-icon
+                        icon="solar:arrow-right-linear"
+                        width="18"
+                        height="18">
+                    </iconify-icon>
+
+                </a>
+            </div>
+
         </div>
+
+        <!-- GURU -->
+        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+            <div
+                class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
+
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">
+                        Tingkat Kehadiran Guru
+                    </h2>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        Statistik kehadiran 7 hari terakhir.
+                    </p>
+                </div>
+
+                <div
+                    class="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600">
+                    7 Hari
+                </div>
+
+            </div>
+
+            <div class="p-6">
+                <div id="chart-tingkat-kehadiran-guru" class="h-72 w-full"></div>
+
+                <a
+                    wire:navigate
+                    href="{{ route('data-guru') }}"
+                    class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-600 hover:text-white">
+
+                    Lihat Data
+
+                    <iconify-icon
+                        icon="solar:arrow-right-linear"
+                        width="18"
+                        height="18">
+                    </iconify-icon>
+
+                </a>
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 
 @script

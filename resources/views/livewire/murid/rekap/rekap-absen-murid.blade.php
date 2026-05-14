@@ -1,92 +1,289 @@
-<div>
-    <!-- ================= STAT CARD ================= -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
+<div class="space-y-6">
 
-        <!-- JUMLAH MURID -->
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-400">Jumlah Murid</p>
-                <h3 class="text-2xl font-semibold text-gray-800">{{ number_format($statistik['totalMurid']) }}</h3>
+    <!-- HERO -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-6 shadow-lg">
+
+        <!-- glow -->
+        <div class="absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-white/5"></div>
+
+        <div
+            class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <!-- left -->
+            <div class="flex items-center gap-5">
+
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:clipboard-check-bold"
+                        width="34"
+                        height="34"
+                        class="text-white">
+                    </iconify-icon>
+
+                </div>
+
+                <div>
+
+                    <h1 class="text-3xl font-bold text-white">
+                        Rekap Kehadiran Murid
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Statistik dan laporan kehadiran murid secara realtime.
+                    </p>
+
+                </div>
+
             </div>
 
-            <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <iconify-icon icon="mdi:account-group" width="24"></iconify-icon>
-            </div>
-        </div>
+            <!-- info -->
+            <div
+                class="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur">
 
-        <!-- HADIR -->
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-400">Hadir</p>
-                <h3 class="text-2xl font-semibold text-gray-800">{{ number_format($statistik['hadir']) }}</h3>
-            </div>
+                <p class="text-xs uppercase tracking-[0.2em] text-blue-100">
+                    Kehadiran Hari Ini
+                </p>
 
-            <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <iconify-icon icon="mdi:check-circle" width="24"></iconify-icon>
-            </div>
-        </div>
+                <h2 class="mt-1 text-3xl font-bold text-white">
+                    {{ $statistik['persentase'] }}%
+                </h2>
 
-        <!-- SAKIT -->
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-400">Sakit</p>
-                <h3 class="text-2xl font-semibold text-gray-800">{{ number_format($statistik['sakit']) }}</h3>
             </div>
 
-            <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-yellow-50 text-yellow-600">
-                <iconify-icon icon="mdi:emoticon-sick-outline" width="24"></iconify-icon>
-            </div>
-        </div>
-
-        <!-- IZIN -->
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-400">Izin</p>
-                <h3 class="text-2xl font-semibold text-gray-800">{{ number_format($statistik['izin']) }}</h3>
-            </div>
-
-            <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-orange-50 text-orange-600">
-                <iconify-icon icon="mdi:file-document-outline" width="24"></iconify-icon>
-            </div>
-        </div>
-
-        <!-- PERSENTASE -->
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-400">Persentase</p>
-                <h3 class="text-2xl font-semibold text-emerald-600">{{ $statistik['persentase'] }}%</h3>
-            </div>
-
-            <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <iconify-icon icon="mdi:chart-donut" width="24"></iconify-icon>
-            </div>
         </div>
 
     </div>
 
-    <!-- =================== CATEGORY ========================= -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 ">
-        <div>
-            <h1 class="font-semibold text-gray-800 text-xl capitalize">kategori</h1>
-            <p class="text-sm text-gray-400" >
-                Filter rekap absen murid berdasarkan tanggal, jurusan, kelas.
-            </p>
-        </div>
-        <div class="mt-5 pt-4 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-5">
-            <!-- TANGGAL -->
-            <div class="relative w-full">
-                
-                <label class="text-sm text-gray-600 capitalize font-semibold">tanggal</label>
+    <!-- STATISTIC -->
+    <div class="grid grid-cols-2 gap-5 xl:grid-cols-5">
 
-                <input type="date" wire:model.live="filterTanggal"
-                    class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
-                    hover:border-blue-500
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
-                    transition" />
+        <!-- total -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div class="absolute right-0 top-0 h-24 w-24 rounded-full bg-blue-100 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-sm text-gray-400">
+                        Jumlah Murid
+                    </p>
+
+                    <h2 class="mt-2 text-3xl font-bold text-gray-800">
+                        {{ number_format($statistik['totalMurid']) }}
+                    </h2>
+
+                </div>
+
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-main">
+
+                    <iconify-icon
+                        icon="mdi:account-group"
+                        width="28">
+                    </iconify-icon>
+
+                </div>
+
             </div>
-                
-                <!-- tingkat -->
-                <div x-data="{
+
+        </div>
+
+        <!-- hadir -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div class="absolute right-0 top-0 h-24 w-24 rounded-full bg-emerald-100 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-sm text-gray-400">
+                        Hadir
+                    </p>
+
+                    <h2 class="mt-2 text-3xl font-bold text-emerald-600">
+                        {{ number_format($statistik['hadir']) }}
+                    </h2>
+
+                </div>
+
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+
+                    <iconify-icon
+                        icon="mdi:check-circle"
+                        width="28">
+                    </iconify-icon>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- sakit -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div class="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-100 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-sm text-gray-400">
+                        Sakit
+                    </p>
+
+                    <h2 class="mt-2 text-3xl font-bold text-amber-600">
+                        {{ number_format($statistik['sakit']) }}
+                    </h2>
+
+                </div>
+
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+
+                    <iconify-icon
+                        icon="mdi:emoticon-sick-outline"
+                        width="28">
+                    </iconify-icon>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- izin -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div class="absolute right-0 top-0 h-24 w-24 rounded-full bg-orange-100 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-sm text-gray-400">
+                        Izin
+                    </p>
+
+                    <h2 class="mt-2 text-3xl font-bold text-orange-500">
+                        {{ number_format($statistik['izin']) }}
+                    </h2>
+
+                </div>
+
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+
+                    <iconify-icon
+                        icon="mdi:file-document-outline"
+                        width="28">
+                    </iconify-icon>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- persentase -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div class="absolute right-0 top-0 h-24 w-24 rounded-full bg-cyan-100 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-sm text-gray-400">
+                        Persentase
+                    </p>
+
+                    <h2 class="mt-2 text-3xl font-bold text-cyan-600">
+                        {{ $statistik['persentase'] }}%
+                    </h2>
+
+                </div>
+
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600">
+
+                    <iconify-icon
+                        icon="mdi:chart-donut"
+                        width="28">
+                    </iconify-icon>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FILTER -->
+    <div
+        class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+
+        <!-- heading -->
+        <div
+            class="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+
+            <div>
+
+                <h2 class="text-xl font-bold text-gray-800">
+                    Filter Rekap
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Filter data berdasarkan tanggal, tingkat, jurusan dan kelas.
+                </p>
+
+            </div>
+
+            <div
+                class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-main">
+
+                Data realtime
+
+            </div>
+
+        </div>
+
+        <!-- filter grid -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+
+            <!-- tanggal -->
+            <div>
+
+                <label
+                    class="mb-2 block text-sm font-semibold text-gray-700">
+
+                    Tanggal
+
+                </label>
+
+                <input
+                    type="date"
+                    wire:model.live="filterTanggal"
+                    class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+
+            </div>
+
+            <!-- tingkat -->
+            <div x-data="{
                     open: false,
                     selectedId: null,
                     selectedLabel: 'Semua tingkat',
@@ -102,101 +299,113 @@
                         this.open = !this.open
                     }
                 }" class="relative w-full">
-                
-                    <label class="text-sm text-gray-600 capitalize font-semibold">tingkat</label>
-                
-                    <!-- trigger -->
-                    <div @click="toggle()"
-                        class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                        <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-                
-                        <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                            icon="lineicons:chevron-up" width="20" height="20">
-                        </iconify-icon>
-                    </div>
-                
-                    <!-- dropdown -->
-                    <div x-show="open" @click.outside="open = false" x-transition
-                        class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                        <!-- semua -->
-                        <div @click.prevent="select(null, 'Semua tingkat')"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>Semua tingkat</span>
-                            <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
-                                height="20">
-                            </iconify-icon>
-                        </div>
-                
-                        <!-- list -->
-                        @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
-                            <div @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
-                                class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                                <span>{{ $tingkat->nama }}</span>
-                
-                                <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check"
-                                    width="20" height="20">
-                                </iconify-icon>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-                
-                <!-- jurusan -->
-                <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: 'Semua jurusan',
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-                    $wire.set('filterJurusan', id)
-                },
-            
-                toggle() {
-                    this.open = !this.open
-                }
-            }" class="relative w-full">
 
-                <label class="text-sm text-gray-600 capitalize font-semibold">jurusan</label>
+                <label class="text-sm text-gray-600 capitalize font-semibold">tingkat</label>
 
                 <!-- trigger -->
                 <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                    class="text-sm mt-1 flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-300 rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-white transition">
                     <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-    
+
                     <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
                         icon="lineicons:chevron-up" width="20" height="20">
                     </iconify-icon>
                 </div>
-    
+
                 <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
                     <!-- semua -->
-                    <div @click.prevent="select(null, 'Semua jurusan')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition ">
-                        <span>Semua jurusan</span>
+                    <div @click.prevent="select(null, 'Semua tingkat')"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
+                        <span>Semua tingkat</span>
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
                             height="20">
                         </iconify-icon>
                     </div>
-    
+
                     <!-- list -->
-                    @foreach ($filteredJurusan as $jurusan)
-                        <div @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>{{ $jurusan->nama }}</span>
-    
-                            <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check"
-                                width="20" height="20">
-                            </iconify-icon>
-                        </div>
+                    @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
+                    <div @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
+                        <span>{{ $tingkat->nama }}</span>
+
+                        <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check"
+                            width="20" height="20">
+                        </iconify-icon>
+                    </div>
                     @endforeach
                 </div>
             </div>
-    
+
+            <!-- jurusan -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('filterJurusan', id)
+                    }
+                }"
+                class="relative">
+
+                <label class="mb-2 block text-sm font-semibold text-gray-700">
+                    Jurusan
+                </label>
+
+                <!-- toggle -->
+                <div
+                    @click="toggle()"
+                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
+
+                    <span
+                        x-text="selectedLabel ?? 'Semua jurusan'"
+                        class="text-sm text-gray-700">
+                    </span>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <!-- dropdown -->
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
+                    <div
+                        @click.prevent="select(null, 'Semua jurusan')"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua jurusan</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+
+                    @foreach ($this->filteredJurusan as $jurusan)
+                    <div
+                        @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $jurusan->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+                    @endforeach
+
+                </div>
+            </div>
+
             <!-- kelas -->
             <div x-data="{
                 open: false,
@@ -221,12 +430,12 @@
                 <div @click="toggle()"
                     class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
                     <span x-text="selectedLabel" class="text-gray-700 line-clamp-1"></span>
-    
+
                     <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
                         icon="lineicons:chevron-up" width="20" height="20">
                     </iconify-icon>
                 </div>
-    
+
                 <!-- dropdown -->
                 <div x-show="open" @click.outside="open = false" x-transition
                     class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
@@ -238,117 +447,157 @@
                             height="20">
                         </iconify-icon>
                     </div>
-    
+
                     <!-- list -->
                     @foreach ($filteredIndeks as $kelas)
-                        <div @click.prevent="select({{ (int) $kelas->id }}, @js($kelas->nama))"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>{{ $kelas->nama }}</span>
-    
-                            <iconify-icon x-show="selectedId == {{ (int) $kelas->id }}" icon="lineicons:check"
-                                width="20" height="20">
-                            </iconify-icon>
-                        </div>
+                    <div @click.prevent="select({{ (int) $kelas->id }}, @js($kelas->nama))"
+                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
+                        <span>{{ $kelas->nama }}</span>
+
+                        <iconify-icon x-show="selectedId == {{ (int) $kelas->id }}" icon="lineicons:check"
+                            width="20" height="20">
+                        </iconify-icon>
+                    </div>
                     @endforeach
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- ============== CHART KEHADIRAN =========== -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8" wire:ignore>
-
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 class="text-xl font-semibold text-gray-800">
-                Rekap Kehadiran Murid
-            </h2>
-
-            <span class="text-xs text-gray-400">
-                Statistik Kehadiran
-            </span>
-        </div>
-
-        <!-- Chart -->
-        <div class="p-6">
-            <div id="chart-rekap-absen-murid" class="w-full h-96"></div>
         </div>
 
     </div>
 
-    <!-- ================= DOWNLOAD ================= -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mt-8">
+    <!-- CHART -->
+    <div
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-        <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h1 class="text-xl font-semibold text-gray-800">
-                Unduh Laporan Kehadiran
-            </h1>
-            <p class="text-sm text-gray-400">
-                Unduh laporan kehadiran murid berdasarkan tanggal dan kelas
-            </p>
-        </div>
+        <!-- top -->
+        <div
+            class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
 
-        <!-- Content -->
-        <div class="p-6 space-y-6">
-
-            <!-- Bulan -->
             <div>
-                <label class="block text-sm font-medium text-gray-600 mb-2">
-                    Pilih Bulan
-                </label>
 
-                <input type="month" wire:model.live="exportBulan"
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl 
-                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-                    outline-none transition">
+                <h2 class="text-xl font-bold text-gray-800">
+                    Statistik Kehadiran
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Grafik kehadiran murid selama 1 tahun terakhir.
+                </p>
+
             </div>
 
-            <!-- Kelas -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: 'Semua kelas',
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-                    $wire.set('exportRombelId', id)
-                }
-            }" class="relative">
+            <div class="flex items-center gap-3">
 
-                <label class="block text-sm font-medium text-gray-600 mb-2">
-                    Pilih Kelas
-                </label>
+                <div
+                    class="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600">
 
-                <!-- Button -->
-                <div @click="open = !open"
-                    class="flex items-center justify-between px-4 py-2.5 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
+                    <div class="h-2 w-2 rounded-full bg-emerald-500"></div>
 
-                    <span x-text="selectedLabel" class="text-sm text-gray-700"></span>
-
-                    <iconify-icon icon="lineicons:chevron-down" width="18" class="text-gray-400 transition"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
+                    Hadir
 
                 </div>
 
-                <!-- Dropdown -->
-                <div x-show="open" x-transition @click.outside="open=false"
-                    class="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto z-50">
+            </div>
 
-                    <div @click="select(null, 'Semua kelas')"
-                        class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
+        </div>
 
-                        <span>Semua kelas</span>
+        <!-- chart -->
+        <div class="p-6">
 
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check"
-                            width="18">
+            <div
+                id="chart-rekap-absen-murid"
+                class="h-[380px] w-full">
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- EXPORT -->
+    <div
+        class=" rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+        <!-- header -->
+        <div class="border-b border-gray-200 px-6 py-5">
+
+            <h2 class="text-xl font-bold text-gray-800">
+                Export Laporan
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-500">
+                Unduh laporan absensi murid dalam berbagai format.
+            </p>
+
+        </div>
+
+        <!-- content -->
+        <div class="grid gap-6 p-6 lg:grid-cols-2">
+
+            <!-- left -->
+            <div class="space-y-5">
+
+                <!-- bulan -->
+                <div>
+
+                    <label
+                        class="mb-2 block text-sm font-semibold text-gray-700">
+
+                        Pilih Bulan
+
+                    </label>
+
+                    <input
+                        type="month"
+                        wire:model.live="exportBulan"
+                        class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+
+                </div>
+
+                <!-- Kelas -->
+                <div x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: 'Semua kelas',
+                    select(id, label) {
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+                        $wire.set('exportRombelId', id)
+                    }
+                }" class="relative">
+
+                    <label class="block text-sm font-medium text-gray-600 mb-2">
+                        Pilih Kelas
+                    </label>
+
+                    <!-- Button -->
+                    <div @click="open = !open"
+                        class="flex items-center justify-between px-4 p-3 border border-gray-300 rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-white transition">
+
+                        <span x-text="selectedLabel" class="text-sm text-gray-700"></span>
+
+                        <iconify-icon icon="lineicons:chevron-down" width="18" class="text-gray-400 transition"
+                            :class="{ 'rotate-180': open }">
                         </iconify-icon>
 
                     </div>
 
-                    @foreach ($listRombel as $rombel)
+                    <!-- Dropdown -->
+                    <div x-show="open" x-transition @click.outside="open=false"
+                        class="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto z-50">
+
+                        <div @click="select(null, 'Semua kelas')"
+                            class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
+
+                            <span>Semua kelas</span>
+
+                            <iconify-icon x-show="selectedId === null" icon="lineicons:check"
+                                width="18">
+                            </iconify-icon>
+
+                        </div>
+
+                        @foreach ($listRombel as $rombel)
                         <div @click="select({{ (int) $rombel->id }}, @js($rombel->nama_lengkap))"
                             class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
 
@@ -359,42 +608,58 @@
                             </iconify-icon>
 
                         </div>
-                    @endforeach
+                        @endforeach
+
+                    </div>
 
                 </div>
 
             </div>
 
-            <!-- Divider -->
-            <div class="border-t border-gray-100 pt-6">
+            <!-- right -->
+            <div
+                class="flex flex-col justify-center rounded-3xl bg-gradient-to-br from-blue-main to-blue-deep p-6 text-white">
 
-                <p class="text-sm text-gray-500 mb-4">
-                    Pilih format file untuk mengunduh laporan
+                <h2 class="text-2xl font-bold">
+                    Export Cepat
+                </h2>
+
+                <p class="mt-2 text-sm text-blue-100">
+                    Download laporan kehadiran murid dengan format yang dibutuhkan.
                 </p>
 
-                <!-- Buttons -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
 
+                    <!-- doc -->
                     <button
-                        class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium transition">
-                        <iconify-icon icon="mdi:file-word" width="18"></iconify-icon>
+                        class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur transition hover:bg-white/20">
+
                         DOCX
+
                     </button>
 
+                    <!-- pdf -->
                     <button
-                        class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium transition">
-                        <iconify-icon icon="mdi:file-pdf-box" width="18"></iconify-icon>
+                        class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur transition hover:bg-white/20">
+
                         PDF
+
                     </button>
 
+                    <!-- excel -->
                     <button
                         wire:click="exportExcel"
                         wire:loading.attr="disabled"
-                        wire:target="exportExcel"
-                        class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed">
-                        <iconify-icon icon="mdi:file-excel" width="18"></iconify-icon>
-                        <span wire:loading.remove wire:target="exportExcel">Excel</span>
-                        <span wire:loading wire:target="exportExcel">Mengekspor...</span>
+                        class="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold transition hover:bg-emerald-600 disabled:opacity-60">
+
+                        <span wire:loading.remove>
+                            EXCEL
+                        </span>
+
+                        <span wire:loading>
+                            Export...
+                        </span>
+
                     </button>
 
                 </div>
@@ -405,159 +670,226 @@
 
     </div>
 
-    <!-- KEHADIRAN PER KELAS -->
-    {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8" wire:ignore>
+    <!-- TABLE -->
+    <div
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-xl font-semibold text-gray-800">
-                Kehadiran per Kelas
-            </h2>
-        </div>
+        <!-- top -->
+        <div
+            class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
 
-        <div class="p-6">
-            <div id="chart-kehadiran-kelas" class="w-full h-96"></div>
-        </div>
+            <div>
 
-    </div> --}}
+                <h2 class="text-xl font-bold text-gray-800">
+                    Murid Tidak Hadir
+                </h2>
 
-    <!-- TABLE MURID TIDAK HADIR -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
+                <p class="mt-1 text-sm text-gray-500">
+                    Daftar murid yang tidak hadir hari ini.
+                </p>
 
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-xl font-semibold text-gray-800">
-                Murid Tidak Hadir Hari Ini
-            </h2>
-            <p class="text-sm text-gray-400">
-                Temukan murid yang tidak hadir berdasarkan status dan nama.
-            </p>
-        </div>
-        <!-- category -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 pt-4">
-        
-            <!-- STATUS -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: 'Semua status',
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-                    $wire.set('filterStatus', id)
-                },
-            
-                toggle() {
-                    this.open = !this.open
-                }
-            }" class="relative w-full">
-                <!-- trigger -->
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel" class="text-gray-700"></span>
+            </div>
 
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="20" height="20">
+            <!-- search -->
+            <div class="relative w-full lg:w-80">
+
+                <input
+                    type="search"
+                    wire:model.live.debounce.500ms="search"
+                    placeholder="Cari nama murid..."
+                    class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-4 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+
+                <div
+                    class="absolute inset-y-0 right-4 flex items-center text-gray-400">
+
+                    <iconify-icon
+                        icon="mdi:account-search-outline"
+                        width="22"
+                        height="22">
                     </iconify-icon>
+
                 </div>
 
-                <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                    <!-- semua -->
-                    <div @click.prevent="select(null, 'Semua status')"
-                        class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                        <span>Semua status</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="20"
-                            height="20">
-                        </iconify-icon>
-                    </div>
-
-                    <!-- list -->
-                    @foreach ($statusOptions as $status)
-                        <div @click.prevent="select('{{ $status }}', '{{ $status }}')"
-                            class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
-                            <span>{{ $status }}</span>
-
-                            <iconify-icon x-show="selectedId === '{{ $status }}'" icon="lineicons:check"
-                                width="20" height="20">
-                            </iconify-icon>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- input search -->
-            <div class="col-span-2 md:col-span-2 md:col-start-3 relative w-full">
-                <input type="search" name="search" wire:model.live.debounce.500ms="search"
-                    placeholder="Cari Nama Murid..."
-                    class="min-w-xs w-full text-sm mt-1 px-4 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-xl
-                    hover:border-blue-500
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
-                    transition" />
-    
-                <div class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
-                    <iconify-icon icon="mdi:account-search-outline" width="20" height="20"></iconify-icon>
-                </div>
             </div>
 
         </div>
-        
-        <div class="overflow-x-auto m-4 rounded-lg ">
 
-            <table class="w-full text-sm ">
+        <!-- table -->
+        <div class="overflow-x-auto">
 
-                <thead class="bg-blue-main text-white">
+            <table class="min-w-full text-sm">
+
+                <thead class="bg-gray-100 text-gray-700">
+
                     <tr>
-                        <th class="border-gray-400 px-6 py-3">No</th>
-                        <th class="border-gray-400 px-6 py-3">Nama</th>
-                        <th class="border-gray-400 px-6 py-3">Kelas</th>
-                        <th class="border-gray-400 px-6 py-3">Status</th>
+
+                        <th class="px-5 py-4 text-center font-semibold">
+                            No
+                        </th>
+
+                        <th class="px-5 py-4 text-left font-semibold">
+                            Nama Murid
+                        </th>
+
+                        <th class="px-5 py-4 text-center font-semibold">
+                            Kelas
+                        </th>
+
+                        <th class="px-5 py-4 text-center font-semibold">
+                            Status
+                        </th>
+
                     </tr>
+
                 </thead>
 
                 <tbody>
-                    @forelse ($listAbsen as $index => $item )
-                        @php
-                            $statusValue = strtolower((string) $item->status);
-                            $statusClass = match ($statusValue) {
-                                'sakit' => 'text-amber-500 bg-amber-100',
-                                'izin' => 'text-blue-500 bg-blue-100',
-                                'alpa' => 'text-rose-500 bg-rose-100',
-                                default => 'text-green-500 bg-green-100',
-                            };
-                        @endphp
-                        <tr
-                            class="text-center {{ $loop->iteration % 2 == 0 ? 'bg-gray-50' : 'bg-white' }} hover:bg-gray-100">
-                            <td class="border-r border-gray-200 px-6 py-4">{{ $index+1 }}</td>
-                            <td class="border-r border-gray-200 px-6 py-4">{{ $item->murid->nama }}</td>
-                            <td class="border-r border-gray-200 px-6 py-4">
-                                {{ $item->murid->rombel->nama_lengkap ?? '-' }}</td>
-                            <td class="px-6 py-4 font-semibold">
-                                <p class="px-6 py-1 rounded-full font-semibold capitalize {{ $statusClass }}" >
-                                    {{ $item->status }}
-                                </p>
-                            </td>
-                        </tr>
+
+                    @forelse ($listAbsen as $index => $item)
+
+                    @php
+                    $statusValue = strtolower((string) $item->status);
+
+                    $statusClass = match ($statusValue) {
+                    'sakit' => 'text-amber-600 bg-amber-100',
+                    'izin' => 'text-blue-600 bg-blue-100',
+                    'alpa' => 'text-rose-600 bg-rose-100',
+                    default => 'text-green-600 bg-green-100',
+                    };
+                    @endphp
+
+                    <tr
+                        class="border-t border-gray-100 transition hover:bg-gray-50">
+
+                        <td
+                            class="px-5 py-5 text-center font-medium text-gray-700">
+
+                            {{ $index + 1 }}
+
+                        </td>
+
+                        <td class="px-5 py-5">
+
+                            <div class="flex items-center gap-4">
+
+                                <!-- avatar -->
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
+
+                                    {{ substr($item->murid->nama, 0, 1) }}
+
+                                </div>
+
+                                <div>
+
+                                    <h2
+                                        class="font-semibold text-gray-800">
+
+                                        {{ $item->murid->nama }}
+
+                                    </h2>
+
+                                    <p
+                                        class="mt-1 text-xs text-gray-400">
+
+                                        Murid aktif
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td
+                            class="px-5 py-5 text-center text-gray-600">
+
+                            {{ $item->murid->rombel->nama_lengkap ?? '-' }}
+
+                        </td>
+
+                        <td class="px-5 py-5 text-center">
+
+                            <div
+                                class="{{ $statusClass }} inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize">
+
+                                <div
+                                    class="h-2 w-2 rounded-full bg-current">
+                                </div>
+
+                                {{ $item->status }}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
                     @empty
-                        <tr>
-                            <td colspan="4" class="px-6 py-6 text-center text-gray-400">
-                                Data tidak ditemukan.
-                            </td>
-                        </tr>
+
+                    <tr>
+
+                        <td
+                            colspan="4"
+                            class="px-6 py-14 text-center">
+
+                            <div
+                                class="flex flex-col items-center justify-center">
+
+                                <div
+                                    class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+
+                                    <iconify-icon
+                                        icon="solar:box-bold"
+                                        width="38"
+                                        height="38">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <h2
+                                    class="text-lg font-bold text-gray-700">
+
+                                    Data tidak ditemukan
+
+                                </h2>
+
+                                <p
+                                    class="mt-1 text-sm text-gray-500">
+
+                                    Tidak ada data murid yang tersedia.
+
+                                </p>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
                     @endforelse
+
                 </tbody>
 
             </table>
+
         </div>
-        <div class="p-4 pt-0" >
+
+        <!-- pagination -->
+        <div
+            class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+
             {{ $listAbsen->links('livewire.components.pagination') }}
+
         </div>
+
     </div>
+
 </div>
 
 @script
-<script> 
+<script>
     // =========================
     // LINE CHART REKAP MURID
     // =========================
@@ -568,7 +900,9 @@
         const rekapChart = echarts.getInstanceByDom(rekapMuridDom) ?? echarts.init(rekapMuridDom);
 
         rekapChart.setOption({
-            tooltip: { trigger: "axis" },
+            tooltip: {
+                trigger: "axis"
+            },
 
             toolbox: {
                 show: true,
@@ -608,24 +942,24 @@
                 name: "Jumlah Murid",
             },
 
-            series: [
-                {
-                    name: `Jumlah Hadir ${chartData.year}`,
-                    type: "line",
-                    smooth: true,
-                    data: chartData.data,
+            series: [{
+                name: `Jumlah Hadir ${chartData.year}`,
+                type: "line",
+                smooth: true,
+                data: chartData.data,
 
-                    lineStyle: { width: 3 },
-
-                    itemStyle: {
-                        color: "#6366f1",
-                    },
-
-                    areaStyle: {
-                        opacity: 0.2,
-                    },
+                lineStyle: {
+                    width: 3
                 },
-            ],
+
+                itemStyle: {
+                    color: "#6366f1",
+                },
+
+                areaStyle: {
+                    opacity: 0.2,
+                },
+            }, ],
         });
 
         if (!rekapMuridDom.dataset.resizeBound) {

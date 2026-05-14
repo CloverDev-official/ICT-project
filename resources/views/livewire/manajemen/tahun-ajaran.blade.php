@@ -14,7 +14,7 @@
             <div class="flex items-center gap-4">
 
                 <div
-                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white">
+                    class="hidden md:flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white">
 
                     <iconify-icon
                         icon="solar:calendar-bold"

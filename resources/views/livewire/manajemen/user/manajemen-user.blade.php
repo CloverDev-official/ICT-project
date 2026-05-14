@@ -14,7 +14,7 @@
             <div class="flex items-center gap-4">
 
                 <div
-                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white">
+                    class="hidden md:flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white">
 
                     <iconify-icon
                         icon="solar:users-group-rounded-bold"
@@ -37,7 +37,7 @@
             </div>
 
             <!-- action -->
-            <div class="flex flex-col sm:flex-row gap-3">
+            <div class="sm:flex grid grid-cols-1  sm:flex-row gap-3">
 
                 <!-- tambah -->
                 <a href="{{ route('tambah-user') }}" wire:navigate>

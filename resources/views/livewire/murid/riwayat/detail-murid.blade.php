@@ -56,7 +56,7 @@
                 </p>
 
                 <h2 class="mt-1 text-sm md:text-base font-semibold text-white capitalize">
-                    1 mei 2026 - 3 mei 2026
+                    1 mei 2026 - 4 mei 2026
                 </h2>
 
             </div>
@@ -68,17 +68,17 @@
     <div class="bg-white rounded-2xl shadow-sm p-4 ">
         <div>
             <h1 class="font-semibold text-gray-800 text-xl capitalize">kategori</h1>
-            <p class="text-sm text-gray-400" >
+            <p class="text-sm text-gray-400">
                 Filter detail absen murid berdasarkan dari tanggal berapa sampai ke tanggal.
             </p>
         </div>
-    
+
         <div class="mt-5 pt-4 border-t border-gray-200 grid grid-cols-2 gap-5">
             <!-- TANGGAL dari -->
             <div class="relative w-full">
-                
+
                 <label class="text-sm text-gray-600 capitalize font-semibold">dari tanggal</label>
-    
+
                 <input type="date" wire:model.live="filterTanggal"
                     class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
                     hover:border-blue-500
@@ -87,9 +87,9 @@
             </div>
             <!-- tanggal sampai -->
             <div class="relative w-full">
-                
+
                 <label class="text-sm text-gray-600 capitalize font-semibold">sampai tanggal</label>
-    
+
                 <input type="date" wire:model.live="filterTanggal"
                     class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
                     hover:border-blue-500
@@ -131,6 +131,10 @@
                     class="rounded-full bg-amber-100 px-4 py-1 text-xs font-semibold text-amber-600">
                     Sakit
                 </div>
+                <div
+                    class="rounded-full bg-rose-100 px-4 py-1 text-xs font-semibold text-rose-600">
+                    Alpa
+                </div>
 
             </div>
         </div>
@@ -162,69 +166,70 @@
 
                 <tbody>
                     @foreach ([
-                        ['tanggal' => '1 mei 2026', 'nama' => 'obeh', 'status' => 'hadir'],
-                        ['tanggal' => '2 mei 2026', 'nama' => 'obeh', 'status' => 'izin'],
-                        ['tanggal' => '3 mei 2026', 'nama' => 'obeh', 'status' => 'sakit'],
+                    ['tanggal' => '1 mei 2026', 'nama' => 'obeh', 'status' => 'hadir'],
+                    ['tanggal' => '2 mei 2026', 'nama' => 'obeh', 'status' => 'izin'],
+                    ['tanggal' => '3 mei 2026', 'nama' => 'obeh', 'status' => 'sakit'],
+                    ['tanggal' => '4 mei 2026', 'nama' => 'obeh', 'status' => 'alpa'],
                     ] as $item)
 
-                        @php
-                            $statusValue = strtolower((string) $item['status']);
+                    @php
+                    $statusValue = strtolower((string) $item['status']);
 
-                            $statusClass = match ($statusValue) {
-                                'sakit' => 'text-amber-600 bg-amber-100',
-                                'izin' => 'text-blue-600 bg-blue-100',
-                                'alpa' => 'text-rose-600 bg-rose-100',
-                                default => 'text-green-600 bg-green-100',
-                            };
-                        @endphp
+                    $statusClass = match ($statusValue) {
+                    'sakit' => 'text-amber-600 bg-amber-100',
+                    'izin' => 'text-blue-600 bg-blue-100',
+                    'alpa' => 'text-rose-600 bg-rose-100',
+                    default => 'text-green-600 bg-green-100',
+                    };
+                    @endphp
 
-                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
+                    <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                            <td class="px-6 py-4 text-center font-medium text-gray-700">
-                                {{ $loop->iteration }}
-                            </td>
-                            
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-sm font-semibold text-blue-main">
-                                        {{ strtoupper(substr($item['nama'], 0, 1)) }}
-                                    </div>
+                        <td class="px-6 py-4 text-center font-medium text-gray-700">
+                            {{ $loop->iteration }}
+                        </td>
 
-                                    <div>
-                                        <p class="font-medium capitalize text-gray-800">
-                                            {{ $item['nama'] }}
-                                        </p>
-
-                                        <p class="text-xs text-gray-400">
-                                            Siswa aktif
-                                        </p>
-                                    </div>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-sm font-semibold text-blue-main">
+                                    {{ strtoupper(substr($item['nama'], 0, 1)) }}
                                 </div>
-                            </td>
 
-                            <td class="px-6 py-4 text-gray-600 capitalize">
-                                {{ $item['tanggal'] }}
-                            </td>
-                    
-                            <td class="px-6 py-4">
+                                <div>
+                                    <p class="font-medium capitalize text-gray-800">
+                                        {{ $item['nama'] }}
+                                    </p>
 
-                                <div class="flex items-center justify-center">
+                                    <p class="text-xs text-gray-400">
+                                        Siswa aktif
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
 
-                                    <div
-                                        class="{{ $statusClass }} flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize">
+                        <td class="px-6 py-4 text-gray-600 capitalize">
+                            {{ $item['tanggal'] }}
+                        </td>
 
-                                        <div class="h-2 w-2 rounded-full bg-current"></div>
+                        <td class="px-6 py-4">
 
-                                        {{ $item['status'] }}
+                            <div class="flex items-center justify-center">
 
-                                    </div>
+                                <div
+                                    class="{{ $statusClass }} flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize">
+
+                                    <div class="h-2 w-2 rounded-full bg-current"></div>
+
+                                    {{ $item['status'] }}
 
                                 </div>
 
-                            </td>
+                            </div>
 
-                        </tr>
+                        </td>
+
+                    </tr>
 
                     @endforeach
                 </tbody>

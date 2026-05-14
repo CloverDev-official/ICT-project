@@ -1,7 +1,7 @@
 <div x-data="{ openModal: false }">
     <button
         @click="openModal = true"
-        class="px-6 py-3 rounded-xl bg-blue-main text-white font-medium hover:bg-blue-deep-solid active:scale-95 transition-all duration-150 shadow-sm">
+        class="w-full px-6 py-3 rounded-2xl bg-blue-main text-white font-medium hover:bg-blue-deep-solid active:scale-95 transition-all duration-150 shadow-sm">
         Proses Kenaikan Kelas
     </button>
 
