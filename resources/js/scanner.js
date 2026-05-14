@@ -1,6 +1,6 @@
 // resources/js/scanner.js
 
-import jsQR from "jsqr";
+import { readBarcodes } from "zxing-wasm/reader";
 
 // =========================
 // MODULE STATE
@@ -260,7 +260,7 @@ window.initScanner = async () => {
 
     isRunning = true;
 
-    function scan(timestamp) {
+    async function scan(timestamp) {
         if (!isRunning) return;
 
         animationFrame = requestAnimationFrame(scan);
@@ -274,26 +274,33 @@ window.initScanner = async () => {
 
         const imageData = scanCtx.getImageData(0, 0, SCAN_WIDTH, SCAN_HEIGHT);
 
-        const code = jsQR(
-            imageData.data,
-            imageData.width,
-            imageData.height,
-            { inversionAttempts: "attemptBoth" }
-        );
-
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-        if (!code) {
+        const results = await readBarcodes(imageData, {
+            tryHarder: true,
+            formats: ["QRCode"],
+            maxNumberOfSymbols: 1
+        });
+
+        const code = results?.[0];
+
+        if (!code || !code.position) {
             scanInterval = INTERVAL_IDLE;
             return;
         }
 
         scanInterval = INTERVAL_ACTIVE;
-        drawBox(code.location);
+
+        drawBox({
+            topLeftCorner: code.position.topLeft,
+            topRightCorner: code.position.topRight,
+            bottomRightCorner: code.position.bottomRight,
+            bottomLeftCorner: code.position.bottomLeft
+        });
 
         if (!window.scanned) {
             window.scanned = true;
-            Livewire.dispatch("verifiedQRCode", code.data);
+            Livewire.dispatch("verifiedQRCode", code.text);
         }
     }
 
