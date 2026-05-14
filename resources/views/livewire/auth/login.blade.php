@@ -1,6 +1,6 @@
 <div  class="bg-linear-to-t/hsl from-blue-deep  to-blue-light scroll-hidden p-4">
     <div class="min-h-screen flex items-center justify-center">
-        <div data-aos="fade-up" data-aos-duration="800" class="bg-white p-4 rounded-4xl shadow-lg drop-shadow-2xl md:w-md lg:w-3xl">
+        <div class="bg-white p-4 rounded-4xl shadow-lg drop-shadow-2xl md:w-md lg:w-3xl">
             <div class="flex justify-between">
                 <!-- form -->
                 <div class="flex flex-col items-center justify-center flex-1 p-10">
@@ -15,13 +15,14 @@
                     </div>
 
                     <!-- input form -->
-                    <form action="" class="mt-10 flex flex-col gap-4">
+                    <form wire:submit.prevent="login" class="mt-10 flex flex-col gap-4">
+                        @csrf
                         <div class="relative" >
-                            <input type="text" placeholder="Nama atau Email" class="rounded-full px-4 pr-10 py-2 border-2 border-gray-200 focus:border-blue-main focus:outline-hidden text-sm">
+                            <input type="text" wire:model="email" placeholder="Nama atau Email" class="rounded-full px-4 pr-10 py-2 border-2 border-gray-200 focus:border-blue-main focus:outline-hidden text-sm">
                             <iconify-icon icon="lineicons:user-4" width="24" height="24" class=" text-gray-400 absolute right-3 top-2" ></iconify-icon>
                         </div>
                         <div class="relative" x-data="{open : true}" >
-                            <input type="password" :type=" open ? 'password' : 'text' " placeholder="Password" class=" rounded-full px-4 pr-10 py-2 border-2 border-gray-200 focus:border-blue-main focus:outline-hidden text-sm" >
+                            <input type="password" wire:model="password" :type=" open ? 'password' : 'text' " placeholder="Password" class=" rounded-full px-4 pr-10 py-2 border-2 border-gray-200 focus:border-blue-main focus:outline-hidden text-sm" >
                             <div class="absolute right-3 top-2 ">
                                 <button type="button"  @click="open = !open" >
                                     <iconify-icon :icon="open ? 'iconoir:eye-closed' : 'ri:eye-fill' " width="24" height="24" class="transition-transform duration-200 text-gray-400" ></iconify-icon>

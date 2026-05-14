@@ -110,6 +110,8 @@
                             this.selectedId = id
                             this.selectedLabel = label
                             this.open = false
+
+                            $wire.$set('roleId', id)
                         },
 
                         toggle(){
@@ -161,18 +163,16 @@
                             </iconify-icon>
 
                         </div>
-
                         <!-- list -->
-                        @foreach (['operator', 'wali kelas', 'pengawas'] as $role)
-
+                        @foreach ($roles as $role)
                             <div
-                                @click.prevent="select('{{ $role }}', '{{ $role }}')"
+                                @click.prevent="select('{{ $role->id }}', '{{ $role->name }}')"
                                 class="flex cursor-pointer items-center justify-between px-4 py-3 capitalize transition hover:bg-blue-main hover:text-white">
 
-                                <span>{{ $role }}</span>
+                                <span>{{ $role->name }}</span>
 
                                 <iconify-icon
-                                    x-show="selectedId === '{{ $role }}'"
+                                    x-show="selectedId === '{{ $role->id }}'"
                                     icon="lineicons:check"
                                     width="20"
                                     height="20">
@@ -254,14 +254,10 @@
                 </thead>
 
                 <tbody>
-                    @foreach ([
-                        ['nama' => 'dodi', 'email' => 'op-skenda@gmail.com', 'role' => 'operator', 'status' => 'aktif'],
-                        ['nama' => 'sincung', 'email' => 'wakel@gmail.com', 'role' => 'wali kelas', 'status' => 'nonaktif'],
-                        ['nama' => 'bambang', 'email' => 'kepsek@gmail.com', 'role' => 'pengawas', 'status' => 'aktif'],
-                    ] as $item)
+                    @foreach ($users as $user)
 
                         @php
-                            $statusValue = strtolower((string) $item['status']);
+                            $statusValue = strtolower((string) $user->is_active === '1' ? 'aktif' : 'nonaktif');
 
                             $statusClass = match ($statusValue) {
                                 'nonaktif' => 'bg-rose-100 text-rose-600',
@@ -284,13 +280,13 @@
                                     <div
                                         class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
 
-                                        {{ substr($item['nama'], 0, 1) }}
+                                        {{ substr($user->name, 0, 1) }}
 
                                     </div>
 
                                     <div>
                                         <h1 class="font-semibold capitalize text-gray-800">
-                                            {{ $item['nama'] }}
+                                            {{ $user->name }}
                                         </h1>
 
                                         <p class="text-xs text-gray-400">
@@ -304,7 +300,7 @@
 
                             <!-- email -->
                             <td class="px-6 py-5 text-gray-600">
-                                {{ $item['email'] }}
+                                {{ $user->email }}
                             </td>
 
                             <!-- role -->
@@ -313,8 +309,7 @@
                                 <div
                                     class="inline-flex rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold capitalize text-blue-600">
 
-                                    {{ $item['role'] }}
-
+                                    {{ $user->role->name }}
                                 </div>
 
                             </td>
@@ -329,7 +324,7 @@
 
                                         <div class="h-2 w-2 rounded-full bg-current"></div>
 
-                                        {{ $item['status'] }}
+                                        {{ $statusValue }}
 
                                     </div>
 
@@ -399,6 +394,13 @@
                 </tbody>
 
             </table>
+
+        </div>
+
+        <div
+            class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+
+            {{ $users->links('livewire.components.pagination') }}
 
         </div>
 

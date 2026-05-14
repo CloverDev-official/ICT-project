@@ -1,8 +1,4 @@
 <?php
-
-use App\Helpers\downloadFile;
-use App\Helpers\generateQRCode;
-
 use App\Livewire\Murid\Index as IndexMurid;
 use App\Livewire\Murid\Create as CreateMurid;
 use App\Livewire\Murid\Edit as EditMurid;
@@ -12,111 +8,117 @@ use App\Livewire\Murid\Absen\ScanQRCode;
 
 use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
 
-
-
-use Illuminate\Support\Facades\Route;
-use App\Livewire\Auth\Login;
-use App\Livewire\Dashboard;
-use App\Livewire\AbsensiMurid;
-use App\Livewire\AbsensiGuru;
-use App\Livewire\DataGuru;
-use App\Livewire\EditGuru;
 use App\Livewire\Murid\Rombel\Jurusan\Index as IndexJurusan;
 use App\Livewire\Murid\Rombel\Jurusan\Create as CreateJurusan;
 use App\Livewire\Murid\Rombel\Jurusan\Edit as EditJurusanRombel;
 use App\Livewire\Murid\Rombel\Kelas\Index as IndexKelas;
 use App\Livewire\Murid\Rombel\Kelas\Create as CreateKelas;
 use App\Livewire\Murid\Rombel\Kelas\Edit as EditKelasRombel;
-use App\Livewire\Manajemen\Waktu;
+
+use App\Livewire\Manajemen\User\Index as IndexUser;
+use App\Livewire\Manajemen\User\Create as CreateIndex;
+use App\Livewire\Manajemen\User\Edit as EditIndex;
+
+use Illuminate\Support\Facades\Route;
+use App\Livewire\Auth\Login;
+use App\Livewire\Dashboard;
+use App\Livewire\AbsensiGuru;
+use App\Livewire\DataGuru;
+use App\Livewire\EditGuru;
+
 use App\Livewire\Manajemen\GenerateQR;
 use App\Livewire\Manajemen\TahunAjaran;
 use App\Livewire\Manajemen\Waktu\ManajemenWaktu;
-use App\Livewire\Manajemen\User\EditUser;
-use App\Livewire\Manajemen\User\ManajemenUser;
-use App\Livewire\Manajemen\User\TambahUser;
 use App\Livewire\Manajemen\Waktu\TambahEvent;
 use App\Livewire\Murid\Riwayat\DetailMurid;
 use App\Livewire\Murid\Riwayat\RiwayatMurid;
 use App\Livewire\PilihAbsen;
 use App\Livewire\RekapAbsenGuru;
-use App\Livewire\RekapAbsenMurid;
 use App\Livewire\TambahGuru;
 
-Route::get('/', Login::class)->name('login');
+Route::middleware('guest')->group(function () {
+    Route::get('/', Login::class)->name('login');
+});
+
 Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
 
-
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('auth')->group(function () {
 
     // dashboard
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', Dashboard::class)->middleware('access:dashboard')->name('dashboard');
+
     // pilih absen
-    Route::get('/pilih-absen', PilihAbsen::class)->name('pilih-absen');
+    Route::get('/pilih-absen', PilihAbsen::class)->middleware('access:pilih-absen')->name('pilih-absen');
     
     // laporan
-    route::prefix('/rekap')->group(function () {
-        Route::get('/absen-murid', IndexRekapMurid::class)->name('rekap-absen-murid');
-        Route::get('/absen-guru', RekapAbsenGuru::class)->name('rekap-absen-guru');
+    Route::prefix('/rekap')->group(function () {
+        Route::get('/absen-murid', IndexRekapMurid::class)->middleware('access:rekap-absen-murid')->name('rekap-absen-murid');
+        Route::get('/absen-guru', RekapAbsenGuru::class)->middleware('access:rekap-absen-guru')->name('rekap-absen-guru');
     });
 
-    route::prefix('/riwayat')->group(function () {
-        Route::get('/absen-murid', RiwayatMurid::class)->name('riwayat-absen-murid');
-        Route::get('/detail-absen-murid', DetailMurid::class)->name('riwayat-detail-absen-murid');
+    Route::prefix('/riwayat')->group(function () {
+        Route::middleware('access:riwayat-murid')->group(function () {
+            Route::get('/absen-murid', RiwayatMurid::class)->name('riwayat-absen-murid');
+            Route::get('/detail-absen-murid', DetailMurid::class)->name('riwayat-detail-absen-murid');
+        });
     });
 
     // absensi
-    route::prefix('/absensi')->group(function () {
-        Route::get('/murid', IndexAbsen::class)->name('absensi-murid');
-        Route::get('/guru', AbsensiGuru::class)->name('absensi-guru');
+    Route::prefix('/absensi')->group(function () {
+        Route::get('/murid', IndexAbsen::class)->middleware('access:absensi-murid')->name('absensi-murid');
+        Route::get('/guru', AbsensiGuru::class)->middleware('access:absensi-guru')->name('absensi-guru');
     });
     
     // data  murid
-    route::prefix('/data-murid')->group(function () {
+    Route::prefix('/data-murid')->middleware('access:data-murid')->group(function () {
         Route::get('/', IndexMurid::class)->name('data-murid');
         Route::get('/create', CreateMurid::class)->name('tambah-murid');
         Route::get('/edit/{muridUlid}', EditMurid::class)->name('edit-murid');
     });
 
     // data guru
-    route::prefix('/data-guru')->group(function () {
+    Route::prefix('/data-guru')->middleware('access:data-guru')->group(function () {
         Route::get('/', DataGuru::class)->name('data-guru');
         Route::get('/create', TambahGuru::class)->name('tambah-guru');
         Route::get('/edit', EditGuru::class)->name('edit-guru');
     });
 
-    route::prefix('/data-kelas')->group(function () {
-        route::get('/', IndexKelas::class)->name('data-kelas');
-        route::get('/create', CreateKelas::class)->name('tambah-kelas');
-        route::get('/edit/{rombelId}', EditKelasRombel::class)->name('edit-kelas');
+    Route::prefix('/data-kelas')->middleware('access:data-kelas')->group(function () {
+        Route::get('/', IndexKelas::class)->name('data-kelas');
+        Route::get('/create', CreateKelas::class)->name('tambah-kelas');
+        Route::get('/edit/{rombelId}', EditKelasRombel::class)->name('edit-kelas');
     });
 
-    route::prefix('/data-jurusan')->group( function () {
-        route::get('/', IndexJurusan::class)->name('data-jurusan');
-        route::get('/create', CreateJurusan::class)->name('tambah-jurusan');
-        route::get('/edit/{jurusanId}', EditJurusanRombel::class)->name('edit-jurusan');
+    Route::prefix('/data-jurusan')->middleware('access:data-jurusan')->group( function () {
+        Route::get('/', IndexJurusan::class)->name('data-jurusan');
+        Route::get('/create', CreateJurusan::class)->name('tambah-jurusan');
+        Route::get('/edit/{jurusanId}', EditJurusanRombel::class)->name('edit-jurusan');
     });
 
     // manajemen group
-    route::prefix('/manajemen')->group( function () {
+    Route::prefix('/manajemen')->group( function () {
         // manajemen waktu
-        route::prefix('/manajemen-waktu')->group( function () {
-            route::get('/', ManajemenWaktu::class)->name('manajemen-waktu');
-            route::get('/create', TambahEvent::class)->name('tambah-event');
+        Route::prefix('/waktu')->middleware('access:manajemen-waktu')->group( function () {
+            Route::get('/', ManajemenWaktu::class)->name('manajemen-waktu');
+            Route::get('/create', TambahEvent::class)->name('tambah-event');
         
         });
-
-        // generate
-        route::get('/generate-qr', GenerateQR::class)->name('generate-QR');
-
-        // tahun ajaran
-        route::get('/tahun-ajaran', TahunAjaran::class)->name('manajemen-tahun-ajaran');
         
-        // manajemen user group
-        route::prefix('/manajemen-user')->group( function () {
-            route::get('/', ManajemenUser::class)->name('manajemen-user');
-            route::get('/create', TambahUser::class)->name('tambah-user');
-            route::get('/edit', EditUser::class)->name('edit-user');
+        // generate
+        Route::get('/generate-qr', GenerateQR::class)->middleware('access:generate-qr')->name('generate-QR');
+        
+        Route::middleware('access:manajemen-lainnya')->group( function () {
+
+            // tahun ajaran
+            Route::get('/tahun-ajaran', TahunAjaran::class)->name('manajemen-tahun-ajaran');
             
+            // manajemen user group
+            Route::prefix('/user')->group( function () {
+                Route::get('/', IndexUser::class)->name('manajemen-user');
+                Route::get('/create', CreateIndex::class)->name('tambah-user');
+                Route::get('/edit', EditIndex::class)->name('edit-user');
+                
+            });
         });
     });
 
