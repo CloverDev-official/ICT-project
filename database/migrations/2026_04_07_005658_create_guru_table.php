@@ -37,7 +37,11 @@ return new class extends Migration {
             $table->string('telepon')->nullable();
             $table->string('hp')->nullable();
             $table->string('email')->nullable()->unique();
-            $table->string('password');
+
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
         });
 
@@ -53,7 +57,7 @@ return new class extends Migration {
             $table
                 ->foreignId('rombel_id')
                 ->constrained('rombel')
-                ->cascadeOnDelete()
+                ->nullOnDelete()
                 ->cascadeOnUpdate();
 
             $table->timestamps();
