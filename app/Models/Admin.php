@@ -9,10 +9,10 @@ class Admin extends Model
 {
     protected $table = 'admin';
 
-    protected $fillable = ['name', 'email', 'password', 'role_id'];
+    protected $fillable = ['name', 'email', 'user_id'];
 
-    public function role()
+    public function user()
     {
-        return $this->belongsTo(Role::class, 'role_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

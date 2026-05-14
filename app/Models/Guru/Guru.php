@@ -34,7 +34,7 @@ class Guru extends Model
         'telepon',
         'hp',
         'email',
-        'password'
+        'user_id'
     ];
 
     protected $casts = [
@@ -84,5 +84,10 @@ class Guru extends Model
             'id',
             'id'
         );
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -9,7 +9,7 @@ class Role extends Model
 {
     protected $table = 'role';
 
-    protected $fillable = ['nama'];
+    protected $fillable = ['name'];
 
     public function roleGuruRombel()
     {
