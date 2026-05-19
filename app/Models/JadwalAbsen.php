@@ -15,10 +15,16 @@ class JadwalAbsen extends Model
         'jam_pulang',
         'tipe',
         'keterangan',
-        
     ];
 
     protected $casts = [
-        'tanggal' => 'date:Y-m-d'
+        'tanggal' => 'date:Y-m-d',
+        'jam_masuk' => 'string',
+        'jam_pulang' => 'string',
     ];
+
+    public function rombelJadwal()
+    {
+        return $this->hasMany(JadwalAbsenRombel::class, 'jadwal_absen_id');
+    }
 }

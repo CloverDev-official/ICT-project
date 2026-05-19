@@ -11,13 +11,14 @@ use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
 use App\Livewire\Murid\Rombel\Jurusan\Index as IndexJurusan;
 use App\Livewire\Murid\Rombel\Jurusan\Create as CreateJurusan;
 use App\Livewire\Murid\Rombel\Jurusan\Edit as EditJurusanRombel;
+
 use App\Livewire\Murid\Rombel\Kelas\Index as IndexKelas;
 use App\Livewire\Murid\Rombel\Kelas\Create as CreateKelas;
 use App\Livewire\Murid\Rombel\Kelas\Edit as EditKelasRombel;
 
 use App\Livewire\Manajemen\User\Index as IndexUser;
-use App\Livewire\Manajemen\User\Create as CreateIndex;
-use App\Livewire\Manajemen\User\Edit as EditIndex;
+use App\Livewire\Manajemen\User\Create as CreateUser;
+use App\Livewire\Manajemen\User\Edit as EditUser;
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Auth\Login;
@@ -80,7 +81,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::prefix('/data-guru')->middleware('access:data-guru')->group(function () {
         Route::get('/', DataGuru::class)->name('data-guru');
         Route::get('/create', TambahGuru::class)->name('tambah-guru');
-        Route::get('/edit', EditGuru::class)->name('edit-guru');
+        Route::get('/edit/{guruId}', EditGuru::class)->name('edit-guru');
     });
 
     Route::prefix('/data-kelas')->middleware('access:data-kelas')->group(function () {
@@ -101,7 +102,6 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::prefix('/waktu')->middleware('access:manajemen-waktu')->group( function () {
             Route::get('/', ManajemenWaktu::class)->name('manajemen-waktu');
             Route::get('/create', TambahEvent::class)->name('tambah-event');
-        
         });
         
         // generate
@@ -115,8 +115,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
             // manajemen user group
             Route::prefix('/user')->group( function () {
                 Route::get('/', IndexUser::class)->name('manajemen-user');
-                Route::get('/create', CreateIndex::class)->name('tambah-user');
-                Route::get('/edit', EditIndex::class)->name('edit-user');
+                Route::get('/create', CreateUser::class)->name('tambah-user');
+                Route::get('/edit/{userId}', EditUser::class)->name('edit-user');
                 
             });
         });

@@ -1,184 +1,765 @@
 <div
-    class="flex flex-col lg:flex-row gap-6 w-full max-w-6xl"
-    data-purpose="calendar-dashboard"
-    x-data="{ selectedDate: null }"
+    x-data="manajemenWaktu(@js($state), $wire)"
+    x-init="init()"
+    x-cloak
+    wire:ignore
+    class="space-y-6"
 >
-    <!-- BEGIN: Left Section - Calendar Grid -->
-    <section class="flex-grow bg-white rounded-2xl shadow-sm border border-slate-100 p-6" data-purpose="calendar-view">
-        <!-- BEGIN: Calendar Header -->
-        <header class="grid grid-cols-1 gap-4 md:flex md:justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-slate-800">
-                {{ \Carbon\Carbon::create($year, $month)->translatedFormat('F Y') }}
-            </h1>
-            <div class="flex items-center gap-4">
-                <div class="flex border border-slate-200 rounded-lg overflow-hidden">
-                    <button wire:click="previousMonth" class="p-2 hover:bg-slate-50 border-r border-slate-200 flex items-center justify-center">
-                        <iconify-icon icon="lineicons:chevron-left" width="20" height="20"></iconify-icon>
-                    </button>
-                    <button wire:click="nextMonth" class="p-2 hover:bg-slate-50 flex items-center justify-center">
-                        <iconify-icon class="rotate-180" icon="lineicons:chevron-left" width="20" height="20"></iconify-icon>
-                    </button>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-5 shadow-lg sm:p-6">
+        <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 h-36 w-36 rounded-full bg-white/5"></div>
+
+        <div class="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-start gap-4">
+                <div class="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur md:flex">
+                    <iconify-icon icon="solar:calendar-bold" width="32" height="32" class="text-white"></iconify-icon>
                 </div>
-                <button
-                @click="
-                    selectedDate = '{{ now()->format('Y-m-d') }}';
-                    $dispatchTo('manajemen.waktu.detail-jadwal', 'open-custom', { date: '{{ now()->format('Y-m-d') }}' });
-                "
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs md:text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
-                    atur jadwal kustom
-                </button>
-                <button 
-                    wire:click="goToday"
-                    @click="
-                        selectedDate = '{{ now()->format('Y-m-d') }}';
-                        $dispatchTo('manajemen.waktu.detail-jadwal', 'select-date', { date: '{{ now()->format('Y-m-d') }}' });
-                    "
-                    class="px-4 py-2 border border-slate-200 rounded-lg text-xs md:text-sm font-medium hover:bg-slate-50 transition-colors"
-                >
-                    Hari Ini
-                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-white sm:text-3xl">Manajemen Kalender Absensi</h1>
+                    <p class="mt-1 max-w-2xl text-sm text-blue-100">
+                        Atur jadwal per tanggal dan per kelas: pulang cepat, PJJ, libur, atau hari spesial. Klik tanggal terasa instan karena form diproses di browser dulu.
+                    </p>
+                </div>
             </div>
-        </header>
-        <!-- END: Calendar Header -->
-        <!-- BEGIN: Calendar Table -->
-        <div class="w-full border-t border-l border-slate-100 rounded-sm overflow-hidden">
-            <!-- Days of Week -->
-            <div class="calendar-grid bg-white">
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Sen</div>
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Sel</div>
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Rab</div>
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Kam</div>
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Jum</div>
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Sab</div>
-                <div class="p-3 text-sm font-bold text-center text-slate-700 border-r border-b border-slate-100">Min</div>
-            </div>
-            <div class="calendar-grid">
 
-            @foreach ($calendar as $item)
+            <button
+                type="button"
+                @click="goToday()"
+                :disabled="loading"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-main shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-wait disabled:opacity-60"
+            >
+                <iconify-icon icon="solar:calendar-mark-bold" width="20" height="20"></iconify-icon>
+                Hari Ini
+            </button>
+        </div>
+    </div>
 
-                @if (!$item)
-
-                    <div class="calendar-cell border-r border-b border-slate-100"></div>
-                @else
-
-                    @php
-                        $j = $jadwal[$item['date']] ?? null;
-
-                        $schedule = $j
-                            ? [
-                                'masuk' => $j['jam_masuk'],
-                                'pulang' => $j['jam_pulang'],
-                                'type' => $j['tipe']
-                            ]
-                            : ($defaultSchedule[$item['date']] ?? [
-                                'masuk' => null,
-                                'pulang' => null,
-                                'type' => 'libur'
-                            ]);
-                    @endphp
-
-                    <div
-                        @click="selectedDate = '{{ $item['date'] }}'"
-                        wire:click="$dispatchTo('manajemen.waktu.detail-jadwal', 'select-date', { date: '{{ $item['date'] }}' })"
-                        class="calendar-cell p-2 flex flex-col items-center cursor-pointer rounded-xl transition"
-                        :class="selectedDate === '{{ $item['date'] }}' ? 'ring-2 ring-blue-500 bg-blue-50' : ''"
-                    >
-
-                        {{-- TANGGAL --}}
-                        <span class="
-                            font-bold mb-1
-
-                            @if(
-                                $schedule['type'] == 'libur' ||
-                                ($j && $j['tipe'] == 'libur')
-                            )
-                                text-calendar-red
-                            @elseif (
-                                $schedule['type'] == 'normal'
-                            )
-                                text-calendar-blue
-
-                            @elseif ($schedule['type'] == 'custom')
-                                text-calendar-yellow
-                            @else
-                                text-calendar-purple
-                            @endif
-                        ">
-                            {{ $item['day'] }}
-                        </span>
-
-                        {{-- ========================= --}}
-                        {{-- CUSTOM HOLIDAY --}}
-                        {{-- ========================= --}}
-
-                        @if ($j && $j['tipe'] == 'libur')
-
-                            <span class="max-w-14 bg-red-100 text-red-500 text-[10px] px-2 py-0.5 rounded-full font-bold line-clamp-1">
-                                {{ $j['nama_acara'] ?? 'Libur' }}
-                            </span>
-
-                        {{-- ========================= --}}
-                        {{-- CUSTOM EVENT --}}
-                        {{-- ========================= --}}
-
-                        @elseif ($j && $j['tipe'] == 'custom')
-
-                            <span class="max-w-14 bg-yellow-400 text-white text-[10px] px-2 py-0.5 rounded-full font-bold line-clamp-1">
-                                {{ $j['nama_acara'] ?? 'Custom' }}
-                            </span>
-
-                        {{-- ========================= --}}
-                        {{-- JUMAT --}}
-                        {{-- ========================= --}}
-
-                        @elseif ($schedule['type'] == 'khusus')
-
-                            <span class="max-w-14 bg-purple-100 text-purple-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                khusus
-                            </span>
-
-                        {{-- ========================= --}}
-                        {{-- LIBUR DEFAULT --}}
-                        {{-- ========================= --}}
-
-                        @elseif ($schedule['type'] == 'libur')
-
-                            <span class="bg-red-100 text-red-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                Libur
-                            </span>
-
-                        @endif
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <section class="space-y-6 xl:col-span-8">
+            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800" x-text="state.monthLabel"></h2>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Jumat memakai default khusus. Sabtu dan Minggu libur default, tapi tetap bisa dioverride.
+                        </p>
                     </div>
 
-                @endif
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            @click="previousMonth()"
+                            :disabled="loading"
+                            class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:border-blue-main hover:text-blue-main disabled:cursor-wait disabled:opacity-50"
+                            aria-label="Bulan sebelumnya"
+                        >
+                            <iconify-icon icon="lineicons:chevron-left" width="19" height="19"></iconify-icon>
+                        </button>
+                        <button
+                            type="button"
+                            @click="nextMonth()"
+                            :disabled="loading"
+                            class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:border-blue-main hover:text-blue-main disabled:cursor-wait disabled:opacity-50"
+                            aria-label="Bulan berikutnya"
+                        >
+                            <iconify-icon icon="lineicons:chevron-right" width="19" height="19"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
 
-            @endforeach
+                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold uppercase tracking-wide text-gray-400 sm:gap-2 sm:text-xs">
+                    <div>Sen</div>
+                    <div>Sel</div>
+                    <div>Rab</div>
+                    <div>Kam</div>
+                    <div>Jum</div>
+                    <div>Sab</div>
+                    <div>Min</div>
+                </div>
 
-        </div>
-        </div>
-        <!-- END: Calendar Table -->
-        <!-- BEGIN: Legend -->
-        <footer class="mt-8 flex flex-wrap gap-6 items-center text-sm font-medium text-slate-600">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-calendar-blue"></span>
-                        Hari Normal
+                <div class="mt-2 grid grid-cols-7 gap-1 sm:gap-2">
+                    <template x-for="(day, index) in state.days" :key="day ? day.date : 'empty-' + index">
+                        <div>
+                            <template x-if="!day">
+                                <div class="min-h-16 rounded-2xl border border-dashed border-gray-100 bg-gray-50/60 sm:min-h-24"></div>
+                            </template>
+
+                            <template x-if="day">
+                                <button
+                                    type="button"
+                                    @click="selectDate(day.date)"
+                                    class="group flex min-h-16 w-full flex-col rounded-2xl border p-2 text-left transition sm:min-h-24 sm:p-3"
+                                    :class="calendarClass(day)"
+                                >
+                                    <div class="flex items-start justify-between gap-1">
+                                        <span
+                                            class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold sm:h-8 sm:w-8"
+                                            :class="day.date === selectedDate ? 'bg-blue-main text-white' : (day.isToday ? 'bg-blue-50 text-blue-main' : 'text-gray-800')"
+                                            x-text="day.day"
+                                        ></span>
+                                        <span
+                                            class="hidden rounded-full px-2 py-0.5 text-[10px] font-semibold sm:inline-flex"
+                                            :class="day.hasEvent ? 'bg-orange-50 text-orange-600' : typePillClass(day.default.tipe)"
+                                            x-text="day.hasEvent ? day.affectedCount + ' kelas' : day.default.label"
+                                        ></span>
+                                    </div>
+
+                                    <div class="mt-auto hidden pt-2 text-xs sm:block">
+                                        <p class="line-clamp-1 font-semibold" :class="day.hasEvent ? 'text-orange-700' : 'text-gray-600'" x-text="day.title"></p>
+                                        <p class="line-clamp-1 text-gray-400" x-text="day.summary"></p>
+                                    </div>
+
+                                    <div class="mt-auto flex gap-1 pt-2 sm:hidden">
+                                        <span class="h-2 w-2 rounded-full" :class="day.hasEvent ? 'bg-orange-500' : tinyDotClass(day.default.tipe)"></span>
+                                        <span class="text-[10px] text-gray-400" x-show="day.hasEvent" x-text="day.affectedCount"></span>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-calendar-purple"></span>
-                        Jadwal Khusus
+
+            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Event Bulan Ini</h3>
+                        <p class="text-sm text-gray-500">Ringkasan tanggal yang punya jadwal khusus per kelas.</p>
+                    </div>
+                    <div class="rounded-2xl bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-600">
+                        <span x-text="monthEvents().length"></span> event
+                    </div>
+                </div>
+
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full min-w-[720px] text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-xs uppercase text-gray-400">
+                                <th class="px-3 py-3">Tanggal</th>
+                                <th class="px-3 py-3">Event</th>
+                                <th class="px-3 py-3">Kelas Terdampak</th>
+                                <th class="px-3 py-3">Ringkasan</th>
+                                <th class="px-3 py-3 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-if="monthEvents().length === 0">
+                                <tr>
+                                    <td colspan="5" class="px-3 py-6 text-center text-gray-400">
+                                        Belum ada event khusus pada bulan ini.
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-for="event in monthEvents()" :key="event.tanggal">
+                                <tr class="border-b border-gray-100 last:border-0">
+                                    <td class="px-3 py-3 font-semibold text-gray-700" x-text="formatDate(event.tanggal)"></td>
+                                    <td class="px-3 py-3">
+                                        <p class="font-semibold text-gray-800" x-text="event.nama_acara || '-'"></p>
+                                        <p class="text-xs text-gray-400" x-text="event.keterangan || ''"></p>
+                                    </td>
+                                    <td class="px-3 py-3 text-gray-700">
+                                        <span x-text="event.affected_count"></span> kelas
+                                    </td>
+                                    <td class="px-3 py-3 text-gray-600" x-text="event.summary"></td>
+                                    <td class="px-3 py-3 text-right">
+                                        <button
+                                            type="button"
+                                            @click="selectDate(event.tanggal); scrollToForm()"
+                                            class="rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-main transition hover:bg-blue-100"
+                                        >
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-calendar-yellow"></span>
-                        Jadwal Kustom
+        </section>
+
+        <aside class="space-y-6 xl:col-span-4">
+            <div id="form-event-waktu" class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="mb-5 flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-semibold text-blue-main">Tanggal Dipilih</p>
+                        <h3 class="text-xl font-bold text-gray-800" x-text="formatDate(selectedDate)"></h3>
+                    </div>
+                    <span class="rounded-full px-3 py-1 text-xs font-bold" :class="selectedEvent() ? 'bg-orange-50 text-orange-600' : typePillClass(selectedDefault().tipe)" x-text="selectedEvent() ? 'Ada Event' : selectedDefault().label"></span>
+                </div>
+
+                <div class="mb-5 rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+                    <template x-if="selectedEvent()">
+                        <div>
+                            <p class="font-bold text-gray-800" x-text="selectedEvent().nama_acara"></p>
+                            <p class="mt-1" x-text="selectedEvent().summary"></p>
+                        </div>
+                    </template>
+                    <template x-if="!selectedEvent()">
+                        <div>
+                            <p class="font-bold text-gray-800" x-text="selectedDefault().label"></p>
+                            <p class="mt-1" x-text="selectedDefault().keterangan"></p>
+                            <p class="mt-2 text-xs text-gray-400" x-show="selectedDefault().jam_masuk">
+                                <span x-text="selectedDefault().jam_masuk"></span> - <span x-text="selectedDefault().jam_pulang"></span>
+                            </p>
+                        </div>
+                    </template>
+                </div>
+
+                <form @submit.prevent="saveEvent" class="space-y-4">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Dari Tanggal</label>
+                            <input type="date" x-model="eventForm.tanggal_mulai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Sampai Tanggal</label>
+                            <input type="date" x-model="eventForm.tanggal_selesai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Nama Event</label>
+                        <input type="text" x-model="eventForm.nama_acara" placeholder="Contoh: PTS, Rapat Guru, Classmeeting" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Keterangan Umum</label>
+                        <textarea x-model="eventForm.keterangan" rows="2" placeholder="Opsional" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none"></textarea>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="font-bold text-gray-800">Preset untuk Kelas Baru</p>
+                                <p class="text-xs text-gray-500">Preset ini diterapkan ke kelas yang dipilih setelahnya.</p>
+                            </div>
+                            <button type="button" @click="applyPresetToAll" class="rounded-xl bg-white px-3 py-2 text-xs font-bold text-blue-main shadow-sm transition hover:bg-blue-50">
+                                Terapkan ke Terpilih
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <select x-model="preset.tipe" @change="syncPresetTime" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none sm:col-span-3">
+                                <template x-for="(label, key) in state.tipeOptions" :key="key">
+                                    <option :value="key" x-text="label"></option>
+                                </template>
+                            </select>
+                            <input type="time" x-model="preset.jam_masuk" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                            <input type="time" x-model="preset.jam_pulang" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                            <input type="text" x-model="preset.keterangan" placeholder="Keterangan kelas" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-200 p-4">
+                        <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="font-bold text-gray-800">Atur Event Kelas</p>
+                                <p class="text-xs text-gray-500">
+                                    <span x-text="eventForm.selected_rombel_ids.length"></span> kelas dipilih.
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectFilteredRombel" class="rounded-xl bg-blue-50 px-3 py-2 text-xs font-bold text-blue-main hover:bg-blue-100">Pilih tampil</button>
+                                <button type="button" @click="clearRombel" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100">Kosongkan</button>
+                            </div>
+                        </div>
+
+                        <input type="search" x-model.debounce.150ms="rombelSearch" placeholder="Cari kelas..." class="mb-3 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+
+                        <div class="max-h-52 space-y-2 overflow-y-auto pr-1">
+                            <template x-for="rombel in filteredRombel()" :key="rombel.id">
+                                <button
+                                    type="button"
+                                    @click="toggleRombel(rombel.id)"
+                                    class="flex w-full items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left transition"
+                                    :class="isRombelSelected(rombel.id) ? 'border-blue-main bg-blue-50' : 'border-gray-100 hover:border-blue-main/40 hover:bg-gray-50'"
+                                >
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800" x-text="rombel.nama"></p>
+                                        <p class="text-xs text-gray-400" x-text="[rombel.tingkat, rombel.jurusan, rombel.indeks].filter(Boolean).join(' • ')"></p>
+                                    </div>
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold" :class="isRombelSelected(rombel.id) ? 'border-blue-main bg-blue-main text-white' : 'border-gray-200 text-gray-300'">
+                                        ✓
+                                    </span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3" x-show="eventForm.selected_rombel_ids.length > 0">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="font-bold text-gray-800">Detail Per Kelas</p>
+                            <p class="text-xs text-gray-400">Bisa beda antar kelas.</p>
+                        </div>
+
+                        <template x-for="rombel in selectedRombel()" :key="rombel.id">
+                            <div class="rounded-2xl border border-gray-200 p-3">
+                                <div class="mb-3 flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="font-bold text-gray-800" x-text="rombel.nama"></p>
+                                        <p class="text-xs text-gray-400" x-text="detailLabel(rombel.id)"></p>
+                                    </div>
+                                    <button type="button" @click="toggleRombel(rombel.id)" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100">Hapus</button>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <select x-model="eventForm.detail_kelas[String(rombel.id)].tipe" @change="applyTypeDefault(rombel.id)" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2">
+                                        <template x-for="(label, key) in state.tipeOptions" :key="key">
+                                            <option :value="key" x-text="label"></option>
+                                        </template>
+                                    </select>
+                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_masuk" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_pulang" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                    <textarea x-model="eventForm.detail_kelas[String(rombel.id)].keterangan" rows="2" placeholder="Keterangan khusus kelas ini" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2"></textarea>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <template x-if="formError">
+                        <div class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600" x-text="formError"></div>
+                    </template>
+
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <button
+                            type="submit"
+                            :disabled="saving"
+                            class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-main px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-deep disabled:cursor-wait disabled:opacity-60"
+                        >
+                            <span x-show="!saving">Simpan Event</span>
+                            <span x-show="saving">Menyimpan...</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="resetFormFromDate(selectedDate)"
+                            class="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:border-blue-main hover:text-blue-main"
+                        >
+                            Reset Form
+                        </button>
+                    </div>
+
+                    <button
+                        type="button"
+                        x-show="selectedEvent()"
+                        @click="deleteSelectedDate"
+                        :disabled="saving"
+                        class="w-full rounded-2xl bg-red-50 px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+                    >
+                        Hapus Semua Event di Tanggal Ini
+                    </button>
+                </form>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-calendar-red"></span>
-                Libur
+
+            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Default Jam Absensi</h3>
+                    <p class="text-sm text-gray-500">Dipakai untuk hari tanpa event kelas.</p>
+                </div>
+
+                <form @submit.prevent="saveDefault" class="space-y-3">
+                    <div>
+                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Masuk</label>
+                        <input type="time" x-model="defaultForm.jam_masuk" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Normal</label>
+                        <input type="time" x-model="defaultForm.jam_pulang_normal" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Jumat</label>
+                        <input type="time" x-model="defaultForm.jam_pulang_jumat" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                    </div>
+                    <button
+                        type="submit"
+                        :disabled="savingDefault"
+                        class="w-full rounded-2xl bg-gray-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-gray-800 disabled:cursor-wait disabled:opacity-60"
+                    >
+                        <span x-show="!savingDefault">Simpan Default</span>
+                        <span x-show="savingDefault">Menyimpan...</span>
+                    </button>
+                </form>
             </div>
-        </footer>
-    <!-- END: Legend -->
-    </section>
-    <!-- END: Left Section -->
-    <!-- BEGIN: Right Sidebar - Detail Tanggal -->
-    <livewire:manajemen.waktu.detail-jadwal :month="$month" :year="$year" />
+        </aside>
+    </div>
+
+    @once
+        <script>
+            function manajemenWaktu(initialState, wire) {
+                return {
+                    state: JSON.parse(JSON.stringify(initialState)),
+                    selectedDate: initialState.selectedDate,
+                    eventForm: {},
+                    preset: {},
+                    defaultForm: JSON.parse(JSON.stringify(initialState.settings)),
+                    rombelSearch: '',
+                    loading: false,
+                    saving: false,
+                    savingDefault: false,
+                    formError: '',
+                    bulan: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+
+                    init() {
+                        this.resetFormFromDate(this.selectedDate);
+
+                        window.addEventListener('waktu-state-updated', (event) => {
+                            this.state = JSON.parse(JSON.stringify(event.detail.state));
+                            this.selectedDate = this.state.selectedDate;
+                            this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
+                            this.loading = false;
+                            this.saving = false;
+                            this.savingDefault = false;
+                            this.resetFormFromDate(this.selectedDate);
+                        });
+                    },
+
+                    selectDate(date) {
+                        this.selectedDate = date;
+                        this.state.selectedDate = date;
+                        this.resetFormFromDate(date);
+                    },
+
+                    selectedEvent() {
+                        return this.state.eventsByDate[this.selectedDate] || null;
+                    },
+
+                    selectedDefault() {
+                        const day = this.state.days.find((item) => item && item.date === this.selectedDate);
+
+                        return day ? day.default : {
+                            tipe: 'normal',
+                            label: 'Normal',
+                            jam_masuk: this.state.settings.jam_masuk,
+                            jam_pulang: this.state.settings.jam_pulang_normal,
+                            keterangan: 'Jadwal normal.',
+                        };
+                    },
+
+                    resetFormFromDate(date) {
+                        this.formError = '';
+                        const event = this.state.eventsByDate[date] || null;
+                        const defaults = this.selectedDefault();
+                        const defaultType = defaults.tipe === 'normal' ? 'pulang_cepat' : defaults.tipe;
+
+                        this.preset = {
+                            tipe: defaultType,
+                            jam_masuk: defaultType === 'libur' ? '' : (defaults.jam_masuk || this.state.settings.jam_masuk),
+                            jam_pulang: defaultType === 'libur' ? '' : (defaults.jam_pulang || this.state.settings.jam_pulang_normal),
+                            keterangan: '',
+                        };
+
+                        this.eventForm = {
+                            tanggal_mulai: date,
+                            tanggal_selesai: date,
+                            nama_acara: event ? (event.nama_acara || '') : '',
+                            keterangan: event ? (event.keterangan || '') : '',
+                            selected_rombel_ids: event ? event.details.map((item) => Number(item.rombel_id)) : [],
+                            detail_kelas: {},
+                        };
+
+                        if (event) {
+                            event.details.forEach((item) => {
+                                this.eventForm.detail_kelas[String(item.rombel_id)] = {
+                                    tipe: item.tipe,
+                                    jam_masuk: item.jam_masuk || '',
+                                    jam_pulang: item.jam_pulang || '',
+                                    keterangan: item.keterangan || '',
+                                };
+                            });
+                        }
+                    },
+
+                    syncPresetTime() {
+                        if (this.preset.tipe === 'libur') {
+                            this.preset.jam_masuk = '';
+                            this.preset.jam_pulang = '';
+                            return;
+                        }
+
+                        if (!this.preset.jam_masuk) {
+                            this.preset.jam_masuk = this.state.settings.jam_masuk;
+                        }
+
+                        if (!this.preset.jam_pulang) {
+                            this.preset.jam_pulang = this.preset.tipe === 'khusus'
+                                ? this.state.settings.jam_pulang_jumat
+                                : this.state.settings.jam_pulang_normal;
+                        }
+                    },
+
+                    detailFromPreset() {
+                        this.syncPresetTime();
+
+                        return {
+                            tipe: this.preset.tipe,
+                            jam_masuk: this.preset.tipe === 'libur' ? '' : this.preset.jam_masuk,
+                            jam_pulang: this.preset.tipe === 'libur' ? '' : this.preset.jam_pulang,
+                            keterangan: this.preset.keterangan || '',
+                        };
+                    },
+
+                    isRombelSelected(id) {
+                        return this.eventForm.selected_rombel_ids.includes(Number(id));
+                    },
+
+                    toggleRombel(id) {
+                        id = Number(id);
+                        const key = String(id);
+
+                        if (this.isRombelSelected(id)) {
+                            this.eventForm.selected_rombel_ids = this.eventForm.selected_rombel_ids.filter((item) => item !== id);
+                            delete this.eventForm.detail_kelas[key];
+                            return;
+                        }
+
+                        this.eventForm.selected_rombel_ids.push(id);
+                        this.eventForm.detail_kelas[key] = this.detailFromPreset();
+                    },
+
+                    selectFilteredRombel() {
+                        this.filteredRombel().forEach((rombel) => {
+                            if (!this.isRombelSelected(rombel.id)) {
+                                this.eventForm.selected_rombel_ids.push(Number(rombel.id));
+                                this.eventForm.detail_kelas[String(rombel.id)] = this.detailFromPreset();
+                            }
+                        });
+                    },
+
+                    clearRombel() {
+                        this.eventForm.selected_rombel_ids = [];
+                        this.eventForm.detail_kelas = {};
+                    },
+
+                    applyPresetToAll() {
+                        this.eventForm.selected_rombel_ids.forEach((id) => {
+                            this.eventForm.detail_kelas[String(id)] = this.detailFromPreset();
+                        });
+                    },
+
+                    applyTypeDefault(id) {
+                        const key = String(id);
+                        const detail = this.eventForm.detail_kelas[key];
+
+                        if (!detail) {
+                            return;
+                        }
+
+                        if (detail.tipe === 'libur') {
+                            detail.jam_masuk = '';
+                            detail.jam_pulang = '';
+                            return;
+                        }
+
+                        if (!detail.jam_masuk) {
+                            detail.jam_masuk = this.state.settings.jam_masuk;
+                        }
+
+                        if (!detail.jam_pulang) {
+                            detail.jam_pulang = detail.tipe === 'khusus'
+                                ? this.state.settings.jam_pulang_jumat
+                                : this.state.settings.jam_pulang_normal;
+                        }
+                    },
+
+                    filteredRombel() {
+                        const keyword = this.rombelSearch.trim().toLowerCase();
+
+                        if (!keyword) {
+                            return this.state.rombel;
+                        }
+
+                        return this.state.rombel.filter((rombel) => {
+                            return [rombel.nama, rombel.tingkat, rombel.jurusan, rombel.indeks]
+                                .filter(Boolean)
+                                .join(' ')
+                                .toLowerCase()
+                                .includes(keyword);
+                        });
+                    },
+
+                    selectedRombel() {
+                        const ids = this.eventForm.selected_rombel_ids;
+
+                        return this.state.rombel.filter((rombel) => ids.includes(Number(rombel.id)));
+                    },
+
+                    detailLabel(id) {
+                        const detail = this.eventForm.detail_kelas[String(id)] || {};
+                        const label = this.state.tipeOptions[detail.tipe] || detail.tipe || '-';
+
+                        if (detail.tipe === 'libur') {
+                            return label;
+                        }
+
+                        return `${label} • ${detail.jam_masuk || '--:--'} - ${detail.jam_pulang || '--:--'}`;
+                    },
+
+                    monthEvents() {
+                        return Object.values(this.state.eventsByDate || {})
+                            .sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+                    },
+
+                    nextMonth() {
+                        let month = Number(this.state.month) + 1;
+                        let year = Number(this.state.year);
+
+                        if (month > 12) {
+                            month = 1;
+                            year++;
+                        }
+
+                        this.loadMonth(year, month);
+                    },
+
+                    previousMonth() {
+                        let month = Number(this.state.month) - 1;
+                        let year = Number(this.state.year);
+
+                        if (month < 1) {
+                            month = 12;
+                            year--;
+                        }
+
+                        this.loadMonth(year, month);
+                    },
+
+                    loadMonth(year, month) {
+                        this.loading = true;
+                        wire.changeMonth(year, month).catch(() => {
+                            this.loading = false;
+                        });
+                    },
+
+                    goToday() {
+                        this.loading = true;
+                        wire.goToday().catch(() => {
+                            this.loading = false;
+                        });
+                    },
+
+                    saveEvent() {
+                        this.formError = '';
+
+                        if (!this.eventForm.tanggal_mulai || !this.eventForm.tanggal_selesai) {
+                            this.formError = 'Tanggal mulai dan tanggal selesai wajib diisi.';
+                            return;
+                        }
+
+                        if (this.eventForm.tanggal_selesai < this.eventForm.tanggal_mulai) {
+                            this.formError = 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
+                            return;
+                        }
+
+                        if (!this.eventForm.nama_acara.trim()) {
+                            this.formError = 'Nama event wajib diisi.';
+                            return;
+                        }
+
+                        if (this.eventForm.selected_rombel_ids.length === 0) {
+                            this.formError = 'Minimal pilih satu kelas terdampak.';
+                            return;
+                        }
+
+                        this.eventForm.selected_rombel_ids.forEach((id) => this.applyTypeDefault(id));
+                        this.saving = true;
+                        wire.saveEvent(JSON.parse(JSON.stringify(this.eventForm))).catch(() => {
+                            this.saving = false;
+                            this.formError = 'Gagal menyimpan. Periksa kembali data yang diisi.';
+                        });
+                    },
+
+                    saveDefault() {
+                        this.savingDefault = true;
+                        wire.saveDefault(JSON.parse(JSON.stringify(this.defaultForm))).catch(() => {
+                            this.savingDefault = false;
+                        });
+                    },
+
+                    deleteSelectedDate() {
+                        if (!this.selectedEvent()) {
+                            return;
+                        }
+
+                        if (!confirm('Hapus semua event kelas pada tanggal ini?')) {
+                            return;
+                        }
+
+                        this.saving = true;
+                        wire.deleteDate(this.selectedDate).catch(() => {
+                            this.saving = false;
+                        });
+                    },
+
+                    scrollToForm() {
+                        this.$nextTick(() => {
+                            document.getElementById('form-event-waktu')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        });
+                    },
+
+                    formatDate(date) {
+                        if (!date) {
+                            return '-';
+                        }
+
+                        const parts = date.split('-');
+
+                        if (parts.length !== 3) {
+                            return date;
+                        }
+
+                        return `${parts[2]} ${this.bulan[Number(parts[1]) - 1]} ${parts[0]}`;
+                    },
+
+                    calendarClass(day) {
+                        if (day.date === this.selectedDate) {
+                            return 'border-blue-main bg-blue-50 shadow-sm ring-2 ring-blue-main/10';
+                        }
+
+                        if (day.hasEvent) {
+                            return 'border-orange-200 bg-orange-50 hover:border-orange-400';
+                        }
+
+                        if (day.default.tipe === 'libur') {
+                            return 'border-red-100 bg-red-50/70 hover:border-red-200';
+                        }
+
+                        if (day.default.tipe === 'khusus') {
+                            return 'border-purple-100 bg-purple-50/70 hover:border-purple-200';
+                        }
+
+                        return 'border-gray-100 bg-white hover:border-blue-main/40 hover:bg-blue-50/40';
+                    },
+
+                    typePillClass(type) {
+                        const classes = {
+                            normal: 'bg-blue-50 text-blue-main',
+                            pulang_cepat: 'bg-yellow-50 text-yellow-700',
+                            pjj: 'bg-cyan-50 text-cyan-700',
+                            libur: 'bg-red-50 text-red-600',
+                            khusus: 'bg-purple-50 text-purple-700',
+                        };
+
+                        return classes[type] || 'bg-gray-50 text-gray-600';
+                    },
+
+                    tinyDotClass(type) {
+                        const classes = {
+                            normal: 'bg-blue-main',
+                            pulang_cepat: 'bg-yellow-500',
+                            pjj: 'bg-cyan-500',
+                            libur: 'bg-red-500',
+                            khusus: 'bg-purple-500',
+                        };
+
+                        return classes[type] || 'bg-gray-400';
+                    },
+                };
+            }
+        </script>
+    @endonce
 </div>

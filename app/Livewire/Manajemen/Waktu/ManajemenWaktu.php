@@ -2,691 +2,406 @@
 
 namespace App\Livewire\Manajemen\Waktu;
 
+use App\Helpers\ToastMagic;
 use App\Models\JadwalAbsen;
+use App\Models\Murid\Rombel\Rombel;
+use App\Models\Setting;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Livewire\Attributes\On;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class ManajemenWaktu extends Component
 {
     private const DEFAULT_MASUK = '06:30';
     private const DEFAULT_PULANG_NORMAL = '16:30';
-    private const DEFAULT_PULANG_KHUSUS = '11:30';
-    private const TYPE_LIBUR = 'libur';
-    private const TYPE_NORMAL = 'normal';
-    private const TYPE_KHUSUS = 'khusus';
-    private const TYPE_CUSTOM = 'custom';
+    private const DEFAULT_PULANG_JUMAT = '11:30';
 
-    public $month;
-    public $year;
-    public $selectedDate;
-    public $title;
-    public $masuk;
-    public $pulang;
+    private const TIPE_OPTIONS = [
+        'normal' => 'Masuk Normal',
+        'pulang_cepat' => 'Pulang Cepat',
+        'pjj' => 'PJJ',
+        'libur' => 'Libur',
+        'khusus' => 'Hari Spesial',
+    ];
 
-    public $keterangan;
-    public $isEditing = false;
-    // single | same_day | weekdays | fridays
-    public $isCustomMode = false;
-    public $scheduleMode = 'libur';
-    public $isSpecialSchedule = false;
+    public int $month;
+    public int $year;
+    public array $state = [];
 
-    public $calendar = [];
-    public $defaultSchedule = [];
-
-    public function mount()
+    public function mount(): void
     {
-        $this->month = now()->month;
-        $this->year = now()->year;
+        $today = now();
 
-        $this->generateCalendar();
-        $this->loadJadwal(); // 🔥 WAJIB
+        $this->month = (int) $today->format('m');
+        $this->year = (int) $today->format('Y');
+        $this->refreshState($today->format('Y-m-d'));
     }
 
-    public function generateCalendar()
+    public function changeMonth(int $year, int $month): void
     {
-        $this->calendar = $this->buildCalendar($this->month, $this->year);
-        $this->defaultSchedule = $this->buildDefaultSchedules($this->month, $this->year);
+        if ($month < 1 || $month > 12 || $year < 2000 || $year > 2100) {
+            return;
+        }
+
+        $this->year = $year;
+        $this->month = $month;
+        $this->refreshState(sprintf('%04d-%02d-01', $year, $month));
+        $this->dispatch('waktu-state-updated', state: $this->state);
     }
 
-    private function buildCalendar(int $month, int $year): array
+    public function goToday(): void
     {
-        $firstDay = Carbon::create($year, $month, 1);
-        $daysInMonth = $firstDay->daysInMonth;
-        $startDay = $firstDay->dayOfWeekIso;
+        $today = now();
 
-        $calendar = [];
+        $this->year = (int) $today->format('Y');
+        $this->month = (int) $today->format('m');
+        $this->refreshState($today->format('Y-m-d'));
+        $this->dispatch('waktu-state-updated', state: $this->state);
+    }
+
+    public function saveDefault(array $payload): void
+    {
+        $validated = validator($payload, [
+            'jam_masuk' => ['required', 'date_format:H:i'],
+            'jam_pulang_normal' => ['required', 'date_format:H:i'],
+            'jam_pulang_jumat' => ['required', 'date_format:H:i'],
+        ], [
+            'jam_masuk.required' => 'Jam masuk default wajib diisi.',
+            'jam_pulang_normal.required' => 'Jam pulang normal wajib diisi.',
+            'jam_pulang_jumat.required' => 'Jam pulang Jumat wajib diisi.',
+        ])->validate();
+
+        Setting::updateOrCreate(['key' => 'jadwal.default_masuk'], ['value' => $validated['jam_masuk']]);
+        Setting::updateOrCreate(['key' => 'jadwal.default_pulang_normal'], ['value' => $validated['jam_pulang_normal']]);
+        Setting::updateOrCreate(['key' => 'jadwal.default_pulang_jumat'], ['value' => $validated['jam_pulang_jumat']]);
+
+        $this->refreshState($this->state['selectedDate'] ?? now()->format('Y-m-d'));
+        $this->dispatch('waktu-state-updated', state: $this->state);
+
+        ToastMagic::success('Default Jadwal Disimpan', 'Jam default masuk, pulang normal, dan Jumat berhasil diperbarui.');
+    }
+
+    public function saveEvent(array $payload): void
+    {
+        $validated = validator($payload, [
+            'tanggal_mulai' => ['required', 'date_format:Y-m-d'],
+            'tanggal_selesai' => ['required', 'date_format:Y-m-d'],
+            'nama_acara' => ['required', 'string', 'max:255'],
+            'keterangan' => ['nullable', 'string'],
+            'selected_rombel_ids' => ['required', 'array', 'min:1'],
+            'selected_rombel_ids.*' => ['integer', 'exists:rombel,id'],
+            'detail_kelas' => ['required', 'array'],
+            'detail_kelas.*.tipe' => ['required', 'in:normal,pulang_cepat,pjj,libur,khusus'],
+            'detail_kelas.*.jam_masuk' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.jam_pulang' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.keterangan' => ['nullable', 'string'],
+        ], [
+            'nama_acara.required' => 'Nama event wajib diisi.',
+            'selected_rombel_ids.required' => 'Minimal pilih satu kelas terdampak.',
+            'selected_rombel_ids.min' => 'Minimal pilih satu kelas terdampak.',
+        ])->validate();
+
+        if ($validated['tanggal_selesai'] < $validated['tanggal_mulai']) {
+            throw ValidationException::withMessages([
+                'tanggal_selesai' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+            ]);
+        }
+
+        $rombelIds = collect($validated['selected_rombel_ids'])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $detailKelas = $validated['detail_kelas'];
+        $tanggalMulai = $validated['tanggal_mulai'];
+        $tanggalSelesai = $validated['tanggal_selesai'];
+
+        DB::transaction(function () use ($validated, $rombelIds, $detailKelas, $tanggalMulai, $tanggalSelesai) {
+            foreach ($this->dateRange($tanggalMulai, $tanggalSelesai) as $tanggal) {
+                $jadwal = JadwalAbsen::updateOrCreate(
+                    ['tanggal' => $tanggal],
+                    [
+                        'nama_acara' => $validated['nama_acara'],
+                        'jam_masuk' => null,
+                        'jam_pulang' => null,
+                        'tipe' => 'custom',
+                        'keterangan' => $validated['keterangan'] ?? null,
+                    ],
+                );
+
+                foreach ($rombelIds as $rombelId) {
+                    $key = (string) $rombelId;
+                    $row = $detailKelas[$key] ?? [];
+                    $tipe = $row['tipe'] ?? 'libur';
+
+                    $jadwal->rombelJadwal()->updateOrCreate(
+                        ['rombel_id' => $rombelId],
+                        [
+                            'tipe' => $tipe,
+                            'jam_masuk' => $tipe === 'libur' ? null : ($row['jam_masuk'] ?? null),
+                            'jam_pulang' => $tipe === 'libur' ? null : ($row['jam_pulang'] ?? null),
+                            'keterangan' => $row['keterangan'] ?? null,
+                        ],
+                    );
+                }
+
+                $jadwal->rombelJadwal()
+                    ->whereNotIn('rombel_id', $rombelIds)
+                    ->delete();
+            }
+        });
+
+        $this->refreshState($tanggalMulai);
+        $this->dispatch('waktu-state-updated', state: $this->state);
+
+        ToastMagic::success('Event Kelas Disimpan', 'Jadwal untuk kelas terdampak berhasil diperbarui.');
+    }
+
+    public function deleteDate(string $tanggal): void
+    {
+        if (!$this->isValidDate($tanggal)) {
+            return;
+        }
+
+        JadwalAbsen::where('tanggal', $tanggal)->delete();
+
+        $this->refreshState($tanggal);
+        $this->dispatch('waktu-state-updated', state: $this->state);
+
+        ToastMagic::success('Event Dihapus', 'Event pada tanggal tersebut berhasil dihapus.');
+    }
+
+    private function refreshState(?string $selectedDate = null): void
+    {
+        $settings = $this->defaultSettings();
+        $eventsByDate = $this->loadEventsByDate();
+        $selectedDate = $this->normalizeSelectedDate($selectedDate);
+
+        $this->state = [
+            'year' => $this->year,
+            'month' => $this->month,
+            'monthLabel' => $this->monthLabel($this->year, $this->month),
+            'today' => now()->format('Y-m-d'),
+            'selectedDate' => $selectedDate,
+            'settings' => $settings,
+            'tipeOptions' => self::TIPE_OPTIONS,
+            'rombel' => $this->loadRombel(),
+            'eventsByDate' => $eventsByDate,
+            'days' => $this->buildCalendarDays($eventsByDate, $settings),
+        ];
+    }
+
+    private function defaultSettings(): array
+    {
+        $settings = Setting::whereIn('key', [
+            'jadwal.default_masuk',
+            'jadwal.default_pulang_normal',
+            'jadwal.default_pulang_jumat',
+        ])->pluck('value', 'key');
+
+        return [
+            'jam_masuk' => $settings['jadwal.default_masuk'] ?? self::DEFAULT_MASUK,
+            'jam_pulang_normal' => $settings['jadwal.default_pulang_normal'] ?? self::DEFAULT_PULANG_NORMAL,
+            'jam_pulang_jumat' => $settings['jadwal.default_pulang_jumat'] ?? self::DEFAULT_PULANG_JUMAT,
+        ];
+    }
+
+    private function loadRombel(): array
+    {
+        return Rombel::with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
+            ->orderBy('tingkat_id')
+            ->orderBy('jurusan_id')
+            ->orderBy('indeks_id')
+            ->get()
+            ->map(fn (Rombel $rombel) => [
+                'id' => $rombel->id,
+                'nama' => $rombel->nama_lengkap,
+                'tingkat' => $rombel->tingkat?->nama,
+                'jurusan' => $rombel->jurusan?->nama,
+                'indeks' => $rombel->indeks?->nama,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function loadEventsByDate(): array
+    {
+        if (!Schema::hasTable('jadwal_absen') || !Schema::hasTable('jadwal_absen_rombel')) {
+            return [];
+        }
+
+        $start = Carbon::create($this->year, $this->month, 1)->format('Y-m-d');
+        $end = Carbon::create($this->year, $this->month, 1)->endOfMonth()->format('Y-m-d');
+
+        return JadwalAbsen::with(['rombelJadwal.rombel.tingkat', 'rombelJadwal.rombel.jurusan', 'rombelJadwal.rombel.indeks'])
+            ->whereBetween('tanggal', [$start, $end])
+            ->orderBy('tanggal')
+            ->get()
+            ->mapWithKeys(fn (JadwalAbsen $jadwal) => [
+                $jadwal->tanggal->format('Y-m-d') => $this->formatEvent($jadwal),
+            ])
+            ->all();
+    }
+
+    private function formatEvent(JadwalAbsen $jadwal): array
+    {
+        $details = $jadwal->rombelJadwal
+            ->map(fn ($detail) => [
+                'rombel_id' => $detail->rombel_id,
+                'rombel' => $detail->rombel?->nama_lengkap ?? '-',
+                'tipe' => $detail->tipe,
+                'tipe_label' => self::TIPE_OPTIONS[$detail->tipe] ?? ucfirst((string) $detail->tipe),
+                'jam_masuk' => $this->formatTime($detail->jam_masuk),
+                'jam_pulang' => $this->formatTime($detail->jam_pulang),
+                'keterangan' => $detail->keterangan,
+            ])
+            ->values()
+            ->all();
+
+        $summary = collect($details)
+            ->countBy('tipe_label')
+            ->map(fn ($total, $label) => $label . ': ' . $total)
+            ->values()
+            ->implode(', ');
+
+        return [
+            'id' => $jadwal->id,
+            'tanggal' => $jadwal->tanggal->format('Y-m-d'),
+            'nama_acara' => $jadwal->nama_acara,
+            'tipe' => $jadwal->tipe,
+            'keterangan' => $jadwal->keterangan,
+            'affected_count' => count($details),
+            'summary' => $summary ?: 'Tidak ada kelas terdampak',
+            'details' => $details,
+        ];
+    }
+
+    private function buildCalendarDays(array $eventsByDate, array $settings): array
+    {
+        $firstDate = Carbon::create($this->year, $this->month, 1);
+        $daysInMonth = $firstDate->daysInMonth;
+        $startOffset = $firstDate->dayOfWeekIso;
+        $today = now()->format('Y-m-d');
+        $days = [];
         $day = 1;
 
-        for ($i = 1; $i <= 42; $i++) {
-            if ($i < $startDay || $day > $daysInMonth) {
-                $calendar[] = null;
+        for ($cell = 1; $cell <= 42; $cell++) {
+            if ($cell < $startOffset || $day > $daysInMonth) {
+                $days[] = null;
                 continue;
             }
 
-            $date = Carbon::create($year, $month, $day)->format('Y-m-d');
+            $date = sprintf('%04d-%02d-%02d', $this->year, $this->month, $day);
+            $default = $this->defaultForDate($date, $settings);
+            $event = $eventsByDate[$date] ?? null;
 
-            $calendar[] = [
-                'day' => $day,
+            $days[] = [
                 'date' => $date,
+                'day' => $day,
+                'iso' => $this->dayIso($date),
+                'isToday' => $date === $today,
+                'default' => $default,
+                'hasEvent' => filled($event),
+                'affectedCount' => $event['affected_count'] ?? 0,
+                'title' => $event['nama_acara'] ?? $default['label'],
+                'summary' => $event['summary'] ?? $default['keterangan'],
             ];
 
             $day++;
         }
 
-        return $calendar;
+        return $days;
     }
 
-    private function buildDefaultSchedules(int $month, int $year): array
+    private function defaultForDate(string $date, array $settings): array
     {
-        $firstDay = Carbon::create($year, $month, 1);
-        $daysInMonth = $firstDay->daysInMonth;
-        $defaults = [];
+        $iso = $this->dayIso($date);
 
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $date = Carbon::create($year, $month, $day)->format('Y-m-d');
-            $defaults[$date] = $this->getDefaultSchedule($date);
-        }
-
-        return $defaults;
-    }
-
-    private function getDayIso(string $date): int
-    {
-        return (int) date('N', strtotime($date));
-    }
-
-    public function getDefaultSchedule(string $date): array
-    {
-        $day = $this->getDayIso($date);
-
-        if ($day == 5) {
+        if ($iso === 5) {
             return [
-                'masuk' => self::DEFAULT_MASUK,
-                'pulang' => self::DEFAULT_PULANG_KHUSUS,
-                'type' => self::TYPE_KHUSUS,
+                'tipe' => 'khusus',
+                'label' => 'Default Jumat',
+                'jam_masuk' => $settings['jam_masuk'],
+                'jam_pulang' => $settings['jam_pulang_jumat'],
+                'keterangan' => 'Jadwal Jumat otomatis.',
             ];
         }
 
-        if ($day >= 6) {
+        if ($iso >= 6) {
             return [
-                'masuk' => null,
-                'pulang' => null,
-                'type' => self::TYPE_LIBUR,
+                'tipe' => 'libur',
+                'label' => 'Libur Default',
+                'jam_masuk' => null,
+                'jam_pulang' => null,
+                'keterangan' => 'Sabtu/Minggu libur default, masih bisa dioverride.',
             ];
         }
 
         return [
-            'masuk' => self::DEFAULT_MASUK,
-            'pulang' => self::DEFAULT_PULANG_NORMAL,
-            'type' => self::TYPE_NORMAL,
+            'tipe' => 'normal',
+            'label' => 'Normal',
+            'jam_masuk' => $settings['jam_masuk'],
+            'jam_pulang' => $settings['jam_pulang_normal'],
+            'keterangan' => 'Jadwal normal.',
         ];
     }
 
-    private function setScheduleState(
-        string $mode,
-        ?string $masuk,
-        ?string $pulang,
-        ?string $keterangan,
-        ?string $title = null
-    ): void {
-        $this->scheduleMode = $mode;
-        $this->masuk = $masuk;
-        $this->pulang = $pulang;
-        $this->keterangan = $keterangan;
-        $this->title = $title;
+    private function dateRange(string $start, string $end): array
+    {
+        $dates = [];
+        $current = Carbon::createFromFormat('Y-m-d', $start)->startOfDay();
+        $last = Carbon::createFromFormat('Y-m-d', $end)->startOfDay();
+
+        while ($current <= $last) {
+            $dates[] = $current->format('Y-m-d');
+            $current->addDay();
+        }
+
+        return $dates;
     }
 
-    private function applyDefaultByDay(string $date): void
+    private function normalizeSelectedDate(?string $selectedDate): string
     {
-        $day = $this->getDayIso($date);
-
-        if ($day >= 6) {
-            $this->setScheduleState(self::TYPE_LIBUR, null, null, 'Hari Libur');
-            return;
+        if ($selectedDate && $this->isValidDate($selectedDate)) {
+            return $selectedDate;
         }
 
-        if ($day == 5) {
-            $this->setScheduleState(
-                self::TYPE_KHUSUS,
-                self::DEFAULT_MASUK,
-                self::DEFAULT_PULANG_KHUSUS,
-                'Jadwal Khusus'
-            );
-            return;
-        }
-
-        $this->setScheduleState(
-            self::TYPE_NORMAL,
-            self::DEFAULT_MASUK,
-            self::DEFAULT_PULANG_NORMAL,
-            'Normal'
-        );
-        $this->isSpecialSchedule = false;
+        return sprintf('%04d-%02d-01', $this->year, $this->month);
     }
 
-    public function nextMonth()
+    private function isValidDate(string $date): bool
     {
-        if ($this->month == 12) {
-            $this->month = 1;
-            $this->year++;
-        } else {
-            $this->month++;
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return false;
         }
 
-        $this->generateCalendar();
-        $this->loadJadwal(); // 🔥 penting
+        [$year, $month, $day] = array_map('intval', explode('-', $date));
+
+        return checkdate($month, $day, $year);
     }
 
-    public function previousMonth()
+    private function dayIso(string $date): int
     {
-        if ($this->month == 1) {
-            $this->month = 12;
-            $this->year--;
-        } else {
-            $this->month--;
-        }
+        [$year, $month, $day] = array_map('intval', explode('-', $date));
 
-        $this->generateCalendar();
-        $this->loadJadwal(); // 🔥 penting
+        return (int) Carbon::create($year, $month, $day)->dayOfWeekIso;
     }
 
-    #[On('jadwal-updated')]
-    public function refreshJadwal(): void
+    private function monthLabel(int $year, int $month): string
     {
-        $this->loadJadwal();
+        return Carbon::create($year, $month, 1)->translatedFormat('F Y');
     }
 
-    public function selectDate($date)
+    private function formatTime($time): ?string
     {
-        $this->isEditing = false;
-        $this->selectedDate = $date;
-
-        $this->setScheduleState(self::TYPE_NORMAL, null, null, null);
-
-        if (isset($this->jadwal[$date])) {
-            $jadwal = $this->jadwal[$date];
-
-            $this->setScheduleState(
-                $jadwal['tipe'] ?? self::TYPE_NORMAL,
-                $jadwal['jam_masuk'] ?? null,
-                $jadwal['jam_pulang'] ?? null,
-                $jadwal['keterangan'] ?? null,
-                $jadwal['nama_acara'] ?? null
-            );
-
-            $this->isSpecialSchedule = false;
-
-            return;
+        if (!$time) {
+            return null;
         }
 
-        $jadwal = JadwalAbsen::whereDate('tanggal', $date)->first();
-
-        if ($jadwal) {
-            $this->setScheduleState(
-                $jadwal->tipe ?? self::TYPE_NORMAL,
-                $jadwal->jam_masuk,
-                $jadwal->jam_pulang,
-                $jadwal->keterangan,
-                $jadwal->nama_acara
-            );
-
-            $this->isSpecialSchedule = false;
-
-            return;
-        }
-
-        $this->applyDefaultByDay($date);
-    }
-
-    public function updatedScheduleMode($value)
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | LIBUR
-        |--------------------------------------------------------------------------
-        */
-
-        if ($value == self::TYPE_LIBUR) {
-            $this->setScheduleState(self::TYPE_LIBUR, null, null, 'Hari Libur', $this->title);
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | NORMAL
-        |--------------------------------------------------------------------------
-        */
-
-        if ($value == self::TYPE_NORMAL) {
-            $this->setScheduleState(
-                self::TYPE_NORMAL,
-                self::DEFAULT_MASUK,
-                self::DEFAULT_PULANG_NORMAL,
-                'Jadwal Normal',
-                $this->title
-            );
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | KHUSUS
-        |--------------------------------------------------------------------------
-        */
-
-        if ($value == self::TYPE_KHUSUS) {
-            $this->setScheduleState(
-                self::TYPE_KHUSUS,
-                self::DEFAULT_MASUK,
-                self::DEFAULT_PULANG_KHUSUS,
-                'Jadwal Khusus',
-                $this->title
-            );
-            return;
-        }
-    }
-
-    public function saveJadwal()
-    {
-        $this->validate([
-            'selectedDate' => 'required',
-        ]);
-
-        $day = $this->getDayIso($this->selectedDate);
-
-        /*
-        |--------------------------------------------------------------------------
-        | CUSTOM
-        |--------------------------------------------------------------------------
-        */
-
-        if ($this->isCustomMode) {
-            if (
-                $this->scheduleMode == self::TYPE_LIBUR &&
-                $this->isCustomMode &&
-                !$this->title
-            ) {
-                $this->addError('title', 'Nama acara wajib untuk hari libur');
-                return;
-            }
-
-            JadwalAbsen::updateOrCreate(
-                ['tanggal' => $this->selectedDate],
-                [
-                    'nama_acara' => $this->title,
-                    'jam_masuk' => $this->scheduleMode == self::TYPE_LIBUR
-                        ? null
-                        : $this->masuk,
-
-                    'jam_pulang' => $this->scheduleMode == self::TYPE_LIBUR
-                        ? null
-                        : $this->pulang,    
-                    'keterangan' => $this->keterangan,
-                    'tipe' => $this->scheduleMode == self::TYPE_LIBUR
-                    ? self::TYPE_LIBUR
-                    : self::TYPE_CUSTOM,
-                ],
-            );
-        }
-        /*
-        |--------------------------------------------------------------------------
-        | SPECIAL SCHEDULE
-        |--------------------------------------------------------------------------
-        */ elseif (
-            $this->isSpecialSchedule
-        ) {
-            JadwalAbsen::updateOrCreate(
-                ['tanggal' => $this->selectedDate],
-                [
-                    'nama_acara' => null,
-
-                    'jam_masuk' =>
-                        $this->scheduleMode == self::TYPE_LIBUR ? null : $this->masuk,
-
-                    'jam_pulang' =>
-                        $this->scheduleMode == self::TYPE_LIBUR ? null : $this->pulang,
-
-                    'keterangan' => $this->keterangan,
-
-                    'tipe' => match ($this->scheduleMode) {
-                        self::TYPE_LIBUR => self::TYPE_LIBUR,
-
-                        self::TYPE_NORMAL => self::TYPE_NORMAL,
-
-                        self::TYPE_KHUSUS => self::TYPE_KHUSUS,
-
-                        default => self::TYPE_LIBUR,
-                    },
-                ],
-            );
-        }
-        /*
-        |--------------------------------------------------------------------------
-        | KHUSUS
-        |--------------------------------------------------------------------------
-        */ elseif (
-            $day == 5
-        ) {
-            $start = Carbon::parse($this->selectedDate)->startOfYear();
-            $end = Carbon::parse($this->selectedDate)->endOfYear();
-
-            while ($start <= $end) {
-                if ($start->dayOfWeekIso == 5) {
-                    JadwalAbsen::updateOrCreate(
-                        ['tanggal' => $start->format('Y-m-d')],
-                        [
-                            'jam_masuk' => $this->masuk,
-                            'jam_pulang' => $this->pulang,
-                            'keterangan' => 'Jumat',
-                            'tipe' => self::TYPE_KHUSUS,
-                        ],
-                    );
-                }
-
-                $start->addDay();
-            }
-        }
-        /*
-        |--------------------------------------------------------------------------
-        | SENIN - KAMIS
-        |--------------------------------------------------------------------------
-        */ else {
-            $start = Carbon::parse($this->selectedDate)->startOfYear();
-            $end = Carbon::parse($this->selectedDate)->endOfYear();
-
-            while ($start <= $end) {
-                if ($start->dayOfWeekIso >= 1 && $start->dayOfWeekIso <= 4) {
-                    JadwalAbsen::updateOrCreate(
-                        ['tanggal' => $start->format('Y-m-d')],
-                        [
-                            'jam_masuk' => $this->masuk,
-                            'jam_pulang' => $this->pulang,
-                            'keterangan' => 'Normal',
-                            'tipe' => self::TYPE_NORMAL,
-                        ],
-                    );
-                }
-
-                $start->addDay();
-            }
-        }
-
-        $this->isEditing = false;
-        $this->isCustomMode = false;
-        $this->isSpecialSchedule = false;
-        $this->selectDate($this->selectedDate);
-
-        $this->loadJadwal();
-
-        $this->reset([
-            'isCustomMode',
-            'isEditing',
-            'isSpecialSchedule',
-        ]);
-
-        $this->scheduleMode = self::TYPE_LIBUR;
-    }
-
-    public function cancelEdit()
-    {
-        $this->isEditing = false;
-        $this->isCustomMode = false;
-        $this->isSpecialSchedule = false;
-
-        $this->scheduleMode = self::TYPE_LIBUR;
-    }
-
-    public $jadwal = [];
-
-    public function loadJadwal()
-    {
-        // 🔥 cegah error kalau tabel belum ada / belum kebaca
-        if (!Schema::hasTable('jadwal_absen')) {
-            $this->jadwal = [];
-            return;
-        }
-
-        $start = now()->setDate($this->year, $this->month, 1)->startOfMonth();
-        $end = $start->copy()->endOfMonth();
-
-        $this->jadwal = JadwalAbsen::whereBetween('tanggal', [$start, $end])
-            ->get()
-            ->keyBy(fn($j) => $j->tanggal->format('Y-m-d'))
-            ->toArray();
-    }
-
-    public function editJadwal()
-    {
-        $jadwal = JadwalAbsen::whereDate(
-            'tanggal',
-            $this->selectedDate,
-        )->first();
-
-        /*
-        |--------------------------------------------------------------------------
-        | CUSTOM EVENT / LIBUR NASIONAL
-        |--------------------------------------------------------------------------
-        */
-
-        if ($jadwal) {
-            // 🔥 custom event kuning
-            if ($jadwal->tipe == self::TYPE_CUSTOM) {
-                $this->isCustomMode = true;
-                $this->scheduleMode = self::TYPE_CUSTOM;
-
-                $this->title = $jadwal->nama_acara;
-
-                $this->masuk = $jadwal->jam_masuk;
-                $this->pulang = $jadwal->jam_pulang;
-
-                $this->keterangan = $jadwal->keterangan;
-
-                return;
-            }
-
-            // 🔥 LIBUR
-            if ($jadwal->tipe == self::TYPE_LIBUR) {
-
-                /*
-                |--------------------------------------------------------------------------
-                | LIBUR NASIONAL (custom merah)
-                |--------------------------------------------------------------------------
-                */
-
-                if ($jadwal->nama_acara) {
-
-                    $this->isCustomMode = true;
-
-                    $this->title = $jadwal->nama_acara;
-
-                    $this->masuk = null;
-                    $this->pulang = null;
-
-                    $this->keterangan = $jadwal->keterangan;
-
-                    $this->scheduleMode = self::TYPE_LIBUR;
-
-                    return;
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | LIBUR BIASA
-                |--------------------------------------------------------------------------
-                */
-
-                $this->isEditing = true;
-
-                $this->isSpecialSchedule = true;
-
-                $this->scheduleMode = self::TYPE_LIBUR;
-
-                $this->masuk = null;
-                $this->pulang = null;
-
-                $this->keterangan = 'Hari Libur';
-
-                return;
-            }
-
-            // 🔥 jadwal khusus ungu
-            if ($jadwal->tipe == self::TYPE_KHUSUS) {
-                $this->isEditing = true;
-
-                $this->isSpecialSchedule = true;
-
-                $this->scheduleMode = self::TYPE_KHUSUS;
-
-                $this->masuk = $jadwal->jam_masuk;
-                $this->pulang = $jadwal->jam_pulang;
-
-                $this->keterangan = $jadwal->keterangan;
-
-                return;
-            }
-
-            // 🔥 normal
-            if ($jadwal->tipe == self::TYPE_NORMAL) {
-                $this->isEditing = true;
-
-                $this->isSpecialSchedule = true;
-
-                $this->scheduleMode = self::TYPE_NORMAL;
-
-                $this->masuk = $jadwal->jam_masuk;
-                $this->pulang = $jadwal->jam_pulang;
-
-                $this->keterangan = $jadwal->keterangan;
-
-                return;
-            }
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT WEEKEND
-        |--------------------------------------------------------------------------
-        */
-
-        $day = $this->getDayIso($this->selectedDate);
-
-        if ($day >= 6) {
-            $this->isEditing = true;
-
-            $this->isSpecialSchedule = true;
-
-            // default weekend = libur
-            $this->scheduleMode = self::TYPE_LIBUR;
-
-            $this->masuk = null;
-            $this->pulang = null;
-
-            $this->keterangan = 'Hari Libur';
-
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT FRIDAY
-        |--------------------------------------------------------------------------
-        */
-
-        if ($day == 5) {
-            $this->isEditing = true;
-
-            $this->isSpecialSchedule = true;
-
-            $this->scheduleMode = self::TYPE_KHUSUS;
-
-            $this->masuk = self::DEFAULT_MASUK;
-            $this->pulang = self::DEFAULT_PULANG_KHUSUS;
-
-            $this->keterangan = 'Jadwal Khusus';
-
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT NORMAL
-        |--------------------------------------------------------------------------
-        */
-
-        $this->isEditing = true;
-
-        $this->isSpecialSchedule = true;
-
-        $this->scheduleMode = self::TYPE_NORMAL;
-
-        $this->masuk = self::DEFAULT_MASUK;
-        $this->pulang = self::DEFAULT_PULANG_NORMAL;
-
-        $this->keterangan = 'Jadwal Normal';
-    }
-
-    public function toggleHoliday()
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | JADI LIBUR
-        |--------------------------------------------------------------------------
-        */
-
-        if ($this->scheduleMode != self::TYPE_LIBUR) {
-            $this->setScheduleState(self::TYPE_LIBUR, null, null, 'Hari Libur', $this->title);
-            return;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | JADI NORMAL
-        |--------------------------------------------------------------------------
-        */
-
-        $this->setScheduleState(
-            self::TYPE_NORMAL,
-            self::DEFAULT_MASUK,
-            self::DEFAULT_PULANG_NORMAL,
-            'Jadwal Normal',
-            $this->title
-        );
-    }
-
-    public function goToday()
-    {
-        $today = now();
-
-        /*
-        |--------------------------------------------------------------------------
-        | PINDAH BULAN & TAHUN
-        |--------------------------------------------------------------------------
-        */
-
-        $this->month = $today->month;
-        $this->year = $today->year;
-
-        /*
-        |--------------------------------------------------------------------------
-        | RELOAD CALENDAR
-        |--------------------------------------------------------------------------
-        */
-
-        $this->generateCalendar();
-
-        $this->loadJadwal();
-
-        /*
-        |--------------------------------------------------------------------------
-        | AUTO SELECT HARI INI
-        |--------------------------------------------------------------------------
-        */
-
-        $this->selectDate(
-            $today->format('Y-m-d')
-        );
+        return substr((string) $time, 0, 5);
     }
 
     public function render()
