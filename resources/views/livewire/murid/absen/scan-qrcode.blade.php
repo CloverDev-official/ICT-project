@@ -124,6 +124,20 @@
                     </div>
 
                     <!-- BODY -->
+                    <div class="px-6 pt-5">
+                        <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                            <p class="font-semibold">{{ $scanMessage ?? 'Absensi berhasil disimpan.' }}</p>
+                            @if(!empty($jadwalHariIni))
+                                <p class="mt-1 text-xs">
+                                    Jadwal: {{ $jadwalHariIni['label'] ?? '-' }}
+                                    @if(!empty($jadwalHariIni['jam_masuk']) || !empty($jadwalHariIni['jam_pulang']))
+                                        · {{ $jadwalHariIni['jam_masuk'] ?? '-' }} - {{ $jadwalHariIni['jam_pulang'] ?? '-' }}
+                                    @endif
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+
                     <div class="p-6 flex gap-6">
 
                         <!-- FOTO -->
@@ -202,6 +216,42 @@
         </div>
     @endif
 
+    @if($scanStatus === 'error' && $scanMessage)
+        <div id="error-modal" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+            <div class="relative flex min-h-screen items-center justify-center p-4">
+                <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+                    <div class="bg-red-600 px-6 py-4 text-white">
+                        <h2 class="text-lg font-bold">Absensi Tidak Disimpan</h2>
+                        <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
+                    </div>
+                    <div class="p-6 text-sm text-gray-700">
+                        <p class="font-semibold text-gray-900">{{ $scanMessage }}</p>
+
+                        @if($murid)
+                            <div class="mt-4 rounded-2xl bg-gray-50 p-4">
+                                <p><span class="text-gray-500">Nama:</span> <span class="font-semibold">{{ $murid->nama }}</span></p>
+                                <p><span class="text-gray-500">Kelas:</span> <span class="font-semibold">{{ $murid->rombel->nama_lengkap ?? '-' }}</span></p>
+                            </div>
+                        @endif
+
+                        @if(!empty($jadwalHariIni))
+                            <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800">
+                                <p class="font-semibold">{{ $jadwalHariIni['label'] ?? '-' }}</p>
+                                @if(!empty($jadwalHariIni['nama_acara']))
+                                    <p class="text-xs">{{ $jadwalHariIni['nama_acara'] }}</p>
+                                @endif
+                                @if(!empty($jadwalHariIni['keterangan']))
+                                    <p class="text-xs">{{ $jadwalHariIni['keterangan'] }}</p>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
 </div>
 
 
@@ -221,6 +271,18 @@
 
         document.addEventListener('scanNotFound', () => {
             window.scanned = false;
+        });
+
+        document.addEventListener('scanRejected', () => {
+            window.destroyScanner();
+
+            setTimeout(() => {
+                $wire.set('scanStatus', null);
+                $wire.set('scanMessage', null);
+                $wire.set('murid', null);
+                window.scanned = false;
+                window.initScanner();
+            }, 2500);
         });
     </script>
 @endscript

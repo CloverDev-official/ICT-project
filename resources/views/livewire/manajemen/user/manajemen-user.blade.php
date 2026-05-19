@@ -350,7 +350,7 @@
                                     </button>
 
                                     <!-- edit -->
-                                    <a href="{{ route('edit-user') }}">
+                                    <a href="{{ route('edit-user', ['userId' => $user->id]) }}" wire:navigate>
 
                                         <button
                                             class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">

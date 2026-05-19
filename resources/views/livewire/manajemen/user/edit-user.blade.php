@@ -10,15 +10,15 @@
         <!-- wrap form -->
     <div class="bg-white p-4 rounded-xl shadow-sm">
 
-        <form wire:submit.prevent="store" class="p-6 flex flex-col gap-2">
+        <form wire:submit.prevent="update" class="p-6 flex flex-col gap-2">
 
             <!-- Nama -->
             <div>
                 <label class="text-sm text-gray-600 capitalize">Username</label>
-                <input type="text" wire:model.defer="nama"
+                <input type="text" wire:model.defer="name"
                     class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
                     placeholder="examplename">
-                @error('nama')
+                @error('name')
                     <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                 @enderror
             </div>
@@ -37,7 +37,7 @@
             <!-- password -->
             <div class="relative" x-data="{open : true}" >
                 <label class="text-sm text-gray-600">Password</label>
-                <input type="password" :type=" open ? 'password' : 'text' " placeholder="Password" class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2" >
+                <input type="password" wire:model.defer="password" :type=" open ? 'password' : 'text' " placeholder="Password" class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2" >
                 <div class="absolute right-3 top-10 ">
                     <button type="button"  @click="open = !open" >
                         <iconify-icon :icon="open ? 'iconoir:eye-closed' : 'ri:eye-fill' " width="24" height="24" class="transition-transform duration-200 text-gray-400" ></iconify-icon>
@@ -48,7 +48,7 @@
             <!-- repeat password -->
             <div class="relative" x-data="{open : true}" >
                 <label class="text-sm text-gray-600">Ulangi Password</label>
-                <input type="password" :type=" open ? 'password' : 'text' " placeholder="Masukkan Ulang Password" class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2" >
+                <input type="password" wire:model.defer="password_confirmation" :type=" open ? 'password' : 'text' " placeholder="Masukkan Ulang Password" class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2" >
                 <div class="absolute right-3 top-10 ">
                     <button type="button"  @click="open = !open" >
                         <iconify-icon :icon="open ? 'iconoir:eye-closed' : 'ri:eye-fill' " width="24" height="24" class="transition-transform duration-200 text-gray-400" ></iconify-icon>
@@ -65,11 +65,19 @@
                         open: false,
                         selectedId: null,
                         selectedLabel: 'Pilih Role',
+
+                        init(){
+                            // Inisialisasi nilai selectedId dan selectedLabel berdasarkan data yang sudah ada
+                            this.selectedId = @js($selectedRole?->id);
+                            this.selectedLabel = @js($selectedRole?->name ?? 'Pilih Role');
+                        },
     
                         select(id, label){
                             this.selectedId = id
                             this.selectedLabel = label
                             this.open = false
+
+                            $wire.set('roleId', id) // Update properti Livewire saat memilih role
                         },
     
                         toggle(){
@@ -118,15 +126,15 @@
                         </div>
     
                         <!-- list -->
-                        @foreach (['operator', 'wali kelas', 'pengawas'] as $role)
+                        @foreach ($roles as $role)
                             <div
-                                @click.prevent="select('{{ $role }}', '{{ $role }}')"
+                                @click.prevent="select('{{ $role->id }}', '{{ $role->name }}')"
                                 class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
                             >
-                                <span>{{ $role }}</span>
+                                <span>{{ $role->name }}</span>
     
                                 <iconify-icon 
-                                    x-show="selectedId === '{{ $role }}'" 
+                                    x-show="selectedId === '{{ $role->id }}'" 
                                     icon="lineicons:check" 
                                     width="20" 
                                     height="20">
@@ -142,11 +150,18 @@
                         open: false,
                         selectedId: null,
                         selectedLabel: 'Pilih Guru',
+
+                        init(){
+                            this.selectedId = @js($selectedGuru?->id);
+                            this.selectedLabel = @js($selectedGuru?->nama ?? 'Pilih Guru');
+                        },
     
                         select(id, label){
                             this.selectedId = id
                             this.selectedLabel = label
                             this.open = false
+
+                            $wire.set('guruId', id) // Update properti Livewire saat memilih guru
                         },
     
                         toggle(){
@@ -182,10 +197,10 @@
                     >
                         <!-- pilih -->
                         <div
-                            @click.prevent="select(null, 'pilih role')"
+                            @click.prevent="select(null, 'pilih guru')"
                             class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
                         >
-                            <span>pilih role</span>
+                            <span>pilih guru</span>
                             <iconify-icon 
                                 x-show="selectedId === null" 
                                 icon="lineicons:check" 
@@ -195,15 +210,15 @@
                         </div>
     
                         <!-- list -->
-                        @foreach (['dodi', 'putra', 'kiki'] as $role)
+                        @foreach ($guru as $selectGuru)
                             <div
-                                @click.prevent="select('{{ $role }}', '{{ $role }}')"
+                                @click.prevent="select('{{ $selectGuru->id }}', '{{ $selectGuru->nama }}')"
                                 class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition"
                             >
-                                <span>{{ $role }}</span>
+                                <span>{{ $selectGuru->nama }}</span>
     
                                 <iconify-icon 
-                                    x-show="selectedId === '{{ $role }}'" 
+                                    x-show="selectedId === '{{ $selectGuru->id }}'" 
                                     icon="lineicons:check" 
                                     width="20" 
                                     height="20">
