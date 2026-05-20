@@ -27,6 +27,7 @@ class Murid extends Model
         'rw',
         'kelurahan',
         'kecamatan',
+        'kode_pos',
         'hp',
         'email',
         'nama_ayah',

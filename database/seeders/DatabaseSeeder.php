@@ -32,14 +32,14 @@ class DatabaseSeeder extends Seeder
 
         $this->call(SettingSeeder::class);
     
-        $this->call([
-            TingkatSeeder::class,
-            JurusanSeeder::class,
-            IndeksSeeder::class,
-            RombelSeeder::class,
-        ]);
+        // $this->call([
+        //     TingkatSeeder::class,
+        //     JurusanSeeder::class,
+        //     IndeksSeeder::class,
+        //     RombelSeeder::class,
+        // ]);
 
-        $this->call(MuridSeeder::class);
+        // $this->call(MuridSeeder::class);
 
         // $this->call(AbsenMuridSeeder::class);
     }

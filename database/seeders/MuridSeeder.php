@@ -35,6 +35,7 @@ class MuridSeeder extends Seeder
         );
         $cities = array_map(fn() => fake()->city(), range(1, $POOL));
         $streets = array_map(fn() => fake()->streetAddress(), range(1, 500));
+        $postCodes = array_map(fn() => fake()->postcode(), range(1, 500));
         $emails = array_map(fn() => fake()->safeEmail(), range(1, $POOL));
         $agamaPool = [
             'Islam',
@@ -91,6 +92,8 @@ class MuridSeeder extends Seeder
                             : null,
                     'kelurahan' =>
                         $i % 5 === 0 ? $cities[($idx + 1) % $POOL] : null,
+                    'kode_pos' =>
+                        $i % 5 === 0 ? $postCodes[$i % 500] : null,
                     'kecamatan' =>
                         $i % 5 === 0 ? $cities[($idx + 3) % $POOL] : null,
                     'hp' =>

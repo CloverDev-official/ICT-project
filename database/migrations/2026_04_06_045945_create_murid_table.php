@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('rw', 10)->nullable();
             $table->string('kelurahan')->nullable();
             $table->string('kecamatan')->nullable();
+            $table->string('kode_pos', 20)->nullable();
 
             $table->string('hp')->nullable();
             $table->string('email')->nullable();
