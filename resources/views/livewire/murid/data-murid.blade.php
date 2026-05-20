@@ -75,7 +75,7 @@
                             height="22">
                         </iconify-icon>
 
-                        Import CSV
+                        Import XLSX
 
                     </button>
 

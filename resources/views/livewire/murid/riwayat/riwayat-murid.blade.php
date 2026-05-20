@@ -1,25 +1,5 @@
 <div class="space-y-6">
 
-    @php
-        $tingkatList = [
-            ['id' => 1, 'nama' => 'X'],
-            ['id' => 2, 'nama' => 'XI'],
-            ['id' => 3, 'nama' => 'XII'],
-        ];
-
-        $jurusanList = [
-            ['id' => 1, 'nama' => 'PPLG'],
-            ['id' => 2, 'nama' => 'Animasi'],
-            ['id' => 3, 'nama' => 'DKV'],
-        ];
-
-        $kelasList = [
-            ['id' => 1, 'nama' => 'A'],
-            ['id' => 2, 'nama' => 'B'],
-            ['id' => 3, 'nama' => 'C'],
-        ];
-    @endphp
-
     <!-- HEADER -->
     <div
         class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-6 shadow-lg">
@@ -69,7 +49,7 @@
                 </p>
 
                 <h2 class="mt-1 text-2xl font-bold text-white">
-                    3
+                    {{ $totalMurid }}
                 </h2>
 
             </div>
@@ -104,6 +84,7 @@
                 <input
                     type="search"
                     placeholder="Cari nama murid..."
+                    wire:model.live="search"
                     class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-4 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
 
                 <div
@@ -128,8 +109,12 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: null,
+                    selectedId: @entangle('filterTingkat'),
                     selectedLabel: null,
+                    options: @js($tingkatList->map(fn ($item) => [
+                        'id' => $item->id,
+                        'nama' => $item->nama,
+                    ])),
 
                     toggle() {
                         this.open = !this.open
@@ -139,8 +124,16 @@
                         this.selectedId = id
                         this.selectedLabel = label
                         this.open = false
+
+                        $wire.set('filterTingkat', id)
+                    },
+
+                    syncLabel() {
+                        const found = this.options.find((item) => item.id === this.selectedId)
+                        this.selectedLabel = found ? found.nama : null
                     }
                 }"
+                x-init="syncLabel(); $watch('selectedId', () => syncLabel())"
                 class="relative">
 
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
@@ -217,8 +210,12 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: null,
+                    selectedId: @entangle('filterJurusan'),
                     selectedLabel: null,
+                    options: @js($filteredJurusan->map(fn ($item) => [
+                        'id' => $item->id,
+                        'nama' => $item->nama,
+                    ])),
 
                     toggle() {
                         this.open = !this.open
@@ -228,8 +225,16 @@
                         this.selectedId = id
                         this.selectedLabel = label
                         this.open = false
+
+                        $wire.set('filterJurusan', id)
+                    },
+
+                    syncLabel() {
+                        const found = this.options.find((item) => item.id === this.selectedId)
+                        this.selectedLabel = found ? found.nama : null
                     }
                 }"
+                x-init="syncLabel(); $watch('selectedId', () => syncLabel())"
                 class="relative">
 
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
@@ -279,7 +284,7 @@
 
                     </div>
 
-                    @foreach ($jurusanList as $jurusan)
+                    @foreach ($filteredJurusan as $jurusan)
 
                         <div
                             @click.prevent="select({{ $jurusan['id'] }}, '{{ $jurusan['nama'] }}')"
@@ -306,8 +311,12 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: null,
+                    selectedId: @entangle('filterIndeks'),
                     selectedLabel: null,
+                    options: @js($filteredIndeks->map(fn ($item) => [
+                        'id' => $item->id,
+                        'nama' => $item->nama,
+                    ])),
 
                     toggle() {
                         this.open = !this.open
@@ -317,8 +326,16 @@
                         this.selectedId = id
                         this.selectedLabel = label
                         this.open = false
+
+                        $wire.set('filterIndeks', id)
+                    },
+
+                    syncLabel() {
+                        const found = this.options.find((item) => item.id === this.selectedId)
+                        this.selectedLabel = found ? found.nama : null
                     }
                 }"
+                x-init="syncLabel(); $watch('selectedId', () => syncLabel())"
                 class="relative">
 
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
@@ -368,7 +385,7 @@
 
                     </div>
 
-                    @foreach ($kelasList as $kelas)
+                    @foreach ($filteredIndeks as $kelas)
 
                         <div
                             @click.prevent="select({{ $kelas['id'] }}, '{{ $kelas['nama'] }}')"
@@ -419,7 +436,7 @@
             <div
                 class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-main">
 
-                Total 3 Murid
+                Total {{ $totalMurid }} Murid
 
             </div>
 
@@ -460,11 +477,7 @@
 
                 <tbody>
 
-                    @foreach ([
-                        ['nama' => 'obeh', 'nipd' => '11122', 'nisn' => '009786817'],
-                        ['nama' => 'atul', 'nipd' => '11116', 'nisn' => '009676767'],
-                        ['nama' => 'bambang', 'nipd' => '696969', 'nisn' => '69696969'],
-                    ] as $item)
+                    @forelse ($listMurid as $item)
 
                         <tr
                             class="border-t border-gray-100 transition hover:bg-gray-50">
@@ -481,7 +494,7 @@
                             <td
                                 class="px-5 py-5 text-center text-gray-600">
 
-                                {{ $item['nipd'] }}
+                                {{ $item->nipd }}
 
                             </td>
 
@@ -494,7 +507,7 @@
                                     <div
                                         class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
 
-                                        {{ substr($item['nama'], 0, 1) }}
+                                        {{ substr($item->nama, 0, 1) }}
 
                                     </div>
 
@@ -504,7 +517,7 @@
                                         <h2
                                             class="font-semibold capitalize text-gray-800">
 
-                                            {{ $item['nama'] }}
+                                            {{ $item->nama }}
 
                                         </h2>
 
@@ -525,7 +538,7 @@
                             <td
                                 class="px-5 py-5 text-center text-gray-600">
 
-                                {{ $item['nisn'] }}
+                                {{ $item->nisn }}
 
                             </td>
 
@@ -536,7 +549,7 @@
                                     class="flex items-center justify-center">
 
                                     <a
-                                        href="{{ route('riwayat-detail-absen-murid') }}"
+                                        href="{{ route('riwayat-detail-absen-murid', $item->ulid) }}"
                                         wire:navigate>
 
                                         <button
@@ -561,11 +574,24 @@
 
                         </tr>
 
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-400">
+                                Data murid belum tersedia.
+                            </td>
+                        </tr>
+                    @endforelse
 
                 </tbody>
 
             </table>
+
+        </div>
+
+        <div
+            class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+
+            {{ $listMurid->links('livewire.components.pagination') }}
 
         </div>
 

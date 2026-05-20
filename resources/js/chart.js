@@ -4,12 +4,27 @@ window.echarts = echarts;
 
 
 window.initCharts = function () {
+    const dashboardData = window.dashboardData || {};
     // =========================
     // DONUT CHART MURID
     // =========================
     const muridDom = document.getElementById("main-murid");
 
     if (muridDom) {
+        const muridData = dashboardData.murid;
+        const muridSeries = muridData?.series?.length
+            ? muridData.series.map((item) => ({
+                  value: item.value,
+                  name: item.name,
+                  itemStyle: { color: item.color },
+              }))
+            : [
+                  { value: 30, name: "Hadir", itemStyle: { color: "#22c55e" } },
+                  { value: 5, name: "Izin", itemStyle: { color: "#eab308" } },
+                  { value: 3, name: "Sakit", itemStyle: { color: "#3b82f6" } },
+                  { value: 2, name: "Alpa", itemStyle: { color: "#ef4444" } },
+              ];
+        const muridTotal = muridData?.total ?? muridSeries.reduce((sum, item) => sum + item.value, 0);
         const muridChart = echarts.init(muridDom);
 
         muridChart.setOption({
@@ -25,7 +40,7 @@ window.initCharts = function () {
                 left: "center",
                 top: "center",
                 style: {
-                    text: "40\nTotal",
+                    text: `${muridTotal}\nTotal`,
                     textAlign: "center",
                     fill: "#333",
                     fontSize: 18,
@@ -47,28 +62,7 @@ window.initCharts = function () {
 
                     label: { show: false },
 
-                    data: [
-                        {
-                            value: 30,
-                            name: "Hadir",
-                            itemStyle: { color: "#22c55e" },
-                        },
-                        {
-                            value: 5,
-                            name: "Izin",
-                            itemStyle: { color: "#eab308" },
-                        },
-                        {
-                            value: 3,
-                            name: "Sakit",
-                            itemStyle: { color: "#3b82f6" },
-                        },
-                        {
-                            value: 2,
-                            name: "Alfa",
-                            itemStyle: { color: "#ef4444" },
-                        },
-                    ],
+                    data: muridSeries,
                 },
             ],
         });
@@ -80,6 +74,20 @@ window.initCharts = function () {
     const guruDom = document.getElementById("main-guru");
 
     if (guruDom) {
+        const guruData = dashboardData.guru;
+        const guruSeries = guruData?.series?.length
+            ? guruData.series.map((item) => ({
+                  value: item.value,
+                  name: item.name,
+                  itemStyle: { color: item.color },
+              }))
+            : [
+                  { value: 15, name: "Hadir", itemStyle: { color: "#22c55e" } },
+                  { value: 2, name: "Izin", itemStyle: { color: "#eab308" } },
+                  { value: 1, name: "Sakit", itemStyle: { color: "#3b82f6" } },
+                  { value: 2, name: "Alpa", itemStyle: { color: "#ef4444" } },
+              ];
+        const guruTotal = guruData?.total ?? guruSeries.reduce((sum, item) => sum + item.value, 0);
         const guruChart = echarts.init(guruDom);
 
         guruChart.setOption({
@@ -95,7 +103,7 @@ window.initCharts = function () {
                 left: "center",
                 top: "center",
                 style: {
-                    text: "20\nTotal",
+                    text: `${guruTotal}\nTotal`,
                     textAlign: "center",
                     fill: "#333",
                     fontSize: 18,
@@ -117,28 +125,7 @@ window.initCharts = function () {
 
                     label: { show: false },
 
-                    data: [
-                        {
-                            value: 15,
-                            name: "Hadir",
-                            itemStyle: { color: "#22c55e" },
-                        },
-                        {
-                            value: 2,
-                            name: "Izin",
-                            itemStyle: { color: "#eab308" },
-                        },
-                        {
-                            value: 1,
-                            name: "Sakit",
-                            itemStyle: { color: "#3b82f6" },
-                        },
-                        {
-                            value: 2,
-                            name: "Alfa",
-                            itemStyle: { color: "#ef4444" },
-                        },
-                    ],
+                    data: guruSeries,
                 },
             ],
         });
@@ -150,6 +137,13 @@ window.initCharts = function () {
     const murid7 = document.getElementById("chart-tingkat-kehadiran-murid");
 
     if (murid7) {
+        const murid7Data = dashboardData.murid7;
+        const murid7Labels = murid7Data?.labels?.length
+            ? murid7Data.labels
+            : ["01 Apr", "02 Apr", "03 Apr", "04 Apr", "05 Apr", "06 Apr", "07 Apr"];
+        const murid7Values = murid7Data?.values?.length
+            ? murid7Data.values
+            : [1500, 1480, 1495, 1470, 1460, 1200, 900];
         const chart = echarts.init(murid7);
 
         chart.setOption({
@@ -164,15 +158,7 @@ window.initCharts = function () {
 
             xAxis: {
                 type: "category",
-                data: [
-                    "01 Apr",
-                    "02 Apr",
-                    "03 Apr",
-                    "04 Apr",
-                    "05 Apr",
-                    "06 Apr",
-                    "07 Apr",
-                ],
+                data: murid7Labels,
             },
 
             yAxis: {
@@ -184,7 +170,7 @@ window.initCharts = function () {
                 {
                     name: "Hadir",
                     type: "bar",
-                    data: [1500, 1480, 1495, 1470, 1460, 1200, 900],
+                    data: murid7Values,
 
                     itemStyle: {
                         color: "#7DA0CA",
@@ -201,6 +187,13 @@ window.initCharts = function () {
     const guru7 = document.getElementById("chart-tingkat-kehadiran-guru");
 
     if (guru7) {
+        const guru7Data = dashboardData.guru7;
+        const guru7Labels = guru7Data?.labels?.length
+            ? guru7Data.labels
+            : ["01 Apr", "02 Apr", "03 Apr", "04 Apr", "05 Apr", "06 Apr", "07 Apr"];
+        const guru7Values = guru7Data?.values?.length
+            ? guru7Data.values
+            : [20, 19, 20, 18, 17, 15, 12];
         const chart = echarts.init(guru7);
 
         chart.setOption({
@@ -215,15 +208,7 @@ window.initCharts = function () {
 
             xAxis: {
                 type: "category",
-                data: [
-                    "01 Apr",
-                    "02 Apr",
-                    "03 Apr",
-                    "04 Apr",
-                    "05 Apr",
-                    "06 Apr",
-                    "07 Apr",
-                ],
+                data: guru7Labels,
             },
 
             yAxis: {
@@ -235,7 +220,7 @@ window.initCharts = function () {
                 {
                     name: "Hadir",
                     type: "bar",
-                    data: [20, 19, 20, 18, 17, 15, 12],
+                    data: guru7Values,
 
                     itemStyle: {
                         color: "#105192",

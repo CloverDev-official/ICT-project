@@ -4,6 +4,7 @@ namespace App\Livewire\Murid;
 
 use App\Helpers\DownloadFile;
 use App\Helpers\QRCodeHelper;
+use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
@@ -11,6 +12,7 @@ use App\Models\Murid\Rombel\Rombel;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class Index extends Component
 {
@@ -29,10 +31,66 @@ class Index extends Component
     public ?int $filterTingkat = null;
     public ?int $filterJurusan = null;
 
+    public bool $isWaliKelas = false;
+    public ?array $waliRombelIds = null;
+    private ?int $lockedTingkatId = null;
+    private ?int $lockedJurusanId = null;
+    private ?int $lockedIndeksId = null;
+
     public function mount(): void
     {
+        $this->applyWaliKelasLock();
         $this->listRombel = $this->getRombel();
         $this->refreshFilterOptions();
+    }
+
+    private function applyWaliKelasLock(): void
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return;
+        }
+
+        $roleSlug = Str::slug($user->role?->name ?? '');
+        $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
+
+        if (!$this->isWaliKelas) {
+            return;
+        }
+
+        $guru = Guru::query()->where('user_id', $user->id)->first();
+        if (!$guru) {
+            $this->waliRombelIds = [];
+            return;
+        }
+
+        $this->waliRombelIds = Rombel::query()
+            ->where('wali_guru_id', $guru->id)
+            ->pluck('id')
+            ->all();
+
+        if (count($this->waliRombelIds) === 1) {
+            $rombel = Rombel::query()->find($this->waliRombelIds[0]);
+            if ($rombel) {
+                $this->lockedTingkatId = $rombel->tingkat_id;
+                $this->lockedJurusanId = $rombel->jurusan_id;
+                $this->lockedIndeksId = $rombel->indeks_id;
+                $this->filterTingkat = $this->lockedTingkatId;
+                $this->filterJurusan = $this->lockedJurusanId;
+                $this->filterIndeks = $this->lockedIndeksId;
+            }
+        }
+    }
+
+    private function applyLockedFilters(): void
+    {
+        if (!$this->isWaliKelas) {
+            return;
+        }
+
+        $this->filterTingkat = $this->lockedTingkatId;
+        $this->filterJurusan = $this->lockedJurusanId;
+        $this->filterIndeks = $this->lockedIndeksId;
     }
 
     public function generateQRCode($muridData)
@@ -47,6 +105,10 @@ class Index extends Component
 
     private function applyRombelFilter($q)
     {
+        if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+            $q->whereIn('id', $this->waliRombelIds);
+        }
+
         $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
           ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
           ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
@@ -71,6 +133,9 @@ class Index extends Component
             ->whereIn('id', function ($q) {
                 $q->from('rombel')
                 ->select('jurusan_id');
+                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+                    $q->whereIn('id', $this->waliRombelIds);
+                }
                 if ($this->filterTingkat) {
                     $q->where('tingkat_id', $this->filterTingkat);
                 }
@@ -89,6 +154,9 @@ class Index extends Component
             ->whereIn('id', function ($q) {
                 $q->from('rombel')
                 ->select('indeks_id');
+                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+                    $q->whereIn('id', $this->waliRombelIds);
+                }
                 if ($this->filterTingkat) {
                     $q->where('tingkat_id', $this->filterTingkat);
                 }
@@ -122,6 +190,12 @@ class Index extends Component
                     $q->whereHas('rombel', fn ($q) => $this->applyRombelFilter($q));
                 }
             )
+            ->when(
+                $this->isWaliKelas && $this->waliRombelIds !== null,
+                function ($q) {
+                    $q->whereHas('rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds));
+                }
+            )
             ->orderBy('nama')
             ->orderBy('id')
             ->fastPaginate($this->perPage);
@@ -135,18 +209,33 @@ class Index extends Component
 
     public function updatedFilterTingkat(): void
     {
+        if ($this->isWaliKelas) {
+            $this->applyLockedFilters();
+            return;
+        }
+
         $this->resetPage();
         $this->refreshFilterOptions();
     }
 
     public function updatedFilterJurusan(): void
     {
+        if ($this->isWaliKelas) {
+            $this->applyLockedFilters();
+            return;
+        }
+
         $this->resetPage();
         $this->refreshFilterOptions();
     }
 
     public function updatedFilterIndeks(): void
     {
+        if ($this->isWaliKelas) {
+            $this->applyLockedFilters();
+            return;
+        }
+
         $this->resetPage();
         $this->refreshFilterOptions();
     }

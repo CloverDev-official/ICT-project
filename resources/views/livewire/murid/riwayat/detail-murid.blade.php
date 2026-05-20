@@ -32,12 +32,12 @@
 
                 <div
                     class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold text-white backdrop-blur">
-                    D
+                    {{ strtoupper(substr($murid->nama, 0, 1)) }}
                 </div>
 
                 <div>
                     <h1 class="text-2xl font-semibold capitalize text-white">
-                        deden agus rahman
+                        {{ $murid->nama }}
                     </h1>
 
                     <p class="mt-1 text-sm text-blue-100">
@@ -56,7 +56,7 @@
                 </p>
 
                 <h2 class="mt-1 text-sm md:text-base font-semibold text-white capitalize">
-                    1 mei 2026 - 4 mei 2026
+                    {{ $tanggalRangeLabel }}
                 </h2>
 
             </div>
@@ -79,7 +79,7 @@
 
                 <label class="text-sm text-gray-600 capitalize font-semibold">dari tanggal</label>
 
-                <input type="date" wire:model.live="filterTanggal"
+                <input type="date" wire:model.live="filterTanggalDari"
                     class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
                     hover:border-blue-500
                     focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
@@ -90,7 +90,7 @@
 
                 <label class="text-sm text-gray-600 capitalize font-semibold">sampai tanggal</label>
 
-                <input type="date" wire:model.live="filterTanggal"
+                <input type="date" wire:model.live="filterTanggalSampai"
                     class="w-full text-sm mt-1 px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl
                     hover:border-blue-500
                     focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none
@@ -165,15 +165,10 @@
                 </thead>
 
                 <tbody>
-                    @foreach ([
-                    ['tanggal' => '1 mei 2026', 'nama' => 'obeh', 'status' => 'hadir'],
-                    ['tanggal' => '2 mei 2026', 'nama' => 'obeh', 'status' => 'izin'],
-                    ['tanggal' => '3 mei 2026', 'nama' => 'obeh', 'status' => 'sakit'],
-                    ['tanggal' => '4 mei 2026', 'nama' => 'obeh', 'status' => 'alpa'],
-                    ] as $item)
+                    @forelse ($listAbsensi as $item)
 
                     @php
-                    $statusValue = strtolower((string) $item['status']);
+                    $statusValue = strtolower((string) $item->status);
 
                     $statusClass = match ($statusValue) {
                     'sakit' => 'text-amber-600 bg-amber-100',
@@ -198,7 +193,7 @@
 
                                 <div>
                                     <p class="font-medium capitalize text-gray-800">
-                                        {{ $item['nama'] }}
+                                        {{ $murid->nama }}
                                     </p>
 
                                     <p class="text-xs text-gray-400">
@@ -209,7 +204,7 @@
                         </td>
 
                         <td class="px-6 py-4 text-gray-600 capitalize">
-                            {{ $item['tanggal'] }}
+                            {{ $item->tanggal?->format('d M Y') }}
                         </td>
 
                         <td class="px-6 py-4">
@@ -221,7 +216,7 @@
 
                                     <div class="h-2 w-2 rounded-full bg-current"></div>
 
-                                    {{ $item['status'] }}
+                                    {{ $item->status }}
 
                                 </div>
 
@@ -231,7 +226,13 @@
 
                     </tr>
 
-                    @endforeach
+                    @empty
+                        <tr class="border-t border-gray-100">
+                            <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">
+                                Tidak ada data absensi pada rentang tanggal ini.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
 
             </table>

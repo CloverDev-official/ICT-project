@@ -266,19 +266,31 @@
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
 
             <!-- tanggal -->
-            <div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
-                <label
-                    class="mb-2 block text-sm font-semibold text-gray-700">
+                <div>
+                    <label
+                        class="mb-2 block text-sm font-semibold text-gray-700">
+                        Dari Tanggal
+                    </label>
 
-                    Tanggal
+                    <input
+                        type="date"
+                        wire:model.live="filterTanggalDari"
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                </div>
 
-                </label>
+                <div>
+                    <label
+                        class="mb-2 block text-sm font-semibold text-gray-700">
+                        Sampai Tanggal
+                    </label>
 
-                <input
-                    type="date"
-                    wire:model.live="filterTanggal"
-                    class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                    <input
+                        type="date"
+                        wire:model.live="filterTanggalSampai"
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                </div>
 
             </div>
 
@@ -468,7 +480,7 @@
 
     <!-- CHART -->
     <div
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm" wire:ignore>
 
         <!-- top -->
         <div
@@ -536,20 +548,32 @@
             <!-- left -->
             <div class="space-y-5">
 
-                <!-- bulan -->
-                <div>
+                <!-- tanggal export -->
+                <div class="grid gap-4 sm:grid-cols-2">
 
-                    <label
-                        class="mb-2 block text-sm font-semibold text-gray-700">
+                    <div>
+                        <label
+                            class="mb-2 block text-sm font-semibold text-gray-700">
+                            Dari Tanggal
+                        </label>
 
-                        Pilih Bulan
+                        <input
+                            type="date"
+                            wire:model.live="exportTanggalDari"
+                            class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                    </div>
 
-                    </label>
+                    <div>
+                        <label
+                            class="mb-2 block text-sm font-semibold text-gray-700">
+                            Sampai Tanggal
+                        </label>
 
-                    <input
-                        type="month"
-                        wire:model.live="exportBulan"
-                        class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                        <input
+                            type="date"
+                            wire:model.live="exportTanggalSampai"
+                            class="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm transition hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                    </div>
 
                 </div>
 
@@ -628,32 +652,15 @@
                     Download laporan kehadiran murid dengan format yang dibutuhkan.
                 </p>
 
-                <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div class="mt-6">
 
-                    <!-- doc -->
-                    <button
-                        class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur transition hover:bg-white/20">
-
-                        DOCX
-
-                    </button>
-
-                    <!-- pdf -->
-                    <button
-                        class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur transition hover:bg-white/20">
-
-                        PDF
-
-                    </button>
-
-                    <!-- excel -->
                     <button
                         wire:click="exportExcel"
                         wire:loading.attr="disabled"
                         class="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold transition hover:bg-emerald-600 disabled:opacity-60">
 
                         <span wire:loading.remove>
-                            EXCEL
+                            Export Excel
                         </span>
 
                         <span wire:loading>
@@ -899,7 +906,8 @@
         const chartData = @js($chartRekap);
         const rekapChart = echarts.getInstanceByDom(rekapMuridDom) ?? echarts.init(rekapMuridDom);
 
-        rekapChart.setOption({
+        const applyChart = (payload) => {
+            rekapChart.setOption({
             tooltip: {
                 trigger: "axis"
             },
@@ -943,10 +951,10 @@
             },
 
             series: [{
-                name: `Jumlah Hadir ${chartData.year}`,
+                name: `Jumlah Hadir ${payload.year}`,
                 type: "line",
                 smooth: true,
-                data: chartData.data,
+                data: payload.data,
 
                 lineStyle: {
                     width: 3
@@ -960,6 +968,15 @@
                     opacity: 0.2,
                 },
             }, ],
+            });
+        };
+
+        applyChart(chartData);
+
+        window.addEventListener("chart-rekap-updated", (event) => {
+            if (event?.detail?.chart) {
+                applyChart(event.detail.chart);
+            }
         });
 
         if (!rekapMuridDom.dataset.resizeBound) {

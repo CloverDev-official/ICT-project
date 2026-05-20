@@ -3,12 +3,15 @@
 namespace App\Livewire\Murid\Rekap;
 
 use App\Models\Murid\AbsenMurid;
+use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
 use App\Exports\Murid\RekapKehadiranExport;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
@@ -30,20 +33,85 @@ class Index extends Component
     public ?int $filterJurusan = null;
     public ?int $filterIndeks = null;
     public ?string $filterStatus = null;
-    public ?string $filterTanggal = null;
-    public ?string $exportBulan = null;
+    public ?string $filterTanggalDari = null;
+    public ?string $filterTanggalSampai = null;
+    public ?string $exportTanggalDari = null;
+    public ?string $exportTanggalSampai = null;
     public ?int $exportRombelId = null;
+
+    public bool $isWaliKelas = false;
+    public ?array $waliRombelIds = null;
+    private ?int $lockedTingkatId = null;
+    private ?int $lockedJurusanId = null;
+    private ?int $lockedIndeksId = null;
 
     public function mount(): void
     {
-        $this->filterTanggal = now()->toDateString();
-        $this->exportBulan = now()->format('Y-m');
+        $this->applyWaliKelasLock();
+        $this->filterTanggalDari = now()->startOfMonth()->toDateString();
+        $this->filterTanggalSampai = now()->toDateString();
+        $this->exportTanggalDari = now()->startOfMonth()->toDateString();
+        $this->exportTanggalSampai = now()->endOfMonth()->toDateString();
         $this->listRombel = $this->getRombel();
         $this->refreshFilterOptions();
     }
 
+    private function applyWaliKelasLock(): void
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return;
+        }
+
+        $roleSlug = Str::slug($user->role?->name ?? '');
+        $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
+
+        if (!$this->isWaliKelas) {
+            return;
+        }
+
+        $guru = Guru::query()->where('user_id', $user->id)->first();
+        if (!$guru) {
+            $this->waliRombelIds = [];
+            return;
+        }
+
+        $this->waliRombelIds = Rombel::query()
+            ->where('wali_guru_id', $guru->id)
+            ->pluck('id')
+            ->all();
+
+        if (count($this->waliRombelIds) === 1) {
+            $rombel = Rombel::query()->find($this->waliRombelIds[0]);
+            if ($rombel) {
+                $this->lockedTingkatId = $rombel->tingkat_id;
+                $this->lockedJurusanId = $rombel->jurusan_id;
+                $this->lockedIndeksId = $rombel->indeks_id;
+                $this->filterTingkat = $this->lockedTingkatId;
+                $this->filterJurusan = $this->lockedJurusanId;
+                $this->filterIndeks = $this->lockedIndeksId;
+                $this->exportRombelId = $rombel->id;
+            }
+        }
+    }
+
+    private function applyLockedFilters(): void
+    {
+        if (!$this->isWaliKelas) {
+            return;
+        }
+
+        $this->filterTingkat = $this->lockedTingkatId;
+        $this->filterJurusan = $this->lockedJurusanId;
+        $this->filterIndeks = $this->lockedIndeksId;
+    }
+
     private function applyRombelFilter($q)
     {
+        if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+            $q->whereIn('id', $this->waliRombelIds);
+        }
+
         $q->when(
             $this->filterTingkat,
             fn($q) => $q->where('tingkat_id', $this->filterTingkat),
@@ -76,6 +144,9 @@ class Index extends Component
             ->whereIn('id', function ($q) {
                 $q->from('rombel')->select('jurusan_id');
 
+                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+                    $q->whereIn('id', $this->waliRombelIds);
+                }
                 if ($this->filterTingkat) {
                     $q->where('tingkat_id', $this->filterTingkat);
                 }
@@ -94,6 +165,9 @@ class Index extends Component
             ->whereIn('id', function ($q) {
                 $q->from('rombel')->select('indeks_id');
 
+                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+                    $q->whereIn('id', $this->waliRombelIds);
+                }
                 if ($this->filterTingkat) {
                     $q->where('tingkat_id', $this->filterTingkat);
                 }
@@ -106,36 +180,74 @@ class Index extends Component
             ->get(['id', 'nama']);
     }
 
-    private function getTanggalFilter(): string
+    private function getTanggalDari(): string
     {
-        return $this->filterTanggal ?: now()->toDateString();
+        return $this->filterTanggalDari ?: now()->startOfMonth()->toDateString();
+    }
+
+    private function getTanggalSampai(): string
+    {
+        return $this->filterTanggalSampai ?: now()->toDateString();
+    }
+
+    private function getTanggalRange(): array
+    {
+        $start = Carbon::parse($this->getTanggalDari());
+        $end = Carbon::parse($this->getTanggalSampai());
+
+        if ($end->lt($start)) {
+            [$start, $end] = [$end, $start];
+        }
+
+        return [$start->toDateString(), $end->toDateString()];
     }
 
     private function getYearFilter(): int
     {
-        return (int) date('Y', strtotime($this->getTanggalFilter()));
+        return (int) Carbon::parse($this->getTanggalDari())->format('Y');
+    }
+
+    private function getTanggalRangeLabel(): string
+    {
+        [$start, $end] = $this->getTanggalRange();
+
+        if ($start === $end) {
+            return $start;
+        }
+
+        return "{$start} - {$end}";
     }
 
     private function absenFilterBaseQuery()
     {
-        return AbsenMurid::query()->when(
-            $this->filterTingkat ||
-                $this->filterJurusan ||
-                $this->filterIndeks,
-            function ($q) {
-                $q->whereHas(
-                    'murid.rombel',
-                    fn($q) => $this->applyRombelFilter($q),
-                );
-            },
-        );
+        return AbsenMurid::query()
+            ->when(
+                $this->filterTingkat ||
+                    $this->filterJurusan ||
+                    $this->filterIndeks,
+                function ($q) {
+                    $q->whereHas(
+                        'murid.rombel',
+                        fn($q) => $this->applyRombelFilter($q),
+                    );
+                },
+            )
+            ->when(
+                $this->isWaliKelas && $this->waliRombelIds !== null,
+                function ($q) {
+                    $q->whereHas(
+                        'murid.rombel',
+                        fn($q) => $q->whereIn('id', $this->waliRombelIds),
+                    );
+                },
+            );
     }
 
     private function absenBaseQuery()
     {
-        return $this->absenFilterBaseQuery()->whereDate(
+        return $this->absenFilterBaseQuery()->whereBetween(
             'tanggal',
-            $this->getTanggalFilter(),
+            $this->getTanggalRange(),
         );
     }
 
@@ -150,6 +262,7 @@ class Index extends Component
         $rows = $this->absenFilterBaseQuery()
             ->selectRaw("{$monthExpr} as month, COUNT(*) as total")
             ->whereYear('tanggal', $year)
+            ->whereBetween('tanggal', $this->getTanggalRange())
             ->where('status', 'Hadir')
             ->groupBy(DB::raw($monthExpr))
             ->pluck('total', 'month');
@@ -160,7 +273,7 @@ class Index extends Component
         }
 
         return [
-            'year' => $year,
+            'year' => $this->getTanggalRangeLabel(),
             'data' => $data,
         ];
     }
@@ -183,6 +296,10 @@ class Index extends Component
                         fn($q) => $this->applyRombelFilter($q),
                     );
                 },
+            )
+            ->when(
+                $this->isWaliKelas && $this->waliRombelIds !== null,
+                fn($q) => $q->whereIn('rombel_id', $this->waliRombelIds),
             )
             ->count();
 
@@ -240,6 +357,11 @@ class Index extends Component
 
     public function updatedFilterTingkat(): void
     {
+        if ($this->isWaliKelas) {
+            $this->applyLockedFilters();
+            return;
+        }
+
         $this->resetPage();
         $this->refreshFilterOptions();
         $this->dispatchChartRekap();
@@ -247,6 +369,11 @@ class Index extends Component
 
     public function updatedFilterJurusan(): void
     {
+        if ($this->isWaliKelas) {
+            $this->applyLockedFilters();
+            return;
+        }
+
         $this->resetPage();
         $this->refreshFilterOptions();
         $this->dispatchChartRekap();
@@ -254,6 +381,11 @@ class Index extends Component
 
     public function updatedFilterIndeks(): void
     {
+        if ($this->isWaliKelas) {
+            $this->applyLockedFilters();
+            return;
+        }
+
         $this->resetPage();
         $this->refreshFilterOptions();
         $this->dispatchChartRekap();
@@ -264,7 +396,13 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function updatedFilterTanggal(): void
+    public function updatedFilterTanggalDari(): void
+    {
+        $this->resetPage();
+        $this->dispatchChartRekap();
+    }
+
+    public function updatedFilterTanggalSampai(): void
     {
         $this->resetPage();
         $this->dispatchChartRekap();
@@ -291,12 +429,30 @@ class Index extends Component
 
     public function exportExcel()
     {
-        $bulan = $this->exportBulan ?: now()->format('Y-m');
-        $filename = "rekap-kehadiran-{$bulan}.xlsx";
+        if ($this->isWaliKelas && $this->waliRombelIds !== null) {
+            if (!$this->exportRombelId || !in_array($this->exportRombelId, $this->waliRombelIds, true)) {
+                $this->exportRombelId = $this->waliRombelIds[0] ?? null;
+            }
+        }
+
+        $tanggalDari = $this->exportTanggalDari ?: now()->startOfMonth()->toDateString();
+        $tanggalSampai = $this->exportTanggalSampai ?: now()->endOfMonth()->toDateString();
+
+        $start = Carbon::parse($tanggalDari);
+        $end = Carbon::parse($tanggalSampai);
+
+        if ($end->lt($start)) {
+            [$tanggalDari, $tanggalSampai] = [$tanggalSampai, $tanggalDari];
+        }
+
+        $filename = $tanggalDari === $tanggalSampai
+            ? "rekap-kehadiran-{$tanggalDari}.xlsx"
+            : "rekap-kehadiran-{$tanggalDari}-sampai-{$tanggalSampai}.xlsx";
 
         return Excel::download(
             new RekapKehadiranExport(
-                $bulan,
+                $tanggalDari,
+                $tanggalSampai,
                 $this->exportRombelId,
             ),
             $filename,

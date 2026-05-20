@@ -40,12 +40,7 @@
     <!-- STAT CARDS -->
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-        @foreach ([
-            ['label' => 'Jumlah Murid', 'value' => '1606', 'icon' => 'solar:users-group-rounded-bold', 'color' => 'bg-blue-100 text-blue-main'],
-            ['label' => 'Jumlah Guru', 'value' => '450', 'icon' => 'solar:user-id-bold', 'color' => 'bg-emerald-100 text-emerald-600'],
-            ['label' => 'Kelas & Jurusan', 'value' => '55 / 8', 'icon' => 'solar:buildings-2-bold', 'color' => 'bg-amber-100 text-amber-600'],
-            ['label' => 'Jumlah Petugas', 'value' => '2', 'icon' => 'solar:settings-bold', 'color' => 'bg-rose-100 text-rose-600'],
-        ] as $stat)
+        @foreach ($statCards as $stat)
 
             <div
                 class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -60,7 +55,7 @@
                         </p>
 
                         <h2 class="mt-2 text-3xl font-bold text-gray-800">
-                            {{ $stat['value'] }}
+                            {{ is_numeric($stat['value']) ? number_format($stat['value']) : $stat['value'] }}
                         </h2>
                     </div>
 
@@ -284,6 +279,7 @@
 
 @script
     <script>
+        window.dashboardData = @js($dashboardData);
         document.addEventListener('DOMContentLoaded', initCharts())
     </script>
 @endscript
