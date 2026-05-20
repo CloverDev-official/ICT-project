@@ -1,272 +1,758 @@
-<div>
-    <!-- btn kembali -->
-    <a 
-        href="{{ route('data-murid') }}"
-        wire:navigate >
-        <button class="px-4 py-2 rounded-lg bg-blue-deep-solid text-white transition-all duration-200 hover:bg-blue-deep active:scale-95 flex items-center justify-center capitalize mb-5" >
-            <iconify-icon icon="lineicons:chevron-left" width="20" height="20"></iconify-icon>
-            kembali
-        </button>
-    </a>
+<div class="mb-20 space-y-6">
 
-    <!-- wrap form -->
-    <div class="bg-white p-4 rounded-xl shadow-sm" >
-    
-        <form class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-    
-                <!-- Nama -->
-                <div>
-                    <label class="text-sm text-gray-600 capitalize">Nama Lengkap</label>
-                    <input type="text" name="nama_lengkap" wire:model.defer="nama" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Nama">
-                </div>
-    
-                <!-- NIS -->
-                <div>
-                    <label class="text-sm text-gray-600">NIS</label>
-                    <input type="number" name="nis" wire:model.defer="nisn" required
-                        class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : 123456789">
-                </div>
-    
-                <!-- NIPD -->
-                <div>
-                    <label class="text-sm text-gray-600">NIPD</label>
-                    <input type="number" name="nipd" wire:model.defer="nipd" required
-                        class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : 1234">
-                </div>
-    
-                <!-- Kelas -->
-                <div x-data="{
-                        open: false,
-                        selectedId: null,
-                        selectedLabel: null,
+    @php
+        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
+        $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
+        $errorClass = 'mt-2 text-sm text-rose-500';
+    @endphp
 
-                        init() {
-                            this.selectedId = '{{ $murid->rombel_id }}'
-                            this.selectedLabel = '{{ $murid->rombel->nama_lengkap ?? '' }}'
-                        },
-    
-                        select(id, label) {
-                            this.selectedId = id
-                            this.selectedLabel = label
-                            $wire.set('rombel_id', id)
-                            
-                            this.open = false
-                        }
-                    }" 
-                    class="relative w-full">
-    
-                    <label class="text-sm text-gray-600">Kelas</label>
-    
-                    <!-- Button -->
-                    <div @click="open = !open"
-                        class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                        
-                        <span x-text="selectedLabel ?? 'Pilih Kelas'" class="text-gray-700 text-sm"></span>
-    
-                        <iconify-icon 
-                            class="text-gray-400 transition-transform" 
-                            :class="{ 'rotate-180': open }" 
-                            icon="lineicons:chevron-up" 
-                            width="25" 
+    <!-- BACK -->
+    <div>
+        <a href="{{ route('data-murid') }}" wire:navigate>
+            <button
+                class="group flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-main hover:text-blue-main hover:shadow-md">
+
+                <iconify-icon
+                    icon="lineicons:chevron-left"
+                    width="20"
+                    height="20"
+                    class="transition group-hover:-translate-x-1">
+                </iconify-icon>
+
+                Kembali
+
+            </button>
+        </a>
+    </div>
+
+    <!-- HERO -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main via-blue-deep to-[#07162f] p-6 shadow-lg">
+
+        <div class="absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl"></div>
+
+        <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <div class="flex items-center gap-5">
+
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:user-edit-bold"
+                        width="34"
+                        height="34"
+                        class="text-white">
+                    </iconify-icon>
+
+                </div>
+
+                <div>
+                    <h1 class="text-3xl font-bold text-white">
+                        Edit Data Murid
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Perbarui informasi identitas, kelas, alamat, dan data wali murid.
+                    </p>
+                </div>
+
+            </div>
+
+            <div
+                class="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur">
+
+                <p class="text-xs uppercase tracking-[0.2em] text-blue-100">
+                    Murid
+                </p>
+
+                <h2 class="mt-1 text-lg font-bold text-white capitalize">
+                    {{ $murid->nama ?? 'Data Murid' }}
+                </h2>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+        <!-- CARD HEADER -->
+        <div
+            class="flex flex-col gap-3 border-b border-gray-200 bg-gray-50 px-6 py-5 md:flex-row md:items-center md:justify-between">
+
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">
+                    Form Edit Murid
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Pastikan semua data sudah benar sebelum menyimpan perubahan.
+                </p>
+            </div>
+
+            <div
+                class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-600">
+
+                <iconify-icon
+                    icon="solar:pen-bold"
+                    width="18"
+                    height="18">
+                </iconify-icon>
+
+                Sedang diedit
+
+            </div>
+
+        </div>
+
+        <!-- FORM -->
+        <form
+            wire:submit.prevent="update"
+            class="space-y-8 p-6">
+
+            <!-- SECTION IDENTITAS -->
+            <div>
+
+                <div class="mb-5 flex items-center gap-3">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-main">
+                        <iconify-icon icon="solar:user-bold" width="22" height="22"></iconify-icon>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-800">
+                            Identitas Murid
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+                            Data utama murid yang tercatat di sistem.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                    <!-- Nama -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Nama Lengkap
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="nama"
+                            required
+                            placeholder="Masukkan nama lengkap"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('nama')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- NISN -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            NISN
+                        </label>
+
+                        <input
+                            type="number"
+                            wire:model.defer="nisn"
+                            required
+                            placeholder="Contoh : 123456789"
+                            class="{{ $inputClass }}">
+
+                        @error('nisn')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- NIPD -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            NIPD
+                        </label>
+
+                        <input
+                            type="number"
+                            wire:model.defer="nipd"
+                            required
+                            placeholder="Contoh : 1234"
+                            class="{{ $inputClass }}">
+
+                        @error('nipd')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Kelas -->
+                    <div
+                        x-data="{
+                            open: false,
+                            selectedId: @js((string) $murid->rombel_id),
+                            selectedLabel: @js($murid->rombel?->nama_lengkap),
+
+                            toggle() {
+                                this.open = !this.open
+                            },
+
+                            select(id, label) {
+                                this.selectedId = String(id)
+                                this.selectedLabel = label
+                                this.open = false
+
+                                $wire.set('rombel_id', id)
+                            }
+                        }"
+                        class="relative">
+
+                        <label class="{{ $labelClass }}">
+                            Kelas
+                        </label>
+
+                        <div
+                            @click="toggle()"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
+
+                                    <iconify-icon
+                                        icon="solar:buildings-2-bold"
+                                        width="20"
+                                        height="20">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <span
+                                    x-text="selectedLabel ?? 'Pilih kelas'"
+                                    class="line-clamp-1 text-gray-700">
+                                </span>
+
+                            </div>
+
+                            <iconify-icon
+                                icon="lineicons:chevron-up"
+                                width="20"
+                                height="20"
+                                class="text-gray-400 transition-transform"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </div>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            @click.outside="open = false"
+                            style="display:none"
+                            class="absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
+
+                            @foreach ($rombel as $r)
+                                <div
+                                    @click="select('{{ $r->id }}', @js($r->nama_lengkap))"
+                                    class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white"
+                                    :class="selectedId === '{{ $r->id }}' ? 'bg-blue-main text-white' : ''">
+
+                                    <span>{{ $r->nama_lengkap }}</span>
+
+                                    <iconify-icon
+                                        x-show="selectedId === '{{ $r->id }}'"
+                                        icon="lineicons:check"
+                                        width="18"
+                                        height="18">
+                                    </iconify-icon>
+
+                                </div>
+                            @endforeach
+
+                        </div>
+
+                        @error('rombel_id')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+
+                    </div>
+
+                    <!-- Jenis Kelamin -->
+                    <div
+                        x-data="{
+                            open: false,
+                            selected: @js($murid->jk),
+
+                            label() {
+                                return this.selected === 'L'
+                                    ? 'Laki-laki'
+                                    : this.selected === 'P'
+                                    ? 'Perempuan'
+                                    : 'Pilih jenis kelamin'
+                            },
+
+                            select(value) {
+                                this.selected = value
+                                this.open = false
+
+                                $wire.set('jk', value)
+                            }
+                        }"
+                        class="relative">
+
+                        <label class="{{ $labelClass }}">
+                            Jenis Kelamin
+                        </label>
+
+                        <div
+                            @click="open = !open"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
+
+                            <span x-text="label()" class="text-gray-700"></span>
+
+                            <iconify-icon
+                                icon="lineicons:chevron-up"
+                                width="20"
+                                height="20"
+                                class="text-gray-400 transition-transform"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </div>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            @click.outside="open = false"
+                            style="display:none"
+                            class="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
+
+                            @foreach (['L', 'P'] as $jk)
+                                <div
+                                    @click="select('{{ $jk }}')"
+                                    class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                    <span>{{ $jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
+
+                                    <iconify-icon
+                                        x-show="selected === '{{ $jk }}'"
+                                        icon="lineicons:check"
+                                        width="18"
+                                        height="18">
+                                    </iconify-icon>
+
+                                </div>
+                            @endforeach
+
+                        </div>
+
+                        @error('jk')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+
+                    </div>
+
+                    <!-- Tempat Lahir -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Tempat Lahir
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="tempat_lahir"
+                            required
+                            placeholder="Tempat lahir"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('tempat_lahir')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Tanggal Lahir -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Tanggal Lahir
+                        </label>
+
+                        <input
+                            type="date"
+                            wire:model.defer="tanggal_lahir"
+                            required
+                            class="{{ $inputClass }}">
+
+                        @error('tanggal_lahir')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Agama -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Agama
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="agama"
+                            required
+                            placeholder="Agama"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('agama')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SECTION KONTAK -->
+            <div class="border-t border-gray-200 pt-8">
+
+                <div class="mb-5 flex items-center gap-3">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+                        <iconify-icon icon="solar:phone-bold" width="22" height="22"></iconify-icon>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-800">
+                            Kontak
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+                            Nomor HP dan email aktif murid.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                    <!-- No HP -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            No HP
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="hp"
+                            required
+                            placeholder="Contoh : 0812345678"
+                            class="{{ $inputClass }}">
+
+                        @error('hp')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            wire:model.defer="email"
+                            required
+                            placeholder="contoh@gmail.com"
+                            class="{{ $inputClass }}">
+
+                        @error('email')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SECTION ALAMAT -->
+            <div class="border-t border-gray-200 pt-8">
+
+                <div class="mb-5 flex items-center gap-3">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                        <iconify-icon icon="solar:map-point-bold" width="22" height="22"></iconify-icon>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-800">
+                            Alamat
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+                            Detail alamat tempat tinggal murid.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                    <!-- Alamat -->
+                    <div class="md:col-span-2">
+                        <label class="{{ $labelClass }}">
+                            Alamat Lengkap
+                        </label>
+
+                        <textarea
+                            wire:model.defer="alamat"
+                            required
+                            rows="4"
+                            placeholder="JL. KOMP. Contoh NO. 126"
+                            class="{{ $inputClass }}"></textarea>
+
+                        @error('alamat')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- RT -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            RT
+                        </label>
+
+                        <input
+                            type="number"
+                            wire:model.defer="rt"
+                            required
+                            placeholder="Contoh : 6"
+                            class="{{ $inputClass }}">
+
+                        @error('rt')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- RW -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            RW
+                        </label>
+
+                        <input
+                            type="number"
+                            wire:model.defer="rw"
+                            required
+                            placeholder="Contoh : 2"
+                            class="{{ $inputClass }}">
+
+                        @error('rw')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Kelurahan -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Kelurahan
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="kelurahan"
+                            required
+                            placeholder="Contoh : Pemurus Luar"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('kelurahan')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Kecamatan -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Kecamatan
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="kecamatan"
+                            required
+                            placeholder="Contoh : Banjarmasin Timur"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('kecamatan')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SECTION ORANG TUA -->
+            <div class="border-t border-gray-200 pt-8">
+
+                <div class="mb-5 flex items-center gap-3">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                        <iconify-icon icon="solar:users-group-rounded-bold" width="22" height="22"></iconify-icon>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-800">
+                            Data Orang Tua / Wali
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+                            Informasi keluarga atau wali murid.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+
+                    <!-- Nama Ayah -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Nama Ayah
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="nama_ayah"
+                            required
+                            placeholder="Nama ayah"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('nama_ayah')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Nama Ibu -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Nama Ibu
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="nama_ibu"
+                            required
+                            placeholder="Nama ibu"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('nama_ibu')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Nama Wali -->
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Nama Wali
+                        </label>
+
+                        <input
+                            type="text"
+                            wire:model.defer="nama_wali"
+                            required
+                            placeholder="Nama wali"
+                            class="{{ $inputClass }} capitalize">
+
+                        @error('nama_wali')
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RFID -->
+            <div class="border-t border-gray-200 pt-8">
+
+                <label class="{{ $labelClass }}">
+                    RFID Code
+                </label>
+
+                <div
+                    class="flex items-center gap-4 rounded-3xl border border-dashed border-blue-300 bg-blue-50 p-5">
+
+                    <div
+                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-main text-white">
+
+                        <iconify-icon
+                            icon="solar:card-bold"
+                            width="24"
                             height="24">
                         </iconify-icon>
-                    </div>
-    
-                    <!-- Dropdown -->
-                    <div x-show="open"
-                        @click.outside="open = false"
-                        x-transition
-                        class="absolute mt-2 w-full h-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto z-50 scroll-thin">
-    
-                        @foreach ($rombel as $r)
-                            <div 
-                                @click="select('{{ $r->id }}', '{{ $r->nama_lengkap }}')"
-                                class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
-                                :class="selectedLabel === '{{ $r->nama_lengkap }}' ? 'bg-blue-deep-solid text-white' : ''">
-    
-                                <span>{{ $r->nama_lengkap }}</span>
-    
-                                <iconify-icon 
-                                    x-show="selectedId === '{{ $r->id }}'"  
-                                    icon="lineicons:check" 
-                                    width="24" 
-                                    height="24">
-                                </iconify-icon>
-                            </div>
-                        @endforeach
-    
-                    </div>
-                </div>
-                
-                <!-- Jenis Kelamin -->
-                <div x-data="{
-                    open:false,
-                    selected: '{{ $murid->jk }}',
 
-                    label() {
-                        return this.selected === 'L' ? 'Laki-laki' : (this.selected === 'P' ? 'Perempuan' : 'Pilih Jenis Kelamin');
-                    },
-    
-                    select(value) {
-                        this.selected = value
-                        $wire.set('jk', value)
-                        this.open = false
-                    }
-                
-                }" class="relative w-full">
-                    <label class="text-sm text-gray-600">Jenis Kelamin</label>
-                    <!-- Button -->
-                    <div @click="open = !open"
-                        class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-xl cursor-pointer  hover:border-blue-500 transition">
-                        
-                        <span x-text="label() ?? 'Pilih Jenis Kelamin'" class="text-gray-700 text-sm"></span>
-    
-                        <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }" icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
                     </div>
-    
-                    <!-- Dropdown -->
-                    <div x-show="open"
-                        @click.outside="open = false"
-                        x-transition
-                        class="absolute mt-2 w-full h-20 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
-                            @foreach (['L', 'P'] as $jk )
-                                <div @click="select('{{ $jk}}')"
-                                    class="px-4 py-2  cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                                    
-                                    <span>{{ $jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
-    
-                                    <!-- icon check -->                                
-                                    <iconify-icon x-show="selected === '{{ $jk }}'"  icon="lineicons:check" width="24" height="24"></iconify-icon>
-                                </div>                        
-                            @endforeach
-    
-                    </div>
+
+                    <input
+                        type="text"
+                        name="rfid_code"
+                        placeholder="Tempelkan kartu RFID"
+                        class="w-full bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none">
+
                 </div>
-    
-                <!-- No HP -->
-                <div>
-                    <label class="text-sm text-gray-600">No HP</label>
-                    <input type="number" name="no_hp" wire:model.defer="hp" required
-                        class=" capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : 0812345678">
-                </div>
-    
-                <!-- email -->
-                <div>
-                    <label class="text-sm text-gray-600">Email</label>
-                    <input type="email" name="email" wire:model.defer="email" required
-                        class="  mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="contoh@gmail.com">
-                </div>
-    
-                <!-- tempat lahir -->
-                <div >
-                    <label class="text-sm text-gray-600">Tempat Lahir</label>
-                    <input type="text" name="tempat_lahir" wire:model.defer="tempat_lahir" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Tempat lahir">
-                </div>
-    
-                <!-- Tanggal lahir -->
-                <div >
-                    <label class="text-sm text-gray-600">Tanggal Lahir</label>
-                    <input type="date" name="tanggal_lahir" wire:model.defer="tanggal_lahir" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2">
-                </div>
-    
-                <!-- agama -->
-                <div>
-                    <label class="text-sm text-gray-600 capitalize">Agama</label>
-                    <input type="text" name="agama" wire:model.defer="agama" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Agama">
-                </div>
-    
-                <!-- alamat -->
-                <div>
-                    <label class="text-sm text-gray-600 capitalize">Alamat</label>
-                    <input type="text" name="alamat" wire:model.defer="alamat" required
-                        class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="JL. KOMP. Contoh NO. 126">
-                </div>
-                
-                <!-- RT -->
-                <div >
-                    <label class="text-sm text-gray-600 ">RT</label>
-                    <input type="number" name="RT" wire:model.defer="rt" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : 6">
-                </div>
-    
-                <!-- RW -->
-                <div >
-                    <label class="text-sm text-gray-600 ">RW</label>
-                    <input type="number" name="RW" wire:model.defer="rw" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : 2">
-                </div>
-    
-                <!-- Kelurahan -->
-                <div >
-                    <label class="text-sm text-gray-600 capitalize">Kelurahan</label>
-                    <input type="text" name="kelurahan" wire:model.defer="kelurahan" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : Pemurus Luar">
-                </div>
-    
-                <!-- kecamatan -->
-                <div >
-                    <label class="text-sm text-gray-600 capitalize">Kecamatan</label>
-                    <input type="text" name="kecamatan" wire:model.defer="kecamatan" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Contoh : Kec. Banjarmasin Timur">
-                </div>
-    
-                <!-- nama ayah -->
-                <div >
-                    <label class="text-sm text-gray-600 capitalize">Nama Ayah</label>
-                    <input type="text" name="nama_ayah" wire:model.defer="nama_ayah" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Nama Ayah">
-                </div>
-    
-                <!-- nama ibu -->
-                <div >
-                    <label class="text-sm text-gray-600 capitalize">nama ibu</label>
-                    <input type="text" name="nama_ibu" wire:model.defer="nama_ibu" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Nama Ibu">
-                </div>
-    
-                <!-- nama wali -->
-                <div >
-                    <label class="text-sm text-gray-600 capitalize">nama wali</label>
-                    <input type="text" name="nama_wali" wire:model.defer="nama_wali" required
-                        class="capitalize mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Nama Wali">
-                </div>
-    
-                <!-- RFID -->
-                <div class="md:col-span-2">
-                    <label class="text-sm text-gray-600">RFID Code</label>
-                    <input type="text" name="rfid_code" 
-                        class="mt-1 w-full rounded-xl border border-gray-300 focus:border-blue-main  focus:outline-hidden px-4 py-2"
-                        placeholder="Tempelkan kartu RFID">
-                </div>
-    
-                <!-- btn batal & save -->
-                <div class="md:col-span-2 flex justify-end gap-3 pt-4 mt-2">
-                    <button type="submit"
-                        class="px-5 py-2 rounded-lg bg-blue-main text-white transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 shadow flex items-center justify-center gap-1">
-                        <iconify-icon icon="lineicons:save" width="18" height="18"></iconify-icon>
-                        Simpan
+
+            </div>
+
+            <!-- ACTION -->
+            <div
+                class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
+
+                <a href="{{ route('data-murid') }}" wire:navigate>
+                    <button
+                        type="button"
+                        class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
+
+                        Batal
+
                     </button>
-    
-                </div>
+                </a>
+
+                <button
+                    type="submit"
+                    wire:loading.attr="disabled"
+                    wire:target="update"
+                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
+
+                    <iconify-icon
+                        wire:loading.remove
+                        wire:target="update"
+                        icon="lineicons:save"
+                        width="20"
+                        height="20"
+                        class="transition group-hover:scale-110">
+                    </iconify-icon>
+
+                    <iconify-icon
+                        wire:loading
+                        wire:target="update"
+                        icon="line-md:loading-twotone-loop"
+                        width="20"
+                        height="20">
+                    </iconify-icon>
+
+                    <span wire:loading.remove wire:target="update">
+                        Simpan Perubahan
+                    </span>
+
+                    <span wire:loading wire:target="update">
+                        Menyimpan...
+                    </span>
+
+                </button>
+
+            </div>
+
         </form>
+
     </div>
+
 </div>

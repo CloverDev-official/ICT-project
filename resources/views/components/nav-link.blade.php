@@ -73,6 +73,10 @@
             'active' => 'mdi:account-school',
             'inactive' => 'mdi:account-school-outline'
         ],
+        'pengaturan' => [
+            'active' => 'mdi:gear',
+            'inactive' => 'mdi:gear-outline'
+        ],
 
     ];
 

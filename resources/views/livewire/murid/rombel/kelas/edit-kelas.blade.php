@@ -1,150 +1,417 @@
-<div>
-    <!-- btn kembali -->
-    <a href="{{ route('data-kelas') }}" wire:navigate>
-        <button
-            class="px-4 py-2 rounded-lg bg-blue-deep-solid text-white transition-all duration-200 hover:bg-blue-deep active:scale-95 flex items-center justify-center capitalize mb-5">
-            <iconify-icon icon="lineicons:chevron-left" width="20" height="20"></iconify-icon>
-            kembali
-        </button>
-    </a>
+<div class="mb-20 space-y-6">
 
-    <!-- wrap form -->
-    <div class="bg-white p-4 rounded-xl shadow-sm">
+    @php
+        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
+        $triggerClass = 'flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white';
+        $dropdownClass = 'absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin';
+        $optionClass = 'flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white';
+        $errorClass = 'mt-2 text-sm text-rose-500';
+    @endphp
 
-        <form wire:submit.prevent="update" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- BACK -->
+    <div>
+        <a href="{{ route('data-kelas') }}" wire:navigate>
+            <button
+                class="group flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-main hover:text-blue-main hover:shadow-md">
 
-            <!-- tingkat -->
-            <div
-            x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: null,
+                <iconify-icon
+                    icon="lineicons:chevron-left"
+                    width="20"
+                    height="20"
+                    class="transition group-hover:-translate-x-1">
+                </iconify-icon>
 
-                init() {
-                    this.selectedId = {{ (int) $rombel->tingkat_id }}
-                    this.selectedLabel = @js($rombel->tingkat?->nama ?? '')
-                },
+                Kembali
 
-                toggle() {
-                    this.open = !this.open
-                },
+            </button>
+        </a>
+    </div>
 
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
+    <!-- HERO -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main via-blue-deep to-[#07162f] p-6 shadow-lg">
 
-                    $wire.set('tingkat_id', id)
-                }
-            }"
-            class="relative w-full"
-            >
-                <label class="text-sm text-gray-600 capitalize font-semibold">tingkat</label>
+        <!-- ornament -->
+        <div class="absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl"></div>
 
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Pilih tingkat'" class="text-gray-700 text-sm"></span>
-                    <iconify-icon 
-                        class="text-gray-400 transition-transform" 
-                        :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24">
+        <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <!-- title -->
+            <div class="flex items-center gap-5">
+
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:pen-new-square-bold"
+                        width="34"
+                        height="34"
+                        class="text-white">
                     </iconify-icon>
+
                 </div>
 
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <div>
+                    <h1 class="text-3xl font-bold text-white">
+                        Edit Kelas
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Perbarui data tingkat, jurusan, dan indeks kelas rombel.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- badge -->
+            <div
+                class="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur">
+
+                <p class="text-xs uppercase tracking-[0.2em] text-blue-100">
+                    Rombel
+                </p>
+
+                <h2 class="mt-1 text-lg font-bold text-white">
+                    {{ $rombel->nama_lengkap ?? 'Data Kelas' }}
+                </h2>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+        <!-- CARD HEADER -->
+        <div
+            class="flex flex-col gap-4 border-b border-gray-200 bg-gray-50 px-6 py-5 md:flex-row md:items-center md:justify-between">
+
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">
+                    Informasi Kelas
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Pastikan kombinasi tingkat, jurusan, dan kelas sudah sesuai.
+                </p>
+            </div>
+
+            <div
+                class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-600">
+
+                <iconify-icon
+                    icon="solar:pen-bold"
+                    width="18"
+                    height="18">
+                </iconify-icon>
+
+                Sedang diedit
+
+            </div>
+
+        </div>
+
+        <!-- FORM -->
+        <form
+            wire:submit.prevent="update"
+            class="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
+
+            <!-- TINGKAT -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: @js((string) $rombel->tingkat_id),
+                    selectedLabel: @js($rombel->tingkat?->nama ?? 'Pilih tingkat'),
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = String(id)
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('tingkat_id', id)
+                    }
+                }"
+                class="relative">
+
+                <label class="{{ $labelClass }}">
+                    Tingkat
+                </label>
+
+                <div
+                    @click="toggle()"
+                    class="{{ $triggerClass }}">
+
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
+
+                            <iconify-icon
+                                icon="solar:ranking-bold"
+                                width="20"
+                                height="20">
+                            </iconify-icon>
+
+                        </div>
+
+                        <span
+                            x-text="selectedLabel"
+                            class="text-gray-700">
+                        </span>
+
+                    </div>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <div
+                    x-show="open"
+                    x-transition
+                    @click.outside="open = false"
+                    style="display:none"
+                    class="{{ $dropdownClass }}">
 
                     @foreach ($listTingkat as $tingkat)
+
                         <div
                             @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
-                        >
+                            class="{{ $optionClass }}"
+                            :class="selectedId === '{{ (int) $tingkat->id }}' ? 'bg-blue-main text-white' : ''">
+
                             <span>{{ $tingkat->nama }}</span>
-                            <iconify-icon 
-                                x-show="selectedId == {{ (int) $tingkat->id }}" 
-                                icon="lineicons:check" 
-                                width="24" 
-                                height="24">
+
+                            <iconify-icon
+                                x-show="selectedId === '{{ (int) $tingkat->id }}'"
+                                icon="lineicons:check"
+                                width="18"
+                                height="18">
                             </iconify-icon>
+
                         </div>
+
                     @endforeach
 
                 </div>
+
                 @error('tingkat_id')
-                    <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                    <p class="{{ $errorClass }}">
+                        {{ $message }}
+                    </p>
                 @enderror
+
             </div>
 
-            <!-- jurusan -->
+            <!-- JURUSAN -->
             <div
-            x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: null,
+                x-data="{
+                    open: false,
+                    selectedId: @js((string) $rombel->jurusan_id),
+                    selectedLabel: @js($rombel->jurusan?->nama ?? 'Pilih jurusan'),
 
-                init() {
-                    this.selectedId = {{ (int) $rombel->jurusan_id }}
-                    this.selectedLabel = @js($rombel->jurusan?->nama ?? '')
-                },
+                    toggle() {
+                        this.open = !this.open
+                    },
 
-                toggle() {
-                    this.open = !this.open
-                },
+                    select(id, label) {
+                        this.selectedId = String(id)
+                        this.selectedLabel = label
+                        this.open = false
 
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
+                        $wire.set('jurusan_id', id)
+                    }
+                }"
+                class="relative">
 
-                    $wire.set('jurusan_id', id)
-                }
-            }"
-            class="relative w-full"
-            >
-                <label class="text-sm text-gray-600 capitalize font-semibold">jurusan</label>
+                <label class="{{ $labelClass }}">
+                    Jurusan
+                </label>
 
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2  border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Pilih jurusan'" class="text-gray-700 text-sm"></span>
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
+                <div
+                    @click="toggle()"
+                    class="{{ $triggerClass }}">
+
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+
+                            <iconify-icon
+                                icon="solar:book-bold"
+                                width="20"
+                                height="20">
+                            </iconify-icon>
+
+                        </div>
+
+                        <span
+                            x-text="selectedLabel"
+                            class="line-clamp-1 text-gray-700">
+                        </span>
+
+                    </div>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
                 </div>
 
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <div
+                    x-show="open"
+                    x-transition
+                    @click.outside="open = false"
+                    style="display:none"
+                    class="{{ $dropdownClass }}">
 
                     @foreach ($listJurusan as $jurusan)
+
                         <div
                             @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
-                        >
+                            class="{{ $optionClass }}"
+                            :class="selectedId === '{{ (int) $jurusan->id }}' ? 'bg-blue-main text-white' : ''">
+
                             <span>{{ $jurusan->nama }}</span>
-                            <iconify-icon 
-                                x-show="selectedId == {{ (int) $jurusan->id }}" 
-                                icon="lineicons:check" 
-                                width="24" 
-                                height="24">
+
+                            <iconify-icon
+                                x-show="selectedId === '{{ (int) $jurusan->id }}'"
+                                icon="lineicons:check"
+                                width="18"
+                                height="18">
                             </iconify-icon>
+
                         </div>
+
                     @endforeach
 
                 </div>
+
                 @error('jurusan_id')
-                    <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+                    <p class="{{ $errorClass }}">
+                        {{ $message }}
+                    </p>
                 @enderror
+
             </div>
 
-            <!-- kelas -->
+            <!-- KELAS -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: @js((string) $rombel->indeks_id),
+                    selectedLabel: @js($rombel->indeks?->nama ?? 'Pilih kelas'),
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = String(id)
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('indeks_id', id)
+                    }
+                }"
+                class="relative">
+
+                <label class="{{ $labelClass }}">
+                    Kelas
+                </label>
+
+                <div
+                    @click="toggle()"
+                    class="{{ $triggerClass }}">
+
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+
+                            <iconify-icon
+                                icon="solar:layers-bold"
+                                width="20"
+                                height="20">
+                            </iconify-icon>
+
+                        </div>
+
+                        <span
+                            x-text="selectedLabel"
+                            class="text-gray-700">
+                        </span>
+
+                    </div>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <div
+                    x-show="open"
+                    x-transition
+                    @click.outside="open = false"
+                    style="display:none"
+                    class="{{ $dropdownClass }}">
+
+                    @foreach ($listIndeks as $indeks)
+
+                        <div
+                            @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                            class="{{ $optionClass }}"
+                            :class="selectedId === '{{ (int) $indeks->id }}' ? 'bg-blue-main text-white' : ''">
+
+                            <span>{{ $indeks->nama }}</span>
+
+                            <iconify-icon
+                                x-show="selectedId === '{{ (int) $indeks->id }}'"
+                                icon="lineicons:check"
+                                width="18"
+                                height="18">
+                            </iconify-icon>
+
+                        </div>
+
+                    @endforeach
+
+                </div>
+
+                @error('indeks_id')
+                    <p class="{{ $errorClass }}">
+                        {{ $message }}
+                    </p>
+                @enderror
+
+            </div>
+
+            <!-- WALI KELAS -->
             <div
                 x-data="{
                     open: false,
                     selectedId: null,
                     selectedLabel: null,
-
-                    init() {
-                        this.selectedId = {{ (int) $rombel->indeks_id }}
-                        this.selectedLabel = @js($rombel->indeks?->nama ?? '')
-                    },
 
                     toggle() {
                         this.open = !this.open
@@ -155,53 +422,185 @@
                         this.selectedLabel = label
                         this.open = false
 
-                        $wire.set('indeks_id', id)
+                        $wire.set('guru_id', id)
                     }
                 }"
-                class="relative w-full"
-            >
-                <label class="text-sm text-gray-600 capitalize font-semibold">kelas</label>
+                class="relative">
 
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Pilih kelas'" class="text-gray-700 text-sm"></span>
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
-                </div>
+                <label class="{{ $labelClass }}">
+                    Wali Kelas
+                    <span class="font-normal text-gray-400">
+                        (Opsional)
+                    </span>
+                </label>
 
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <div
+                    @click="toggle()"
+                    class="{{ $triggerClass }}">
 
-                    @foreach ($listIndeks as $indeks)
+                    <div class="flex items-center gap-3">
+
                         <div
-                            @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center"
-                        >
-                            <span>{{ $indeks->nama }}</span>
-                            <iconify-icon 
-                                x-show="selectedId == {{ (int) $indeks->id }}" 
-                                icon="lineicons:check" 
-                                width="24" 
-                                height="24">
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+
+                            <iconify-icon
+                                icon="solar:user-id-bold"
+                                width="20"
+                                height="20">
                             </iconify-icon>
+
                         </div>
-                    @endforeach
+
+                        <span
+                            x-text="selectedLabel ?? 'Pilih wali kelas'"
+                            class="line-clamp-1 text-gray-700">
+                        </span>
+
+                    </div>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
 
                 </div>
-                @error('indeks_id')
-                    <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
+
+                <div
+                    x-show="open"
+                    x-transition
+                    @click.outside="open = false"
+                    style="display:none"
+                    class="{{ $dropdownClass }}">
+
+                    <div
+                        @click.prevent="select(null, 'Pilih wali kelas')"
+                        class="{{ $optionClass }}">
+
+                        <span>Pilih wali kelas</span>
+
+                        <iconify-icon
+                            x-show="selectedId === null"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
+
+                    </div>
+
+                    @forelse ($listGuru ?? [] as $guru)
+                        <div
+                            @click.prevent="select({{ (int) $guru->id }}, @js($guru->nama))"
+                            class="{{ $optionClass }}">
+
+                            <span>{{ $guru->nama }}</span>
+
+                            <iconify-icon
+                                x-show="selectedId == {{ (int) $guru->id }}"
+                                icon="lineicons:check"
+                                width="18"
+                                height="18">
+                            </iconify-icon>
+
+                        </div>
+                    @empty
+                        <div class="px-4 py-3 text-sm text-gray-400">
+                            Data guru belum tersedia.
+                        </div>
+                    @endforelse
+
+                </div>
+
+                @error('guru_id')
+                    <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
+
             </div>
 
-            <!-- btn batal & save -->
-            <div class="md:col-span-2 flex justify-end gap-3 pt-4 mt-2">
-                <button type="submit"
-                    class="px-5 py-2 rounded-lg bg-blue-main text-white transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 shadow flex items-center justify-center gap-1">
-                    <iconify-icon icon="lineicons:save" width="18" height="18"></iconify-icon>
-                    Simpan
+            <!-- INFO BOX -->
+            <div
+                class="rounded-3xl border border-amber-100 bg-amber-50 p-5 md:col-span-2">
+
+                <div class="flex gap-4">
+
+                    <div
+                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white">
+
+                        <iconify-icon
+                            icon="solar:info-circle-bold"
+                            width="24"
+                            height="24">
+                        </iconify-icon>
+
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-800">
+                            Catatan Perubahan
+                        </h3>
+
+                        <p class="mt-1 text-sm leading-relaxed text-gray-500">
+                            Perubahan pada tingkat, jurusan, atau kelas akan memengaruhi nama rombel yang digunakan pada data murid dan laporan absensi.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ACTION -->
+            <div
+                class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end md:col-span-2">
+
+                <a href="{{ route('data-kelas') }}" wire:navigate>
+                    <button
+                        type="button"
+                        class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
+
+                        Batal
+
+                    </button>
+                </a>
+
+                <button
+                    type="submit"
+                    wire:loading.attr="disabled"
+                    wire:target="update"
+                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
+
+                    <iconify-icon
+                        wire:loading.remove
+                        wire:target="update"
+                        icon="lineicons:save"
+                        width="20"
+                        height="20"
+                        class="transition group-hover:scale-110">
+                    </iconify-icon>
+
+                    <iconify-icon
+                        wire:loading
+                        wire:target="update"
+                        icon="line-md:loading-twotone-loop"
+                        width="20"
+                        height="20">
+                    </iconify-icon>
+
+                    <span wire:loading.remove wire:target="update">
+                        Simpan Perubahan
+                    </span>
+
+                    <span wire:loading wire:target="update">
+                        Menyimpan...
+                    </span>
+
                 </button>
 
             </div>
+
         </form>
+
     </div>
+
 </div>

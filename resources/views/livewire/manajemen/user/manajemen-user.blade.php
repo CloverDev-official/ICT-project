@@ -92,7 +92,7 @@
     </div>
 
     <!-- TABLE -->
-    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm z-0">
 
         <!-- FILTER -->
         <div class="border-b border-gray-200 p-5">
@@ -146,7 +146,8 @@
                         x-show="open"
                         @click.outside="open = false"
                         x-transition
-                        class="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
+                        style="display: none;"
+                        class="absolute z-50 mt-2 w-full h-44 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
 
                         <!-- semua -->
                         <div

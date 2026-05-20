@@ -1,356 +1,686 @@
-<div>
-    <!-- GENERATE QR CODE UNTUK MURID -->
-    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm">
-        <div>
-            <h1 class="font-semibold text-gray-800 text-2xl capitalize">generate QR CODE murid</h1>
-            <p class="text-sm text-gray-400">
-                Generate QR CODE murid berdasarkan tingkat, kelas dan jurusan.
-            </p>
-        </div>
-        <!-- kategori -->
-        <div class="mt-5 border-t border-gray-200 p-4 grid grid-cols-2 md:grid-cols-3 gap-5">
-            <!-- tingkat -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: null,
-            
-                toggle() {
-                    this.open = !this.open
-                },
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-            
-                    $wire.set('filterTingkat', id)
-                }
-            }" class="relative w-full {{ $isGenerating ? 'pointer-events-none opacity-60' : '' }}">
-                <label class="text-sm text-gray-600 capitalize font-semibold">tingkat</label>
+<div class="space-y-6">
 
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Semua tingkat'" class="line-clamp-1 text-gray-700 text-sm"></span>
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24">
+    <!-- HERO -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main via-blue-deep to-[#07162f] p-6 shadow-lg">
+
+        <div class="absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl"></div>
+
+        <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <div class="flex items-center gap-5">
+
+                <div
+                    class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+
+                    <iconify-icon
+                        icon="solar:qr-code-bold"
+                        width="36"
+                        height="36"
+                        class="text-white">
                     </iconify-icon>
-                </div>
-
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-
-                    <div @click.prevent="select(null, 'Semua tingkat')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>Semua tingkat</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24"
-                            height="24"></iconify-icon>
-                    </div>
-
-                    @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
-                        <div @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                            <span>{{ $tingkat->nama }}</span>
-                            <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check"
-                                width="24" height="24"></iconify-icon>
-                        </div>
-                    @endforeach
 
                 </div>
+
+                <div>
+                    <h1 class="text-3xl font-bold text-white">
+                        Generate QR Code
+                    </h1>
+
+                    <p class="mt-1 text-sm text-blue-100">
+                        Generate dan download QR Code murid atau guru dalam format ZIP.
+                    </p>
+                </div>
+
             </div>
 
-            <!-- jurusan -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: null,
-            
-                toggle() {
-                    this.open = !this.open
-                },
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-            
-                    $wire.set('filterJurusan', id)
-                }
-            }" class="relative w-full {{ $isGenerating ? 'pointer-events-none opacity-60' : '' }}">
-                <label class="text-sm text-gray-600 capitalize font-semibold">jurusan</label>
+            <div
+                class="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur">
 
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Semua jurusan'" class="line-clamp-1 text-gray-700 text-sm"></span>
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
-                </div>
+                <p class="text-xs uppercase tracking-[0.2em] text-blue-100">
+                    Status
+                </p>
 
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <h2 class="mt-1 text-lg font-bold text-white">
+                    {{ $isGenerating ? 'Sedang Generate' : 'Siap Generate' }}
+                </h2>
 
-                    <div @click.prevent="select(null, 'Semua jurusan')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>Semua jurusan</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24"
-                            height="24"></iconify-icon>
-                    </div>
-
-                    @foreach ($filteredJurusan as $jurusan)
-                        <div @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                            <span>{{ $jurusan->nama }}</span>
-                            <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check"
-                                width="24" height="24"></iconify-icon>
-                        </div>
-                    @endforeach
-
-                </div>
-            </div>
-
-            <!-- kelas -->
-            <div x-data="{
-                open: false,
-                selectedId: null,
-                selectedLabel: null,
-            
-                toggle() {
-                    this.open = !this.open
-                },
-            
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-            
-                    $wire.set('filterIndeks', id)
-                }
-            }" class="relative w-full {{ $isGenerating ? 'pointer-events-none opacity-60' : '' }}">
-                <label class="text-sm text-gray-600 capitalize font-semibold">Kelas</label>
-
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Semua Kelas'" class="line-clamp-1 text-gray-700 text-sm"></span>
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
-                </div>
-
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-
-                    <div @click.prevent="select(null, 'Semua Kelas')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>Semua Kelas</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24"
-                            height="24"></iconify-icon>
-                    </div>
-
-                    @foreach ($filteredIndeks as $kelas)
-                        <div @click.prevent="select({{ (int) $kelas->id }}, @js($kelas->nama))"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                            <span>{{ $kelas->nama }}</span>
-                            <iconify-icon x-show="selectedId == {{ (int) $kelas->id }}" icon="lineicons:check"
-                                width="24" height="24"></iconify-icon>
-                        </div>
-                    @endforeach
-
-                </div>
             </div>
 
         </div>
-        
-        <div class="grid grid-cols-3 pt-4">
-            <!-- PROGRESS -->
-            <div class="col-span-2 md:col-span-2 mt-4 {{ $totalData <= 0 ? 'invisible' : '' }}" >
-                <!-- info -->
-                <div wire:ignore>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span id="progressTextMurid" class="text-gray-600">1/1</span>
-                        <span id="progressPercentMurid" class="text-gray-600">0%</span>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+
+        <!-- GENERATE QR MURID -->
+        <div
+            class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+            <!-- header -->
+            <div
+                class="border-b border-gray-200 bg-gray-50 px-6 py-5">
+
+                <div class="flex items-start gap-4">
+
+                    <div
+                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-main">
+
+                        <iconify-icon
+                            icon="solar:users-group-rounded-bold"
+                            width="28"
+                            height="28">
+                        </iconify-icon>
+
                     </div>
-        
-                    <!-- bar -->
-                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                        <div id="progressBarMurid"
-                            class="bg-blue-main h-3 rounded-full transition-all duration-300"
+
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">
+                            QR Code Murid
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Generate QR berdasarkan tingkat, jurusan, dan kelas.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- content -->
+            <div class="p-6">
+
+                <!-- filter -->
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+
+                    <!-- tingkat -->
+                    <div
+                        x-data="{
+                            open: false,
+                            selectedId: null,
+                            selectedLabel: null,
+
+                            toggle() {
+                                this.open = !this.open
+                            },
+
+                            select(id, label) {
+                                this.selectedId = id
+                                this.selectedLabel = label
+                                this.open = false
+
+                                $wire.set('filterTingkat', id)
+                            }
+                        }"
+                        class="relative {{ $isGenerating ? 'pointer-events-none opacity-60' : '' }}">
+
+                        <label class="mb-2 block text-sm font-semibold text-gray-700">
+                            Tingkat
+                        </label>
+
+                        <div
+                            @click="toggle()"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
+
+                            <span
+                                x-text="selectedLabel ?? 'Semua tingkat'"
+                                class="line-clamp-1 text-gray-700">
+                            </span>
+
+                            <iconify-icon
+                                icon="lineicons:chevron-up"
+                                width="20"
+                                height="20"
+                                class="text-gray-400 transition-transform"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </div>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            @click.outside="open = false"
+                            style="display:none"
+                            class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
+
+                            <div
+                                @click.prevent="select(null, 'Semua tingkat')"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                <span>Semua tingkat</span>
+
+                                <iconify-icon
+                                    x-show="selectedId === null"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+
+                            @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
+
+                            <div
+                                @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                <span>{{ $tingkat->nama }}</span>
+
+                                <iconify-icon
+                                    x-show="selectedId == {{ (int) $tingkat->id }}"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+                    <!-- jurusan -->
+                    <div
+                        x-data="{
+                            open: false,
+                            selectedId: null,
+                            selectedLabel: null,
+
+                            toggle() {
+                                this.open = !this.open
+                            },
+
+                            select(id, label) {
+                                this.selectedId = id
+                                this.selectedLabel = label
+                                this.open = false
+
+                                $wire.set('filterJurusan', id)
+                            }
+                        }"
+                        class="relative {{ $isGenerating ? 'pointer-events-none opacity-60' : '' }}">
+
+                        <label class="mb-2 block text-sm font-semibold text-gray-700">
+                            Jurusan
+                        </label>
+
+                        <div
+                            @click="toggle()"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
+
+                            <span
+                                x-text="selectedLabel ?? 'Semua jurusan'"
+                                class="line-clamp-1 text-gray-700">
+                            </span>
+
+                            <iconify-icon
+                                icon="lineicons:chevron-up"
+                                width="20"
+                                height="20"
+                                class="text-gray-400 transition-transform"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </div>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            @click.outside="open = false"
+                            style="display:none"
+                            class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
+
+                            <div
+                                @click.prevent="select(null, 'Semua jurusan')"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                <span>Semua jurusan</span>
+
+                                <iconify-icon
+                                    x-show="selectedId === null"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+
+                            @foreach ($filteredJurusan as $jurusan)
+
+                            <div
+                                @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                <span>{{ $jurusan->nama }}</span>
+
+                                <iconify-icon
+                                    x-show="selectedId == {{ (int) $jurusan->id }}"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+                    <!-- kelas -->
+                    <div
+                        x-data="{
+                            open: false,
+                            selectedId: null,
+                            selectedLabel: null,
+
+                            toggle() {
+                                this.open = !this.open
+                            },
+
+                            select(id, label) {
+                                this.selectedId = id
+                                this.selectedLabel = label
+                                this.open = false
+
+                                $wire.set('filterIndeks', id)
+                            }
+                        }"
+                        class="relative {{ $isGenerating ? 'pointer-events-none opacity-60' : '' }}">
+
+                        <label class="mb-2 block text-sm font-semibold text-gray-700">
+                            Kelas
+                        </label>
+
+                        <div
+                            @click="toggle()"
+                            class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
+
+                            <span
+                                x-text="selectedLabel ?? 'Semua kelas'"
+                                class="line-clamp-1 text-gray-700">
+                            </span>
+
+                            <iconify-icon
+                                icon="lineicons:chevron-up"
+                                width="20"
+                                height="20"
+                                class="text-gray-400 transition-transform"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </div>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            @click.outside="open = false"
+                            style="display:none"
+                            class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
+
+                            <div
+                                @click.prevent="select(null, 'Semua kelas')"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                <span>Semua kelas</span>
+
+                                <iconify-icon
+                                    x-show="selectedId === null"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+
+                            @foreach ($filteredIndeks as $kelas)
+
+                            <div
+                                @click.prevent="select({{ (int) $kelas->id }}, @js($kelas->nama))"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+
+                                <span>{{ $kelas->nama }}</span>
+
+                                <iconify-icon
+                                    x-show="selectedId == {{ (int) $kelas->id }}"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- progress -->
+                <div
+                    class="mt-8 rounded-3xl border border-gray-200 bg-gray-50 p-5 {{ $totalData <= 0 ? 'opacity-50' : '' }}">
+
+                    <div wire:ignore>
+
+                        <div class="mb-3 flex items-center justify-between">
+
+                            <div>
+                                <h3 class="font-semibold text-gray-800">
+                                    Progress Generate
+                                </h3>
+
+                                <p class="text-sm text-gray-500">
+                                    File akan otomatis terdownload setelah selesai.
+                                </p>
+                            </div>
+
+                            <div
+                                class="rounded-full bg-blue-100 px-4 py-1 text-sm font-semibold text-blue-main">
+
+                                <span id="progressPercentMurid">0%</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-2 flex justify-between text-sm text-gray-500">
+                            <span id="progressTextMurid">0/0</span>
+                            <span>QR Murid</span>
+                        </div>
+
+                        <div class="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+
+                            <div
+                                id="progressBarMurid"
+                                class="h-3 rounded-full bg-gradient-to-r from-blue-main to-blue-deep transition-all duration-300"
+                                style="width: 0%">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- action -->
+                <div class="mt-6 flex justify-end">
+
+                    <button
+                        wire:click="startGenerate"
+                        @disabled($isGenerating)
+                        class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-5 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto">
+
+                        <iconify-icon
+                            icon="{{ $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
+                            width="22"
+                            height="22">
+                        </iconify-icon>
+
+                        {{ $isGenerating ? 'Generating...' : 'Download QR Murid' }}
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- GENERATE QR GURU -->
+        <div
+            class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+            <!-- header -->
+            <div
+                class="border-b border-gray-200 bg-gray-50 px-6 py-5">
+
+                <div class="flex items-start gap-4">
+
+                    <div
+                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+
+                        <iconify-icon
+                            icon="solar:user-id-bold"
+                            width="28"
+                            height="28">
+                        </iconify-icon>
+
+                    </div>
+
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">
+                            QR Code Guru
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Generate semua QR Code guru dalam satu file ZIP.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- content -->
+            <div class="p-6">
+
+                <!-- info box -->
+                <div
+                    class="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+
+                    <div class="flex gap-4">
+
+                        <div
+                            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white">
+
+                            <iconify-icon
+                                icon="solar:info-circle-bold"
+                                width="24"
+                                height="24">
+                            </iconify-icon>
+
+                        </div>
+
+                        <div>
+                            <h3 class="font-semibold text-gray-800">
+                                Generate QR Guru
+                            </h3>
+
+                            <p class="mt-1 text-sm leading-relaxed text-gray-500">
+                                QR Code guru akan diproses dan dikemas ke dalam file ZIP untuk memudahkan download.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- progress -->
+                <div class="mt-8 rounded-3xl border border-gray-200 bg-gray-50 p-5">
+
+                    <div class="mb-3 flex items-center justify-between">
+
+                        <div>
+                            <h3 class="font-semibold text-gray-800">
+                                Progress Generate
+                            </h3>
+
+                            <p class="text-sm text-gray-500">
+                                Tunggu sampai progress mencapai 100%.
+                            </p>
+                        </div>
+
+                        <div
+                            class="rounded-full bg-emerald-100 px-4 py-1 text-sm font-semibold text-emerald-600">
+
+                            <span id="progressPercentGuru">0%</span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-2 flex justify-between text-sm text-gray-500">
+                        <span id="progressTextGuru">0/0</span>
+                        <span>QR Guru</span>
+                    </div>
+
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+
+                        <div
+                            id="progressBarGuru"
+                            class="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-300"
                             style="width: 0%">
                         </div>
+
                     </div>
+
                 </div>
+
+                <!-- action -->
+                <div class="mt-6 flex justify-end">
+
+                    <button
+                        onclick="startGenerateGuru()"
+                        class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-xl active:scale-95 md:w-auto">
+
+                        <iconify-icon
+                            icon="lineicons:cloud-download"
+                            width="22"
+                            height="22"
+                            class="transition group-hover:scale-110">
+                        </iconify-icon>
+
+                        Download QR Guru
+
+                    </button>
+
+                </div>
+
             </div>
-            <div class="p-4 flex justify-end">
-                <button
-                    wire:click="startGenerate"
-                    class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 {{ $isGenerating ? 'opacity-60 cursor-not-allowed' : '' }}"
-                    @disabled($isGenerating)>
-                    <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
-                    Download QR CODE
-                </button>
-            </div>
+
         </div>
+
     </div>
 
-    <!-- GENERATE QR CODE UNTUK GURU -->
-    <div class="mt-5 bg-white p-4 rounded-xl shadow-sm">
-        <div>
-            <h1 class="font-semibold text-gray-800 text-2xl capitalize">generate QR CODE guru</h1>
-            <p class="text-sm text-gray-400">
-                Generate semua QR CODE guru.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-3 pt-4 mt-5 border-t border-gray-200">
-            <!-- PROGRESS -->
-            <div class="col-span-2 md:col-span-2 mt-4">
-                <!-- info -->
-                <div class="flex justify-between text-sm mb-1">
-                    <span id="progressTextGuru" class="text-gray-600">1/1</span>
-                    <span id="progressPercentGuru" class="text-gray-600">0%</span>
-                </div>
-    
-                <!-- bar -->
-                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div id="progressBarGuru"
-                        class="bg-blue-main h-3 rounded-full transition-all duration-300"
-                        style="width: 0%">
-                    </div>
-                </div>
-            </div>
-    
-    
-    
-            <div class="p-4 flex justify-end">
-                <button
-                    onclick="startGenerateGuru()"
-                    class="bg-blue-main px-4 py-2 rounded-xl text-white flex items-center gap-2 transition-all duration-150 hover:bg-blue-deep-solid active:scale-95 ">
-                    <iconify-icon icon="lineicons:cloud-download" width="24" height="24"></iconify-icon>
-                    Download QR CODE
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 
 @script
-<script>
+    <script>
+        const progressTextMurid = document.getElementById('progressTextMurid');
+        const progressPercentMurid = document.getElementById('progressPercentMurid');
+        const progressBarMurid = document.getElementById('progressBarMurid');
 
-const progressTextMurid = document.getElementById('progressTextMurid');
-const progressPercentMurid = document.getElementById('progressPercentMurid');
-const progressBarMurid = document.getElementById('progressBarMurid');
+        let processing = false;
+        let processed = 0;
+        let totalData = 0;
+        let currentRunId = null;
 
-let processing = false;
-let processed = 0;
-let totalData = 0;
-let currentRunId = null;
+        let zip = null;
+        let zipChunks = [];
 
-let zip = null;
-let zipChunks = [];
+        function resetProgress() {
+            processed = 0;
+            totalData = 0;
+            zipChunks = [];
 
-function resetProgress() {
-    processed = 0;
-    totalData = 0;
-
-    zipChunks = [];
-
-    progressTextMurid.textContent = '0/0';
-    progressPercentMurid.textContent = '0%';
-    progressBarMurid.style.width = '0%';
-}
-
-function createZip() {
-
-    zipChunks = [];
-
-    zip = new Zip((err, chunk, final) => {
-
-        if (err) {
-            console.error(err);
-            return;
+            progressTextMurid.textContent = '0/0';
+            progressPercentMurid.textContent = '0%';
+            progressBarMurid.style.width = '0%';
         }
 
-        zipChunks.push(chunk);
+        function createZip() {
+            zipChunks = [];
 
-        if (final) {
+            zip = new Zip((err, chunk, final) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
 
-            const blob = new Blob(zipChunks, {
-                type: 'application/zip'
+                zipChunks.push(chunk);
+
+                if (final) {
+                    const blob = new Blob(zipChunks, {
+                        type: 'application/zip'
+                    });
+
+                    const a = document.createElement('a');
+
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'murid-qr.zip';
+
+                    a.click();
+
+                    URL.revokeObjectURL(a.href);
+                }
             });
-
-            const a = document.createElement('a');
-
-            a.href = URL.createObjectURL(blob);
-            a.download = 'murid-qr.zip';
-
-            a.click();
-
-            URL.revokeObjectURL(a.href);
         }
-    });
-}
 
-$wire.$on('generate-qr', async (event) => {
-    if (processing) {
-        return;
-    }
-
-    console.log('Received generate-qr event with data:', event.totalData);
-
-    processing = true;
-
-    if (currentRunId !== event.runId) {
-        currentRunId = event.runId;
-        resetProgress();
-        createZip();
-    }
-
-    if (typeof event.totalData === 'number' && event.totalData >= 0) {
-        totalData = event.totalData;
-    }
-
-    const { dataMurid } = event;
-
-    for (const murid of dataMurid) {
-        console.log(`Processing murid: ${murid.rombel.nama_lengkap} (${murid.ulid})`);
-        const pngBytes = await generateQRPNG(murid.ulid);
-        const folderName = murid.rombel.nama_lengkap
-            .replace(/[\\?%*:|"<>]/g, '-')
-            .replace(/\s+/g, '-');
-
-        const fileName = `${murid.nama} ${murid.nipd}.png`
-            .replace(/[/\\?%*:|"<>]/g, '_')
-            .replace(/\s+/g, '_');
-
-        const file = new ZipPassThrough(
-            `${folderName}/${fileName}`
-        );
-
-        zip.add(file);
-
-        file.push(pngBytes, true);
-
-        processed++;
-        if (processed % 15 === 0) {
-            if (scheduler?.yield) {
-                await scheduler.yield();
-            } else {
-                await new Promise(resolve => setTimeout(resolve, 0));
+        $wire.$on('generate-qr', async (event) => {
+            if (processing) {
+                return;
             }
-        }
-        const percent = totalData > 0 ? Math.round((processed / totalData) * 100) : 0;
 
-        progressTextMurid.textContent = `${processed}/${totalData}`;
-        progressPercentMurid.textContent = `${percent}%`;
-        progressBarMurid.style.width = `${percent}%`;
-    }
+            processing = true;
 
-    if (processed >= totalData) {
-        console.log('Finalizing ZIP...');
-        zip.end();
-    }
+            if (currentRunId !== event.runId) {
+                currentRunId = event.runId;
+                resetProgress();
+                createZip();
+            }
 
-    processing = false;
+            if (typeof event.totalData === 'number' && event.totalData >= 0) {
+                totalData = event.totalData;
+            }
 
-    $wire.nextChunk();
-});
-</script>
+            const {
+                dataMurid
+            } = event;
+
+            for (const murid of dataMurid) {
+                const pngBytes = await generateQRPNG(murid.ulid);
+
+                const folderName = murid.rombel.nama_lengkap
+                    .replace(/[\\?%*:|"<>]/g, '-')
+                    .replace(/\s+/g, '-');
+
+                const fileName = `${murid.nama} ${murid.nipd}.png`
+                    .replace(/[/\\?%*:|"<>]/g, '_')
+                    .replace(/\s+/g, '_');
+
+                const file = new ZipPassThrough(`${folderName}/${fileName}`);
+
+                zip.add(file);
+                file.push(pngBytes, true);
+
+                processed++;
+
+                if (processed % 15 === 0) {
+                    if (globalThis.scheduler?.yield) {
+                        await globalThis.scheduler.yield();
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+                }
+
+                const percent = totalData > 0 ?
+                    Math.round((processed / totalData) * 100) :
+                    0;
+
+                progressTextMurid.textContent = `${processed}/${totalData}`;
+                progressPercentMurid.textContent = `${percent}%`;
+                progressBarMurid.style.width = `${percent}%`;
+            }
+
+            if (processed >= totalData) {
+                zip.end();
+            }
+
+            processing = false;
+
+            $wire.nextChunk();
+        });
+    </script>
 @endscript

@@ -3,7 +3,7 @@
         $user = auth()->user();
     @endphp
     <aside
-        class="fixed md:static top-0 right-0 z-50 flex h-screen w-[15rem] md:w-64 flex-col rounded-tl-4xl md:rounded-tl-none md:rounded-tr-4xl border-r border-white/10 bg-gradient-to-b from-blue-deep to-[#03152d] p-4 pb-0 shadow-[8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300"
+        class="fixed md:static top-0 right-0 z-50 flex h-screen w-[15rem] md:w-64 flex-col rounded-tl-4xl md:rounded-tl-none md:rounded-tr-4xl border-r border-white/10 bg-gradient-to-b from-blue-deep to-[#03152d] p-4 pb-2 shadow-[8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300"
         :class="openside ? 'translate-x-0' : 'translate-x-full md:translate-x-0'"
     >
         <!-- header -->
@@ -352,29 +352,10 @@
             @endif
 
             <!-- pengaturan -->
-            <li x-data="{open: false}">
-                <button
-                    @click="open = !open"
-                    class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
-                >
-                    <span class="flex items-center gap-2 capitalize">
-                        <iconify-icon
-                            :icon="open ? 'mdi:gear' : 'mdi:gear-outline'"
-                            width="24"
-                            height="24"
-                        ></iconify-icon>
-
-                        pengaturan
-                    </span>
-
-                    <iconify-icon
-                        class="transition-transform"
-                        :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up"
-                        width="25"
-                        height="24"
-                    ></iconify-icon>
-                </button>
+            <li>
+                <x-nav-link href="{{ route('dashboard') }}" icon="pengaturan">
+                    Pengaturan
+                </x-nav-link>
             </li>
         </ul>
 
