@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\DB;
 class AbsenRekapQuery
 {
     public function __construct(
-        private readonly ?string $bulan,
+        private readonly ?string $tanggalDari,
+        private readonly ?string $tanggalSampai,
         private readonly ?int $rombelId,
     ) {
     }
@@ -23,9 +24,18 @@ class AbsenRekapQuery
             ->leftJoin('jurusan', 'jurusan.id', '=', 'rombel.jurusan_id')
             ->leftJoin('indeks', 'indeks.id', '=', 'rombel.indeks_id')
             ->when($this->rombelId, fn($q) => $q->where('rombel.id', $this->rombelId))
-            ->when($this->bulan, function ($q) {
-                $start = Carbon::createFromFormat('Y-m', $this->bulan)->startOfMonth();
-                $end = (clone $start)->endOfMonth();
+            ->when($this->tanggalDari || $this->tanggalSampai, function ($q) {
+                $start = $this->tanggalDari
+                    ? Carbon::parse($this->tanggalDari)
+                    : now()->startOfMonth();
+                $end = $this->tanggalSampai
+                    ? Carbon::parse($this->tanggalSampai)
+                    : (clone $start)->endOfMonth();
+
+                if ($end->lt($start)) {
+                    [$start, $end] = [$end, $start];
+                }
+
                 $q->whereBetween('absen_murid.tanggal', [$start->toDateString(), $end->toDateString()]);
             });
     }

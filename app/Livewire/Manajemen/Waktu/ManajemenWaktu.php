@@ -67,15 +67,27 @@ class ManajemenWaktu extends Component
             'jam_masuk' => ['required', 'date_format:H:i'],
             'jam_pulang_normal' => ['required', 'date_format:H:i'],
             'jam_pulang_jumat' => ['required', 'date_format:H:i'],
+            'scan_masuk_mulai' => ['required', 'date_format:H:i'],
+            'scan_masuk_sampai' => ['required', 'date_format:H:i'],
+            'scan_keluar_mulai' => ['required', 'date_format:H:i'],
+            'scan_keluar_sampai' => ['required', 'date_format:H:i'],
         ], [
             'jam_masuk.required' => 'Jam masuk default wajib diisi.',
             'jam_pulang_normal.required' => 'Jam pulang normal wajib diisi.',
             'jam_pulang_jumat.required' => 'Jam pulang Jumat wajib diisi.',
+            'scan_masuk_mulai.required' => 'Jam mulai scan masuk wajib diisi.',
+            'scan_masuk_sampai.required' => 'Jam akhir scan masuk wajib diisi.',
+            'scan_keluar_mulai.required' => 'Jam mulai scan pulang wajib diisi.',
+            'scan_keluar_sampai.required' => 'Jam akhir scan pulang wajib diisi.',
         ])->validate();
 
         Setting::updateOrCreate(['key' => 'jadwal.default_masuk'], ['value' => $validated['jam_masuk']]);
         Setting::updateOrCreate(['key' => 'jadwal.default_pulang_normal'], ['value' => $validated['jam_pulang_normal']]);
         Setting::updateOrCreate(['key' => 'jadwal.default_pulang_jumat'], ['value' => $validated['jam_pulang_jumat']]);
+        Setting::updateOrCreate(['key' => 'jadwal.scan_masuk_mulai'], ['value' => $validated['scan_masuk_mulai']]);
+        Setting::updateOrCreate(['key' => 'jadwal.scan_masuk_sampai'], ['value' => $validated['scan_masuk_sampai']]);
+        Setting::updateOrCreate(['key' => 'jadwal.scan_keluar_mulai'], ['value' => $validated['scan_keluar_mulai']]);
+        Setting::updateOrCreate(['key' => 'jadwal.scan_keluar_sampai'], ['value' => $validated['scan_keluar_sampai']]);
 
         $this->refreshState($this->state['selectedDate'] ?? now()->format('Y-m-d'));
         $this->dispatch('waktu-state-updated', state: $this->state);
@@ -200,12 +212,23 @@ class ManajemenWaktu extends Component
             'jadwal.default_masuk',
             'jadwal.default_pulang_normal',
             'jadwal.default_pulang_jumat',
+            'jadwal.scan_masuk_mulai',
+            'jadwal.scan_masuk_sampai',
+            'jadwal.scan_keluar_mulai',
+            'jadwal.scan_keluar_sampai',
         ])->pluck('value', 'key');
 
+        $jamMasuk = $settings['jadwal.default_masuk'] ?? self::DEFAULT_MASUK;
+        $jamPulangNormal = $settings['jadwal.default_pulang_normal'] ?? self::DEFAULT_PULANG_NORMAL;
+
         return [
-            'jam_masuk' => $settings['jadwal.default_masuk'] ?? self::DEFAULT_MASUK,
-            'jam_pulang_normal' => $settings['jadwal.default_pulang_normal'] ?? self::DEFAULT_PULANG_NORMAL,
+            'jam_masuk' => $jamMasuk,
+            'jam_pulang_normal' => $jamPulangNormal,
             'jam_pulang_jumat' => $settings['jadwal.default_pulang_jumat'] ?? self::DEFAULT_PULANG_JUMAT,
+            'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? $jamMasuk,
+            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? $jamMasuk,
+            'scan_keluar_mulai' => $settings['jadwal.scan_keluar_mulai'] ?? $jamPulangNormal,
+            'scan_keluar_sampai' => $settings['jadwal.scan_keluar_sampai'] ?? $jamPulangNormal,
         ];
     }
 

@@ -11,7 +11,8 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class RekapKehadiranExport implements WithMultipleSheets
 {
     public function __construct(
-        private readonly ?string $bulan,
+        private readonly ?string $tanggalDari,
+        private readonly ?string $tanggalSampai,
         private readonly ?int $rombelId,
     ) {
     }
@@ -19,13 +20,13 @@ class RekapKehadiranExport implements WithMultipleSheets
     public function sheets(): array
     {
         if (!$this->rombelId) {
-            return [new RekapSemuaKelasSheet($this->bulan)];
+            return [new RekapSemuaKelasSheet($this->tanggalDari, $this->tanggalSampai)];
         }
 
         return [
-            new RekapHarianSheet($this->bulan, $this->rombelId),
-            new RekapMingguanSheet($this->bulan, $this->rombelId),
-            new RekapBulananSheet($this->bulan, $this->rombelId),
+            new RekapHarianSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId),
+            new RekapMingguanSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId),
+            new RekapBulananSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId),
         ];
     }
 }

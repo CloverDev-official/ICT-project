@@ -23,12 +23,14 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 class RekapMingguanSheet implements FromQuery, WithHeadings, WithMapping, WithTitle, WithChunkReading, WithCustomStartCell, WithEvents, ShouldAutoSize
 {
     private AbsenRekapQuery $rekapQuery;
-    private ?string $bulan;
+    private ?string $tanggalDari;
+    private ?string $tanggalSampai;
 
-    public function __construct(?string $bulan, ?int $rombelId)
+    public function __construct(?string $tanggalDari, ?string $tanggalSampai, ?int $rombelId)
     {
-        $this->rekapQuery = new AbsenRekapQuery($bulan, $rombelId);
-        $this->bulan = $bulan;
+        $this->rekapQuery = new AbsenRekapQuery($tanggalDari, $tanggalSampai, $rombelId);
+        $this->tanggalDari = $tanggalDari;
+        $this->tanggalSampai = $tanggalSampai;
     }
 
     public function query(): Builder
@@ -249,11 +251,24 @@ class RekapMingguanSheet implements FromQuery, WithHeadings, WithMapping, WithTi
 
     private function periodeLabel(): string
     {
-        if (!$this->bulan) {
+        if (!$this->tanggalDari && !$this->tanggalSampai) {
             return '-';
         }
 
-        return Carbon::createFromFormat('Y-m', $this->bulan)->format('F Y');
+        $start = $this->tanggalDari ?: $this->tanggalSampai;
+        $end = $this->tanggalSampai ?: $this->tanggalDari;
+
+        if (!$start || !$end) {
+            return '-';
+        }
+
+        if ($start === $end) {
+            return Carbon::parse($start)->format('d-m-Y');
+        }
+
+        return Carbon::parse($start)->format('d-m-Y') .
+            ' - ' .
+            Carbon::parse($end)->format('d-m-Y');
     }
 
     public function chunkSize(): int

@@ -183,32 +183,59 @@
             </div>
         </section>
 
-        <aside class="space-y-6 xl:col-span-4">
+        <aside class="space-y-6 xl:col-span-4 xl:sticky xl:top-6 self-start">
             <div id="form-event-waktu" class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-                <div class="mb-5 flex items-start justify-between gap-3">
-                    <div>
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="min-w-0">
                         <p class="text-sm font-semibold text-blue-main">Tanggal Dipilih</p>
                         <h3 class="text-xl font-bold text-gray-800" x-text="formatDate(selectedDate)"></h3>
                     </div>
-                    <span class="rounded-full px-3 py-1 text-xs font-bold" :class="selectedEvent() ? 'bg-orange-50 text-orange-600' : typePillClass(selectedDefault().tipe)" x-text="selectedEvent() ? 'Ada Event' : selectedDefault().label"></span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="rounded-full px-3 py-1 text-xs font-bold" :class="selectedEvent() ? 'bg-orange-50 text-orange-600' : typePillClass(selectedDefault().tipe)" x-text="selectedEvent() ? 'Ada Event' : selectedDefault().label"></span>
+                        <button
+                            type="button"
+                            x-show="selectedEvent()"
+                            @click="resetToDefault"
+                            class="rounded-full border border-gray-200 px-3 py-1 text-xs font-bold text-gray-600 transition hover:border-blue-main hover:text-blue-main"
+                        >
+                            Reset ke Default
+                        </button>
+                    </div>
                 </div>
 
-                <div class="mb-5 rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
-                    <template x-if="selectedEvent()">
-                        <div>
-                            <p class="font-bold text-gray-800" x-text="selectedEvent().nama_acara"></p>
-                            <p class="mt-1" x-text="selectedEvent().summary"></p>
+                <div class="mb-5 grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+                        <template x-if="selectedEvent()">
+                            <div>
+                                <p class="font-bold text-gray-800" x-text="selectedEvent().nama_acara"></p>
+                                <p class="mt-1" x-text="selectedEvent().summary"></p>
+                                <p class="mt-2 text-xs text-gray-400">Detail jadwal per kelas ada di bawah.</p>
+                            </div>
+                        </template>
+                        <template x-if="!selectedEvent()">
+                            <div>
+                                <p class="font-bold text-gray-800" x-text="selectedDefault().label"></p>
+                                <p class="mt-1" x-text="selectedDefault().keterangan"></p>
+                                <p class="mt-2 text-xs text-gray-400" x-show="selectedDefault().jam_masuk">
+                                    <span x-text="selectedDefault().jam_masuk"></span> - <span x-text="selectedDefault().jam_pulang"></span>
+                                </p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+                        <p class="text-xs font-bold uppercase text-gray-400">Jendela Scan</p>
+                        <div class="mt-2 space-y-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <span>Masuk</span>
+                                <span class="font-semibold text-gray-800" x-text="scanMasukLabel()"></span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span>Pulang</span>
+                                <span class="font-semibold text-gray-800" x-text="scanKeluarLabel()"></span>
+                            </div>
                         </div>
-                    </template>
-                    <template x-if="!selectedEvent()">
-                        <div>
-                            <p class="font-bold text-gray-800" x-text="selectedDefault().label"></p>
-                            <p class="mt-1" x-text="selectedDefault().keterangan"></p>
-                            <p class="mt-2 text-xs text-gray-400" x-show="selectedDefault().jam_masuk">
-                                <span x-text="selectedDefault().jam_masuk"></span> - <span x-text="selectedDefault().jam_pulang"></span>
-                            </p>
-                        </div>
-                    </template>
+                    </div>
                 </div>
 
                 <form @submit.prevent="saveEvent" class="space-y-4">
@@ -298,28 +325,32 @@
                             <p class="text-xs text-gray-400">Bisa beda antar kelas.</p>
                         </div>
 
-                        <template x-for="rombel in selectedRombel()" :key="rombel.id">
-                            <div class="rounded-2xl border border-gray-200 p-3">
-                                <div class="mb-3 flex items-start justify-between gap-3">
-                                    <div>
-                                        <p class="font-bold text-gray-800" x-text="rombel.nama"></p>
-                                        <p class="text-xs text-gray-400" x-text="detailLabel(rombel.id)"></p>
+                        <div class="max-h-[520px] space-y-3 overflow-y-auto pr-1">
+                            <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                                <template x-for="rombel in selectedRombel()" :key="rombel.id">
+                                    <div class="rounded-2xl border border-gray-200 p-3">
+                                    <div class="mb-3 flex items-center justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <p class="font-bold text-gray-800" x-text="rombel.nama"></p>
+                                            <p class="text-xs text-gray-400" x-text="detailLabel(rombel.id)"></p>
+                                        </div>
+                                        <button type="button" @click="toggleRombel(rombel.id)" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100">Hapus</button>
                                     </div>
-                                    <button type="button" @click="toggleRombel(rombel.id)" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100">Hapus</button>
-                                </div>
 
-                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                    <select x-model="eventForm.detail_kelas[String(rombel.id)].tipe" @change="applyTypeDefault(rombel.id)" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2">
-                                        <template x-for="(label, key) in state.tipeOptions" :key="key">
-                                            <option :value="key" x-text="label"></option>
-                                        </template>
-                                    </select>
-                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_masuk" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_pulang" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                    <textarea x-model="eventForm.detail_kelas[String(rombel.id)].keterangan" rows="2" placeholder="Keterangan khusus kelas ini" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2"></textarea>
-                                </div>
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <select x-model="eventForm.detail_kelas[String(rombel.id)].tipe" @change="applyTypeDefault(rombel.id)" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2">
+                                            <template x-for="(label, key) in state.tipeOptions" :key="key">
+                                                <option :value="key" x-text="label"></option>
+                                            </template>
+                                        </select>
+                                        <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_masuk" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                        <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_pulang" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                        <textarea x-model="eventForm.detail_kelas[String(rombel.id)].keterangan" rows="2" placeholder="Keterangan khusus kelas ini" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2"></textarea>
+                                    </div>
+                                    </div>
+                                </template>
                             </div>
-                        </template>
+                        </div>
                     </div>
 
                     <template x-if="formError">
@@ -362,18 +393,45 @@
                     <p class="text-sm text-gray-500">Dipakai untuk hari tanpa event kelas.</p>
                 </div>
 
-                <form @submit.prevent="saveDefault" class="space-y-3">
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Masuk</label>
-                        <input type="time" x-model="defaultForm.jam_masuk" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                <form @submit.prevent="saveDefault" class="space-y-4">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Masuk</label>
+                            <input type="time" x-model="defaultForm.jam_masuk" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Normal</label>
+                            <input type="time" x-model="defaultForm.jam_pulang_normal" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Jumat</label>
+                            <input type="time" x-model="defaultForm.jam_pulang_jumat" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        </div>
                     </div>
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Normal</label>
-                        <input type="time" x-model="defaultForm.jam_pulang_normal" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Jumat</label>
-                        <input type="time" x-model="defaultForm.jam_pulang_jumat" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <div class="mb-3">
+                            <p class="font-bold text-gray-800">Jendela Scan</p>
+                            <p class="text-xs text-gray-500">Atur jam bisa scan masuk dan scan pulang.</p>
+                        </div>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Mulai</label>
+                                <input type="time" x-model="defaultForm.scan_masuk_mulai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Sampai</label>
+                                <input type="time" x-model="defaultForm.scan_masuk_sampai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Mulai</label>
+                                <input type="time" x-model="defaultForm.scan_keluar_mulai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Sampai</label>
+                                <input type="time" x-model="defaultForm.scan_keluar_sampai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                            </div>
+                        </div>
                     </div>
                     <button
                         type="submit"
@@ -695,6 +753,21 @@
                         });
                     },
 
+                    resetToDefault() {
+                        if (!this.selectedEvent()) {
+                            return;
+                        }
+
+                        if (!confirm('Kembalikan jadwal ke default untuk tanggal ini?')) {
+                            return;
+                        }
+
+                        this.saving = true;
+                        wire.deleteDate(this.selectedDate).catch(() => {
+                            this.saving = false;
+                        });
+                    },
+
                     scrollToForm() {
                         this.$nextTick(() => {
                             document.getElementById('form-event-waktu')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -713,6 +786,22 @@
                         }
 
                         return `${parts[2]} ${this.bulan[Number(parts[1]) - 1]} ${parts[0]}`;
+                    },
+
+                    formatRange(start, end) {
+                        if (!start || !end) {
+                            return '--:--';
+                        }
+
+                        return `${start} - ${end}`;
+                    },
+
+                    scanMasukLabel() {
+                        return this.formatRange(this.state.settings.scan_masuk_mulai, this.state.settings.scan_masuk_sampai);
+                    },
+
+                    scanKeluarLabel() {
+                        return this.formatRange(this.state.settings.scan_keluar_mulai, this.state.settings.scan_keluar_sampai);
                     },
 
                     calendarClass(day) {

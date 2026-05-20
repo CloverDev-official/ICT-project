@@ -56,12 +56,7 @@ class ScanQRCode extends Component
         $this->jadwalHariIni = $jadwal;
 
         if (!$jadwalService->bolehScan($jadwal)) {
-            $this->rejectScan(sprintf(
-                'Absensi QR tidak dibuka karena jadwal kelas %s hari ini adalah %s%s.',
-                $murid->rombel->nama_lengkap ?? '-',
-                $jadwal['label'],
-                $jadwal['keterangan'] ? ' - ' . $jadwal['keterangan'] : ''
-            ));
+            $this->rejectScan('Absensi Tidak Disimpan. Sistem mengecek jadwal kelas dari Manajemen Waktu.');
             return;
         }
 
@@ -71,6 +66,28 @@ class ScanQRCode extends Component
             ->first();
 
         if (!$absen) {
+            if ($this->bisaLangsungPulang($currentTime, $jadwal)) {
+                AbsenMurid::create([
+                    'murid_id' => $murid->id,
+                    'tanggal' => $today,
+                    'waktu_keluar' => $currentTime,
+                    'status' => 'Hadir',
+                    'keterangan' => $this->keteranganAbsensi($jadwal),
+                ]);
+
+                $this->acceptScan('Absensi pulang berhasil disimpan.');
+                return;
+            }
+
+            if (!$this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
+                $this->rejectScan(sprintf(
+                    'Scan masuk dibuka pukul %s - %s.',
+                    $jadwal['scan_masuk_mulai'] ?? '--:--',
+                    $jadwal['scan_masuk_sampai'] ?? '--:--',
+                ));
+                return;
+            }
+
             AbsenMurid::create([
                 'murid_id' => $murid->id,
                 'tanggal' => $today,
@@ -84,6 +101,15 @@ class ScanQRCode extends Component
         }
 
         if (!$absen->waktu_keluar && $this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
+            if (!$this->withinWindow($currentTime, $jadwal['scan_keluar_mulai'] ?? null, $jadwal['scan_keluar_sampai'] ?? null)) {
+                $this->rejectScan(sprintf(
+                    'Scan pulang dibuka pukul %s - %s.',
+                    $jadwal['scan_keluar_mulai'] ?? '--:--',
+                    $jadwal['scan_keluar_sampai'] ?? '--:--',
+                ));
+                return;
+            }
+
             $absen->update([
                 'waktu_keluar' => $currentTime,
             ]);
@@ -100,13 +126,40 @@ class ScanQRCode extends Component
         $this->acceptScan('Absensi masuk sudah tercatat. Absensi pulang baru bisa dilakukan sesuai jam pulang.');
     }
 
-    private function statusMasuk(string $currentTime, ?string $jamMasuk): string
+    private function bisaLangsungPulang(string $currentTime, array $jadwal): bool
     {
-        if (!$jamMasuk) {
-            return 'Hadir';
+        if (!$this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'] ?? null)) {
+            return false;
         }
 
-        return $currentTime <= $this->normalizeTime($jamMasuk) ? 'Hadir' : 'Alpa';
+        return $this->withinWindow(
+            $currentTime,
+            $jadwal['scan_keluar_mulai'] ?? null,
+            $jadwal['scan_keluar_sampai'] ?? null,
+        );
+    }
+
+    private function withinWindow(string $currentTime, ?string $start, ?string $end): bool
+    {
+        if (!$start || !$end) {
+            return true;
+        }
+
+        $current = $this->normalizeTime($currentTime) ?? $currentTime;
+        $startTime = $this->normalizeTime($start) ?? $start;
+        $endTime = $this->normalizeTime($end) ?? $end;
+
+        return $current >= $startTime && $current <= $endTime;
+    }
+
+    private function statusMasuk(string $currentTime, ?string $jamMasuk): string
+    {
+        // if (!$jamMasuk) {
+        //     return 'Hadir';
+        // }
+
+        // return $currentTime <= $this->normalizeTime($jamMasuk) ? 'Hadir' : 'Alpa';
+        return 'Hadir';
     }
 
     private function bolehAbsenKeluar(string $currentTime, ?string $jamPulang): bool
