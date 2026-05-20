@@ -35,6 +35,14 @@ return new class extends Migration
             $table->foreignId('tingkat_id')->constrained('tingkat')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('jurusan_id')->constrained('jurusan')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('indeks_id')->constrained('indeks')->cascadeOnDelete()->cascadeOnUpdate();
+
+            $table
+                ->foreignId('wali_guru_id')
+                ->nullable()
+                ->constrained('guru')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
+                
             $table->timestamps();
 
             $table->unique(['tingkat_id', 'jurusan_id', 'indeks_id']);
