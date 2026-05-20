@@ -77,7 +77,7 @@
                             height="22">
                         </iconify-icon>
 
-                        Import CSV
+                        Import XLSX
 
                     </button>
 
@@ -181,7 +181,7 @@
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach (['PNS', 'Honorer'] AS $index => $status)
+                    @foreach ($statusOptions as $index => $status)
                     <div
                         @click.prevent="select({{ $index }}, '{{ $status }}')"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
@@ -232,7 +232,7 @@
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach (["Guru Mapel", "Guru BK"] as $index => $jenis)
+                    @foreach ($jenisOptions as $index => $jenis)
                     <div
                         @click.prevent="select({{ $index }}, '{{ $jenis }}')"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
@@ -417,56 +417,10 @@
 
                 <tbody>
 
-                    @php
-                    $listGuru = [
-                    [
-                    'ulid' => '01HXYZ123ABC',
-                    'nama' => 'Ghaizan',
-                    'nuptk' => '1234567890',
-                    'jk' => 'L',
-                    'tempat_lahir' => 'Samarinda',
-                    'tanggal_lahir' => '2005-01-15',
-                    'nip' => '1987654321',
-                    'status_kepegawaian' => 'PNS',
-                    'jenis_ptk' => 'Guru Mapel',
-                    'agama' => 'Islam',
-                    'alamat_jalan' => 'Jl. Ahmad Yani',
-                    'rt' => '01',
-                    'rw' => '02',
-                    'desa_kelurahan' => 'Air Putih',
-                    'kecamatan' => 'Samarinda Ulu',
-                    'kode_pos' => '75124',
-                    'telepon' => '0541123456',
-                    'hp' => '081234567890',
-                    'email' => 'ghaizan@email.com',
-                    ],
-                    [
-                    'ulid' => '01HXYZ456DEF',
-                    'nama' => 'Budi Santoso',
-                    'nuptk' => '0987654321',
-                    'jk' => 'L',
-                    'tempat_lahir' => 'Balikpapan',
-                    'tanggal_lahir' => '1990-07-20',
-                    'nip' => '1122334455',
-                    'status_kepegawaian' => 'Honorer',
-                    'jenis_ptk' => 'Guru BK',
-                    'agama' => 'Islam',
-                    'alamat_jalan' => 'Jl. Sudirman',
-                    'rt' => '03',
-                    'rw' => '01',
-                    'desa_kelurahan' => 'Gunung Bahagia',
-                    'kecamatan' => 'Balikpapan Selatan',
-                    'kode_pos' => '76114',
-                    'telepon' => '0542123456',
-                    'hp' => '082345678901',
-                    'email' => 'budi@email.com',
-                    ],
-                    ];
-                    @endphp
-                    @foreach ($listGuru as $index => $guru)
+                    @forelse ($listGuru as $index => $guru)
 
                     @php
-                    $statusClass = $guru['status_kepegawaian'] === 'PNS'
+                    $statusClass = $guru->status_kepegawaian === 'PNS'
                     ? 'bg-emerald-100 text-emerald-600'
                     : 'bg-amber-100 text-amber-600';
                     @endphp
@@ -480,7 +434,7 @@
                             <input
                                 type="checkbox"
                                 class="guru-row-checkbox rounded border-gray-300"
-                                value="{{ $guru['ulid'] }}"
+                                value="{{ $guru->public_id }}"
                                 x-model="selected">
 
                         </td>
@@ -498,7 +452,7 @@
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
 
-                                    {{ substr($guru['nama'], 0, 1) }}
+                                    {{ substr($guru->nama, 0, 1) }}
 
                                 </div>
 
@@ -508,14 +462,14 @@
                                     <h2
                                         class="font-semibold text-gray-800">
 
-                                        {{ $guru['nama'] }}
+                                        {{ $guru->nama }}
 
                                     </h2>
 
                                     <p
                                         class="mt-1 text-xs text-gray-400">
 
-                                        {{ $guru['email'] }}
+                                        {{ $guru->email }}
 
                                     </p>
 
@@ -527,27 +481,27 @@
 
                         <!-- nuptk -->
                         <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $guru['nuptk'] }}
+                            {{ $guru->nuptk ?? '-' }}
                         </td>
 
                         <!-- jk -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['jk'] }}
+                            {{ $guru->jk ?? '-' }}
                         </td>
 
                         <!-- tempat lahir -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['tempat_lahir'] }}
+                            {{ $guru->tempat_lahir ?? '-' }}
                         </td>
 
                         <!-- tanggal lahir -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['tanggal_lahir'] }}
+                            {{ $guru->tanggal_lahir ? $guru->tanggal_lahir->format('Y-m-d') : '-' }}
                         </td>
 
                         <!-- NIP -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['nip'] }}
+                            {{ $guru->nip ?? '-' }}
                         </td>
 
                         <!-- status -->
@@ -560,7 +514,7 @@
                                     class="h-2 w-2 rounded-full bg-current">
                                 </div>
 
-                                {{ $guru['status_kepegawaian'] }}
+                                {{ $guru->status_kepegawaian ?? '-' }}
 
                             </div>
 
@@ -573,7 +527,7 @@
                             <div
                                 class="min-w-28 flex justify-center items-center rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-600">
 
-                                {{ $guru['jenis_ptk'] }}
+                                {{ $guru->jenis_ptk ?? '-' }}
 
                             </div>
 
@@ -581,47 +535,47 @@
 
                         <!-- agama -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['agama'] }}
+                            {{ $guru->agama ?? '-' }}
                         </td>
 
                         <!-- ALAMAT -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['alamat_jalan'] }}
+                            {{ $guru->alamat_jalan ?? '-' }}
                         </td>
 
                         <!-- RT -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['rt'] }}
+                            {{ $guru->rt ?? '-' }}
                         </td>
 
                         <!-- rw -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['rw'] }}
+                            {{ $guru->rw ?? '-' }}
                         </td>
 
                         <!-- desa -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['desa_kelurahan'] }}
+                            {{ $guru->desa_kelurahan ?? '-' }}
                         </td>
 
                         <!-- kecamatan -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['kecamatan'] }}
+                            {{ $guru->kecamatan ?? '-' }}
                         </td>
 
                         <!-- kode -->
                         <td class="px-5 py-5 text-center">
-                            {{ $guru['kode_pos'] }}
+                            {{ $guru->kode_pos ?? '-' }}
                         </td>
 
                         <!-- kontak -->
                         <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $guru['telepon'] }}
+                            {{ $guru->telepon ?? '-' }}
                         </td>
 
                         <!-- kontak -->
                         <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $guru['hp'] }}
+                            {{ $guru->hp ?? '-' }}
                         </td>
 
                         <!-- aksi -->
@@ -632,7 +586,7 @@
 
                                 <!-- edit -->
                                 <a
-                                    href="{{ route('edit-guru') }}"
+                                    href="{{ route('edit-guru', $guru->id) }}"
                                     wire:navigate>
 
                                     <button
@@ -649,10 +603,10 @@
                                 </a>
 
                                 <!-- delete -->
-                                <div x-data="{ openModalDelete: false }">
+                                <div>
 
                                     <button
-                                        @click="openModalDelete = true"
+                                        @click="$dispatch('open-delete-guru', { id: {{ $guru->id }} })"
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
                                         <iconify-icon
@@ -662,8 +616,6 @@
                                         </iconify-icon>
 
                                     </button>
-
-                                    <livewire:components.modal.guru.modal-hapus-guru />
 
                                 </div>
 
@@ -685,13 +637,27 @@
 
                     </tr>
 
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="20" class="px-6 py-10 text-center text-sm text-gray-400">
+                                Data guru belum tersedia.
+                            </td>
+                        </tr>
+                    @endforelse
 
                 </tbody>
 
             </table>
 
         </div>
+
+        </div>
+
+        <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+            {{ $listGuru->links('livewire.components.pagination') }}
+        </div>
+
+        <livewire:components.modal.guru.modal-hapus-guru />
 
     </div>
 

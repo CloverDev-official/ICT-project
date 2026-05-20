@@ -24,8 +24,9 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\AbsensiGuru;
-use App\Livewire\DataGuru;
-use App\Livewire\EditGuru;
+use App\Livewire\Guru\Index as IndexGuru;
+use App\Livewire\Guru\Create as CreateGuru;
+use App\Livewire\Guru\Edit as EditGuru;
 
 use App\Livewire\Manajemen\GenerateQR;
 use App\Livewire\Manajemen\TahunAjaran;
@@ -35,7 +36,9 @@ use App\Livewire\Murid\Riwayat\DetailMurid;
 use App\Livewire\Murid\Riwayat\RiwayatMurid;
 use App\Livewire\PilihAbsen;
 use App\Livewire\RekapAbsenGuru;
-use App\Livewire\TambahGuru;
+use App\Exports\Murid\MuridTemplateExport;
+use App\Exports\Guru\GuruTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login');
@@ -60,7 +63,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::prefix('/riwayat')->group(function () {
         Route::middleware('access:riwayat-murid')->group(function () {
             Route::get('/absen-murid', RiwayatMurid::class)->name('riwayat-absen-murid');
-            Route::get('/detail-absen-murid', DetailMurid::class)->name('riwayat-detail-absen-murid');
+            Route::get('/detail-absen-murid/{muridUlid}', DetailMurid::class)->name('riwayat-detail-absen-murid');
         });
     });
 
@@ -75,13 +78,19 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::get('/', IndexMurid::class)->name('data-murid');
         Route::get('/create', CreateMurid::class)->name('tambah-murid');
         Route::get('/edit/{muridUlid}', EditMurid::class)->name('edit-murid');
+        Route::get('/template', function () {
+            return Excel::download(new MuridTemplateExport(), 'template-import-murid.xlsx');
+        })->name('template-import-murid');
     });
 
     // data guru
     Route::prefix('/data-guru')->middleware('access:data-guru')->group(function () {
-        Route::get('/', DataGuru::class)->name('data-guru');
-        Route::get('/create', TambahGuru::class)->name('tambah-guru');
-        Route::get('/edit/{guruId}', EditGuru::class)->name('edit-guru');
+        Route::get('/', IndexGuru::class)->name('data-guru');
+        Route::get('/create', CreateGuru::class)->name('tambah-guru');
+        Route::get('/edit/{id}', EditGuru::class)->name('edit-guru');
+        Route::get('/template', function () {
+            return Excel::download(new GuruTemplateExport(), 'template-import-guru.xlsx');
+        })->name('template-import-guru');
     });
 
     Route::prefix('/data-kelas')->middleware('access:data-kelas')->group(function () {

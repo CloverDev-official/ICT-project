@@ -410,8 +410,8 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: null,
-                    selectedLabel: null,
+                    selectedId: @js((string) $rombel->wali_guru_id),
+                    selectedLabel: @js($rombel->waliGuru?->nama ?? 'Pilih wali kelas'),
 
                     toggle() {
                         this.open = !this.open

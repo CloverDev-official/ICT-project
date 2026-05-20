@@ -3,6 +3,7 @@
 namespace App\Models\Murid\Rombel;
 
 use App\Models\Murid\Murid;
+use App\Models\Guru\Guru;
 use Illuminate\Database\Eloquent\Model;
 
 class Rombel extends Model
@@ -15,6 +16,7 @@ class Rombel extends Model
         'tingkat_id',
         'jurusan_id',
         'indeks_id',
+        'wali_guru_id',
     ];
 
     /**
@@ -47,6 +49,11 @@ class Rombel extends Model
     public function murid()
     {
         return $this->hasMany(Murid::class);
+    }
+
+    public function waliGuru()
+    {
+        return $this->belongsTo(Guru::class, 'wali_guru_id');
     }
 
     public function getNamaLengkapAttribute()

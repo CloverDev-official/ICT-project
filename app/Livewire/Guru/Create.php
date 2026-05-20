@@ -3,6 +3,7 @@
 namespace App\Livewire\Guru;
 
 use App\Helpers\ValidateMagic;
+use App\Helpers\ToastMagic;
 use App\Models\Guru\Guru;
 use App\Models\Guru\Rombel\GuruRombel;
 use App\Models\Murid\Rombel\Rombel;
@@ -34,7 +35,7 @@ class Create extends Component
     public ?string $hp = null;
     public ?string $email = null;
 
-    public int $rombel_id = null;
+    public ?int $rombel_id = null;
     public $rombel = [];
 
     public function mount(): void
@@ -129,6 +130,8 @@ class Create extends Component
             "guru_id" => $guru->id,
             "rombel_id" => $this->rombel_id,
         ]);
+
+        ToastMagic::success("Menambahkan Guru", "Berhasil menambahkan guru $this->nama.");
 
         $this->reset([
             "nama",

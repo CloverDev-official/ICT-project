@@ -3,7 +3,9 @@
 namespace App\Livewire\Guru;
 
 use App\Helpers\ValidateMagic;
+use App\Helpers\ToastMagic;
 use App\Models\Guru\Guru;
+use App\Models\Guru\Rombel\GuruRombel;
 use App\Models\Murid\Rombel\Rombel;
 use Livewire\Component;
 
@@ -159,8 +161,16 @@ class Edit extends Component
             "telepon" => $this->telepon,
             "hp" => $this->hp,
             "email" => $this->email,
-            "rombel_id" => $this->rombel_id,
         ]);
+
+        if ($this->rombel_id) {
+            GuruRombel::updateOrCreate(
+                ['guru_id' => $this->guru->id],
+                ['rombel_id' => $this->rombel_id],
+            );
+        }
+
+        ToastMagic::success("Mengubah Guru", "Data guru $this->nama berhasil diperbarui.");
     }
 
     public function render()

@@ -39,6 +39,7 @@ return new class extends Migration {
             $table->string('email')->nullable()->unique();
 
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained('users')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();

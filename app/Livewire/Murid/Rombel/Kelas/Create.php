@@ -4,11 +4,15 @@ namespace App\Livewire\Murid\Rombel\Kelas;
 
 use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
+use App\Models\Guru\Guru;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
 use App\Models\Murid\Rombel\Tingkat;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 
 class Create extends Component
@@ -16,16 +20,19 @@ class Create extends Component
     public ?int $tingkat_id = null;
     public ?int $jurusan_id = null;
     public ?int $indeks_id = null;
+    public ?int $guru_id = null;
 
     public $listTingkat = [];
     public $listJurusan = [];
     public $listIndeks = [];
+    public $listGuru = [];
 
     public function mount(): void
     {
         $this->listTingkat = Tingkat::query()->orderBy('nama')->get(['id', 'nama']);
         $this->listJurusan = Jurusan::query()->orderBy('nama')->get(['id', 'nama']);
         $this->listIndeks = Indeks::query()->orderBy('nama')->get(['id', 'nama']);
+        $this->listGuru = Guru::query()->orderBy('nama')->get(['id', 'nama', 'email', 'user_id']);
     }
 
     public function store(): void
@@ -44,6 +51,7 @@ class Create extends Component
                             ->where('indeks_id', $this->indeks_id);
                     }),
                 ],
+                'guru_id' => ['nullable', 'exists:guru,id'],
             ],
             [
                 'tingkat_id.required' => 'Tingkat wajib dipilih.',
@@ -53,6 +61,7 @@ class Create extends Component
                 'indeks_id.required' => 'Kelas wajib dipilih.',
                 'indeks_id.exists' => 'Kelas yang dipilih tidak valid.',
                 'indeks_id.unique' => 'Kelas tersebut sudah terdaftar.',
+                'guru_id.exists' => 'Wali kelas yang dipilih tidak valid.',
             ],
         );
 
@@ -60,10 +69,15 @@ class Create extends Component
             return;
         }
 
+        if ($this->guru_id && !$this->ensureWaliKelasUser($this->guru_id)) {
+            return;
+        }
+
         Rombel::create([
             'tingkat_id' => $this->tingkat_id,
             'jurusan_id' => $this->jurusan_id,
             'indeks_id' => $this->indeks_id,
+            'wali_guru_id' => $this->guru_id,
         ]);
 
         ToastMagic::success(
@@ -71,7 +85,61 @@ class Create extends Component
             'Berhasil menambahkan kelas.'
         );
 
-        $this->reset(['tingkat_id', 'jurusan_id', 'indeks_id']);
+        $this->reset(['tingkat_id', 'jurusan_id', 'indeks_id', 'guru_id']);
+    }
+
+    private function ensureWaliKelasUser(int $guruId): bool
+    {
+        $guru = Guru::find($guruId);
+        if (!$guru) {
+            ToastMagic::error('Wali kelas tidak ditemukan.');
+            return false;
+        }
+
+        $roleId = Role::query()->where('name', 'Wali Kelas')->value('id');
+        if (!$roleId) {
+            ToastMagic::error('Role wali kelas belum tersedia.');
+            return false;
+        }
+
+        $user = $guru->user_id ? User::find($guru->user_id) : null;
+
+        if (!$user && $guru->email) {
+            $user = User::query()->where('email', $guru->email)->first();
+        }
+
+        if ($user) {
+            $user->update([
+                'role_id' => $roleId,
+                'is_active' => true,
+            ]);
+
+            if (!$guru->user_id) {
+                $guru->update(['user_id' => $user->id]);
+            }
+
+            return true;
+        }
+
+        if (!$guru->email) {
+            ToastMagic::warning(
+                'Email guru kosong',
+                'Isi email guru agar akun wali kelas bisa dibuat.'
+            );
+            return false;
+        }
+
+        $user = User::create([
+            'name' => $guru->nama,
+            'email' => $guru->email,
+            'password' => Hash::make('gurusmkn2bjm'),
+            'role_id' => $roleId,
+            'is_active' => true,
+        ]);
+
+        $guru->update(['user_id' => $user->id]);
+
+        return true;
     }
 
     public function render()
