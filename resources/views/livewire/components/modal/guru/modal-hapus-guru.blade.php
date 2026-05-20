@@ -1,5 +1,12 @@
 <div
+    x-data="{ openModalDelete: false }"
     x-show="openModalDelete"
+    x-on:open-delete-guru.window="
+        openModalDelete = true;
+        $wire.loadGuru($event.detail.id);
+    "
+    x-on:close-modal.window="openModalDelete = false"
+    x-transition
     style="display: none;"
     class="fixed inset-0 flex items-center justify-center bg-black/30 p-5 "
 >
@@ -15,7 +22,7 @@
         <hr class="p-0 mb-4 text-gray-400" >
 
         <p class="text-gray-600 mb-6 px-6">
-            Apakah kamu yakin ingin menghapus data guru ini? "{ nama guru yang dihapus }",
+            Apakah kamu yakin ingin menghapus data guru ini? "{{ $guru->nama ?? '-' }}",
             Data yang dihapus tidak dapat dikembalikan.
         </p>
 
