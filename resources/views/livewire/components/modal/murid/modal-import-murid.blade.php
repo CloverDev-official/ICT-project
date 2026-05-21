@@ -1,120 +1,320 @@
-    <div
-        x-data="{
-            isUploading: false,
-            progress: 0,
-            fileName: '',
-            dragActive: false,
-            get hasFile() {
-                return this.fileName && this.fileName.length > 0;
-            },
-            setFileFromInput(event) {
-                const file = event?.target?.files?.[0];
-                this.fileName = file ? file.name : '';
-            },
-            setFileFromDrop(event) {
-                const input = this.$refs.fileInput;
-                if (!input || !event?.dataTransfer?.files?.length) {
-                    return;
-                }
+<div
+    x-data="{
+        isUploading: false,
+        progress: 0,
+        fileName: '',
+        fileSize: '',
+        dragActive: false,
 
-                input.files = event.dataTransfer.files;
-                input.dispatchEvent(new Event('change', { bubbles: true }));
+        get hasFile() {
+            return this.fileName && this.fileName.length > 0
+        },
+
+        formatSize(bytes) {
+            if (!bytes) return ''
+
+            const size = bytes / 1024 / 1024
+            return size.toFixed(2) + ' MB'
+        },
+
+        setFileFromInput(event) {
+            const file = event?.target?.files?.[0]
+
+            this.fileName = file ? file.name : ''
+            this.fileSize = file ? this.formatSize(file.size) : ''
+        },
+
+        setFileFromDrop(event) {
+            const input = this.$refs.fileInput
+
+            if (!input || !event?.dataTransfer?.files?.length) {
+                return
             }
-        }"
-        x-on:livewire-upload-start="isUploading = true"
-        x-on:livewire-upload-finish="isUploading = false; progress = 0"
-        x-on:livewire-upload-error="isUploading = false"
-        x-on:livewire-upload-progress="progress = $event.detail.progress"
-        x-on:imported.window="openModalImport = false"
-        x-show="openModalImport"
-        x-transition.opacity
-        style="display: none;"
-        class="z-50 fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm p-5"
-    >
-        <div 
-            @click.outside="openModalImport = false" 
-            x-transition.scale
-            class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl "
-        >
 
-            <!-- Header -->
-            <div class="flex justify-between items-center p-6 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-100 text-blue-600 p-2 rounded-lg flex items-center justify-center">
-                        <iconify-icon icon="mdi:file-import" width="22"></iconify-icon> 
+            input.files = event.dataTransfer.files
+            input.dispatchEvent(new Event('change', { bubbles: true }))
+        },
+
+        clearFile() {
+            this.fileName = ''
+            this.fileSize = ''
+            this.progress = 0
+
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = null
+            }
+        }
+    }"
+    x-on:livewire-upload-start="isUploading = true"
+    x-on:livewire-upload-finish="isUploading = false; progress = 0"
+    x-on:livewire-upload-error="isUploading = false"
+    x-on:livewire-upload-progress="progress = $event.detail.progress"
+    x-on:imported.window="openModalImport = false"
+    x-show="openModalImport"
+    x-transition.opacity
+    style="display: none;"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
+
+    <!-- MODAL -->
+    <div
+        @click.outside="openModalImport = false"
+        x-transition.scale
+        class="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl">
+
+        <!-- HEADER -->
+        <div
+            class="relative overflow-hidden bg-gradient-to-r from-blue-main via-blue-deep to-[#07162f] px-6 py-5 text-white">
+
+            <div class="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+            <div class="absolute bottom-0 left-0 h-28 w-28 rounded-full bg-cyan-400/10 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between gap-4">
+
+                <div class="flex items-center gap-4">
+
+                    <div
+                        class="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur">
+
+                        <iconify-icon
+                            icon="solar:file-download-bold"
+                            width="28"
+                            height="28">
+                        </iconify-icon>
+
                     </div>
-                    <h1 class="text-lg font-semibold text-gray-800">
-                        Import Data Murid
-                    </h1>
+
+                    <div>
+                        <h1 class="text-xl font-bold">
+                            Import Data Murid
+                        </h1>
+
+                        <p class="mt-1 text-sm text-blue-100">
+                            Upload file Excel untuk menambahkan data murid secara massal.
+                        </p>
+                    </div>
+
                 </div>
 
                 <button
+                    type="button"
                     @click="openModalImport = false"
-                    class="w-9 h-9 flex items-center justify-center rounded-full transition hover:bg-gray-100 active:scale-90"
-                >
-                    <iconify-icon icon="mdi:close" width="20"></iconify-icon>
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white transition hover:bg-white/20 active:scale-95">
+
+                    <iconify-icon
+                        icon="mdi:close"
+                        width="22"
+                        height="22">
+                    </iconify-icon>
+
                 </button>
+
             </div>
-            <hr class="text-gray-400 " >
-            <!-- Content -->
+
+        </div>
+
+        <!-- BODY -->
+        <div class="p-6">
+
+            <!-- UPLOAD AREA -->
             <div
-                class="p-6 m-6 space-y-4 rounded-xl border-2 border-gray-300 border-dashed transition hover:border-blue-main cursor-pointer"
-                :class="dragActive ? 'border-blue-main bg-blue-50/40' : ''"
-                @click="if ($refs.fileInput) { $refs.fileInput.click(); }"
+                class="group relative overflow-hidden rounded-3xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 transition hover:border-blue-main hover:bg-blue-50/40"
+                :class="dragActive ? 'border-blue-main bg-blue-50' : ''"
+                @click="if ($refs.fileInput) { $refs.fileInput.click() }"
                 @dragenter.prevent="dragActive = true"
                 @dragover.prevent="dragActive = true"
                 @dragleave.prevent="dragActive = false"
-                @drop.prevent="dragActive = false; setFileFromDrop($event)"
-            >
-                <div class="p-6 h-56 text-center flex justify-center ">
-                    <div>
+                @drop.prevent="dragActive = false; setFileFromDrop($event)">
+
+                <input
+                    type="file"
+                    x-ref="fileInput"
+                    wire:model="file"
+                    accept=".xlsx,.xls"
+                    class="hidden"
+                    @change="setFileFromInput($event)">
+
+                <!-- empty state -->
+                <div
+                    x-show="!hasFile"
+                    class="flex min-h-72 flex-col items-center justify-center text-center">
+
+                    <div
+                        class="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-white text-blue-main shadow-sm transition group-hover:-translate-y-1">
+
                         <iconify-icon
-                            x-show="!hasFile"
-                            icon="mdi:file-import"
-                            class="text-9xl text-gray-300"
-                        ></iconify-icon>
+                            icon="solar:cloud-upload-bold"
+                            width="48"
+                            height="48">
+                        </iconify-icon>
+
+                    </div>
+
+                    <h2 class="text-xl font-bold text-gray-800">
+                        Upload File Excel
+                    </h2>
+
+                    <p class="mt-2 max-w-md text-sm leading-relaxed text-gray-500">
+                        Drag & drop file di area ini atau klik tombol di bawah untuk memilih file dari perangkat.
+                    </p>
+
+                    <div
+                        class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-blue-main px-5 py-3 text-sm font-semibold text-white shadow-lg transition group-hover:bg-blue-deep-solid">
+
                         <iconify-icon
-                            x-show="hasFile"
+                            icon="solar:folder-open-bold"
+                            width="20"
+                            height="20">
+                        </iconify-icon>
+
+                        Pilih File Excel
+
+                    </div>
+
+                    <p class="mt-4 text-xs text-gray-400">
+                        Format yang didukung: .xlsx dan .xls
+                    </p>
+
+                </div>
+
+                <!-- selected file -->
+                <div
+                    x-show="hasFile"
+                    x-transition
+                    class="flex min-h-72 flex-col items-center justify-center text-center">
+
+                    <div
+                        class="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-emerald-50 text-emerald-600 shadow-sm">
+
+                        <iconify-icon
                             icon="file-icons:microsoft-excel"
-                            class="text-9xl text-gray-300"
-                        ></iconify-icon>
-                        <p x-show="!hasFile" class="text-gray-500 text-sm ">
-                            <input
-                                type="file"
-                                style="display: none;"
-                                id="fileInput"
-                                x-ref="fileInput"
-                                wire:model="file"
-                                accept=".xlsx,.xls"
-                                @change="setFileFromInput($event)"
-                            >
-                            Drag & drop file di sini atau <span class="text-blue-500 font-semibold cursor-pointer hover:text-blue-700" onclick="document.getElementById('fileInput').click();" >jelajahi</span> untuk memilih file
-                        </p>
-                        <p x-show="hasFile" class="text-gray-600 text-sm">
-                            <span x-text="fileName"></span>
-                        </p>
+                            width="50"
+                            height="50">
+                        </iconify-icon>
+
                     </div>
+
+                    <h2 class="text-xl font-bold text-gray-800">
+                        File Siap Diimport
+                    </h2>
+
+                    <div
+                        class="mt-5 w-full max-w-md rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+
+                        <div class="flex items-center justify-between gap-4">
+
+                            <div class="flex min-w-0 items-center gap-3">
+
+                                <div
+                                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+
+                                    <iconify-icon
+                                        icon="solar:file-check-bold"
+                                        width="24"
+                                        height="24">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <div class="min-w-0 text-left">
+
+                                    <p
+                                        x-text="fileName"
+                                        class="truncate text-sm font-semibold text-gray-800">
+                                    </p>
+
+                                    <p
+                                        x-text="fileSize"
+                                        class="mt-1 text-xs text-gray-400">
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                @click.stop="clearFile()"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 transition hover:bg-rose-500 hover:text-white">
+
+                                <iconify-icon
+                                    icon="lineicons:xmark-circle"
+                                    width="22"
+                                    height="22">
+                                </iconify-icon>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <p class="mt-4 text-xs text-gray-400">
+                        Klik area upload untuk mengganti file.
+                    </p>
+
                 </div>
 
-                @error('file')
-                    <p class="text-sm text-rose-600">{{ $message }}</p>
-                @enderror
+                <!-- upload progress -->
+                <div
+                    x-show="isUploading"
+                    x-transition
+                    class="absolute inset-x-6 bottom-6 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
 
-                <div x-show="isUploading" class="space-y-2">
-                    <div class="h-2 w-full rounded-full bg-gray-200">
-                        <div class="h-2 rounded-full bg-blue-main" :style="`width: ${progress}%`"></div>
+                    <div class="mb-2 flex items-center justify-between text-xs font-semibold text-gray-600">
+
+                        <span>Mengupload file...</span>
+
+                        <span x-text="progress + '%'"></span>
+
                     </div>
-                    <p class="text-xs text-gray-500">Upload: <span x-text="progress"></span>%</p>
+
+                    <div class="h-2 overflow-hidden rounded-full bg-gray-200">
+
+                        <div
+                            class="h-full rounded-full bg-gradient-to-r from-blue-main to-blue-deep transition-all duration-300"
+                            :style="`width: ${progress}%`">
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <div wire:loading wire:target="import" class="text-xs text-blue-600">
-                    Menyiapkan import...
+            </div>
+
+            @error('file')
+                <p class="mt-3 text-sm text-rose-500">
+                    {{ $message }}
+                </p>
+            @enderror
+
+            <!-- IMPORT STATUS -->
+            <div class="mt-5 space-y-4">
+
+                <div
+                    wire:loading
+                    wire:target="import"
+                    class="rounded-3xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-main">
+
+                    <div class="flex items-center gap-3">
+
+                        <iconify-icon
+                            icon="line-md:loading-twotone-loop"
+                            width="22"
+                            height="22">
+                        </iconify-icon>
+
+                        <span class="font-semibold">
+                            Menyiapkan proses import...
+                        </span>
+
+                    </div>
+
                 </div>
 
                 @if ($isImporting)
                     <div
                         wire:poll.300ms="pollProgress"
-                        class="space-y-2"
+                        class="rounded-3xl border border-blue-100 bg-blue-50 p-5"
                         x-data="{
                             processed: @entangle('processedRows'),
                             total: @entangle('totalRows'),
@@ -123,120 +323,264 @@
                             smoothProcessed: 0,
                             smoothPercent: 0,
                             simTimer: null,
+
                             startSim() {
                                 if (this.simTimer) {
-                                    return;
+                                    return
                                 }
 
                                 this.simTimer = setInterval(() => {
                                     if (!this.total || this.total <= 0) {
-                                        return;
+                                        return
                                     }
 
                                     const simulatedTarget = Math.min(
                                         this.processed + Math.max(1, Math.floor(this.chunkSize * 0.9)),
                                         this.total
-                                    );
+                                    )
 
                                     if (this.smoothProcessed < this.processed) {
-                                        this.smoothProcessed = this.processed;
+                                        this.smoothProcessed = this.processed
                                     }
 
                                     if (this.smoothProcessed < simulatedTarget) {
                                         this.smoothProcessed = Math.min(
                                             simulatedTarget,
                                             this.smoothProcessed + Math.max(1, Math.floor(this.chunkSize / 200))
-                                        );
+                                        )
                                     }
 
                                     this.smoothPercent = Math.round(
                                         (this.smoothProcessed / this.total) * 100
-                                    );
-                                }, 62);
+                                    )
+                                }, 62)
                             }
                         }"
                         x-init="
-                            smoothProcessed = processed;
-                            smoothPercent = percent;
+                            smoothProcessed = processed
+                            smoothPercent = percent
 
-                            startSim();
+                            startSim()
 
                             $watch('processed', () => {
                                 if (smoothProcessed < processed) {
-                                    smoothProcessed = processed;
+                                    smoothProcessed = processed
                                 }
+
                                 smoothPercent = total > 0
                                     ? Math.round((smoothProcessed / total) * 100)
-                                    : 0;
-                            });
+                                    : 0
+                            })
 
                             $watch('percent', (value) => {
                                 if (smoothPercent < value) {
-                                    smoothPercent = value;
+                                    smoothPercent = value
                                 }
-                            });
-                        "
-                    >
-                        <div class="text-xs text-blue-600">Sedang memproses...</div>
-                        <div class="flex justify-between text-xs text-gray-600">
+                            })
+                        ">
+
+                        <div class="mb-4 flex items-center justify-between gap-4">
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-main text-white">
+
+                                    <iconify-icon
+                                        icon="solar:database-bold"
+                                        width="24"
+                                        height="24">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <div>
+                                    <h3 class="font-bold text-gray-800">
+                                        Sedang Memproses Data
+                                    </h3>
+
+                                    <p class="text-sm text-gray-500">
+                                        Mohon tunggu sampai proses import selesai.
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div
+                                class="rounded-full bg-white px-4 py-2 text-sm font-bold text-blue-main shadow-sm">
+
+                                <span x-text="Math.round(smoothPercent) + '%'"></span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-2 flex justify-between text-xs font-semibold text-gray-500">
+
                             <span>
                                 Progress:
                                 <span x-text="Math.floor(smoothProcessed)"></span>
                                 /
                                 <span x-text="total"></span>
                             </span>
-                            <span x-text="Math.round(smoothPercent) + '%'"
-                            ></span>
+
+                            <span>
+                                Import Murid
+                            </span>
+
                         </div>
-                        <div class="h-2 w-full rounded-full bg-gray-200">
+
+                        <div class="h-3 overflow-hidden rounded-full bg-white">
+
                             <div
-                                class="h-2 rounded-full bg-blue-main"
-                                :style="`width: ${Math.max(0, Math.min(100, smoothPercent))}%`"
-                            ></div>
+                                class="h-full rounded-full bg-gradient-to-r from-blue-main to-blue-deep transition-all duration-300"
+                                :style="`width: ${Math.max(0, Math.min(100, smoothPercent))}%`">
+                            </div>
+
                         </div>
+
                     </div>
                 @endif
 
                 @if (!$isImporting && ($importedCount || $skippedCount))
-                    <div class="text-xs text-gray-600">
-                        Berhasil: {{ $importedCount }} | Dilewati: {{ $skippedCount }}
+                    <div
+                        class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                        <div
+                            class="rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500 text-white">
+
+                                    <iconify-icon
+                                        icon="solar:check-circle-bold"
+                                        width="22"
+                                        height="22">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-emerald-600">
+                                        Berhasil
+                                    </p>
+
+                                    <h3 class="text-xl font-bold text-emerald-700">
+                                        {{ $importedCount }}
+                                    </h3>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="rounded-3xl border border-amber-100 bg-amber-50 p-4">
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-white">
+
+                                    <iconify-icon
+                                        icon="solar:minus-circle-bold"
+                                        width="22"
+                                        height="22">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-amber-600">
+                                        Dilewati
+                                    </p>
+
+                                    <h3 class="text-xl font-bold text-amber-700">
+                                        {{ $skippedCount }}
+                                    </h3>
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
                 @endif
-            </div>
 
-            <!-- Footer -->
-            
-            <div class="mt-4 flex justify-between gap-3 p-6">
-                <a
-                    href="{{ route('template-import-murid') }}"
-                    class="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-100"
-                >
-                    <iconify-icon
-                        icon="line-md:download"
-                        width="18"
-                        height="18">
-                    </iconify-icon>
-
-                    Download Contoh XLSX
-                </a>
-                <div>
-                    <button
-                        @click="openModalImport = false"
-                        class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        wire:click="import"
-                        wire:loading.attr="disabled"
-                        wire:target="import,file"
-                        :disabled="!hasFile"
-                        class="px-5 py-2 bg-blue-main text-white rounded-lg shadow hover:bg-blue-deep-solid active:scale-95 transition disabled:opacity-60"
-                    >
-                        Import
-                    </button>
-                </div>
             </div>
 
         </div>
+
+        <!-- FOOTER -->
+        <div
+            class="flex flex-col gap-4 border-t border-gray-200 bg-gray-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+
+            <a
+                href="{{ route('template-import-murid') }}"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-main transition hover:bg-blue-main hover:text-white">
+
+                <iconify-icon
+                    icon="line-md:download"
+                    width="20"
+                    height="20">
+                </iconify-icon>
+
+                Download Template XLSX
+
+            </a>
+
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+
+                <button
+                    type="button"
+                    @click="openModalImport = false"
+                    class="rounded-2xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
+
+                    Batal
+
+                </button>
+
+                <button
+                    type="button"
+                    wire:click="import"
+                    wire:loading.attr="disabled"
+                    wire:target="import,file"
+                    :disabled="!hasFile || isUploading"
+                    class="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60">
+
+                    <iconify-icon
+                        wire:loading.remove
+                        wire:target="import"
+                        icon="solar:upload-bold"
+                        width="20"
+                        height="20"
+                        class="transition group-hover:-translate-y-0.5">
+                    </iconify-icon>
+
+                    <iconify-icon
+                        wire:loading
+                        wire:target="import"
+                        icon="line-md:loading-twotone-loop"
+                        width="20"
+                        height="20">
+                    </iconify-icon>
+
+                    <span wire:loading.remove wire:target="import">
+                        Import Data
+                    </span>
+
+                    <span wire:loading wire:target="import">
+                        Mengimport...
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
+
+</div>

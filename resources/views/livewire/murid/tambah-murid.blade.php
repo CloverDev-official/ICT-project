@@ -1,9 +1,9 @@
 <div class="mb-20 space-y-6">
 
     @php
-        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
-        $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
-        $errorClass = 'mt-2 text-sm text-rose-500';
+    $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
+    $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
+    $errorClass = 'mt-2 text-sm text-rose-500';
     @endphp
 
     <!-- BACK -->
@@ -159,7 +159,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('nama')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -176,7 +176,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('nisn')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -193,7 +193,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('nipd')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -264,26 +264,26 @@
                             class="absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
 
                             @foreach ($rombel as $r)
-                                <div
-                                    @click="select({{ $r->id }}, @js($r->nama_lengkap))"
-                                    class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+                            <div
+                                @click="select({{ $r->id }}, @js($r->nama_lengkap))"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
 
-                                    <span>{{ $r->nama_lengkap }}</span>
+                                <span>{{ $r->nama_lengkap }}</span>
 
-                                    <iconify-icon
-                                        x-show="selectedId == {{ $r->id }}"
-                                        icon="lineicons:check"
-                                        width="18"
-                                        height="18">
-                                    </iconify-icon>
+                                <iconify-icon
+                                    x-show="selectedId == {{ $r->id }}"
+                                    icon="lineicons:check"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
 
-                                </div>
+                            </div>
                             @endforeach
 
                         </div>
 
                         @error('rombel_id')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
 
                     </div>
@@ -342,26 +342,26 @@
                             class="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
 
                             @foreach (['L', 'P'] as $jk)
-                                <div
-                                    @click="select('{{ $jk }}')"
-                                    class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+                            <div
+                                @click="select('{{ $jk }}')"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
 
-                                    <span>{{ $jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
+                                <span>{{ $jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
 
-                                    <iconify-icon
-                                        x-show="selected === '{{ $jk }}'"
-                                        icon="lineicons:check"
-                                        width="18"
-                                        height="18">
-                                    </iconify-icon>
+                                <iconify-icon
+                                    x-show="selected === '{{ $jk }}'"
+                                    icon="lineicons:check"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
 
-                                </div>
+                            </div>
                             @endforeach
 
                         </div>
 
                         @error('jk')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
 
                     </div>
@@ -379,7 +379,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('tempat_lahir')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -395,7 +395,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('tanggal_lahir')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -412,7 +412,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('agama')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -463,7 +463,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('email')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -480,7 +480,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('hp')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -531,7 +531,7 @@
                             class="{{ $inputClass }}"></textarea>
 
                         @error('alamat')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -548,7 +548,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('rt')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -565,7 +565,7 @@
                             class="{{ $inputClass }}" />
 
                         @error('rw')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -582,7 +582,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('kelurahan')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -599,7 +599,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('kecamatan')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -650,7 +650,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('nama_ayah')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -667,7 +667,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('nama_ibu')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -684,7 +684,7 @@
                             class="{{ $inputClass }} capitalize" />
 
                         @error('nama_wali')
-                            <p class="{{ $errorClass }}">{{ $message }}</p>
+                        <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -692,37 +692,226 @@
 
             </div>
 
-            <!-- RFID -->
-            <div class="border-t border-gray-200 pt-8">
+            <!-- SECTION FOTO MURID -->
+            <div
+            x-data="{
+                preview: null,
+                fileName: null,
 
-                <label class="{{ $labelClass }}">
-                    RFID Code
-                </label>
+                setPreview(event) {
+                    const file = event.target.files[0]
 
-                <div
-                    class="flex items-center gap-4 rounded-3xl border border-dashed border-blue-300 bg-blue-50 p-5">
+                    if (!file) {
+                        return
+                    }
+
+                    this.fileName = file.name
+                    this.preview = URL.createObjectURL(file)
+                },
+
+                clearPreview() {
+                    this.preview = null
+                    this.fileName = null
+                }
+            }"
+                class="border-t border-gray-200 pt-8">
+
+                <div class="mb-5 flex items-center gap-3">
 
                     <div
-                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-main text-white">
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600">
 
                         <iconify-icon
-                            icon="solar:card-bold"
-                            width="24"
-                            height="24">
+                            icon="solar:camera-bold"
+                            width="22"
+                            height="22">
                         </iconify-icon>
 
                     </div>
 
-                    <input
-                        type="text"
-                        name="rfid_code"
-                        placeholder="Tempelkan kartu RFID"
-                        class="w-full bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none" />
+                    <div>
+                        <h3 class="font-bold text-gray-800">
+                            Foto Murid
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+                            Upload foto murid dan lihat preview sebelum disimpan.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
+
+                    <!-- PREVIEW -->
+                    <div
+                        class="flex items-center justify-center rounded-3xl border border-dashed border-blue-300 bg-blue-50 p-5">
+
+                        <div
+                            class="relative h-72 w-56 overflow-hidden rounded-[2rem] border border-white bg-white shadow-sm">
+
+                            <!-- preview image -->
+                            <img
+                                x-show="preview"
+                                :src="preview"
+                                class="h-full w-full object-cover"
+                                alt="Preview Foto Murid">
+
+                            <!-- empty state -->
+                            <div
+                                x-show="!preview"
+                                class="flex h-full w-full flex-col items-center justify-center gap-3 bg-gray-50 text-center">
+
+                                <div
+                                    class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-100 text-blue-main">
+
+                                    <iconify-icon
+                                        icon="solar:user-bold"
+                                        width="34"
+                                        height="34">
+                                    </iconify-icon>
+
+                                </div>
+
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-700">
+                                        Belum ada foto
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-400">
+                                        Preview akan tampil di sini
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <!-- loading upload -->
+                            <div
+                                wire:loading
+                                wire:target="image"
+                                class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+
+                                <div class="flex flex-col items-center gap-2 text-blue-main">
+
+                                    <iconify-icon
+                                        icon="line-md:loading-twotone-loop"
+                                        width="32"
+                                        height="32">
+                                    </iconify-icon>
+
+                                    <p class="text-xs font-semibold">
+                                        Mengupload...
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- UPLOAD CONTROL -->
+                    <div
+                        class="flex flex-col justify-center rounded-3xl border border-gray-200 bg-gray-50 p-5">
+
+                        <div class="mb-5">
+
+                            <h4 class="font-bold text-gray-800">
+                                Upload Foto
+                            </h4>
+
+                            <p class="mt-1 text-sm leading-relaxed text-gray-500">
+                                Gunakan foto yang jelas dengan format JPG, PNG, atau WEBP.
+                                Disarankan rasio portrait agar tampilan kartu murid lebih rapi.
+                            </p>
+
+                        </div>
+
+                        <!-- upload button -->
+                        <label
+                            class="group flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-blue-300 bg-blue-50 px-5 py-5 text-sm font-semibold text-blue-main transition hover:bg-blue-main hover:text-white">
+
+                            <iconify-icon
+                                icon="solar:upload-bold"
+                                width="20"
+                                height="20"
+                                class="transition group-hover:-translate-y-0.5">
+                            </iconify-icon>
+
+                            Pilih Foto Murid
+
+                            <input
+                                type="file"
+                                wire:model="image"
+                                accept="image/*"
+                                class="hidden"
+                                @change="setPreview($event)">
+
+                        </label>
+
+                        <!-- file name -->
+                        <div
+                            x-show="fileName"
+                            x-transition
+                            class="mt-4 rounded-2xl border border-gray-200 bg-white p-4">
+
+                            <div class="flex items-center justify-between gap-3">
+
+                                <div class="flex items-center gap-3">
+
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+
+                                        <iconify-icon
+                                            icon="solar:gallery-check-bold"
+                                            width="20"
+                                            height="20">
+                                        </iconify-icon>
+
+                                    </div>
+
+                                    <div>
+                                        <p class="text-xs text-gray-400">
+                                            File dipilih
+                                        </p>
+
+                                        <p
+                                            x-text="fileName"
+                                            class="line-clamp-1 text-sm font-semibold text-gray-700">
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="clearPreview()"
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600 transition hover:bg-rose-500 hover:text-white">
+
+                                    <iconify-icon
+                                        icon="lineicons:xmark-circle"
+                                        width="20"
+                                        height="20">
+                                    </iconify-icon>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        @error('image')
+                        <p class="{{ $errorClass }}">
+                            {{ $message }}
+                        </p>
+                        @enderror
+
+                    </div>
 
                 </div>
 
             </div>
-
             <!-- ACTION -->
             <div
                 class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
@@ -745,7 +934,7 @@
 
                     <iconify-icon
                         wire:loading.remove
-                        wire:target="store"
+                        wire:target="store,image"
                         icon="lineicons:save"
                         width="20"
                         height="20"
@@ -754,17 +943,17 @@
 
                     <iconify-icon
                         wire:loading
-                        wire:target="store"
+                        wire:target="store,image"
                         icon="line-md:loading-twotone-loop"
                         width="20"
                         height="20">
                     </iconify-icon>
 
-                    <span wire:loading.remove wire:target="store">
+                    <span wire:loading.remove wire:target="store,image">
                         Simpan Data
                     </span>
 
-                    <span wire:loading wire:target="store">
+                    <span wire:loading wire:target="store,image">
                         Menyimpan...
                     </span>
 
