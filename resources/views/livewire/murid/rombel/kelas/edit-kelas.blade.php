@@ -1,11 +1,11 @@
 <div class="mb-20 space-y-6">
 
     @php
-        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
-        $triggerClass = 'flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white';
-        $dropdownClass = 'absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin';
-        $optionClass = 'flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white';
-        $errorClass = 'mt-2 text-sm text-rose-500';
+    $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
+    $triggerClass = 'flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white';
+    $dropdownClass = 'absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin';
+    $optionClass = 'flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white';
+    $errorClass = 'mt-2 text-sm text-rose-500';
     @endphp
 
     <!-- BACK -->
@@ -186,30 +186,30 @@
 
                     @foreach ($listTingkat as $tingkat)
 
-                        <div
-                            @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
-                            class="{{ $optionClass }}"
-                            :class="selectedId === '{{ (int) $tingkat->id }}' ? 'bg-blue-main text-white' : ''">
+                    <div
+                        @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
+                        class="{{ $optionClass }}"
+                        :class="selectedId === '{{ (int) $tingkat->id }}' ? 'bg-blue-main text-white' : ''">
 
-                            <span>{{ $tingkat->nama }}</span>
+                        <span>{{ $tingkat->nama }}</span>
 
-                            <iconify-icon
-                                x-show="selectedId === '{{ (int) $tingkat->id }}'"
-                                icon="lineicons:check"
-                                width="18"
-                                height="18">
-                            </iconify-icon>
+                        <iconify-icon
+                            x-show="selectedId === '{{ (int) $tingkat->id }}'"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
 
-                        </div>
+                    </div>
 
                     @endforeach
 
                 </div>
 
                 @error('tingkat_id')
-                    <p class="{{ $errorClass }}">
-                        {{ $message }}
-                    </p>
+                <p class="{{ $errorClass }}">
+                    {{ $message }}
+                </p>
                 @enderror
 
             </div>
@@ -282,30 +282,30 @@
 
                     @foreach ($listJurusan as $jurusan)
 
-                        <div
-                            @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
-                            class="{{ $optionClass }}"
-                            :class="selectedId === '{{ (int) $jurusan->id }}' ? 'bg-blue-main text-white' : ''">
+                    <div
+                        @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
+                        class="{{ $optionClass }}"
+                        :class="selectedId === '{{ (int) $jurusan->id }}' ? 'bg-blue-main text-white' : ''">
 
-                            <span>{{ $jurusan->nama }}</span>
+                        <span>{{ $jurusan->nama }}</span>
 
-                            <iconify-icon
-                                x-show="selectedId === '{{ (int) $jurusan->id }}'"
-                                icon="lineicons:check"
-                                width="18"
-                                height="18">
-                            </iconify-icon>
+                        <iconify-icon
+                            x-show="selectedId === '{{ (int) $jurusan->id }}'"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
 
-                        </div>
+                    </div>
 
                     @endforeach
 
                 </div>
 
                 @error('jurusan_id')
-                    <p class="{{ $errorClass }}">
-                        {{ $message }}
-                    </p>
+                <p class="{{ $errorClass }}">
+                    {{ $message }}
+                </p>
                 @enderror
 
             </div>
@@ -378,30 +378,133 @@
 
                     @foreach ($listIndeks as $indeks)
 
-                        <div
-                            @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
-                            class="{{ $optionClass }}"
-                            :class="selectedId === '{{ (int) $indeks->id }}' ? 'bg-blue-main text-white' : ''">
+                    <div
+                        @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                        class="{{ $optionClass }}"
+                        :class="selectedId === '{{ (int) $indeks->id }}' ? 'bg-blue-main text-white' : ''">
 
-                            <span>{{ $indeks->nama }}</span>
+                        <span>{{ $indeks->nama }}</span>
 
-                            <iconify-icon
-                                x-show="selectedId === '{{ (int) $indeks->id }}'"
-                                icon="lineicons:check"
-                                width="18"
-                                height="18">
-                            </iconify-icon>
+                        <iconify-icon
+                            x-show="selectedId === '{{ (int) $indeks->id }}'"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
 
-                        </div>
+                    </div>
 
                     @endforeach
 
                 </div>
 
                 @error('indeks_id')
-                    <p class="{{ $errorClass }}">
-                        {{ $message }}
-                    </p>
+                <p class="{{ $errorClass }}">
+                    {{ $message }}
+                </p>
+                @enderror
+
+            </div>
+
+            <!-- TAHUN MASUK -->
+            <div
+                x-data="{
+        open: false,
+        selectedId: null,
+        selectedLabel: null,
+        currentYear: {{ now()->year }},
+
+        toggle() {
+            this.open = !this.open
+        },
+
+        select(year) {
+            this.selectedId = year
+            this.selectedLabel = year
+            this.open = false
+
+            $wire.set('tahun_masuk', year)
+        }
+    }"
+                class="relative">
+
+                <label class="{{ $labelClass }}">
+                    Tahun Masuk
+                </label>
+
+                <div
+                    @click="toggle()"
+                    class="{{ $triggerClass }}">
+
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600">
+
+                            <iconify-icon
+                                icon="solar:calendar-bold"
+                                width="20"
+                                height="20">
+                            </iconify-icon>
+
+                        </div>
+
+                        <span
+                            x-text="selectedLabel ?? 'Pilih tahun masuk'"
+                            class="text-gray-700">
+                        </span>
+
+                    </div>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <div
+                    x-show="open"
+                    x-transition
+                    @click.outside="open = false"
+                    style="display:none"
+                    class="{{ $dropdownClass }}">
+
+                    @foreach (range(now()->year - 10, now()->year + 10) as $tahun)
+                    <div
+                        @click.prevent="select({{ $tahun }})"
+                        class="{{ $optionClass }}">
+
+                        <div class="flex items-center gap-2">
+                            <span>{{ $tahun }}</span>
+
+                            @if ($tahun === now()->year)
+                            <span
+                                class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold text-cyan-600">
+                                Tahun ini
+                            </span>
+                            @endif
+                        </div>
+
+                        <iconify-icon
+                            x-show="selectedId == {{ $tahun }}"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
+
+                    </div>
+                    @endforeach
+
+                </div>
+
+                @error('tahun_masuk')
+                <p class="{{ $errorClass }}">
+                    {{ $message }}
+                </p>
                 @enderror
 
             </div>
@@ -491,30 +594,30 @@
                     </div>
 
                     @forelse ($listGuru ?? [] as $guru)
-                        <div
-                            @click.prevent="select({{ (int) $guru->id }}, @js($guru->nama))"
-                            class="{{ $optionClass }}">
+                    <div
+                        @click.prevent="select({{ (int) $guru->id }}, @js($guru->nama))"
+                        class="{{ $optionClass }}">
 
-                            <span>{{ $guru->nama }}</span>
+                        <span>{{ $guru->nama }}</span>
 
-                            <iconify-icon
-                                x-show="selectedId == {{ (int) $guru->id }}"
-                                icon="lineicons:check"
-                                width="18"
-                                height="18">
-                            </iconify-icon>
+                        <iconify-icon
+                            x-show="selectedId == {{ (int) $guru->id }}"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
 
-                        </div>
+                    </div>
                     @empty
-                        <div class="px-4 py-3 text-sm text-gray-400">
-                            Data guru belum tersedia.
-                        </div>
+                    <div class="px-4 py-3 text-sm text-gray-400">
+                        Data guru belum tersedia.
+                    </div>
                     @endforelse
 
                 </div>
 
                 @error('guru_id')
-                    <p class="{{ $errorClass }}">{{ $message }}</p>
+                <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
 
             </div>
