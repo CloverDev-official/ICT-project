@@ -353,7 +353,7 @@
 
             <!-- pengaturan -->
             <li>
-                <x-nav-link href="{{ route('dashboard') }}" icon="pengaturan">
+                <x-nav-link href="{{ route('pengaturan') }}" icon="pengaturan">
                     Pengaturan
                 </x-nav-link>
             </li>

@@ -18,11 +18,10 @@ class RoleSeeder extends Seeder
         $roles = [
 
             1 => 'Super Admin',
-            2 => 'Admin',
+            2 => 'Pengawas',
             3 => 'Guru',
-            4 => 'Murid',
-            5 => 'Wali Kelas',
-            6 => 'Operator',
+            4 => 'Wali Kelas',
+            5 => 'Operator',
         ];
 
         foreach ($roles as $id => $nama) {

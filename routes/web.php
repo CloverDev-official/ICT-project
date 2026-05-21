@@ -38,6 +38,8 @@ use App\Livewire\PilihAbsen;
 use App\Livewire\RekapAbsenGuru;
 use App\Exports\Murid\MuridTemplateExport;
 use App\Exports\Guru\GuruTemplateExport;
+use App\Livewire\Pengaturan;
+use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::middleware('guest')->group(function () {
@@ -53,6 +55,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // pilih absen
     Route::get('/pilih-absen', PilihAbsen::class)->middleware('access:pilih-absen')->name('pilih-absen');
+
+    // pengaturan
+    Route::get('/pengaturan', Pengaturan::class)->middleware('access:pengaturan')->name('pengaturan');
+
+    // profil
+    Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
     
     // laporan
     Route::prefix('/rekap')->group(function () {

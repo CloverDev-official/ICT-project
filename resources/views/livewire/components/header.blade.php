@@ -17,8 +17,15 @@
                 <div @click="openModal = !openModal" class="cursor-pointer w-8 h-8 rounded-full bg-white shadow-sm text-blue-deep-solid  flex items-center justify-center relative">
                     <iconify-icon icon="lineicons:user-4" width="25" height="24"></iconify-icon>
                 </div>
-                <div x-show="openModal" @click.outside="openModal = false" x-transition style="display: none;" class="bg-white p-2 shadow-md rounded-lg z-50 absolute top-16 right-10">
-                    <button wire:click="logout" class="bg-rose-500 rounded-lg px-4 py-2 text-white flex items-center justify-center text-sm transition-all duration-150 hover:bg-rose-600 active:scale-95" >
+                <div x-show="openModal" @click.outside="openModal = false" x-transition style="display: none;" class="bg-white p-2 w-40 shadow-md rounded-lg z-50 absolute top-16 right-10 grid grid-cols-1 gap-2">
+                    <!-- btn profil -->
+                    <a href="{{ route('profil') }}" wire:navigate >
+                        <button class="rounded-lg w-full p-2 text-gray-900 flex items-center text-sm transition-all duration-150 hover:bg-gray-200 active:scale-95" >
+                                <iconify-icon icon="lineicons:user-4" width="20" height="20"></iconify-icon> Profil
+                        </button>
+                    </a>
+                    <!-- logout -->
+                    <button wire:click="logout" class="bg-rose-500 rounded-lg w-full p-2 text-white flex items-center text-sm transition-all duration-150 hover:bg-rose-600 active:scale-95" >
                             <iconify-icon icon="lineicons:exit" width="20" height="20"></iconify-icon> Logout
                     </button>
                 </div>

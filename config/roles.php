@@ -35,6 +35,12 @@ return [
         'generate-qr',
         'manajemen-waktu',
         'manajemen-lainnya',
+
+        // pengaturan
+        'pengaturan',
+
+        // profil
+        'profil',
     ],
 
     'wali-kelas' => [
@@ -44,6 +50,7 @@ return [
         'absensi',
         'absensi-murid',
         'data-murid',
+        'profil',
     ],
 
     'operator' => [
@@ -52,5 +59,6 @@ return [
         'generate-qr',
         'manajemen-waktu',
         'generate-qr',
+        'profil',
     ],
 ];
