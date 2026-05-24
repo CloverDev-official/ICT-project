@@ -34,9 +34,9 @@ class Edit extends Component
 
     public $rombel = [];
 
-    public function mount($muridUlid): void
+    public function mount($muridulid): void
     {
-        $this->murid = Murid::where('ulid', $muridUlid)->firstOrFail();
+        $this->murid = Murid::where('ulid', $muridulid)->firstOrFail();
 
         $this->rombel = Rombel::query()
             ->with(["tingkat", "jurusan", "indeks"])
