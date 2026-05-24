@@ -201,12 +201,12 @@
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach ($filteredIndeks as $indeks)
+                    @foreach ($listTingkat as $tingkat)
                     <div
-                        @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                        @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>{{ $indeks->nama }}</span>
-                        <iconify-icon x-show="selectedId == {{ (int) $indeks->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                        <span>{{ $tingkat->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
                     @endforeach
                 </div>

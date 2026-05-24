@@ -192,7 +192,7 @@
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
+                    @foreach ($listRombel->pluck('tingkat')->filter()->sortBy('nama')->unique('id') as $tingkat)
                     <div
                         @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">

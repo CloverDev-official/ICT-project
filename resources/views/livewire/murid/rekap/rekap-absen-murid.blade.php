@@ -337,7 +337,7 @@
                     </div>
 
                     <!-- list -->
-                    @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
+                    @foreach ($listRombel->pluck('tingkat')->filter()->sortBy('nama')->unique('id') as $tingkat)
                     <div @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
                         class="px-4 py-2 cursor-pointer flex justify-between items-center hover:bg-blue-deep-solid hover:text-white transition">
                         <span>{{ $tingkat->nama }}</span>

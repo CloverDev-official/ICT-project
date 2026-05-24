@@ -151,7 +151,7 @@
                         Semua Tingkat
                     </div>
 
-                    @foreach ($listRombel->pluck('tingkat')->filter()->unique('id') as $tingkat)
+                    @foreach ($listRombel->pluck('tingkat')->filter()->sortBy('nama')->unique('id') as $tingkat)
                     <div @click="select({{ $tingkat->id }}, '{{ $tingkat->nama }}')"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
                         {{ $tingkat->nama }}
