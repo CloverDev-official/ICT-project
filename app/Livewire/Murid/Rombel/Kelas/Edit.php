@@ -93,6 +93,8 @@ class Edit extends Component
             'indeks_id' => $this->indeks_id,
             'wali_guru_id' => $this->guru_id,
         ]);
+
+        ToastMagic::success('Mengedit Kelas','Kelas berhasil diperbarui.');
     }
 
     private function ensureWaliKelasUser(int $guruId): bool
