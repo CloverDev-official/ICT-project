@@ -47,12 +47,23 @@ return [
 
     'wali-kelas' => [
         'dashboard',
-        'rekap',
+        
+        //laporan
+        'laporan',
+        //rekap-absen
+        'rekap-absen',
+        'rekap-absen-murid',
+        //riwayat-absen
         'riwayat',
+        'riwayat-murid',
+        
+        // absensi
         'absensi',
         'absensi-murid',
+
+        // data master
+        'data-master',
         'data-murid',
-        'profil',
     ],
 
     'operator' => [
