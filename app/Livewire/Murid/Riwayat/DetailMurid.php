@@ -5,6 +5,7 @@ namespace App\Livewire\Murid\Riwayat;
 use App\Models\Guru\Guru;
 use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -16,9 +17,9 @@ class DetailMurid extends Component
     public ?string $filterTanggalDari = null;
     public ?string $filterTanggalSampai = null;
 
-    public function mount(string $muridUlid): void
+    public function mount(string $muridulid): void
     {
-        $this->murid = Murid::query()->where('ulid', $muridUlid)->firstOrFail();
+        $this->murid = Murid::query()->where('ulid', $muridulid)->firstOrFail();
         $this->ensureWaliKelasAccess();
         $this->filterTanggalDari = now()->startOfMonth()->toDateString();
         $this->filterTanggalSampai = now()->toDateString();
@@ -27,22 +28,34 @@ class DetailMurid extends Component
     private function ensureWaliKelasAccess(): void
     {
         $user = auth()->user();
+
         if (!$user) {
-            return;
+            abort(403);
         }
 
         $roleSlug = Str::slug($user->role?->name ?? '');
-        if (!in_array($roleSlug, ['wali-kelas', 'wali-murid'], true)) {
+
+        if ($roleSlug !== 'wali-kelas') {
             return;
         }
 
-        $guru = Guru::query()->where('user_id', $user->id)->first();
+        $guru = Guru::query()
+            ->where('user_id', $user->id)
+            ->first();
+
         if (!$guru) {
             abort(403);
         }
 
-        $rombelIds = $guru->rombel()->whereNotNull('rombel.id')->pluck('rombel.id')->all();
-        if (!$rombelIds || !in_array($this->murid->rombel_id, $rombelIds, true)) {
+        $waliRombelIds = Rombel::query()
+            ->where('wali_guru_id', $guru->id)
+            ->pluck('id')
+            ->all();
+
+        if (
+            empty($waliRombelIds) ||
+            !in_array($this->murid->rombel_id, $waliRombelIds, true)
+        ) {
             abort(403);
         }
     }
