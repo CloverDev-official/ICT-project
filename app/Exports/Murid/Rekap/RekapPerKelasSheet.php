@@ -20,17 +20,20 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, WithTitle, WithChunkReading, WithCustomStartCell, WithEvents, WithColumnWidths
+class RekapPerKelasSheet implements FromQuery, WithHeadings, WithMapping, WithTitle, WithChunkReading, WithCustomStartCell, WithEvents, WithColumnWidths
 {
     private AbsenRekapQuery $rekapQuery;
     private ?string $tanggalDari;
     private ?string $tanggalSampai;
+    private ?int $rombelId;
+    private ?string $kelasLabelCache = null;
 
-    public function __construct(?string $tanggalDari, ?string $tanggalSampai)
+    public function __construct(?string $tanggalDari, ?string $tanggalSampai, ?int $rombelId)
     {
-        $this->rekapQuery = new AbsenRekapQuery($tanggalDari, $tanggalSampai, null);
+        $this->rekapQuery = new AbsenRekapQuery($tanggalDari, $tanggalSampai, $rombelId);
         $this->tanggalDari = $tanggalDari;
         $this->tanggalSampai = $tanggalSampai;
+        $this->rombelId = $rombelId;
     }
 
     public function title(): string
@@ -45,26 +48,15 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
 
     public function headings(): array
     {
-        return [
-            'No',
-            'Kelas',
-            'Hadir',
-            'Izin',
-            'Alpa',
-            'Persentase Kehadiran',
-        ];
+        return ['No', 'Nama', 'Hadir', 'Izin', 'Alpa', 'Persentase Kehadiran'];
     }
 
     public function query(): Builder
     {
-        $rombelNamaExpr = $this->rekapQuery->rombelNamaExpr();
         [$startDate, $endDate] = $this->dateRange();
 
-        return DB::table('rombel')
-            ->leftJoin('tingkat', 'tingkat.id', '=', 'rombel.tingkat_id')
-            ->leftJoin('jurusan', 'jurusan.id', '=', 'rombel.jurusan_id')
-            ->leftJoin('indeks', 'indeks.id', '=', 'rombel.indeks_id')
-            ->leftJoin('murid', 'murid.rombel_id', '=', 'rombel.id')
+        return DB::table('murid')
+            ->join('rombel', 'rombel.id', '=', 'murid.rombel_id')
             ->leftJoin('absen_murid', function ($join) use ($startDate, $endDate) {
                 $join->on('absen_murid.murid_id', '=', 'murid.id');
 
@@ -72,14 +64,15 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                     $join->whereBetween('absen_murid.tanggal', [$startDate, $endDate]);
                 }
             })
-            ->select('rombel.id')
-            ->selectRaw("{$rombelNamaExpr} as kelas")
+            ->where('rombel.id', $this->rombelId)
+            ->select('murid.id')
+            ->select('murid.nama')
             ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Hadir' THEN 1 ELSE 0 END) as hadir")
             ->selectRaw("SUM(CASE WHEN absen_murid.status IN ('Izin', 'Sakit') THEN 1 ELSE 0 END) as izin")
             ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Alpa' THEN 1 ELSE 0 END) as alpa")
             ->selectRaw('COUNT(absen_murid.id) as total')
-            ->groupBy('rombel.id', DB::raw($rombelNamaExpr))
-            ->orderBy(DB::raw($rombelNamaExpr));
+            ->groupBy('murid.id', 'murid.nama')
+            ->orderBy('murid.nama');
     }
 
     public function map($row): array
@@ -91,7 +84,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
 
         return [
             '',
-            trim((string) ($row->kelas ?? '')) ?: 'Tanpa Kelas',
+            trim((string) $row->nama),
             $this->displayValue($hadir, $total),
             $this->displayValue($izin, $total),
             $this->displayValue($alpa, $total),
@@ -108,18 +101,20 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                 $headerRow = 8;
                 $highestRow = $sheet->getHighestRow();
                 $dataStartRow = $headerRow + 1;
+                $summary = $this->summaryStats();
                 $no = 1;
 
-                $summary = $this->summaryStats();
                 for ($row = $dataStartRow; $row <= $highestRow; $row++) {
                     $sheet->setCellValue("A{$row}", $no++);
                 }
+
                 $sheet->setCellValue('A1', 'LAPORAN REKAPITULASI ABSENSI KELAS');
                 $sheet->mergeCells("A1:{$lastColumn}1");
-                $sheet->setCellValue('A2', strtoupper($this->schoolName()));
+                // $sheet->setCellValue('A2', strtoupper($this->schoolName()));
+                $sheet->setCellValue('A2', 'SMK NEGERI 2 BANJARMASIN');
                 $sheet->mergeCells("A2:{$lastColumn}2");
                 $sheet->setCellValue('A4', 'Kelas');
-                $sheet->setCellValue('B4', ': Semua Kelas');
+                $sheet->setCellValue('B4', ': ' . $this->kelasLabel());
                 $sheet->mergeCells('B4:C4');
                 $sheet->setCellValue('D4', 'Periode');
                 $sheet->setCellValue('E4', ': ' . $this->periodeLabel());
@@ -137,27 +132,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F3F4F6']],
                 ]);
 
-                $totalRow = $highestRow + 1;
-                $sheet->setCellValue("A{$totalRow}", 'TOTAL');
-                $sheet->setCellValue("C{$totalRow}", $summary['hadir']);
-                $sheet->setCellValue("D{$totalRow}", $summary['izin']);
-                $sheet->setCellValue("E{$totalRow}", $summary['alpa']);
-                $sheet->setCellValue("F{$totalRow}", $summary['persen_hadir']);
-
-                $sheet->getStyle("A{$totalRow}:{$lastColumn}{$totalRow}")
-                    ->applyFromArray([
-                        'font' => ['bold' => true],
-                        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E5E7EB']],
-                    ]);
-
-                $rekapRow = $totalRow + 1;
-                $sheet->setCellValue(
-                    "A{$rekapRow}",
-                    'Rekap: Hadir ' . $summary['persen_hadir'] . ' | Izin ' . $summary['persen_izin'] . ' | Alpa ' . $summary['persen_alpa']
-                );
-                $sheet->mergeCells("A{$rekapRow}:{$lastColumn}{$rekapRow}");
-
-                $sheet->getStyle("A{$headerRow}:{$lastColumn}{$rekapRow}")
+                $sheet->getStyle("A{$headerRow}:{$lastColumn}{$highestRow}")
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [
@@ -167,17 +142,48 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                         ],
                     ]);
 
-                $sheet->getStyle("A{$rekapRow}:{$lastColumn}{$rekapRow}")
-                    ->getFont()
-                    ->setBold(true);
+                $totalRow = $highestRow + 1;
+                $sheet->setCellValue("A{$totalRow}", 'TOTAL');
+                $sheet->setCellValue("C{$totalRow}", $summary['hadir']);
+                $sheet->setCellValue("D{$totalRow}", $summary['izin']);
+                $sheet->setCellValue("E{$totalRow}", $summary['alpa']);
+                $sheet->setCellValue("F{$totalRow}", $summary['persen_hadir']);
+                $sheet->getStyle("A{$totalRow}:{$lastColumn}{$totalRow}")->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E5E7EB']],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['rgb' => '000000'],
+                        ],
+                    ],
+                ]);
+
+                $rekapRow = $totalRow + 1;
+                $sheet->setCellValue(
+                    "A{$rekapRow}",
+                    'Rekap: Hadir ' . $summary['persen_hadir'] . ' | Izin ' . $summary['persen_izin'] . ' | Alpa ' . $summary['persen_alpa']
+                );
+                $sheet->mergeCells("A{$rekapRow}:{$lastColumn}{$rekapRow}");
+
+                $sheet->getStyle("A{$rekapRow}:{$lastColumn}{$rekapRow}")->applyFromArray([
+                    'font' => ['bold' => true],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['rgb' => '000000'],
+                        ],
+                    ],
+                ]);
 
                 $ttdStartRow = $rekapRow + 2;
                 $ttdNameRow = $ttdStartRow + 4;
                 $ttdRoleRow = $ttdNameRow + 1;
+                $waliKelas = $this->waliKelasName();
 
                 $sheet->setCellValue("E{$ttdStartRow}", 'Mengetahui,');
                 $sheet->mergeCells("E{$ttdStartRow}:F{$ttdStartRow}");
-                $sheet->setCellValue("E{$ttdNameRow}", '-');
+                $sheet->setCellValue("E{$ttdNameRow}", $waliKelas);
                 $sheet->mergeCells("E{$ttdNameRow}:F{$ttdNameRow}");
                 $sheet->setCellValue("E{$ttdRoleRow}", 'Wali Kelas');
                 $sheet->mergeCells("E{$ttdRoleRow}:F{$ttdRoleRow}");
@@ -239,8 +245,9 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
     private function summaryStats(): array
     {
         [$startDate, $endDate] = $this->dateRange();
-        $row = DB::table('rombel')
-            ->leftJoin('murid', 'murid.rombel_id', '=', 'rombel.id')
+
+        $row = DB::table('murid')
+            ->join('rombel', 'rombel.id', '=', 'murid.rombel_id')
             ->leftJoin('absen_murid', function ($join) use ($startDate, $endDate) {
                 $join->on('absen_murid.murid_id', '=', 'murid.id');
 
@@ -248,6 +255,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                     $join->whereBetween('absen_murid.tanggal', [$startDate, $endDate]);
                 }
             })
+            ->where('rombel.id', $this->rombelId)
             ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Hadir' THEN 1 ELSE 0 END) as hadir")
             ->selectRaw("SUM(CASE WHEN absen_murid.status IN ('Izin', 'Sakit') THEN 1 ELSE 0 END) as izin")
             ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Alpa' THEN 1 ELSE 0 END) as alpa")
@@ -320,9 +328,48 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
             return Carbon::parse($start)->format('d M Y');
         }
 
-        return Carbon::parse($start)->format('d M Y') .
-            ' s/d ' .
-            Carbon::parse($end)->format('d M Y');
+        return Carbon::parse($start)->format('d M Y') . ' s/d ' . Carbon::parse($end)->format('d M Y');
+    }
+
+    private function kelasLabel(): string
+    {
+        if ($this->kelasLabelCache !== null) {
+            return $this->kelasLabelCache;
+        }
+
+        if (!$this->rombelId) {
+            $this->kelasLabelCache = '-';
+
+            return $this->kelasLabelCache;
+        }
+
+        $nameExpr = $this->rekapQuery->rombelNamaExpr();
+
+        $label = DB::table('rombel')
+            ->leftJoin('tingkat', 'tingkat.id', '=', 'rombel.tingkat_id')
+            ->leftJoin('jurusan', 'jurusan.id', '=', 'rombel.jurusan_id')
+            ->leftJoin('indeks', 'indeks.id', '=', 'rombel.indeks_id')
+            ->where('rombel.id', $this->rombelId)
+            ->selectRaw("{$nameExpr} as nama")
+            ->value('nama');
+
+        $this->kelasLabelCache = trim((string) $label) ?: 'Tanpa Kelas';
+
+        return $this->kelasLabelCache;
+    }
+
+    private function waliKelasName(): string
+    {
+        if (!$this->rombelId) {
+            return '-';
+        }
+
+        $name = DB::table('rombel')
+            ->leftJoin('guru', 'guru.id', '=', 'rombel.wali_guru_id')
+            ->where('rombel.id', $this->rombelId)
+            ->value('guru.nama');
+
+        return trim((string) $name) ?: '-';
     }
 
     public function chunkSize(): int

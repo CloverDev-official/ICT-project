@@ -2,9 +2,7 @@
 
 namespace App\Exports\Murid;
 
-use App\Exports\Murid\Rekap\RekapBulananSheet;
-use App\Exports\Murid\Rekap\RekapHarianSheet;
-use App\Exports\Murid\Rekap\RekapMingguanSheet;
+use App\Exports\Murid\Rekap\RekapPerKelasSheet;
 use App\Exports\Murid\Rekap\RekapSemuaKelasSheet;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
@@ -23,10 +21,6 @@ class RekapKehadiranExport implements WithMultipleSheets
             return [new RekapSemuaKelasSheet($this->tanggalDari, $this->tanggalSampai)];
         }
 
-        return [
-            new RekapHarianSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId),
-            new RekapMingguanSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId),
-            new RekapBulananSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId),
-        ];
+        return [new RekapPerKelasSheet($this->tanggalDari, $this->tanggalSampai, $this->rombelId)];
     }
 }
