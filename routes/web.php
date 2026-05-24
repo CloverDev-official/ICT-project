@@ -38,6 +38,8 @@ use App\Livewire\PilihAbsen;
 use App\Livewire\RekapAbsenGuru;
 use App\Exports\Murid\MuridTemplateExport;
 use App\Exports\Guru\GuruTemplateExport;
+use App\Livewire\Manajemen\Murid\ManajemenMurid;
+use App\Livewire\Manajemen\Murid\TambahMurid;
 use App\Livewire\Pengaturan;
 use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
@@ -119,6 +121,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::prefix('/waktu')->middleware('access:manajemen-waktu')->group( function () {
             Route::get('/', ManajemenWaktu::class)->name('manajemen-waktu');
             Route::get('/create', TambahEvent::class)->name('tambah-event');
+        });
+
+        // manajemen murid
+        Route::prefix('/murid')->middleware('access:manajemen-murid')->group( function () {
+            Route::get('/', ManajemenMurid::class)->name('manajemen-murid');
+            Route::get('/create', TambahMurid::class)->name('tambah-foto');
         });
         
         // generate

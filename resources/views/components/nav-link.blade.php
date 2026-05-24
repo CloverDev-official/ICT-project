@@ -24,7 +24,6 @@
             'active' => 'mdi:account-file',
             'inactive' => 'mdi:account-file-outline'
         ],
-
         'riwayatAbsenMurid' => [
             'active' => 'mdi:user-clock',
             'inactive' => 'mdi:user-clock-outline'
@@ -60,6 +59,10 @@
         'manajemenWaktu' => [
             'active' => 'mdi:timer-cog',
             'inactive' => 'mdi:timer-cog-outline'
+        ],
+        'manajemenMurid' => [
+            'active' => 'flowbite:user-graduate-solid',
+            'inactive' => 'flowbite:user-graduate-outline'
         ],
         'manajemenQR' => [
             'active' => 'mdi:qrcode-scan',

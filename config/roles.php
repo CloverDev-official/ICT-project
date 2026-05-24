@@ -34,7 +34,9 @@ return [
         'manajemen',
         'generate-qr',
         'manajemen-waktu',
+        'manajemen-murid',
         'manajemen-lainnya',
+        'manajemen-tahun-ajaran',
 
         // pengaturan
         'pengaturan',

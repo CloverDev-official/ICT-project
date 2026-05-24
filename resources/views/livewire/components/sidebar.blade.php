@@ -24,7 +24,7 @@
         <hr class="mt-5 text-white">
 
         <!-- menu -->
-        <ul class="mt-5 flex flex-1 flex-col gap-2 overflow-y-auto pr-0 md:pr-2 scroll-thin">
+        <ul class="my-5 flex flex-1 flex-col gap-2 overflow-y-auto pr-0 md:pr-2 scroll-thin">
 
             <!-- dashboard -->
             <li>
@@ -33,6 +33,7 @@
                 </x-nav-link>
             </li>
 
+            <!-- pilih absen -->
             <li>
                 <x-nav-link href="{{ route('pilih-absen') }}" icon="pilihAbsen">
                     Pilih Absen
@@ -288,7 +289,7 @@
 
             <!-- manajemen -->
             @if($user?->canAccess('manajemen'))
-            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran']) ? 'true' : 'false' }}}">
+            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran']) ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -322,6 +323,14 @@
                     <li>
                         <x-nav-link href="{{ route('manajemen-waktu') }}" icon="manajemenWaktu">
                             waktu
+                        </x-nav-link>
+                    </li>
+                    @endif
+
+                    @if($user?->canAccess('manajemen-murid'))
+                    <li>
+                        <x-nav-link href="{{ route('manajemen-murid') }}" icon="manajemenMurid">
+                            murid
                         </x-nav-link>
                     </li>
                     @endif
@@ -362,8 +371,8 @@
         <!-- footer -->
         <div class="border-t border-white/10 py-4">
             <div class="flex md:hidden items-center gap-2">
-                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-deep-solid shadow-sm">
-                    <iconify-icon icon="lineicons:user-4" width="25" height="24"></iconify-icon>
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-white text-blue-deep-solid shadow-sm">
+                    <iconify-icon icon="lineicons:user-4" width="20" height="20"></iconify-icon>
                 </div>
 
                 <div class="flex flex-col">

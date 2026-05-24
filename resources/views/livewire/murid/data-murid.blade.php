@@ -82,11 +82,6 @@
                     <livewire:components.modal.murid.modal-import-murid />
 
                 </div>
-
-                <!-- import gambar -->
-                <livewire:components.modal.murid.modal-import-gambar />
-
-
             </div>
 
         </div>
