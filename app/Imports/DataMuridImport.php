@@ -2,7 +2,6 @@
 
 namespace App\Imports;
 
-use Fruitcake\LaravelDebugbar\Facades\Debugbar;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -76,8 +75,6 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             $jk = $this->normalizeJenisKelamin(
                 $this->getValueExact($row, ['jk', 'jenis_kelamin', 'jenis_kel'])
             );
-
-            Debugbar::info("Processing row: Nama={$nama}, NIPD={$nipd}, JK={$jk}");
 
             $nisn = $this->normalizeNumberString(
                 $this->getValueExact($row, ['nisn'])

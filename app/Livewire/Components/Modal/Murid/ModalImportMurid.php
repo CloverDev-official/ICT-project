@@ -21,10 +21,13 @@ class ModalImportMurid extends Component
     public int $importPercent = 0;
     public bool $isImporting = false;
     public int $currentRow = 6;
-    public int $chunkSize = 1000;
+    public int $chunkSize = 300;
+    private int $maxExecutionTime = 120;
 
     public function import(): void
     {
+        $this->extendExecutionTime();
+
         $this->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls'],
         ]);
@@ -33,11 +36,19 @@ class ModalImportMurid extends Component
 
         $fullPath = $this->getUploadPath();
         $this->totalRows = $this->countRows($fullPath);
+
+        if ($this->totalRows === 0) {
+            ToastMagic::warning('Import dibatalkan', 'Tidak ada baris data yang bisa diproses.');
+            return;
+        }
+
         $this->isImporting = true;
     }
 
     public function pollProgress(): void
     {
+        $this->extendExecutionTime();
+
         if (!$this->isImporting) {
             return;
         }
@@ -73,8 +84,11 @@ class ModalImportMurid extends Component
 
     private function countRows(string $path): int
     {
+        $this->extendExecutionTime();
+
         $reader = IOFactory::createReaderForFile($path);
         $reader->setReadDataOnly(true);
+
         $spreadsheet = $reader->load($path);
         $worksheet = $spreadsheet->getActiveSheet();
 
@@ -82,30 +96,15 @@ class ModalImportMurid extends Component
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
+        unset($reader);
 
-        if ($highestRow < 6) {
-            return 0;
-        }
-
-        $total = 0;
-        $row = 6;
-
-        while ($row <= $highestRow) {
-            $rows = $this->readChunkRows(
-                $path,
-                $row,
-                min($this->chunkSize, $highestRow - $row + 1)
-            );
-
-            $total += count($rows);
-            $row += $this->chunkSize;
-        }
-
-        return $total;
+        return max($highestRow - 5, 0);
     }
 
     private function processNextChunk(): void
     {
+        $this->extendExecutionTime();
+
         $path = $this->getUploadPath();
         $rows = $this->readChunkRows($path, $this->currentRow, $this->chunkSize);
 
@@ -134,6 +133,8 @@ class ModalImportMurid extends Component
 
     private function readChunkRows(string $path, int $startRow, int $chunkSize): array
     {
+        $this->extendExecutionTime();
+
         $headingRow = 5;
         $endRow = $startRow + $chunkSize - 1;
 
@@ -161,9 +162,10 @@ class ModalImportMurid extends Component
         $headings = $sheet->rangeToArray($headingRange, null, true, false)[0] ?? [];
 
         $rows = [];
-        for ($row = $startRow; $row <= $endRow; $row++) {
-            $rowRange = "A{$row}:{$highestColumn}{$row}";
-            $values = $sheet->rangeToArray($rowRange, null, true, false)[0] ?? [];
+        $dataRange = "A{$startRow}:{$highestColumn}{$endRow}";
+        $valueRows = $sheet->rangeToArray($dataRange, null, true, false);
+
+        foreach ($valueRows as $values) {
 
             $assoc = [];
             $hasValue = false;
@@ -176,7 +178,7 @@ class ModalImportMurid extends Component
 
                 $assoc[$heading] = $value;
 
-                if ($value !== null && $value !== '') {
+                if ($this->hasMeaningfulValue($value)) {
                     $hasValue = true;
                 }
             }
@@ -188,8 +190,29 @@ class ModalImportMurid extends Component
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
+        unset($reader);
 
         return $rows;
+    }
+
+    private function hasMeaningfulValue(mixed $value): bool
+    {
+        if ($value === null) {
+            return false;
+        }
+
+        if (is_string($value)) {
+            return trim($value) !== '';
+        }
+
+        return true;
+    }
+
+    private function extendExecutionTime(): void
+    {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($this->maxExecutionTime);
+        }
     }
 
     private function getUploadPath(): string
@@ -201,7 +224,6 @@ class ModalImportMurid extends Component
 
         $path = $this->file?->getPathname();
         if ($path) {
-            dd($path);
             return $path;
         }
 
