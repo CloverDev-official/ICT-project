@@ -160,7 +160,7 @@ class Index extends Component
         return AbsenMurid::query()
             ->with([
                 'murid:id,nama,rombel_id',
-                'murid.rombel:id,tingkat_id,jurusan_id,indeks_id,nama',
+                'murid.rombel:id,tingkat_id,jurusan_id,indeks_id',
                 'murid.rombel.tingkat:id,nama',
                 'murid.rombel.jurusan:id,nama',
                 'murid.rombel.indeks:id,nama',

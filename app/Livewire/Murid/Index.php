@@ -173,7 +173,7 @@ class Index extends Component
     {
         return Murid::query()
             ->with([
-                'rombel:id,tingkat_id,jurusan_id,indeks_id,nama',
+                'rombel:id,tingkat_id,jurusan_id,indeks_id',
             ])
             ->when($this->search, function ($q) {
                 $search = trim($this->search);
