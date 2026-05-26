@@ -1,15 +1,31 @@
 #!/bin/sh
 set -e
 
-# Generate key if not exists and avoid DB connection
+# Ensure permissions on every startup
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Generate key if not exists (hanya untuk pengamanan)
 if [ -z "$APP_KEY" ]; then
-    echo "Generating APP_KEY..."
-    # Kita menggunakan --no-interaction dan memastikan tidak ada yang memicu DB
-    php artisan key:generate --force --no-interaction || echo "Key generation failed but continuing..."
+    echo "Warning: APP_KEY is not set. Generating one..."
+    php artisan key:generate --show --no-interaction
 fi
 
-# Fix permissions
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Run database migrations automatically in production
+if [ "$RUN_MIGRATIONS" = "true" ]; then
+    echo "Running migrations..."
+    php artisan migrate --force
+fi
+
+# Production optimizations
+if [ "$APP_ENV" = "production" ]; then
+    echo "Optimizing for production..."
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+fi
+
+# Create storage link
+php artisan storage:link --force
 
 echo "Starting Apache..."
 exec "$@"
