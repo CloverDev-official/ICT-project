@@ -40,6 +40,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
+# Ensure storage and bootstrap directories exist and are writable
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/testing \
+             storage/framework/views \
+             bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
 # Copy built assets from build-stage
 COPY --from=build-stage /app/public/build ./public/build
 
