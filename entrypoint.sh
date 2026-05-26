@@ -16,6 +16,12 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     php artisan migrate --force
 fi
 
+# Run database seeder automatically if requested
+if [ "$RUN_SEEDER" = "true" ]; then
+    echo "Running seeders..."
+    php artisan db:seed --force
+fi
+
 # Production optimizations
 if [ "$APP_ENV" = "production" ]; then
     echo "Optimizing for production..."
