@@ -5,15 +5,16 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 class MuridSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('PRAGMA synchronous = OFF');
-        DB::statement('PRAGMA cache_size = -64000');
-        DB::statement('PRAGMA temp_store = MEMORY');
-        DB::statement('PRAGMA mmap_size = 268435456');
+        if (app()->environment('production')) {
+            echo "MuridSeeder diabaikan di environment production.\n";
+            return;
+        }
 
         $rombelIds = DB::table('rombel')->pluck('id')->toArray();
         $rombelCount = count($rombelIds);
@@ -28,15 +29,15 @@ class MuridSeeder extends Seeder
         $imageCount = count($images) ?: 1;
 
         $POOL = 2000;
-        $maleNames = array_map(fn() => fake()->name('male'), range(1, $POOL));
+        $maleNames = array_map(fn() => \fake()->name('male'), range(1, $POOL));
         $femaleNames = array_map(
-            fn() => fake()->name('female'),
+            fn() => \fake()->name('female'),
             range(1, $POOL),
         );
-        $cities = array_map(fn() => fake()->city(), range(1, $POOL));
-        $streets = array_map(fn() => fake()->streetAddress(), range(1, 500));
-        $postCodes = array_map(fn() => fake()->postcode(), range(1, 500));
-        $emails = array_map(fn() => fake()->safeEmail(), range(1, $POOL));
+        $cities = array_map(fn() => \fake()->city(), range(1, $POOL));
+        $streets = array_map(fn() => \fake()->streetAddress(), range(1, 500));
+        $postCodes = array_map(fn() => \fake()->postcode(), range(1, 500));
+        $emails = array_map(fn() => \fake()->safeEmail(), range(1, $POOL));
         $agamaPool = [
             'Islam',
             'Kristen',
@@ -55,7 +56,7 @@ class MuridSeeder extends Seeder
 
         $total = 10_000;
         $chunk = 1_000;
-        $now = now()->toDateTimeString();
+        $now = Carbon::now()->toDateTimeString();
         $batch = [];
 
         DB::disableQueryLog();

@@ -16,10 +16,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Master Data & Configuration (Safe for Production)
+        $this->call([
+            RoleSeeder::class,
+            SettingSeeder::class,
+            TingkatSeeder::class,
+            JurusanSeeder::class,
+            IndeksSeeder::class,
+            RombelSeeder::class,
+            JadwalAbsenSeeder::class,
+        ]);
 
-        $this->call(RoleSeeder::class);
-
+        // 2. Default Admin User
         User::updateOrCreate(
             ['email' => 'test@test.com'],
             [
@@ -30,17 +38,10 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
-        $this->call(SettingSeeder::class);
-    
-        // $this->call([
-        //     TingkatSeeder::class,
-        //     JurusanSeeder::class,
-        //     IndeksSeeder::class,
-        //     RombelSeeder::class,
-        // ]);
-
+        // 3. Optional/Dummy Data (ONLY for Development)
+        // Jika ingin menjalankan data dummy 10rb murid, jalankan:
+        // php artisan db:seed --class=MuridSeeder
         // $this->call(MuridSeeder::class);
-
         // $this->call(AbsenMuridSeeder::class);
     }
 }

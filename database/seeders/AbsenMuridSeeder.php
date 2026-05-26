@@ -4,17 +4,23 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class AbsenMuridSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            echo "AbsenMuridSeeder diabaikan di environment production.\n";
+            return;
+        }
+
         DB::disableQueryLog();
 
         $statuses = ['Hadir', 'Sakit', 'Izin', 'Alpa'];
         $totalHari = 7;
         $insertChunk = 100;
-        $now = now()->toDateTimeString();
+        $now = Carbon::now()->toDateTimeString();
 
         // hitung total murid
         $totalMurid = DB::table('murid')->count();
