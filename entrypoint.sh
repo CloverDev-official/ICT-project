@@ -15,5 +15,8 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Create storage link if it doesn't exist
+php artisan storage:link --force
+
 # Execute the main command (Apache)
 exec "$@"

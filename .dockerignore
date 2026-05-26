@@ -12,7 +12,6 @@
 Dockerfile
 .dockerignore
 docker-compose.yml
-000-default.conf
 phpunit.xml
 .editorconfig
 .prettierrc
