@@ -27,6 +27,7 @@ return [
         // absensi
         'absensi',
         'absensi-murid',
+        'edit-absen-murid',
         'absensi-guru',
 
         

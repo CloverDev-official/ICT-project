@@ -38,8 +38,12 @@ use App\Livewire\PilihAbsen;
 use App\Livewire\RekapAbsenGuru;
 use App\Exports\Murid\MuridTemplateExport;
 use App\Exports\Guru\GuruTemplateExport;
+use App\Livewire\Manajemen\Murid\EditFoto;
 use App\Livewire\Manajemen\Murid\ManajemenMurid;
+use App\Livewire\Manajemen\Murid\TambahFoto;
 use App\Livewire\Manajemen\Murid\TambahMurid;
+use App\Livewire\Murid\Absen\EditAbsen;
+use App\Livewire\Murid\Absen\EditAbsenMurid;
 use App\Livewire\Pengaturan;
 use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
@@ -79,7 +83,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // absensi
     Route::prefix('/absensi')->group(function () {
-        Route::get('/murid', IndexAbsen::class)->middleware('access:absensi-murid')->name('absensi-murid');
+
+        // absensi murid
+        Route::prefix('/murid')->group(function () {
+            Route::get('/', IndexAbsen::class)->middleware('access:absensi-murid')->name('absensi-murid');
+            Route::get('/edit', EditAbsenMurid::class)->middleware('access:edit-absen-murid')->name('edit-absen-murid');
+        });
         Route::get('/guru', AbsensiGuru::class)->middleware('access:absensi-guru')->name('absensi-guru');
     });
     
@@ -126,7 +135,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         // manajemen murid
         Route::prefix('/murid')->middleware('access:manajemen-murid')->group( function () {
             Route::get('/', ManajemenMurid::class)->name('manajemen-murid');
-            Route::get('/create', TambahMurid::class)->name('tambah-foto');
+            Route::get('/create', TambahFoto::class)->name('tambah-foto');
+            Route::get('/edit',  EditFoto::class)->name('edit-foto');
         });
         
         // generate

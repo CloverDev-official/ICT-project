@@ -131,98 +131,86 @@
 
                 <tbody>
                     @foreach ([
-                        [
-                            'foto' => asset('assets/img/default-avatar.png'),
-                            'nama' => 'Deden Agus Rahman',
-                            'nipd' => '2025001',
-                        ],
-                        [
-                            'foto' => asset('assets/img/default-avatar.png'),
-                            'nama' => 'Muhammad Rizky',
-                            'nipd' => '2025002',
-                        ],
-                        [
-                            'foto' => asset('assets/img/default-avatar.png'),
-                            'nama' => 'Siti Aisyah',
-                            'nipd' => '2025003',
-                        ],
+                    [
+                    'foto' => asset('assets/img/default-avatar.png'),
+                    'nama' => 'Deden Agus Rahman',
+                    'nipd' => '2025001',
+                    ],
+                    [
+                    'foto' => asset('assets/img/default-avatar.png'),
+                    'nama' => 'Muhammad Rizky',
+                    'nipd' => '2025002',
+                    ],
+                    [
+                    'foto' => asset('assets/img/default-avatar.png'),
+                    'nama' => 'Siti Aisyah',
+                    'nipd' => '2025003',
+                    ],
                     ] as $murid)
 
-                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
+                    <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                            <!-- no -->
-                            <td class="px-5 py-5 text-center font-medium text-gray-700">
-                                {{ $loop->iteration }}
-                            </td>
+                        <!-- no -->
+                        <td class="px-5 py-5 text-center font-medium text-gray-700">
+                            {{ $loop->iteration }}
+                        </td>
 
-                            <!-- foto -->
-                            <td class="px-5 py-5">
+                        <!-- foto -->
+                        <td class="px-5 py-5">
 
-                                <div class="flex justify-center">
-
-                                    <div
-                                        class="relative h-16 w-16 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100 shadow-sm">
-
-                                        <img
-                                            src="{{ $murid['foto'] }}"
-                                            alt="Foto {{ $murid['nama'] }}"
-                                            class="h-full w-full object-cover">
-
-                                    </div>
-
-                                </div>
-
-                            </td>
-
-                            <!-- nama -->
-                            <td class="px-5 py-5">
-
-                                <div>
-                                    <h3 class="font-semibold capitalize text-gray-800">
-                                        {{ $murid['nama'] }}
-                                    </h3>
-
-                                    <p class="mt-1 text-xs text-gray-400">
-                                        Data foto murid
-                                    </p>
-                                </div>
-
-                            </td>
-
-                            <!-- nipd -->
-                            <td class="px-5 py-5 text-center">
+                            <div class="flex justify-center">
 
                                 <div
-                                    class="inline-flex rounded-full bg-blue-50 px-4 py-1.5 text-xs font-semibold text-blue-main">
+                                    class="relative h-16 w-16 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100 shadow-sm">
 
-                                    {{ $murid['nipd'] }}
+                                    <img
+                                        src="{{ $murid['foto'] }}"
+                                        alt="Foto {{ $murid['nama'] }}"
+                                        class="h-full w-full object-cover">
 
                                 </div>
 
-                            </td>
+                            </div>
 
-                            <!-- aksi -->
-                            <td class="px-5 py-5">
+                        </td>
 
-                                <div class="flex items-center justify-center gap-2">
+                        <!-- nama -->
+                        <td class="px-5 py-5">
 
-                                    <!-- lihat -->
+                            <div>
+                                <h3 class="font-semibold capitalize text-gray-800">
+                                    {{ $murid['nama'] }}
+                                </h3>
+
+                                <p class="mt-1 text-xs text-gray-400">
+                                    Data foto murid
+                                </p>
+                            </div>
+
+                        </td>
+
+                        <!-- nipd -->
+                        <td class="px-5 py-5 text-center">
+
+                            <div
+                                class="inline-flex rounded-full bg-blue-50 px-4 py-1.5 text-xs font-semibold text-blue-main">
+
+                                {{ $murid['nipd'] }}
+
+                            </div>
+
+                        </td>
+
+                        <!-- aksi -->
+                        <td class="px-5 py-5">
+
+                            <div class="flex items-center justify-center gap-2">
+
+                                <!-- edit foto -->
+                                <a href="{{ route('edit-foto') }}">
                                     <button
                                         type="button"
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-main transition hover:-translate-y-0.5 hover:bg-blue-main hover:text-white">
-
-                                        <iconify-icon
-                                            icon="solar:eye-bold"
-                                            width="20"
-                                            height="20">
-                                        </iconify-icon>
-
-                                    </button>
-
-                                    <!-- edit foto -->
-                                    <button
-                                        type="button"
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 transition hover:-translate-y-0.5 hover:bg-amber-500 hover:text-white">
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
 
                                         <iconify-icon
                                             icon="solar:gallery-edit-bold"
@@ -231,11 +219,13 @@
                                         </iconify-icon>
 
                                     </button>
+                                </a>
 
-                                    <!-- hapus -->
+                                <div x-data>
                                     <button
+                                        @click="$dispatch('open-delete-modal')"
                                         type="button"
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-500 hover:text-white">
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
                                         <iconify-icon
                                             icon="lineicons:trash-3"
@@ -245,11 +235,13 @@
 
                                     </button>
 
+                                    <livewire:components.modal.manajemen.murid.modal-hapus-foto />
                                 </div>
+                            </div>
 
-                            </td>
+                        </td>
 
-                        </tr>
+                    </tr>
 
                     @endforeach
                 </tbody>

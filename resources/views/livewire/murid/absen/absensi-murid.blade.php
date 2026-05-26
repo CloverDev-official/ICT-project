@@ -506,7 +506,7 @@
                             <div class="flex items-center justify-center">
                                 <!-- edit -->
                                 <a
-                                    href=""
+                                    href="{{ route('edit-absen-murid') }}"
                                     wire:navigate>
 
                                     <button
