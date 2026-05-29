@@ -278,6 +278,10 @@ window.initScanner = async () => {
 
         const results = await readBarcodes(imageData, {
             tryHarder: true,
+            tryDenoise: true,
+            tryDownscale: true,
+            tryInvert: true,
+            tryRotate: true,
             formats: ["QRCode"],
             maxNumberOfSymbols: 1
         });
