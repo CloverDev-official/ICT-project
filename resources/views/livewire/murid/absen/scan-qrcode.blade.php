@@ -1,7 +1,3 @@
-@assets
-@vite(['resources/js/scanner.js'])
-@endassets
-
 <div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans">
 
     <header
