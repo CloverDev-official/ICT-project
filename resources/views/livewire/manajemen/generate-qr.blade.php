@@ -540,7 +540,7 @@
 
                 <!-- action -->
                 <div class="mt-6 flex justify-end">
-
+                    
                     <button
                         onclick="startGenerateGuru()"
                         class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-xl active:scale-95 md:w-auto">
@@ -618,6 +618,25 @@
             });
         }
 
+        const sanitizeFileName = (value) => {
+            return String(value ?? 'kelas')
+                .trim()
+                .replace(/[\\?%*:|"<>]/g, '-')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^[-.]+|[-.]+$/g, '');
+        };
+
+        const downloadPdf = (fileName, bytes) => {
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
         $wire.$on('generate-qr', async (event) => {
             if (processing) {
                 return;
@@ -629,6 +648,7 @@
                 currentRunId = event.runId;
                 resetProgress();
                 createZip();
+                window.resetStudentCardPdf?.();
             }
 
             if (typeof event.totalData === 'number' && event.totalData >= 0) {
@@ -640,24 +660,24 @@
             } = event;
 
             for (const murid of dataMurid) {
-                const pngBytes = await generateQRPNG(murid.ulid);
+                const svgString = await generateQRSVG(murid.ulid);
 
-                const folderName = murid.rombel.nama_lengkap
-                    .replace(/[\\?%*:|"<>]/g, '-')
-                    .replace(/\s+/g, '-');
+                const cardCanvas = await window.renderStudentCardCanvas({
+                    murid,
+                    qrSvg: svgString
+                });
 
-                const fileName = `${murid.nama} ${murid.nipd}.png`
-                    .replace(/[/\\?%*:|"<>]/g, '_')
-                    .replace(/\s+/g, '_');
-
-                const file = new ZipPassThrough(`${folderName}/${fileName}`);
-
-                zip.add(file);
-                file.push(pngBytes, true);
+                if (cardCanvas) {
+                    const className = murid?.rombel?.nama_lengkap ?? 'Kelas';
+                    await window.addStudentCardToPdf?.({
+                        className,
+                        canvas: cardCanvas
+                    });
+                }
 
                 processed++;
 
-                if (processed % 15 === 0) {
+                if (processed % 50 === 0) {
                     if (globalThis.scheduler?.yield) {
                         await globalThis.scheduler.yield();
                     } else {
@@ -675,7 +695,24 @@
             }
 
             if (processed >= totalData) {
-                zip.end();
+                const pdfFiles = window.exportStudentCardPdfs?.() ?? [];
+
+                if (pdfFiles.length === 1) {
+                    const single = pdfFiles[0];
+                    const pdfName = `${sanitizeFileName(single.className)}.pdf`;
+                    downloadPdf(pdfName, single.pdfBytes);
+                } else {
+                    for (const pdf of pdfFiles) {
+                        const pdfName = `${sanitizeFileName(pdf.className)}.pdf`;
+                        const file = new ZipPassThrough(pdfName);
+                        zip.add(file);
+                        file.push(pdf.pdfBytes, true);
+                    }
+
+                    zip.end();
+                }
+
+                window.clearStudentCardMemory?.();
             }
 
             processing = false;

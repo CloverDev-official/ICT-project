@@ -128,7 +128,7 @@ class GenerateQR extends Component
             ->where('id', '>', $this->lastId)
             ->orderBy('id')
             ->take(1000)
-            ->get(['id', 'ulid', 'nama', 'nipd' ,'rombel_id']);
+            ->get(['id', 'ulid', 'nama', 'nisn', 'image_path' ,'rombel_id']);
 
             if ($data->isNotEmpty()) {
                 $this->lastId = $data->last()->id;

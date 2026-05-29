@@ -10,22 +10,26 @@ const writerOptions = {
     scale: 5,
     options: "ecLevel=M",    // symbology-specific options string
     // addHRT: true,            // add human readable text
-    // addQuietZones: true,     // add quiet zones (default)
+    addQuietZones: false,     // add quiet zones (default)
     // invert: false,           // invert colors
 };
 
 window.generateQRPNG = async (text) => {
     const writeOutput = await writeBarcode(text, writerOptions);
-
+    
     return new Uint8Array(
         await writeOutput.image.arrayBuffer()
     );
 }
 
+window.generateQRSVG = async (text) => {
+    const writeOutput = await writeBarcode(text, writerOptions);
+    
+    return writeOutput.svg;
+}
+
 window.addEventListener('generateQRPNGDownload', async (event) => {
     const { text, filename } = event.detail;
-
-    console.log('Generating QR code for:', text, 'with filename:', filename);
 
     const writeOutput = await writeBarcode(text, writerOptions);
 

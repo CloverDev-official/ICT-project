@@ -95,12 +95,24 @@ class Index extends Component
 
     public function generateQRCode($muridData)
     {
-        $filename = "{$muridData['nama']} {$muridData['nipd']}.png";
+        $murid = Murid::query()
+            ->with(['rombel.jurusan'])
+            ->where('ulid', $muridData['ulid'] ?? null)
+            ->first();
 
-        $filename = preg_replace('/\s+/', '_', $filename);
-        $filename = preg_replace('/[\/\\\\?%*:|"<>]/', '-', $filename);
+        if (!$murid) {
+            return;
+        }
 
-        $this->dispatch('generateQRPNGDownload', text: $muridData['ulid'], filename: $filename);
+        $className = $murid->rombel?->nama_lengkap ?? 'Kelas';
+        $rawFilename = trim(sprintf('%s-%s-%s', $className, $murid->nama ?? 'Murid', $murid->nisn ?? 'NISN'));
+        $filename = preg_replace('/[\/\\\\?%*:|"<>]/', '-', $rawFilename);
+        $filename = preg_replace('/\s+/', '-', $filename);
+        $filename = preg_replace('/-+/', '-', $filename);
+        $filename = trim($filename, '-.');
+        $filename = $filename . '.pdf';
+
+        $this->dispatch('generateStudentCardPdf', murid: $murid->toArray(), filename: $filename);
     }
 
     private function applyRombelFilter($q)
