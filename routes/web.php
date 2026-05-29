@@ -49,7 +49,7 @@ use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/', Login::class)->name('login');
+    Route::get('/', Login::class)->name('login-page');
 });
 
 Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
