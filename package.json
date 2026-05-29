@@ -20,6 +20,7 @@
     "dependencies": {
         "echarts": "^6.0.0",
         "fflate": "^0.8.2",
+        "jspdf": "^2.5.1",
         "zxing-wasm": "^3.0.3"
     }
 }
