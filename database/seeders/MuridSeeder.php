@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 class MuridSeeder extends Seeder
 {
@@ -53,7 +55,7 @@ class MuridSeeder extends Seeder
         ];
         $agamaCount = count($agamaPool);
 
-        $total = 10_000;
+        $total = 1_606;
         $chunk = 1_000;
         $now = now()->toDateTimeString();
         $batch = [];
@@ -137,22 +139,36 @@ class MuridSeeder extends Seeder
 
     private function loadImages(): array
     {
-        $path = storage_path('app/public/animeFaces/images');
+        $path = storage_path('app/public/anime_images');
 
         if (!is_dir($path)) {
-            return ['storage/animeFaces/images/default.jpg'];
+            return ['/storage/anime_images/default.jpg'];
         }
 
-        $files = array_diff(scandir($path), ['.', '..']);
-        $files = array_filter(
-            $files,
-            fn($f) => preg_match('/\.(jpg|jpeg|png|webp)$/i', $f),
-        );
-        $images = array_values(
-            array_map(fn($f) => 'storage/animeFaces/images/' . $f, $files),
+        $rii = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path)
         );
 
+        $images = [];
+
+        foreach ($rii as $file) {
+            if ($file->isDir()) {
+                continue;
+            }
+
+            if (preg_match('/\.(jpg|jpeg|png|webp)$/i', $file->getFilename())) {
+
+                $fullPath = str_replace('\\', '/', $file->getPathname());
+                $basePath = str_replace('\\', '/', storage_path('app/public'));
+
+                $relativePath = Str::after($fullPath, $basePath . '/');
+
+                $images[] = '/storage/' . $relativePath;
+            }
+        }
+
         shuffle($images);
+
         return $images;
     }
 }
