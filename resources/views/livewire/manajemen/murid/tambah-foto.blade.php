@@ -117,8 +117,8 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: null,
-                    selectedLabel: null,
+                    selectedId: @entangle('murid_id'),
+                    selectedLabel: @entangle('selectedLabel'),
 
                     toggle() {
                         this.open = !this.open
@@ -128,8 +128,6 @@
                         this.selectedId = id
                         this.selectedLabel = label
                         this.open = false
-
-                        $wire.set('murid_id', id)
                     }
                 }"
                 class="relative">
@@ -238,6 +236,7 @@
                     preview: null,
                     fileName: null,
                     fileSize: null,
+                    existingImage: @entangle('selectedImagePath'),
 
                     formatSize(bytes) {
                         if (!bytes) return '0 MB'
@@ -289,9 +288,15 @@
                                 class="h-full w-full object-cover"
                                 alt="Preview Foto Murid">
 
+                            <img
+                                x-show="!preview && existingImage"
+                                :src="existingImage"
+                                class="h-full w-full object-cover"
+                                alt="Foto Murid Saat Ini">
+
                             <!-- empty -->
                             <div
-                                x-show="!preview"
+                                x-show="!preview && !existingImage"
                                 class="flex h-full w-full flex-col items-center justify-center gap-3 bg-gray-50 text-center">
 
                                 <div
