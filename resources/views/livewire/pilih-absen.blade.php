@@ -89,7 +89,7 @@
                     </div>
 
                     <!-- jadwal -->
-                    <div
+                    {{-- <div
                         class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur">
 
                         <iconify-icon
@@ -100,7 +100,7 @@
 
                         06.30 - 08.30
 
-                    </div>
+                    </div> --}}
 
                 </div>
 
@@ -155,7 +155,7 @@
                     </div>
 
                     <!-- jadwal -->
-                    <div
+                    {{-- <div
                         class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur">
 
                         <iconify-icon
@@ -166,7 +166,7 @@
 
                         06.30 - 08.30
 
-                    </div>
+                    </div> --}}
 
                 </div>
 

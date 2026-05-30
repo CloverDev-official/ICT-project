@@ -81,7 +81,7 @@
                 </a>
 
                 <!-- import -->
-                <div x-data="{ openModalImport: false }">
+                {{-- <div x-data="{ openModalImport: false }">
 
                     <button
                         @click="openModalImport = true"
@@ -99,7 +99,7 @@
 
                     <livewire:components.modal.kelas.modal-import-kelas />
 
-                </div>
+                </div> --}}
 
             </div>
 

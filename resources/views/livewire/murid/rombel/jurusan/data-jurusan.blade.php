@@ -82,7 +82,7 @@
                 </a>
 
                 <!-- import -->
-                <div x-data="{ openModalImport: false }">
+                {{-- <div x-data="{ openModalImport: false }">
 
                     <button
                         @click="openModalImport = true"
@@ -100,7 +100,7 @@
 
                     <livewire:components.modal.jurusan.modal-import-jurusan />
 
-                </div>
+                </div> --}}
 
             </div>
 
