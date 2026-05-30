@@ -280,6 +280,6 @@
 @script
     <script>
         window.dashboardData = @js($dashboardData);
-        document.addEventListener('DOMContentLoaded', initCharts())
+        document.addEventListener('DOMContentLoaded', window.initCharts);
     </script>
 @endscript
