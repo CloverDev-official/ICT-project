@@ -59,7 +59,7 @@
         <!-- TOP -->
         <div class="border-b border-slate-200 p-6">
 
-            <div class="grid gap-6 lg:grid-cols-2">
+            <div class="grid grid-cols-1">
 
                 <!-- tahun aktif -->
                 <div>
@@ -91,118 +91,6 @@
                                 Tahun ajaran yang sedang berjalan
                             </p>
                         </div>
-
-                    </div>
-
-                </div>
-
-                <!-- pilih tahun -->
-                <div
-                    x-data="{
-                        open: false,
-                        selectedId: null,
-                        selectedLabel: 'Pilih tahun ajaran',
-
-                        select(id, label){
-                            this.selectedId = id
-                            this.selectedLabel = label
-                            this.open = false
-                        },
-
-                        toggle(){
-                            this.open = !this.open
-                        }
-                    }"
-                    class="relative">
-
-                    <label class="text-sm font-medium text-slate-500">
-                        Tahun Ajaran Baru
-                    </label>
-
-                    <!-- trigger -->
-                    <div
-                        @click="toggle()"
-                        class="mt-3 flex cursor-pointer items-center justify-between rounded-2xl border border-slate-300 bg-white px-5 py-5 transition hover:border-blue-main hover:shadow-sm">
-
-                        <div class="flex items-center gap-3">
-
-                            <div
-                                class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
-
-                                <iconify-icon
-                                    icon="solar:calendar-add-bold"
-                                    width="24"
-                                    height="24">
-                                </iconify-icon>
-
-                            </div>
-
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-slate-400">
-                                    Tahun tujuan
-                                </p>
-
-                                <span
-                                    x-text="selectedLabel"
-                                    class="font-semibold text-slate-700">
-                                </span>
-                            </div>
-
-                        </div>
-
-                        <iconify-icon
-                            class="text-slate-400 transition-transform"
-                            :class="{ 'rotate-180': open }"
-                            icon="lineicons:chevron-up"
-                            width="22"
-                            height="22">
-                        </iconify-icon>
-
-                    </div>
-
-                    <!-- dropdown -->
-                    <div
-                        x-show="open"
-                        style="display: none;"
-                        @click.outside="open = false"
-                        x-transition
-                        class="absolute z-50 mt-3 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-
-                        <!-- default -->
-                        <div
-                            @click.prevent="select(null, 'Pilih tahun ajaran')"
-                            class="flex cursor-pointer items-center justify-between px-5 py-4 transition hover:bg-blue-main hover:text-white">
-
-                            <span>Pilih tahun ajaran</span>
-
-                            <iconify-icon
-                                x-show="selectedId === null"
-                                icon="lineicons:check"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-
-                        <!-- list -->
-                        @foreach (['2026 - 2027', '2027 - 2028', '2028 - 2029'] as $role)
-
-                            <div
-                                @click.prevent="select('{{ $role }}', '{{ $role }}')"
-                                class="flex cursor-pointer items-center justify-between px-5 py-4 transition hover:bg-blue-main hover:text-white">
-
-                                <span>{{ $role }}</span>
-
-                                <iconify-icon
-                                    x-show="selectedId === '{{ $role }}'"
-                                    icon="lineicons:check"
-                                    width="20"
-                                    height="20">
-                                </iconify-icon>
-
-                            </div>
-
-                        @endforeach
 
                     </div>
 

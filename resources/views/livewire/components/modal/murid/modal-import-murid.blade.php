@@ -1,3 +1,10 @@
+@php
+    $triggerClass = 'flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white';
+    $dropdownClass = 'absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin';
+    $optionClass = 'flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white';
+    $errorClass = 'mt-2 text-sm text-rose-500';
+@endphp
+
 <div
     x-data="{
         isUploading: false,
@@ -6,8 +13,15 @@
         fileSize: '',
         dragActive: false,
 
+        yearOpen: false,
+        selectedYear: null,
+
         get hasFile() {
             return this.fileName && this.fileName.length > 0
+        },
+
+        get canImport() {
+            return this.hasFile && this.selectedYear && !this.isUploading
         },
 
         formatSize(bytes) {
@@ -35,6 +49,13 @@
             input.dispatchEvent(new Event('change', { bubbles: true }))
         },
 
+        selectYear(year) {
+            this.selectedYear = year
+            this.yearOpen = false
+
+            $wire.set('tahun_masuk', year)
+        },
+
         clearFile() {
             this.fileName = ''
             this.fileSize = ''
@@ -43,13 +64,18 @@
             if (this.$refs.fileInput) {
                 this.$refs.fileInput.value = null
             }
+        },
+
+        closeModal() {
+            openModalImport = false
+            this.clearFile()
         }
     }"
     x-on:livewire-upload-start="isUploading = true"
     x-on:livewire-upload-finish="isUploading = false; progress = 0"
     x-on:livewire-upload-error="isUploading = false"
     x-on:livewire-upload-progress="progress = $event.detail.progress"
-    x-on:imported.window="openModalImport = false"
+    x-on:imported.window="closeModal()"
     x-show="openModalImport"
     x-transition.opacity
     style="display: none;"
@@ -57,9 +83,9 @@
 
     <!-- MODAL -->
     <div
-        @click.outside="openModalImport = false"
+        @click.outside="closeModal()"
         x-transition.scale
-        class="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl">
+        class="w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl">
 
         <!-- HEADER -->
         <div
@@ -89,7 +115,7 @@
                         </h1>
 
                         <p class="mt-1 text-sm text-blue-100">
-                            Upload file Excel untuk menambahkan data murid secara massal.
+                            Upload file Excel dan pilih tahun masuk untuk import data murid.
                         </p>
                     </div>
 
@@ -97,7 +123,7 @@
 
                 <button
                     type="button"
-                    @click="openModalImport = false"
+                    @click="closeModal()"
                     class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white transition hover:bg-white/20 active:scale-95">
 
                     <iconify-icon
@@ -113,166 +139,296 @@
         </div>
 
         <!-- BODY -->
-        <div class="p-6">
+        <div class="max-h-[75vh] overflow-y-auto p-6 scroll-thin">
 
-            <!-- UPLOAD AREA -->
-            <div
-                class="group relative overflow-hidden rounded-3xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 transition hover:border-blue-main hover:bg-blue-50/40"
-                :class="dragActive ? 'border-blue-main bg-blue-50' : ''"
-                @click="if ($refs.fileInput) { $refs.fileInput.click() }"
-                @dragenter.prevent="dragActive = true"
-                @dragover.prevent="dragActive = true"
-                @dragleave.prevent="dragActive = false"
-                @drop.prevent="dragActive = false; setFileFromDrop($event)">
+            <!-- YEAR + UPLOAD GRID -->
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
 
-                <input
-                    type="file"
-                    x-ref="fileInput"
-                    wire:model="file"
-                    accept=".xlsx,.xls"
-                    class="hidden"
-                    @change="setFileFromInput($event)">
-
-                <!-- empty state -->
+                <!-- TAHUN MASUK -->
                 <div
-                    x-show="!hasFile"
-                    class="flex min-h-72 flex-col items-center justify-center text-center">
+                    class="relative rounded-3xl border border-gray-200 bg-gray-50 p-5">
 
-                    <div
-                        class="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-white text-blue-main shadow-sm transition group-hover:-translate-y-1">
+                    <div class="mb-4 flex items-center gap-3">
 
-                        <iconify-icon
-                            icon="solar:cloud-upload-bold"
-                            width="48"
-                            height="48">
-                        </iconify-icon>
+                        <div
+                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600">
 
-                    </div>
+                            <iconify-icon
+                                icon="solar:calendar-bold"
+                                width="22"
+                                height="22">
+                            </iconify-icon>
 
-                    <h2 class="text-xl font-bold text-gray-800">
-                        Upload File Excel
-                    </h2>
+                        </div>
 
-                    <p class="mt-2 max-w-md text-sm leading-relaxed text-gray-500">
-                        Drag & drop file di area ini atau klik tombol di bawah untuk memilih file dari perangkat.
-                    </p>
+                        <div>
+                            <h3 class="font-bold text-gray-800">
+                                Tahun Masuk
+                            </h3>
 
-                    <div
-                        class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-blue-main px-5 py-3 text-sm font-semibold text-white shadow-lg transition group-hover:bg-blue-deep-solid">
-
-                        <iconify-icon
-                            icon="solar:folder-open-bold"
-                            width="20"
-                            height="20">
-                        </iconify-icon>
-
-                        Pilih File Excel
-
-                    </div>
-
-                    <p class="mt-4 text-xs text-gray-400">
-                        Format yang didukung: .xlsx dan .xls
-                    </p>
-
-                </div>
-
-                <!-- selected file -->
-                <div
-                    x-show="hasFile"
-                    x-transition
-                    class="flex min-h-72 flex-col items-center justify-center text-center">
-
-                    <div
-                        class="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-emerald-50 text-emerald-600 shadow-sm">
-
-                        <iconify-icon
-                            icon="file-icons:microsoft-excel"
-                            width="50"
-                            height="50">
-                        </iconify-icon>
-
-                    </div>
-
-                    <h2 class="text-xl font-bold text-gray-800">
-                        File Siap Diimport
-                    </h2>
-
-                    <div
-                        class="mt-5 w-full max-w-md rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
-
-                        <div class="flex items-center justify-between gap-4">
-
-                            <div class="flex min-w-0 items-center gap-3">
-
-                                <div
-                                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
-
-                                    <iconify-icon
-                                        icon="solar:file-check-bold"
-                                        width="24"
-                                        height="24">
-                                    </iconify-icon>
-
-                                </div>
-
-                                <div class="min-w-0 text-left">
-
-                                    <p
-                                        x-text="fileName"
-                                        class="truncate text-sm font-semibold text-gray-800">
-                                    </p>
-
-                                    <p
-                                        x-text="fileSize"
-                                        class="mt-1 text-xs text-gray-400">
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                            <button
-                                type="button"
-                                @click.stop="clearFile()"
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 transition hover:bg-rose-500 hover:text-white">
-
-                                <iconify-icon
-                                    icon="lineicons:xmark-circle"
-                                    width="22"
-                                    height="22">
-                                </iconify-icon>
-
-                            </button>
-
+                            <p class="text-xs text-gray-500">
+                                Wajib dipilih
+                            </p>
                         </div>
 
                     </div>
 
-                    <p class="mt-4 text-xs text-gray-400">
-                        Klik area upload untuk mengganti file.
-                    </p>
+                    <div
+                        @click="yearOpen = !yearOpen"
+                        class="{{ $triggerClass }} bg-white">
 
-                </div>
+                        <div class="flex items-center gap-3">
 
-                <!-- upload progress -->
-                <div
-                    x-show="isUploading"
-                    x-transition
-                    class="absolute inset-x-6 bottom-6 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+                            <div
+                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600">
 
-                    <div class="mb-2 flex items-center justify-between text-xs font-semibold text-gray-600">
+                                <iconify-icon
+                                    icon="solar:calendar-date-bold"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
 
-                        <span>Mengupload file...</span>
+                            </div>
 
-                        <span x-text="progress + '%'"></span>
+                            <span
+                                x-text="selectedYear ?? 'Pilih tahun'"
+                                class="text-gray-700">
+                            </span>
+
+                        </div>
+
+                        <iconify-icon
+                            icon="lineicons:chevron-up"
+                            width="20"
+                            height="20"
+                            class="text-gray-400 transition-transform"
+                            :class="{ 'rotate-180': yearOpen }">
+                        </iconify-icon>
 
                     </div>
 
-                    <div class="h-2 overflow-hidden rounded-full bg-gray-200">
+                    <div
+                        x-show="yearOpen"
+                        x-transition
+                        @click.outside="yearOpen = false"
+                        style="display:none"
+                        class="{{ $dropdownClass }} left-5 right-5 w-auto">
+
+                        @foreach (range(now()->year - 10, now()->year + 10) as $tahun)
+
+                            <div
+                                @click.prevent="selectYear({{ $tahun }})"
+                                class="{{ $optionClass }}"
+                                :class="selectedYear == {{ $tahun }} ? 'bg-blue-main text-white' : ''">
+
+                                <div class="flex items-center gap-2">
+
+                                    <span>{{ $tahun }}</span>
+
+                                    @if ($tahun === now()->year)
+                                        <span
+                                            class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold text-cyan-600">
+                                            Tahun ini
+                                        </span>
+                                    @endif
+
+                                </div>
+
+                                <iconify-icon
+                                    x-show="selectedYear == {{ $tahun }}"
+                                    icon="lineicons:check"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                    @error('tahun_masuk')
+                        <p class="{{ $errorClass }}">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
+                    <div
+                        class="mt-5 rounded-2xl border border-cyan-100 bg-white p-4">
+
+                        <p class="text-xs font-medium text-gray-400">
+                            Tahun dipilih
+                        </p>
+
+                        <h4
+                            x-text="selectedYear ?? '-'"
+                            class="mt-1 text-2xl font-bold text-gray-800">
+                        </h4>
+
+                    </div>
+
+                </div>
+
+                <!-- UPLOAD AREA -->
+                <div
+                    class="group relative overflow-hidden rounded-3xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 transition hover:border-blue-main hover:bg-blue-50/40"
+                    :class="dragActive ? 'border-blue-main bg-blue-50' : ''"
+                    @click="if ($refs.fileInput) { $refs.fileInput.click() }"
+                    @dragenter.prevent="dragActive = true"
+                    @dragover.prevent="dragActive = true"
+                    @dragleave.prevent="dragActive = false"
+                    @drop.prevent="dragActive = false; setFileFromDrop($event)">
+
+                    <input
+                        type="file"
+                        x-ref="fileInput"
+                        wire:model="file"
+                        accept=".xlsx,.xls"
+                        class="hidden"
+                        @change="setFileFromInput($event)">
+
+                    <!-- EMPTY STATE -->
+                    <div
+                        x-show="!hasFile"
+                        class="flex min-h-80 flex-col items-center justify-center text-center">
 
                         <div
-                            class="h-full rounded-full bg-gradient-to-r from-blue-main to-blue-deep transition-all duration-300"
-                            :style="`width: ${progress}%`">
+                            class="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-white text-blue-main shadow-sm transition group-hover:-translate-y-1">
+
+                            <iconify-icon
+                                icon="solar:cloud-upload-bold"
+                                width="48"
+                                height="48">
+                            </iconify-icon>
+
+                        </div>
+
+                        <h2 class="text-xl font-bold text-gray-800">
+                            Upload File Excel
+                        </h2>
+
+                        <p class="mt-2 max-w-md text-sm leading-relaxed text-gray-500">
+                            Drag & drop file di area ini atau klik tombol di bawah untuk memilih file dari perangkat.
+                        </p>
+
+                        <div
+                            class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-blue-main px-5 py-3 text-sm font-semibold text-white shadow-lg transition group-hover:bg-blue-deep-solid">
+
+                            <iconify-icon
+                                icon="solar:folder-open-bold"
+                                width="20"
+                                height="20">
+                            </iconify-icon>
+
+                            Pilih File Excel
+
+                        </div>
+
+                        <p class="mt-4 text-xs text-gray-400">
+                            Format yang didukung: .xlsx dan .xls
+                        </p>
+
+                    </div>
+
+                    <!-- SELECTED FILE -->
+                    <div
+                        x-show="hasFile"
+                        x-transition
+                        class="flex min-h-80 flex-col items-center justify-center text-center">
+
+                        <div
+                            class="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-emerald-50 text-emerald-600 shadow-sm">
+
+                            <iconify-icon
+                                icon="file-icons:microsoft-excel"
+                                width="50"
+                                height="50">
+                            </iconify-icon>
+
+                        </div>
+
+                        <h2 class="text-xl font-bold text-gray-800">
+                            File Siap Diimport
+                        </h2>
+
+                        <div
+                            class="mt-5 w-full max-w-md rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+
+                            <div class="flex items-center justify-between gap-4">
+
+                                <div class="flex min-w-0 items-center gap-3">
+
+                                    <div
+                                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+
+                                        <iconify-icon
+                                            icon="solar:file-check-bold"
+                                            width="24"
+                                            height="24">
+                                        </iconify-icon>
+
+                                    </div>
+
+                                    <div class="min-w-0 text-left">
+
+                                        <p
+                                            x-text="fileName"
+                                            class="truncate text-sm font-semibold text-gray-800">
+                                        </p>
+
+                                        <p
+                                            x-text="fileSize"
+                                            class="mt-1 text-xs text-gray-400">
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click.stop="clearFile()"
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 transition hover:bg-rose-500 hover:text-white">
+
+                                    <iconify-icon
+                                        icon="lineicons:xmark-circle"
+                                        width="22"
+                                        height="22">
+                                    </iconify-icon>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <p class="mt-4 text-xs text-gray-400">
+                            Klik area upload untuk mengganti file.
+                        </p>
+
+                    </div>
+
+                    <!-- UPLOAD PROGRESS -->
+                    <div
+                        x-show="isUploading"
+                        x-transition
+                        class="absolute inset-x-6 bottom-6 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+
+                        <div class="mb-2 flex items-center justify-between text-xs font-semibold text-gray-600">
+
+                            <span>Mengupload file...</span>
+
+                            <span x-text="progress + '%'"></span>
+
+                        </div>
+
+                        <div class="h-2 overflow-hidden rounded-full bg-gray-200">
+
+                            <div
+                                class="h-full rounded-full bg-gradient-to-r from-blue-main to-blue-deep transition-all duration-300"
+                                :style="`width: ${progress}%`">
+                            </div>
+
                         </div>
 
                     </div>
@@ -288,7 +444,7 @@
             @enderror
 
             <!-- IMPORT STATUS -->
-            <div class="mt-5 space-y-4">
+            <div class="mt-6 space-y-4">
 
                 <div
                     wire:loading
@@ -396,7 +552,7 @@
 
                                 <div>
                                     <h3 class="font-bold text-gray-800">
-                                        Sedang Memproses Data
+                                        Sedang Memproses Data Murid
                                     </h3>
 
                                     <p class="text-sm text-gray-500">
@@ -443,8 +599,7 @@
                 @endif
 
                 @if (!$isImporting && ($importedCount || $skippedCount))
-                    <div
-                        class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                         <div
                             class="rounded-3xl border border-emerald-100 bg-emerald-50 p-4">
@@ -535,7 +690,7 @@
 
                 <button
                     type="button"
-                    @click="openModalImport = false"
+                    @click="closeModal()"
                     class="rounded-2xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
 
                     Batal
@@ -547,7 +702,7 @@
                     wire:click="import"
                     wire:loading.attr="disabled"
                     wire:target="import,file"
-                    :disabled="!hasFile || isUploading"
+                    :disabled="!canImport"
                     class="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60">
 
                     <iconify-icon

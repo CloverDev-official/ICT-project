@@ -391,24 +391,24 @@
             <!-- TAHUN MASUK -->
             <div
                 x-data="{
-        open: false,
-        selectedId: null,
-        selectedLabel: null,
-        currentYear: {{ now()->year }},
+                open: false,
+                selectedId: null,
+                selectedLabel: null,
+                currentYear: {{ now()->year }},
 
-        toggle() {
-            this.open = !this.open
-        },
+                toggle() {
+                    this.open = !this.open
+                },
 
-        select(year) {
-            this.selectedId = year
-            this.selectedLabel = year
-            this.open = false
+                select(year) {
+                    this.selectedId = year
+                    this.selectedLabel = year
+                    this.open = false
 
-            $wire.set('tahun_masuk', year)
-        }
-    }"
-                class="relative">
+                    $wire.set('tahun_masuk', year)
+                }
+            }"
+            class="relative">
 
                 <label class="{{ $labelClass }}">
                     Tahun Masuk
