@@ -4,17 +4,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>{{ $title ?? config('ICT') }}</title>
+        <title>{{ $title ?? config('app.name') }}</title>
 
         <!-- favicon -->
         <link rel="shortcut icon" href="{{ asset('assets/img/logo_smkn_2.png') }}" type="image/x-icon">
 
-        <!-- Iconify -->
-        <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
-        <!-- AOS JS -->
-        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        <!-- Iconify -->
+        <script defer src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -26,9 +27,6 @@
         {{ $slot }}
 
         @livewireScripts
-        <script>
-            AOS.init();
-        </script>
 
         {!! ToastMagic::scripts() !!}
     </body>

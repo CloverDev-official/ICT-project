@@ -1,13 +1,23 @@
 import "./bootstrap";
-// import "./chart";
 import "./toastFlash";
-import "./scanner";
-import "./progress";
-import "./generateQR";
-import "./generateCard";
+// import "./chart";
+// import "./scanner";
+// import "./progress";
+// import "./generateQR";
+// import "./generateCard";
 
-document.addEventListener('livewire:init', async () => {
-    if (document.getElementById('chart')) {
-        await import('./chart.js');
-    }
-});
+if (document.getElementById("reader")) {
+  import("./scanner");
+}
+
+if (document.querySelector("[data-generate-qr]")) {
+  import("./generateQR");
+}
+
+if (document.querySelector("[data-generate-card]")) {
+  import("./generateCard");
+}
+
+if (document.getElementById("main-murid") || document.getElementById("main-guru")) {
+  import("./chart").then(() => window.initCharts?.());
+}
