@@ -3,6 +3,8 @@
     $dropdownClass = 'absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin';
     $optionClass = 'flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white';
     $errorClass = 'mt-2 text-sm text-rose-500';
+
+    $tahunSekarang = now()->year;
 @endphp
 
 <div
@@ -14,7 +16,7 @@
         dragActive: false,
 
         yearOpen: false,
-        selectedYear: null,
+        selectedYear: {{ $tahunSekarang }},
 
         get hasFile() {
             return this.fileName && this.fileName.length > 0
@@ -53,7 +55,7 @@
             this.selectedYear = year
             this.yearOpen = false
 
-            $wire.set('tahun_masuk', year)
+            $wire.set('tahunMasuk', year)
         },
 
         clearFile() {
@@ -167,7 +169,7 @@
                             </h3>
 
                             <p class="text-xs text-gray-500">
-                                Wajib dipilih
+                                Tahun masuk digunakan sebagai acuan kelas paling bawah (misalnya kelas X), sehingga tahun ajaran untuk kelas di atasnya seperti XI dan XII dapat ditentukan secara otomatis.
                             </p>
                         </div>
 
@@ -214,7 +216,7 @@
                         style="display:none"
                         class="{{ $dropdownClass }} left-5 right-5 w-auto">
 
-                        @foreach (range(now()->year - 10, now()->year + 10) as $tahun)
+                        @foreach (range($tahunSekarang - 10, $tahunSekarang + 10) as $tahun)
 
                             <div
                                 @click.prevent="selectYear({{ $tahun }})"
@@ -225,7 +227,7 @@
 
                                     <span>{{ $tahun }}</span>
 
-                                    @if ($tahun === now()->year)
+                                    @if ($tahun === $tahunSekarang)
                                         <span
                                             class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold text-cyan-600">
                                             Tahun ini
@@ -247,7 +249,7 @@
 
                     </div>
 
-                    @error('tahun_masuk')
+                    @error('tahunMasuk')
                         <p class="{{ $errorClass }}">
                             {{ $message }}
                         </p>

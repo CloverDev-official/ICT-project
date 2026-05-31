@@ -76,6 +76,10 @@
             'active' => 'mdi:account-school',
             'inactive' => 'mdi:account-school-outline'
         ],
+        'manajemenRole' => [
+            'active' => 'mdi:shield-account',
+            'inactive' => 'mdi:shield-account-outline'
+        ],
         'pengaturan' => [
             'active' => 'mdi:gear',
             'inactive' => 'mdi:gear-outline'

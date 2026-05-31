@@ -7,7 +7,6 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -50,17 +49,59 @@ class User extends Authenticatable
 
     public function hasRole(string $role): bool
     {
-        return $this->role->name === $role;
+        return $this->role?->name === $role;
     }
 
     public function canAccess(string $permission): bool
     {
-        $role = Str::slug($this->role?->name ?? '');
+        if ($this->role?->id === 1) {
+            return true;
+        }
 
-        return in_array(
-            $permission,
-            config("roles.$role", [])
-        );
+        $permissions = $this->role?->permissions;
+
+        if (is_array($permissions)) {
+            return in_array($permission, $permissions, true);
+        }
+
+        return false;
+    }
+
+    public function defaultRouteName(): string
+    {
+        $routeMap = [
+            'dashboard' => 'dashboard',
+            'pilih-absen' => 'pilih-absen',
+            'laporan' => 'rekap-absen-murid',
+            'rekap-absen-murid' => 'rekap-absen-murid',
+            'rekap-absen-guru' => 'rekap-absen-guru',
+            'riwayat' => 'riwayat-absen-murid',
+            'absensi' => 'absensi-murid',
+            'absensi-murid' => 'absensi-murid',
+            'absensi-guru' => 'absensi-guru',
+            'data-master' => 'data-murid',
+            'data-murid' => 'data-murid',
+            'data-guru' => 'data-guru',
+            'data-kelas' => 'data-kelas',
+            'data-jurusan' => 'data-jurusan',
+            'manajemen' => 'manajemen-waktu',
+            'generate-qr' => 'generate-QR',
+            'manajemen-waktu' => 'manajemen-waktu',
+            'manajemen-murid' => 'manajemen-murid',
+            'manajemen-lainnya' => 'manajemen-tahun-ajaran',
+            'manajemen-role' => 'manajemen-role',
+            'manajemen-tahun-ajaran' => 'manajemen-tahun-ajaran',
+            'pengaturan' => 'pengaturan',
+            'profil' => 'profil',
+        ];
+
+        foreach ($routeMap as $permission => $routeName) {
+            if ($this->canAccess($permission)) {
+                return $routeName;
+            }
+        }
+
+        return 'profil';
     }
 
     public function role()

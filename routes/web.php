@@ -29,6 +29,7 @@ use App\Livewire\Guru\Create as CreateGuru;
 use App\Livewire\Guru\Edit as EditGuru;
 
 use App\Livewire\Manajemen\GenerateQR;
+use App\Livewire\Manajemen\Role\Index as IndexRole;
 use App\Livewire\Manajemen\TahunAjaran;
 use App\Livewire\Manajemen\Waktu\ManajemenWaktu;
 use App\Livewire\Manajemen\Waktu\TambahEvent;
@@ -142,11 +143,14 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         // generate
         Route::get('/generate-qr', GenerateQR::class)->middleware('access:generate-qr')->name('generate-QR');
         
+        // role akses
+        Route::get('/role', IndexRole::class)->middleware('access:manajemen-role')->name('manajemen-role');
+
         Route::middleware('access:manajemen-lainnya')->group( function () {
 
             // tahun ajaran
             Route::get('/tahun-ajaran', TahunAjaran::class)->name('manajemen-tahun-ajaran');
-            
+
             // manajemen user group
             Route::prefix('/user')->group( function () {
                 Route::get('/', IndexUser::class)->name('manajemen-user');

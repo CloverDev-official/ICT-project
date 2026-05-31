@@ -9,7 +9,11 @@ class Role extends Model
 {
     protected $table = 'role';
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'permissions'];
+
+    protected $casts = [
+        'permissions' => 'array',
+    ];
 
     public function roleGuruRombel()
     {
@@ -18,5 +22,10 @@ class Role extends Model
 
     public function admin(){
         return $this->hasMany(Admin::class, 'role_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'role_id');
     }
 }

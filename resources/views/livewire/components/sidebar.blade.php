@@ -289,7 +289,7 @@
 
             <!-- manajemen -->
             @if($user?->canAccess('manajemen'))
-            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran']) ? 'true' : 'false' }}}">
+            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran', 'manajemen-role']) ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -339,6 +339,14 @@
                     <li>
                         <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
                             generate QR
+                        </x-nav-link>
+                    </li>
+                    @endif
+
+                    @if($user?->canAccess('manajemen-role'))
+                    <li>
+                        <x-nav-link href="{{ route('manajemen-role') }}" icon="manajemenRole">
+                            role akses
                         </x-nav-link>
                     </li>
                     @endif

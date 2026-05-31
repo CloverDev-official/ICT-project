@@ -22,7 +22,14 @@ class ModalImportMurid extends Component
     public bool $isImporting = false;
     public int $currentRow = 6;
     public int $chunkSize = 300;
+    public int $tahunMasuk = 0;
     private int $maxExecutionTime = 120;
+
+
+    public function mount(): void
+    {
+        $this->tahunMasuk = now()->year;
+    }
 
     public function import(): void
     {

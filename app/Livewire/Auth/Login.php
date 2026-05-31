@@ -37,7 +37,9 @@ class Login extends Component
             return;
         }
 
-        $this->redirectRoute('dashboard', navigate: true);
+        $routeName = auth()->user()?->defaultRouteName() ?? 'dashboard';
+
+        $this->redirectRoute($routeName, navigate: true);
     }
 
 
