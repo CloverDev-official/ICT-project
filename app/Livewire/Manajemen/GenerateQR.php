@@ -4,9 +4,7 @@ namespace App\Livewire\Manajemen;
 
 use App\Helpers\QRCodeHelper;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel\Indeks;
-use App\Models\Murid\Rombel\Jurusan;
-use App\Models\Murid\Rombel\Rombel;
+use App\Services\Rombel\RombelFilterService;
 use Fruitcake\LaravelDebugbar\Facades\Debugbar;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -39,70 +37,57 @@ class GenerateQR extends Component
         $this->refreshFilterOptions();
     }
 
+    private function rombelFilterService(): RombelFilterService
+    {
+        return app(RombelFilterService::class);
+    }
+
     private function applyRombelFilter($q)
     {
         $filterTingkat = $this->isGenerating ? $this->activeFilterTingkat : $this->filterTingkat;
         $filterJurusan = $this->isGenerating ? $this->activeFilterJurusan : $this->filterJurusan;
         $filterIndeks = $this->isGenerating ? $this->activeFilterIndeks : $this->filterIndeks;
-
-        $q->when(
-            $filterTingkat,
-            fn($q) => $q->where('tingkat_id', $filterTingkat),
-        )
-            ->when(
-                $filterJurusan,
-                fn($q) => $q->where('jurusan_id', $filterJurusan),
-            )
-            ->when(
-                $filterIndeks,
-                fn($q) => $q->where('indeks_id', $filterIndeks),
-            );
+        $this->rombelFilterService()->applyRombelFilters($q, $filterTingkat, $filterJurusan, $filterIndeks, null);
     }
 
     private function rombelBaseQuery()
     {
-        return Rombel::query()->tap(fn($q) => $this->applyRombelFilter($q));
+        return app(RombelFilterService::class)->getRombelList(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            null,
+        );
     }
 
     private function getRombel()
     {
-        return $this->rombelBaseQuery()
-            ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
-            ->get();
+        return $this->rombelFilterService()->getRombelList(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            null,
+        );
     }
 
     private function getAvailableJurusan()
     {
-        return Jurusan::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')->select('jurusan_id');
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterIndeks) {
-                    $q->where('indeks_id', $this->filterIndeks);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
+        return $this->rombelFilterService()->getAvailableJurusan(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            null,
+        );
     }
 
     private function getAvailableIndeks()
     {
-        return Indeks::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')->select('indeks_id');
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterJurusan) {
-                    $q->where('jurusan_id', $this->filterJurusan);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
+        return $this->rombelFilterService()->getAvailableIndeks(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            null,
+        );
     }
 
     private function loadChunk()
@@ -115,12 +100,14 @@ class GenerateQR extends Component
             ->with([
                 'rombel:id,tingkat_id,jurusan_id,indeks_id',
             ])
-            ->when($hasFilter, function ($q) {
-                $q->whereHas(
-                    'rombel',
-                    fn($q) => $this->applyRombelFilter($q),
-                );
-            });
+            ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+                $q,
+                'rombel',
+                $this->isGenerating ? $this->activeFilterTingkat : $this->filterTingkat,
+                $this->isGenerating ? $this->activeFilterJurusan : $this->filterJurusan,
+                $this->isGenerating ? $this->activeFilterIndeks : $this->filterIndeks,
+                null,
+            ));
 
         $this->totalData = $this->totalData?: (clone $query)->count();
 

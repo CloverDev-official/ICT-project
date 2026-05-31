@@ -7,9 +7,8 @@ use Livewire\WithPagination;
 use App\Models\Murid\AbsenMurid;
 use App\Models\Guru\Guru;
 use App\Models\Murid\Rombel\Rombel;
-use App\Models\Murid\Rombel\Jurusan;
-use App\Models\Murid\Rombel\Indeks;
 use Illuminate\Support\Str;
+use App\Services\Rombel\RombelFilterService;
 
 class Index extends Component
 {
@@ -89,70 +88,19 @@ class Index extends Component
         $this->filterIndeks = $this->lockedIndeksId;
     }
 
-    private function applyRombelFilter($q)
+    private function rombelFilterService(): RombelFilterService
     {
-        if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-            $q->whereIn('id', $this->waliRombelIds);
-        }
-
-        $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-          ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
-          ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
-    }
-
-    private function rombelBaseQuery()
-    {
-        return Rombel::query()
-            ->tap(fn ($q) => $this->applyRombelFilter($q));
+        return app(RombelFilterService::class);
     }
 
     private function getRombel()
     {
-        return $this->rombelBaseQuery()
-            ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
-            ->get();
-    }
-
-    private function getAvailableJurusan()
-    {
-        return Jurusan::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')
-                  ->select('jurusan_id');
-
-                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-                    $q->whereIn('id', $this->waliRombelIds);
-                }
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterIndeks) {
-                    $q->where('indeks_id', $this->filterIndeks);
-                }
-            })
-            ->orderBy('nama')
-            ->get(['id', 'nama']);
-    }
-
-    private function getAvailableIndeks()
-    {
-        return Indeks::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')
-                  ->select('indeks_id');
-
-                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-                    $q->whereIn('id', $this->waliRombelIds);
-                }
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterJurusan) {
-                    $q->where('jurusan_id', $this->filterJurusan);
-                }
-            })
-            ->orderBy('nama')
-            ->get(['id', 'nama']);
+        return $this->rombelFilterService()->getRombelList(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->waliRombelIds,
+        );
     }
 
     private function getAbsen()
@@ -177,26 +125,32 @@ class Index extends Component
             ->when($this->filterTanggal, fn ($q) =>
                 $q->whereDate('tanggal', $this->filterTanggal)
             )
-            ->when(
-                $this->filterTingkat || $this->filterJurusan || $this->filterIndeks,
-                function ($q) {
-                    $q->whereHas('murid.rombel', fn ($q) => $this->applyRombelFilter($q));
-                }
-            )
-            ->when(
-                $this->isWaliKelas && $this->waliRombelIds !== null,
-                function ($q) {
-                    $q->whereHas('murid.rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds));
-                }
-            )
+            ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+                $q,
+                'murid.rombel',
+                $this->filterTingkat,
+                $this->filterJurusan,
+                $this->filterIndeks,
+                $this->waliRombelIds,
+            ))
             ->orderByDesc('tanggal')
             ->fastPaginate($this->perPage);
     }
 
     private function refreshFilterOptions(): void
     {
-        $this->filteredJurusan = $this->getAvailableJurusan();
-        $this->filteredIndeks  = $this->getAvailableIndeks();
+        $this->filteredJurusan = $this->rombelFilterService()->getAvailableJurusan(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->waliRombelIds,
+        );
+        $this->filteredIndeks = $this->rombelFilterService()->getAvailableIndeks(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->waliRombelIds,
+        );
     }
 
     public function updatedFilterTingkat(): void

@@ -8,6 +8,7 @@ use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
+use App\Services\Rombel\RombelFilterService;
 use App\Exports\Murid\RekapKehadiranExport;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -106,78 +107,49 @@ class Index extends Component
         $this->filterIndeks = $this->lockedIndeksId;
     }
 
+    private function rombelFilterService(): RombelFilterService
+    {
+        return app(RombelFilterService::class);
+    }
+
     private function applyRombelFilter($q)
     {
-        if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-            $q->whereIn('id', $this->waliRombelIds);
-        }
-
-        $q->when(
-            $this->filterTingkat,
-            fn($q) => $q->where('tingkat_id', $this->filterTingkat),
-        )
-            ->when(
-                $this->filterJurusan,
-                fn($q) => $q->where('jurusan_id', $this->filterJurusan),
-            )
-            ->when(
-                $this->filterIndeks,
-                fn($q) => $q->where('indeks_id', $this->filterIndeks),
-            );
+        $this->rombelFilterService()->applyRombelFilters($q, $this->filterTingkat, $this->filterJurusan, $this->filterIndeks, $this->isWaliKelas ? $this->waliRombelIds : null);
     }
 
     private function rombelBaseQuery()
     {
-        return Rombel::query()->tap(fn($q) => $this->applyRombelFilter($q));
+        return Rombel::query()->tap(fn($q) => $this->rombelFilterService()->applyRombelFilters($q, $this->filterTingkat, $this->filterJurusan, $this->filterIndeks, $this->isWaliKelas ? $this->waliRombelIds : null));
     }
 
     private function getRombel()
     {
-        return $this->rombelBaseQuery()
-            ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
-            ->get();
+        return $this->rombelFilterService()->getRombelList(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->isWaliKelas ? $this->waliRombelIds : null,
+        );
     }
 
     private function getAvailableJurusan()
     {
-        return Jurusan::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')->select('jurusan_id');
-
-                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-                    $q->whereIn('id', $this->waliRombelIds);
-                }
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterIndeks) {
-                    $q->where('indeks_id', $this->filterIndeks);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
+        return $this->rombelFilterService()->getAvailableJurusan(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->isWaliKelas ? $this->waliRombelIds : null,
+        );
     }
 
     private function getAvailableIndeks()
     {
-        return Indeks::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')->select('indeks_id');
-
-                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-                    $q->whereIn('id', $this->waliRombelIds);
-                }
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterJurusan) {
-                    $q->where('jurusan_id', $this->filterJurusan);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
+        return $this->rombelFilterService()->getAvailableIndeks(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->isWaliKelas ? $this->waliRombelIds : null,
+        );
     }
 
     private function getTanggalDari(): string
@@ -221,26 +193,14 @@ class Index extends Component
     private function absenFilterBaseQuery()
     {
         return AbsenMurid::query()
-            ->when(
-                $this->filterTingkat ||
-                    $this->filterJurusan ||
-                    $this->filterIndeks,
-                function ($q) {
-                    $q->whereHas(
-                        'murid.rombel',
-                        fn($q) => $this->applyRombelFilter($q),
-                    );
-                },
-            )
-            ->when(
-                $this->isWaliKelas && $this->waliRombelIds !== null,
-                function ($q) {
-                    $q->whereHas(
-                        'murid.rombel',
-                        fn($q) => $q->whereIn('id', $this->waliRombelIds),
-                    );
-                },
-            );
+            ->tap(fn($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+                $q,
+                'murid.rombel',
+                $this->filterTingkat,
+                $this->filterJurusan,
+                $this->filterIndeks,
+                $this->isWaliKelas ? $this->waliRombelIds : null,
+            ));
     }
 
     private function absenBaseQuery()
@@ -286,17 +246,14 @@ class Index extends Component
     private function getStatistik(): array
     {
         $totalMurid = Murid::query()
-            ->when(
-                $this->filterTingkat ||
-                    $this->filterJurusan ||
-                    $this->filterIndeks,
-                function ($q) {
-                    $q->whereHas(
-                        'rombel',
-                        fn($q) => $this->applyRombelFilter($q),
-                    );
-                },
-            )
+            ->tap(fn($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+                $q,
+                'rombel',
+                $this->filterTingkat,
+                $this->filterJurusan,
+                $this->filterIndeks,
+                $this->isWaliKelas ? $this->waliRombelIds : null,
+            ))
             ->when(
                 $this->isWaliKelas && $this->waliRombelIds !== null,
                 fn($q) => $q->whereIn('rombel_id', $this->waliRombelIds),
@@ -305,12 +262,17 @@ class Index extends Component
 
         $baseQuery = $this->absenBaseQuery();
 
-        $hadir = (clone $baseQuery)->where('status', 'Hadir')->count();
-        $sakit = (clone $baseQuery)->where('status', 'Sakit')->count();
-        $izin = (clone $baseQuery)->where('status', 'Izin')->count();
+        $rows = (clone $baseQuery)
+            ->selectRaw('status, COUNT(*) as total')
+            ->whereIn('status', ['Hadir', 'Sakit', 'Izin'])
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $persentase =
-            $totalMurid > 0 ? (int) round(($hadir / $totalMurid) * 100) : 0;
+        $hadir = (int) ($rows['Hadir'] ?? 0);
+        $sakit = (int) ($rows['Sakit'] ?? 0);
+        $izin = (int) ($rows['Izin'] ?? 0);
+
+        $persentase = $totalMurid > 0 ? (int) round(($hadir / $totalMurid) * 100) : 0;
 
         return [
             'totalMurid' => $totalMurid,

@@ -4,10 +4,8 @@ namespace App\Livewire\Murid\Riwayat;
 
 use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel\Indeks;
-use App\Models\Murid\Rombel\Jurusan;
-use App\Models\Murid\Rombel\Rombel;
 use App\Models\Murid\Rombel\Tingkat;
+use App\Services\Rombel\RombelFilterService;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -89,67 +87,14 @@ class RiwayatMurid extends Component
         $this->filterIndeks = $this->lockedIndeksId;
     }
 
-    private function applyRombelFilter($q)
+    private function rombelFilterService(): RombelFilterService
     {
-        if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-            $q->whereIn('id', $this->waliRombelIds);
-        }
-
-        $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-          ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
-          ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
-    }
-
-    private function rombelBaseQuery()
-    {
-        return Rombel::query()->tap(fn ($q) => $this->applyRombelFilter($q));
+        return app(RombelFilterService::class);
     }
 
     private function getTingkat()
     {
         return Tingkat::query()
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
-    }
-
-    private function getAvailableJurusan()
-    {
-        return Jurusan::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')->select('jurusan_id');
-
-                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-                    $q->whereIn('id', $this->waliRombelIds);
-                }
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterIndeks) {
-                    $q->where('indeks_id', $this->filterIndeks);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
-    }
-
-    private function getAvailableIndeks()
-    {
-        return Indeks::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')->select('indeks_id');
-
-                if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-                    $q->whereIn('id', $this->waliRombelIds);
-                }
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterJurusan) {
-                    $q->where('jurusan_id', $this->filterJurusan);
-                }
-            })
             ->orderBy('nama')
             ->orderBy('id')
             ->get(['id', 'nama']);
@@ -168,18 +113,14 @@ class RiwayatMurid extends Component
                       ->orWhere('nisn', $search);
                 });
             })
-            ->when(
-                $this->filterTingkat || $this->filterJurusan || $this->filterIndeks,
-                function ($q) {
-                    $q->whereHas('rombel', fn ($q) => $this->applyRombelFilter($q));
-                }
-            )
-            ->when(
-                $this->isWaliKelas && $this->waliRombelIds !== null,
-                function ($q) {
-                    $q->whereHas('rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds));
-                }
-            )
+            ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+                $q,
+                'rombel',
+                $this->filterTingkat,
+                $this->filterJurusan,
+                $this->filterIndeks,
+                $this->waliRombelIds,
+            ))
             ->orderBy('nama')
             ->orderBy('id');
     }
@@ -196,8 +137,18 @@ class RiwayatMurid extends Component
 
     private function refreshFilterOptions(): void
     {
-        $this->filteredJurusan = $this->getAvailableJurusan();
-        $this->filteredIndeks = $this->getAvailableIndeks();
+        $this->filteredJurusan = $this->rombelFilterService()->getAvailableJurusan(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->waliRombelIds,
+        );
+        $this->filteredIndeks = $this->rombelFilterService()->getAvailableIndeks(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            $this->waliRombelIds,
+        );
     }
 
     public function updatedFilterTingkat(): void
