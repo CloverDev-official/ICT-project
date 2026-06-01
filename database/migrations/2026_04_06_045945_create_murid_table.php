@@ -47,6 +47,7 @@ return new class extends Migration
                 ->cascadeOnUpdate();
 
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['ulid','nama', 'rombel_id']);
         });

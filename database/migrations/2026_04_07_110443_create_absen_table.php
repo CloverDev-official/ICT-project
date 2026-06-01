@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('keterangan')->nullable();
             $table->time('waktu_masuk')->nullable();
             $table->time('waktu_keluar')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index(['murid_id', 'tanggal']);
@@ -32,6 +33,7 @@ return new class extends Migration
             $table->string('keterangan')->nullable();
             $table->time('waktu_masuk')->nullable();
             $table->time('waktu_keluar')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
