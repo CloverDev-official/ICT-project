@@ -4,6 +4,7 @@ namespace App\Livewire\Manajemen\User;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Helpers\ToastMagic;
 use Fruitcake\LaravelDebugbar\Facades\Debugbar;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -60,6 +61,22 @@ class Index extends Component
     public function refreshData(): void
     {
         $this->resetPage();
+    }
+
+    public function toggleStatus(int $userId): void
+    {
+        $user = User::query()->with('role')->findOrFail($userId);
+
+        if ($user->role_id === 1) {
+            ToastMagic::warning('User super-admin tidak bisa dinonaktifkan.');
+            return;
+        }
+
+        $user->update([
+            'is_active' => ! $user->is_active,
+        ]);
+
+        ToastMagic::success('Status user berhasil diperbarui.');
     }
 
     public function render()

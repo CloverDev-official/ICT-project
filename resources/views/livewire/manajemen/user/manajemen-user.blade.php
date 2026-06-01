@@ -264,6 +264,13 @@
                                 'nonaktif' => 'bg-rose-100 text-rose-600',
                                 default => 'bg-green-100 text-green-600',
                             };
+
+                            $isSuperAdmin = $user->role_id === 1;
+                            $toggleLabel = $user->is_active ? 'Nonaktifkan user' : 'Aktifkan user';
+                            $toggleIcon = $user->is_active ? 'lineicons:ban-2' : 'lineicons:checkmark';
+                            $toggleClass = $user->is_active
+                                ? 'bg-rose-500 hover:bg-rose-600'
+                                : 'bg-emerald-500 hover:bg-emerald-600';
                         @endphp
 
                         <tr class="border-t border-gray-100 transition hover:bg-gray-50">
@@ -340,10 +347,15 @@
 
                                     <!-- ban -->
                                     <button
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-600">
+                                        type="button"
+                                        title="{{ $isSuperAdmin ? 'Super-admin tidak bisa dinonaktifkan' : $toggleLabel }}"
+                                        @disabled($isSuperAdmin)
+                                        onclick="return confirm('Ubah status user ini?')"
+                                        wire:click="toggleStatus({{ $user->id }})"
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 {{ $toggleClass }}">
 
                                         <iconify-icon
-                                            icon="lineicons:ban-2"
+                                            icon="{{ $toggleIcon }}"
                                             width="20"
                                             height="20">
                                         </iconify-icon>
