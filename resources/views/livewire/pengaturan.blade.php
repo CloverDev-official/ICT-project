@@ -1,5 +1,10 @@
 <div class="mb-20 space-y-6">
 
+    @php
+        $logoSource = $logo ? $logo->temporaryUrl() : $logoPreview;
+        $loginImageSource = $loginImage ? $loginImage->temporaryUrl() : $loginImagePreview;
+    @endphp
+
     <!-- HERO -->
     <div
         class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main via-blue-deep to-[#07162f] p-6 shadow-lg">
@@ -222,21 +227,7 @@
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
                     <!-- LOGO -->
-                    <div
-                        x-data="{
-                            preview: null,
-
-                            setPreview(event) {
-                                const file = event.target.files[0]
-
-                                if (!file) {
-                                    return
-                                }
-
-                                this.preview = URL.createObjectURL(file)
-                            }
-                        }"
-                        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+                    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
                         <!-- preview -->
                         <div
@@ -246,16 +237,9 @@
                                 class="flex h-36 w-36 items-center justify-center overflow-hidden rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
 
                                 <img
-                                    x-show="preview"
-                                    :src="preview"
+                                    src="{{ $logoSource }}"
                                     class="h-full w-full object-contain"
                                     alt="Preview Logo">
-
-                                <img
-                                    x-show="!preview"
-                                    src="{{ $logoPreview ?? asset('assets/img/logo_smkn_2.png') }}"
-                                    class="h-full w-full object-contain"
-                                    alt="Logo Saat Ini">
 
                             </div>
 
@@ -292,8 +276,7 @@
                                     type="file"
                                     wire:model="logo"
                                     accept="image/*"
-                                    class="hidden"
-                                    @change="setPreview($event)">
+                                    class="hidden">
 
                             </label>
 
@@ -308,37 +291,16 @@
                     </div>
 
                     <!-- GAMBAR LOGIN -->
-                    <div
-                        x-data="{
-                            preview: null,
-
-                            setPreview(event) {
-                                const file = event.target.files[0]
-
-                                if (!file) {
-                                    return
-                                }
-
-                                this.preview = URL.createObjectURL(file)
-                            }
-                        }"
-                        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+                    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
                         <!-- preview -->
                         <div
                             class="relative min-h-64 overflow-hidden bg-gray-100">
 
                             <img
-                                x-show="preview"
-                                :src="preview"
+                                src="{{ $loginImageSource }}"
                                 class="h-64 w-full object-cover"
                                 alt="Preview Gambar Login">
-
-                            <img
-                                x-show="!preview"
-                                src="{{ $loginImagePreview ?? asset('assets/img/skenda-profil.jpeg') }}"
-                                class="h-64 w-full object-cover"
-                                alt="Gambar Login Saat Ini">
 
                             <div
                                 class="absolute inset-0 bg-gradient-to-t from-blue-deep/80 via-blue-deep/20 to-transparent">
@@ -402,8 +364,7 @@
                                     type="file"
                                     wire:model="loginImage"
                                     accept="image/*"
-                                    class="hidden"
-                                    @change="setPreview($event)">
+                                    class="hidden">
 
                             </label>
 
@@ -510,6 +471,7 @@
 
                 <button
                     type="button"
+                    wire:click="resetForm"
                     class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
 
                     Reset
