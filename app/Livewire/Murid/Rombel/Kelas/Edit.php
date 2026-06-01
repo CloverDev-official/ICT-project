@@ -20,7 +20,8 @@ class Edit extends Component
     public Rombel $rombel;
     public ?int $tingkat_id = null;
     public ?int $jurusan_id = null;
-    public ?int $indeks_id = null;
+    public int|string|null $indeks_id = null;
+    public ?int $tahun_masuk = null;
     public ?int $guru_id = null;
 
     public $listTingkat = [];
@@ -36,13 +37,14 @@ class Edit extends Component
 
         $this->listTingkat = Tingkat::query()->orderBy('nama')->get(['id', 'nama']);
         $this->listJurusan = Jurusan::query()->orderBy('nama')->get(['id', 'nama']);
-        $this->listIndeks = Indeks::query()->orderBy('nama')->get(['id', 'nama']);
+        $this->listIndeks = Indeks::options();
         $this->listGuru = Guru::query()->orderBy('nama')->get(['id', 'nama', 'email', 'user_id']);
 
         $this->fill([
             'tingkat_id' => $this->rombel->tingkat_id,
             'jurusan_id' => $this->rombel->jurusan_id,
             'indeks_id' => $this->rombel->indeks_id,
+            'tahun_masuk' => $this->rombel->tahun_masuk,
             'guru_id' => $this->rombel->wali_guru_id,
         ]);
     }
@@ -53,18 +55,8 @@ class Edit extends Component
             [
                 'tingkat_id' => ['required', 'exists:tingkat,id'],
                 'jurusan_id' => ['required', 'exists:jurusan,id'],
-                'indeks_id' => [
-                    'required',
-                    'exists:indeks,id',
-                    Rule::unique('rombel')
-                        ->where(function ($q) {
-                            return $q
-                                ->where('tingkat_id', $this->tingkat_id)
-                                ->where('jurusan_id', $this->jurusan_id)
-                                ->where('indeks_id', $this->indeks_id);
-                        })
-                        ->ignore($this->rombel->id),
-                ],
+                'indeks_id' => ['required'],
+                'tahun_masuk' => ['required', 'integer', 'min:1900', 'max:' . (now()->year + 1)],
                 'guru_id' => ['nullable', 'exists:guru,id'],
             ],
             [
@@ -73,8 +65,8 @@ class Edit extends Component
                 'jurusan_id.required' => 'Jurusan wajib dipilih.',
                 'jurusan_id.exists' => 'Jurusan yang dipilih tidak valid.',
                 'indeks_id.required' => 'Kelas wajib dipilih.',
-                'indeks_id.exists' => 'Kelas yang dipilih tidak valid.',
-                'indeks_id.unique' => 'Kelas tersebut sudah terdaftar.',
+                'tahun_masuk.required' => 'Tahun masuk wajib dipilih.',
+                'tahun_masuk.integer' => 'Tahun masuk tidak valid.',
                 'guru_id.exists' => 'Wali kelas yang dipilih tidak valid.',
             ],
         );
@@ -87,10 +79,30 @@ class Edit extends Component
             return;
         }
 
+        $indeks = Indeks::resolveSelection($this->indeks_id);
+
+        if (!$indeks) {
+            ToastMagic::error('Kelas yang dipilih tidak valid.');
+            return;
+        }
+
+        $exists = Rombel::query()
+            ->where('tingkat_id', $this->tingkat_id)
+            ->where('jurusan_id', $this->jurusan_id)
+            ->where('indeks_id', $indeks->id)
+            ->whereKeyNot($this->rombel->id)
+            ->exists();
+
+        if ($exists) {
+            ToastMagic::error('Kelas tersebut sudah terdaftar.');
+            return;
+        }
+
         $this->rombel->update([
+            'tahun_masuk' => $this->tahun_masuk,
             'tingkat_id' => $this->tingkat_id,
             'jurusan_id' => $this->jurusan_id,
-            'indeks_id' => $this->indeks_id,
+            'indeks_id' => $indeks->id,
             'wali_guru_id' => $this->guru_id,
         ]);
 

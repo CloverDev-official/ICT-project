@@ -13,6 +13,7 @@ class Rombel extends Model
     protected $appends = ['nama_lengkap'];
 
     protected $fillable = [
+        'tahun_masuk',
         'tingkat_id',
         'jurusan_id',
         'indeks_id',

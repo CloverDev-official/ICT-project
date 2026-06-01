@@ -22,7 +22,7 @@ class Index extends Component
 
     public ?int $filterTingkat = null;
     public ?int $filterJurusan = null;
-    public ?int $filterIndeks = null;
+    public int|string|null $filterIndeks = null;
 
     public function mount(): void
     {
@@ -77,7 +77,7 @@ class Index extends Component
 
     private function getAvailableIndeks()
     {
-        return Indeks::query()
+        $indeks = Indeks::query()
             ->whereIn('id', function ($q) {
                 $q->from('rombel')
                     ->select('indeks_id');
@@ -91,6 +91,12 @@ class Index extends Component
             ->orderBy('nama')
             ->orderBy('id')
             ->get(['id', 'nama']);
+
+        if ($indeks->isNotEmpty()) {
+            return $indeks;
+        }
+
+        return Indeks::options();
     }
 
     private function refreshFilterOptions(): void

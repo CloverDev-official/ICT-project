@@ -379,14 +379,14 @@
                     @foreach ($listIndeks as $indeks)
 
                     <div
-                        @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                        @click.prevent="select(@js((string) $indeks->id), @js($indeks->nama))"
                         class="{{ $optionClass }}"
-                        :class="selectedId === '{{ (int) $indeks->id }}' ? 'bg-blue-main text-white' : ''">
+                        :class="selectedId === @js((string) $indeks->id) ? 'bg-blue-main text-white' : ''">
 
                         <span>{{ $indeks->nama }}</span>
 
                         <iconify-icon
-                            x-show="selectedId === '{{ (int) $indeks->id }}'"
+                            x-show="selectedId === @js((string) $indeks->id)"
                             icon="lineicons:check"
                             width="18"
                             height="18">
@@ -410,8 +410,8 @@
             <div
                 x-data="{
         open: false,
-        selectedId: null,
-        selectedLabel: null,
+        selectedId: @js((string) ($tahun_masuk ?? '')),
+        selectedLabel: @js($tahun_masuk ? (string) $tahun_masuk : 'Pilih tahun masuk'),
         currentYear: {{ now()->year }},
 
         toggle() {
