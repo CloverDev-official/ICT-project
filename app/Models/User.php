@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -22,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo_path',
         'role_id',
         'is_active',
     ];
@@ -45,6 +48,33 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        $path = $this->profile_photo_path;
+
+        if (!$path) {
+            return asset('assets/img/default-avatar.png');
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            $relativePath = parse_url($path, PHP_URL_PATH);
+            return $relativePath ?: $path;
+        }
+
+        if (Str::startsWith($path, '/')) {
+            return $path;
+        }
+
+        if (Str::startsWith($path, 'assets/')) {
+            return asset($path);
+        }
+
+        $url = Storage::disk('public')->url($path);
+        $relativePath = parse_url($url, PHP_URL_PATH);
+
+        return $relativePath ?: $url;
     }
 
     public function hasRole(string $role): bool

@@ -27,7 +27,7 @@
                         class="relative h-32 w-32 overflow-hidden rounded-[2rem] border border-gray-200 bg-gray-100 shadow-sm">
 
                         <img
-                            src="{{ $profilePhotoPreview ?? $user->profile_photo_url ?? asset('assets/img/default-avatar.png') }}"
+                            src="{{ $profilePhotoPreview ?: ($user->profile_photo_url ?? asset('assets/img/default-avatar.png')) }}"
                             class="h-full w-full object-cover"
                             alt="Foto Profil">
 
@@ -181,7 +181,7 @@
 
                                 <img
                                     x-show="!preview"
-                                    src="{{ $profilePhotoPreview ?? $user->profile_photo_url ?? asset('assets/img/default-avatar.png') }}"
+                                    src="{{ $profilePhotoPreview ?: ($user->profile_photo_url ?? asset('assets/img/default-avatar.png')) }}"
                                     class="h-full w-full object-cover"
                                     alt="Foto Profil Saat Ini">
 
@@ -205,6 +205,7 @@
                                 Pilih Foto Profil
 
                                 <input
+                                    x-ref="photoInput"
                                     type="file"
                                     wire:model="photo"
                                     accept="image/*"
@@ -232,6 +233,8 @@
 
                         <button
                             type="button"
+                            wire:click="resetProfilePhoto"
+                            @click="preview = null; if ($refs.photoInput) { $refs.photoInput.value = null }"
                             class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
 
                             Reset
@@ -466,6 +469,7 @@
 
                         <button
                             type="button"
+                            wire:click="resetPasswordForm"
                             class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
 
                             Batal
