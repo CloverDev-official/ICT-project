@@ -304,32 +304,35 @@
 
 @script
 <script>
-    window.initScanner()
-    document.addEventListener('scanSuccess', () => {
-        window.destroyScanner();
+    import('{{ Vite::asset('resources/js/scanner.js') }}')
+    .then(() => {
+        window.initScanner()
+        document.addEventListener('scanSuccess', () => {
+            window.destroyScanner();
 
-        setTimeout(() => {
-            $wire.set('tersimpan', false);
-            $wire.set('murid', null);
+            setTimeout(() => {
+                $wire.set('tersimpan', false);
+                $wire.set('murid', null);
+                window.scanned = false;
+                window.initScanner();
+            }, 1500);
+        });
+
+        document.addEventListener('scanNotFound', () => {
             window.scanned = false;
-            window.initScanner();
-        }, 1500);
-    });
+        });
 
-    document.addEventListener('scanNotFound', () => {
-        window.scanned = false;
-    });
+        document.addEventListener('scanRejected', () => {
+            window.destroyScanner();
 
-    document.addEventListener('scanRejected', () => {
-        window.destroyScanner();
-
-        setTimeout(() => {
-            $wire.set('scanStatus', null);
-            $wire.set('scanMessage', null);
-            $wire.set('murid', null);
-            window.scanned = false;
-            window.initScanner();
-        }, 2500);
+            setTimeout(() => {
+                $wire.set('scanStatus', null);
+                $wire.set('scanMessage', null);
+                $wire.set('murid', null);
+                window.scanned = false;
+                window.initScanner();
+            }, 2500);
+        });
     });
 </script>
 @endscript

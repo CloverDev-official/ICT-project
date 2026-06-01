@@ -897,94 +897,97 @@
 
 @script
 <script>
-    // =========================
-    // LINE CHART REKAP MURID
-    // =========================
-    const rekapMuridDom = document.getElementById("chart-rekap-absen-murid");
+    import('{{ Vite::asset('resources/js/chart.js') }}')
+    .then(() => {
+        // =========================
+        // LINE CHART REKAP MURID
+        // =========================
+        const rekapMuridDom = document.getElementById("chart-rekap-absen-murid");
 
-    if (rekapMuridDom) {
-        const chartData = @js($chartRekap);
-        const rekapChart = echarts.getInstanceByDom(rekapMuridDom) ?? echarts.init(rekapMuridDom);
+        if (rekapMuridDom) {
+            const chartData = @js($chartRekap);
+            const rekapChart = echarts.getInstanceByDom(rekapMuridDom) ?? echarts.init(rekapMuridDom);
 
-        const applyChart = (payload) => {
-            rekapChart.setOption({
-            tooltip: {
-                trigger: "axis"
-            },
-
-            toolbox: {
-                show: true,
-                feature: {
-                    saveAsImage: {},
-                },
-            },
-
-            grid: {
-                left: 40,
-                right: 20,
-                bottom: 40,
-                top: 60,
-            },
-
-            xAxis: {
-                type: "category",
-                boundaryGap: false,
-                data: [
-                    "Januari",
-                    "Februari",
-                    "Maret",
-                    "April",
-                    "Mei",
-                    "Juni",
-                    "Juli",
-                    "Agustus",
-                    "September",
-                    "Oktober",
-                    "November",
-                    "Desember",
-                ],
-            },
-
-            yAxis: {
-                type: "value",
-                name: "Jumlah Murid",
-            },
-
-            series: [{
-                name: `Jumlah Hadir ${payload.year}`,
-                type: "line",
-                smooth: true,
-                data: payload.data,
-
-                lineStyle: {
-                    width: 3
+            const applyChart = (payload) => {
+                rekapChart.setOption({
+                tooltip: {
+                    trigger: "axis"
                 },
 
-                itemStyle: {
-                    color: "#6366f1",
+                toolbox: {
+                    show: true,
+                    feature: {
+                        saveAsImage: {},
+                    },
                 },
 
-                areaStyle: {
-                    opacity: 0.2,
+                grid: {
+                    left: 40,
+                    right: 20,
+                    bottom: 40,
+                    top: 60,
                 },
-            }, ],
+
+                xAxis: {
+                    type: "category",
+                    boundaryGap: false,
+                    data: [
+                        "Januari",
+                        "Februari",
+                        "Maret",
+                        "April",
+                        "Mei",
+                        "Juni",
+                        "Juli",
+                        "Agustus",
+                        "September",
+                        "Oktober",
+                        "November",
+                        "Desember",
+                    ],
+                },
+
+                yAxis: {
+                    type: "value",
+                    name: "Jumlah Murid",
+                },
+
+                series: [{
+                    name: `Jumlah Hadir ${payload.year}`,
+                    type: "line",
+                    smooth: true,
+                    data: payload.data,
+
+                    lineStyle: {
+                        width: 3
+                    },
+
+                    itemStyle: {
+                        color: "#6366f1",
+                    },
+
+                    areaStyle: {
+                        opacity: 0.2,
+                    },
+                }, ],
+                });
+            };
+
+            applyChart(chartData);
+
+            window.addEventListener("chart-rekap-updated", (event) => {
+                if (event?.detail?.chart) {
+                    applyChart(event.detail.chart);
+                }
             });
-        };
 
-        applyChart(chartData);
-
-        window.addEventListener("chart-rekap-updated", (event) => {
-            if (event?.detail?.chart) {
-                applyChart(event.detail.chart);
+            if (!rekapMuridDom.dataset.resizeBound) {
+                rekapMuridDom.dataset.resizeBound = "1";
+                window.addEventListener("resize", () => {
+                    rekapChart.resize();
+                });
             }
-        });
-
-        if (!rekapMuridDom.dataset.resizeBound) {
-            rekapMuridDom.dataset.resizeBound = "1";
-            window.addEventListener("resize", () => {
-                rekapChart.resize();
-            });
         }
-    }
+    });
 </script>
 @endscript

@@ -568,156 +568,161 @@
 
 @script
     <script>
-        const progressTextMurid = document.getElementById('progressTextMurid');
-        const progressPercentMurid = document.getElementById('progressPercentMurid');
-        const progressBarMurid = document.getElementById('progressBarMurid');
+        Promise.all([
+            import('{{ Vite::asset('resources/js/generateQr.js') }}'),
+            import('{{ Vite::asset('resources/js/generateCard.js') }}')
+        ]).then(() => {
+            const progressTextMurid = document.getElementById('progressTextMurid');
+            const progressPercentMurid = document.getElementById('progressPercentMurid');
+            const progressBarMurid = document.getElementById('progressBarMurid');
 
-        let processing = false;
-        let processed = 0;
-        let totalData = 0;
-        let currentRunId = null;
+            let processing = false;
+            let processed = 0;
+            let totalData = 0;
+            let currentRunId = null;
 
-        let zip = null;
-        let zipChunks = [];
+            let zip = null;
+            let zipChunks = [];
 
-        function resetProgress() {
-            processed = 0;
-            totalData = 0;
-            zipChunks = [];
+            function resetProgress() {
+                processed = 0;
+                totalData = 0;
+                zipChunks = [];
 
-            progressTextMurid.textContent = '0/0';
-            progressPercentMurid.textContent = '0%';
-            progressBarMurid.style.width = '0%';
-        }
+                progressTextMurid.textContent = '0/0';
+                progressPercentMurid.textContent = '0%';
+                progressBarMurid.style.width = '0%';
+            }
 
-        function createZip() {
-            zipChunks = [];
+            function createZip() {
+                zipChunks = [];
 
-            zip = new Zip((err, chunk, final) => {
-                if (err) {
-                    console.error(err);
+                zip = new Zip((err, chunk, final) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+
+                    zipChunks.push(chunk);
+
+                    if (final) {
+                        const blob = new Blob(zipChunks, {
+                            type: 'application/zip'
+                        });
+
+                        const a = document.createElement('a');
+
+                        a.href = URL.createObjectURL(blob);
+                        a.download = 'murid-qr.zip';
+
+                        a.click();
+
+                        URL.revokeObjectURL(a.href);
+                    }
+                });
+            }
+
+            const sanitizeFileName = (value) => {
+                return String(value ?? 'kelas')
+                    .trim()
+                    .replace(/[\\?%*:|"<>]/g, '-')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^[-.]+|[-.]+$/g, '');
+            };
+
+            const downloadPdf = (fileName, bytes) => {
+                const blob = new Blob([bytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            $wire.$on('generate-qr', async (event) => {
+                if (processing) {
                     return;
                 }
 
-                zipChunks.push(chunk);
+                processing = true;
 
-                if (final) {
-                    const blob = new Blob(zipChunks, {
-                        type: 'application/zip'
-                    });
-
-                    const a = document.createElement('a');
-
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'murid-qr.zip';
-
-                    a.click();
-
-                    URL.revokeObjectURL(a.href);
-                }
-            });
-        }
-
-        const sanitizeFileName = (value) => {
-            return String(value ?? 'kelas')
-                .trim()
-                .replace(/[\\?%*:|"<>]/g, '-')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^[-.]+|[-.]+$/g, '');
-        };
-
-        const downloadPdf = (fileName, bytes) => {
-            const blob = new Blob([bytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(url);
-        };
-
-        $wire.$on('generate-qr', async (event) => {
-            if (processing) {
-                return;
-            }
-
-            processing = true;
-
-            if (currentRunId !== event.runId) {
-                currentRunId = event.runId;
-                resetProgress();
-                createZip();
-                window.resetStudentCardPdf?.();
-            }
-
-            if (typeof event.totalData === 'number' && event.totalData >= 0) {
-                totalData = event.totalData;
-            }
-
-            const {
-                dataMurid
-            } = event;
-
-            for (const murid of dataMurid) {
-                const svgString = await generateQRSVG(murid.ulid);
-
-                const cardCanvas = await window.renderStudentCardCanvas({
-                    murid,
-                    qrSvg: svgString
-                });
-
-                if (cardCanvas) {
-                    const className = murid?.rombel?.nama_lengkap ?? 'Kelas';
-                    await window.addStudentCardToPdf?.({
-                        className,
-                        canvas: cardCanvas
-                    });
+                if (currentRunId !== event.runId) {
+                    currentRunId = event.runId;
+                    resetProgress();
+                    createZip();
+                    window.resetStudentCardPdf?.();
                 }
 
-                processed++;
+                if (typeof event.totalData === 'number' && event.totalData >= 0) {
+                    totalData = event.totalData;
+                }
 
-                if (processed % 50 === 0) {
-                    if (globalThis.scheduler?.yield) {
-                        await globalThis.scheduler.yield();
+                const {
+                    dataMurid
+                } = event;
+
+                for (const murid of dataMurid) {
+                    const svgString = await generateQRSVG(murid.ulid);
+
+                    const cardCanvas = await window.renderStudentCardCanvas({
+                        murid,
+                        qrSvg: svgString
+                    });
+
+                    if (cardCanvas) {
+                        const className = murid?.rombel?.nama_lengkap ?? 'Kelas';
+                        await window.addStudentCardToPdf?.({
+                            className,
+                            canvas: cardCanvas
+                        });
+                    }
+
+                    processed++;
+
+                    if (processed % 50 === 0) {
+                        if (globalThis.scheduler?.yield) {
+                            await globalThis.scheduler.yield();
+                        } else {
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                        }
+                    }
+
+                    const percent = totalData > 0 ?
+                        Math.round((processed / totalData) * 100) :
+                        0;
+
+                    progressTextMurid.textContent = `${processed}/${totalData}`;
+                    progressPercentMurid.textContent = `${percent}%`;
+                    progressBarMurid.style.width = `${percent}%`;
+                }
+
+                if (processed >= totalData) {
+                    const pdfFiles = window.exportStudentCardPdfs?.() ?? [];
+
+                    if (pdfFiles.length === 1) {
+                        const single = pdfFiles[0];
+                        const pdfName = `${sanitizeFileName(single.className)}.pdf`;
+                        downloadPdf(pdfName, single.pdfBytes);
                     } else {
-                        await new Promise(resolve => setTimeout(resolve, 0));
-                    }
-                }
+                        for (const pdf of pdfFiles) {
+                            const pdfName = `${sanitizeFileName(pdf.className)}.pdf`;
+                            const file = new ZipPassThrough(pdfName);
+                            zip.add(file);
+                            file.push(pdf.pdfBytes, true);
+                        }
 
-                const percent = totalData > 0 ?
-                    Math.round((processed / totalData) * 100) :
-                    0;
-
-                progressTextMurid.textContent = `${processed}/${totalData}`;
-                progressPercentMurid.textContent = `${percent}%`;
-                progressBarMurid.style.width = `${percent}%`;
-            }
-
-            if (processed >= totalData) {
-                const pdfFiles = window.exportStudentCardPdfs?.() ?? [];
-
-                if (pdfFiles.length === 1) {
-                    const single = pdfFiles[0];
-                    const pdfName = `${sanitizeFileName(single.className)}.pdf`;
-                    downloadPdf(pdfName, single.pdfBytes);
-                } else {
-                    for (const pdf of pdfFiles) {
-                        const pdfName = `${sanitizeFileName(pdf.className)}.pdf`;
-                        const file = new ZipPassThrough(pdfName);
-                        zip.add(file);
-                        file.push(pdf.pdfBytes, true);
+                        zip.end();
                     }
 
-                    zip.end();
+                    window.clearStudentCardMemory?.();
                 }
 
-                window.clearStudentCardMemory?.();
-            }
+                processing = false;
 
-            processing = false;
-
-            $wire.nextChunk();
-        });
+                $wire.nextChunk();
+            });
+        })
     </script>
 @endscript

@@ -1,3 +1,10 @@
+@php
+    $siteSettings = $siteSettings ?? [];
+    $siteLogo = \App\Models\Setting::resolveAssetUrl($siteSettings['logo'] ?? null, asset('assets/img/logo_smkn_2.png'));
+    $siteLoginImage = \App\Models\Setting::resolveAssetUrl($siteSettings['login_image'] ?? null, asset('assets/img/skenda-profil.jpeg'));
+    $siteName = $siteSettings['nama_website'] ?? 'ICT Absensi';
+    $siteCopyright = $siteSettings['copyright'] ?? 'SMKN 2 Banjarmasin © 2026';
+@endphp
 <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-deep via-blue-main to-blue-light p-4">
 
     <!-- background ornaments -->
@@ -23,7 +30,7 @@
                             class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 shadow-sm">
 
                             <img
-                                src="{{ asset('assets/img/logo_smkn_2.png') }}"
+                                src="{{ $siteLogo }}"
                                 class="w-14"
                                 alt="Logo SMKN 2 Banjarmasin">
 
@@ -34,7 +41,7 @@
                         </h1>
 
                         <p class="mt-2 text-sm text-gray-500">
-                            Masuk ke sistem ICT Absensi SMKN 2 Banjarmasin
+                            Masuk ke sistem {{ $siteName }} SMKN 2 Banjarmasin
                         </p>
 
                     </div>
@@ -160,7 +167,7 @@
                     <div class="mt-8 text-center">
 
                         <p class="text-xs text-gray-400">
-                            © 2026 SMKN 2 Banjarmasin. All rights reserved.
+                            {{ $siteCopyright }}. All rights reserved.
                         </p>
 
                     </div>
@@ -171,7 +178,7 @@
                 <div class="relative hidden min-h-[560px] overflow-hidden lg:block">
 
                     <img
-                        src="{{ asset('assets/img/skenda-profil.jpeg') }}"
+                        src="{{ $siteLoginImage }}"
                         alt="SMKN 2 Banjarmasin"
                         class="h-full w-full object-cover">
 
@@ -197,7 +204,7 @@
                         </div>
 
                         <h2 class="text-3xl font-bold leading-tight">
-                            ICT Absensi
+                            {{ $siteName }}
                             <br>
                             SMKN 2 Banjarmasin
                         </h2>

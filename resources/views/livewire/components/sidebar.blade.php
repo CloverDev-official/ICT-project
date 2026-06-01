@@ -1,6 +1,10 @@
 <div>
     @php
         $user = auth()->user();
+        $siteSettings = $siteSettings ?? [];
+        $siteLogo = \App\Models\Setting::resolveAssetUrl($siteSettings['logo'] ?? null, asset('assets/img/logo_smkn_2.png'));
+        $siteName = $siteSettings['nama_website'] ?? 'ICT Absensi';
+        $siteCopyright = $siteSettings['copyright'] ?? 'SMKN 2 Banjarmasin © 2026';
     @endphp
     <aside
         class="fixed md:static top-0 right-0 z-50 flex h-screen w-64 md:w-72 flex-col rounded-tl-4xl md:rounded-tl-none md:rounded-tr-4xl border-r border-white/10 bg-gradient-to-b from-blue-deep to-[#03152d] p-4 pb-2 shadow-[8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300"
@@ -8,11 +12,11 @@
     >
         <!-- header -->
         <div class="flex items-center justify-center gap-4 pt-4">
-            <img src="{{ asset('assets/img/logo_smkn_2.png')}}" class="w-10" alt="">
+            <img src="{{ $siteLogo }}" class="w-10" alt="">
 
             <div>
                 <h1 class="text-start text-sm font-semibold uppercase text-white text-shadow-2xs">
-                    Operator Petugas Absensi
+                    {{ $siteName }}
                 </h1>
 
                 <p class="hidden text-[10px] uppercase text-gray-400 md:block">
@@ -25,20 +29,23 @@
 
         <!-- menu -->
         <ul class="my-5 flex flex-1 flex-col gap-2 overflow-y-auto pr-0 md:pr-2 scroll-thin">
-
+            @if($user?->canAccess('dashboard'))
             <!-- dashboard -->
             <li>
                 <x-nav-link href="{{ route('dashboard') }}" icon="dashboard">
                     Dashboard
                 </x-nav-link>
             </li>
+            @endif
 
+            @if($user?->canAccess('pilih-absen'))
             <!-- pilih absen -->
             <li>
                 <x-nav-link href="{{ route('pilih-absen') }}" icon="pilihAbsen">
                     Pilih Absen
                 </x-nav-link>
             </li>
+            @endif
 
             <!-- laporan -->
             @if($user?->canAccess('laporan'))
@@ -368,12 +375,14 @@
             </li>
             @endif
 
-            <!-- pengaturan -->
-            <li>
-                <x-nav-link href="{{ route('pengaturan') }}" icon="pengaturan">
-                    Pengaturan
-                </x-nav-link>
-            </li>
+            @if($user?->canAccess('pengaturan'))
+                <!-- pengaturan -->
+                <li>
+                    <x-nav-link href="{{ route('pengaturan') }}" icon="pengaturan">
+                        Pengaturan
+                    </x-nav-link>
+                </li>
+            @endif
         </ul>
 
         <!-- footer -->
@@ -395,7 +404,7 @@
             </div>
 
             <p class="mt-4 text-center text-[8px] uppercase text-white">
-                smkn 2 banjarmasin &copy; 2026
+                {{ $siteCopyright }}
             </p>
         </div>
     </aside>
