@@ -3,9 +3,12 @@
 namespace App\Models\Guru;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AbsenGuru extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'absen_guru';
 
     protected $fillable = [

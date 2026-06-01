@@ -7,10 +7,11 @@ use App\Models\Guru\Rombel\RoleGuruRombel;
 use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Guru extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'guru';
 

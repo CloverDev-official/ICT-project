@@ -3,9 +3,12 @@
 namespace App\Models\Murid;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AbsenMurid extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'absen_murid';
 
     protected $fillable = [

@@ -5,12 +5,13 @@ namespace App\Models\Murid;
 use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Murid extends Model
 {
 
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $table = 'murid';
 
     protected $fillable = [

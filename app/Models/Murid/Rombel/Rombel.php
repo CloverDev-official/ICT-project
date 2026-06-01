@@ -5,9 +5,12 @@ namespace App\Models\Murid\Rombel;
 use App\Models\Murid\Murid;
 use App\Models\Guru\Guru;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rombel extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'rombel';
 
     protected $appends = ['nama_lengkap'];
