@@ -32,12 +32,14 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     private ?string $progressKey = null;
     private ?string $resultKey = null;
     private int $totalRows = 0;
+    private ?int $tahunMasuk = null;
 
-    public function __construct(?string $progressKey = null, ?string $resultKey = null, int $totalRows = 0)
+    public function __construct(?string $progressKey = null, ?string $resultKey = null, int $totalRows = 0, ?int $tahunMasuk = null)
     {
         $this->progressKey = $progressKey;
         $this->resultKey = $resultKey;
         $this->totalRows = $totalRows;
+        $this->tahunMasuk = $tahunMasuk;
     }
 
     public function startRow(): int
@@ -340,6 +342,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
         $tingkatId = $this->getOrCreateTingkatId($tingkat);
         $jurusanId = $this->getOrCreateJurusanId($jurusan);
         $indeksId = $this->getOrCreateIndeksId($indeks);
+        $tahunMasuk = $this->resolveTahunMasukForTingkat($tingkat);
 
         if (!$tingkatId || !$jurusanId || !$indeksId) {
             return null;
@@ -347,17 +350,46 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
 
         $key = $tingkatId . '|' . $jurusanId . '|' . $indeksId;
         if (isset($this->rombelCache[$key])) {
+            if ($tahunMasuk && Rombel::query()->whereKey($this->rombelCache[$key])->value('tahun_masuk') !== $tahunMasuk) {
+                Rombel::query()->whereKey($this->rombelCache[$key])->update([
+                    'tahun_masuk' => $tahunMasuk,
+                ]);
+            }
+
             return $this->rombelCache[$key];
         }
 
-        $rombel = Rombel::firstOrCreate([
-            'tingkat_id' => $tingkatId,
-            'jurusan_id' => $jurusanId,
-            'indeks_id' => $indeksId,
-        ]);
+        $rombel = Rombel::updateOrCreate(
+            [
+                'tingkat_id' => $tingkatId,
+                'jurusan_id' => $jurusanId,
+                'indeks_id' => $indeksId,
+            ],
+            [
+                'tahun_masuk' => $tahunMasuk,
+            ],
+        );
 
         $this->rombelCache[$key] = $rombel->id;
         return $rombel->id;
+    }
+
+    private function resolveTahunMasukForTingkat(?string $tingkat): ?int
+    {
+        if (!$this->tahunMasuk || !$tingkat) {
+            return $this->tahunMasuk;
+        }
+
+        $level = strtoupper(trim($tingkat));
+        $offset = match ($level) {
+            'X' => 0,
+            'XI' => 1,
+            'XII' => 2,
+            'XIII' => 3,
+            default => 0,
+        };
+
+        return $this->tahunMasuk - $offset;
     }
 
     private function parseKelasString(string $kelas): array

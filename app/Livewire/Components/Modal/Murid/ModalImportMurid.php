@@ -120,7 +120,12 @@ class ModalImportMurid extends Component
             return;
         }
 
-        $import = new DataMuridImport();
+        $import = new DataMuridImport(
+            null,
+            null,
+            $this->totalRows,
+            $this->tahunMasuk,
+        );
         $import->collection(collect($rows));
 
         $this->importedCount += $import->getImportedCount();

@@ -6,6 +6,7 @@ use App\Helpers\DownloadFile;
 use App\Helpers\QRCodeHelper;
 use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Rombel;
 use App\Services\Rombel\RombelFilterService;
 use Livewire\Attributes\On;
 use Livewire\Component;

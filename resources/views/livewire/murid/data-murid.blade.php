@@ -719,3 +719,13 @@
     </div>
 
 </div>
+
+@script
+    <script>
+        Promise.all([
+            import('{{ Vite::asset('resources/js/generateQr.js') }}'),
+            import('{{ Vite::asset('resources/js/generateCard.js') }}')
+        ]).then(() => {
+        });
+    </script>
+@endscript
