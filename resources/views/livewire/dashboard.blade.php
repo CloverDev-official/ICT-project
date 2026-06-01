@@ -38,6 +38,7 @@
     </div>
 
     <!-- STAT CARDS -->
+    @unless($isWaliKelas)
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
 
         @foreach ($statCards as $stat)
@@ -70,9 +71,10 @@
         @endforeach
 
     </div>
+    @endunless
 
     <!-- ABSENSI HARI INI -->
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+    <div class="grid grid-cols-1 gap-6 {{ $isWaliKelas ? '' : 'xl:grid-cols-2' }}">
 
         <!-- MURID -->
         <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
@@ -91,16 +93,11 @@
                 </div>
 
                 <!-- filter kelas -->
+                @php
+                    $selectedRombel = collect($waliRombelList)->firstWhere('id', $selectedRombelId);
+                @endphp
                 <div
-                    x-data="{
-                        open: false,
-                        selected: '',
-
-                        select(item) {
-                            this.selected = item
-                            this.open = false
-                        }
-                    }"
+                    x-data="{ open: false }"
                     class="relative w-full lg:w-48">
 
                     <div
@@ -108,7 +105,7 @@
                         class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
 
                         <span
-                            x-text="selected ? selected : 'Semua Kelas'"
+                            x-text="@js($selectedRombel?->nama_lengkap ?? 'Semua Kelas')"
                             class="text-gray-700">
                         </span>
 
@@ -129,23 +126,43 @@
                         style="display:none"
                         class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
 
-                        @foreach (['Semua Kelas', 'X PPLG A', 'X PPLG B', 'XI PPLG A', 'XI PPLG B', 'XII PPLG A', 'XII PPLG B'] as $kelas)
-
+                        @unless($isWaliKelas)
                             <div
-                                @click="select('{{ $kelas }}')"
-                                class="flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition hover:bg-blue-main hover:text-white">
+                                @click="open = false; $wire.setRombelFilter(null)"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition hover:bg-blue-main hover:text-white {{ $selectedRombelId === null ? 'bg-blue-main text-white' : '' }}">
 
-                                <span>{{ $kelas }}</span>
+                                <span>Semua Kelas</span>
 
                                 <iconify-icon
-                                    x-show="selected === '{{ $kelas }}'"
+                                    x-show="{{ $selectedRombelId === null ? 'true' : 'false' }}"
+                                    icon="lineicons:check"
+                                    width="18">
+                                </iconify-icon>
+
+                            </div>
+                        @endunless
+
+                        @forelse ($waliRombelList as $rombel)
+
+                            <div
+                                @click="open = false; $wire.setRombelFilter({{ (int) $rombel->id }})"
+                                class="flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition hover:bg-blue-main hover:text-white {{ $selectedRombelId === (int) $rombel->id ? 'bg-blue-main text-white' : '' }}">
+
+                                <span>{{ $rombel->nama_lengkap }}</span>
+
+                                <iconify-icon
+                                    x-show="{{ $selectedRombelId === (int) $rombel->id ? 'true' : 'false' }}"
                                     icon="lineicons:check"
                                     width="18">
                                 </iconify-icon>
 
                             </div>
 
-                        @endforeach
+                        @empty
+                            <div class="px-4 py-3 text-sm text-gray-500">
+                                Tidak ada kelas yang tersedia.
+                            </div>
+                        @endforelse
 
                     </div>
 
@@ -159,6 +176,7 @@
 
         </div>
 
+        @unless($isWaliKelas)
         <!-- GURU -->
         <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
@@ -179,10 +197,12 @@
             </div>
 
         </div>
+        @endunless
 
     </div>
 
     <!-- TINGKAT KEHADIRAN -->
+    @unless($isWaliKelas)
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
         <!-- MURID -->
@@ -274,12 +294,24 @@
         </div>
 
     </div>
+    @endunless
 
 </div>
 
 @script
     <script>
-        window.dashboardData = @js($dashboardData);
-        document.addEventListener('DOMContentLoaded', window.initCharts);
+        import('{{ Vite::asset('resources/js/chart.js') }}')
+        .then(() => {
+            window.dashboardData = @js($dashboardData);
+
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('dashboard-data-updated', ({ dashboardData }) => {
+                    window.dashboardData = dashboardData;
+                    initCharts();
+                });
+            });
+
+            initCharts();
+        });
     </script>
 @endscript

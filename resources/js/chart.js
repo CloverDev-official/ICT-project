@@ -2,6 +2,16 @@ import * as echarts from "echarts";
 
 window.echarts = echarts;
 
+function getFreshChart(dom) {
+    const existing = echarts.getInstanceByDom(dom);
+
+    if (existing) {
+        existing.dispose();
+    }
+
+    return echarts.init(dom);
+}
+
 
 window.initCharts = function () {
     const dashboardData = window.dashboardData || {};
@@ -25,7 +35,7 @@ window.initCharts = function () {
                   { value: 2, name: "Alpa", itemStyle: { color: "#ef4444" } },
               ];
         const muridTotal = muridData?.total ?? muridSeries.reduce((sum, item) => sum + item.value, 0);
-        const muridChart = echarts.init(muridDom);
+        const muridChart = getFreshChart(muridDom);
 
         muridChart.setOption({
             tooltip: { trigger: "item" },
@@ -88,7 +98,7 @@ window.initCharts = function () {
                   { value: 2, name: "Alpa", itemStyle: { color: "#ef4444" } },
               ];
         const guruTotal = guruData?.total ?? guruSeries.reduce((sum, item) => sum + item.value, 0);
-        const guruChart = echarts.init(guruDom);
+        const guruChart = getFreshChart(guruDom);
 
         guruChart.setOption({
             tooltip: { trigger: "item" },
@@ -144,7 +154,7 @@ window.initCharts = function () {
         const murid7Values = murid7Data?.values?.length
             ? murid7Data.values
             : [1500, 1480, 1495, 1470, 1460, 1200, 900];
-        const chart = echarts.init(murid7);
+        const chart = getFreshChart(murid7);
 
         chart.setOption({
             tooltip: { trigger: "axis" },
@@ -194,7 +204,7 @@ window.initCharts = function () {
         const guru7Values = guru7Data?.values?.length
             ? guru7Data.values
             : [20, 19, 20, 18, 17, 15, 12];
-        const chart = echarts.init(guru7);
+        const chart = getFreshChart(guru7);
 
         chart.setOption({
             tooltip: { trigger: "axis" },
@@ -237,7 +247,7 @@ window.initCharts = function () {
     const rekapMuridDom = document.getElementById("chart-rekap-absen-murid");
 
     if (rekapMuridDom) {
-        const rekapChart = echarts.init(rekapMuridDom);
+        const rekapChart = getFreshChart(rekapMuridDom);
 
         rekapChart.setOption({
             tooltip: { trigger: "axis" },
@@ -314,7 +324,7 @@ window.initCharts = function () {
     const rekapGuruDom = document.getElementById("chart-rekap-absen-guru");
 
     if (rekapGuruDom) {
-        const rekapChart = echarts.init(rekapGuruDom);
+        const rekapChart = getFreshChart(rekapGuruDom);
 
         rekapChart.setOption({
             tooltip: { trigger: "axis" },
