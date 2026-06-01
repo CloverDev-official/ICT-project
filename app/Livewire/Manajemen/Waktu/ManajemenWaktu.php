@@ -14,7 +14,7 @@ use Livewire\Component;
 
 class ManajemenWaktu extends Component
 {
-    private const DEFAULT_MASUK = '06:30';
+    private const DEFAULT_MASUK = '07:30';
     private const DEFAULT_PULANG_NORMAL = '16:30';
     private const DEFAULT_PULANG_JUMAT = '11:30';
 

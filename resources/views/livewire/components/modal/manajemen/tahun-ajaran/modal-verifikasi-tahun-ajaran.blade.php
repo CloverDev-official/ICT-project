@@ -49,7 +49,11 @@
                 </button>
 
                 <!-- Hapus -->
-                <button @click="openModal = false" class="px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600">
+                <button
+                    type="button"
+                    wire:click="lanjutkan"
+                    @click="openModal = false"
+                    class="px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600">
                     Lanjutkan
                 </button>
 

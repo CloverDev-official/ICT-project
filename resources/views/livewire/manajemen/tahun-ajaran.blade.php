@@ -45,7 +45,7 @@
                 </p>
 
                 <h2 class="mt-1 text-xl font-bold text-white">
-                    2025 / 2026
+                    {{ $currentAcademicYearLabel }}
                 </h2>
 
             </div>
@@ -84,7 +84,7 @@
 
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800">
-                                2025 / 2026
+                                {{ $currentAcademicYearLabel }}
                             </h2>
 
                             <p class="text-sm text-slate-500">
@@ -111,7 +111,7 @@
                     </h2>
 
                     <p class="mt-1 text-sm text-slate-500">
-                        Ringkasan perpindahan siswa ke tingkat berikutnya.
+                        Ringkasan perpindahan siswa untuk tahun ajaran {{ $nextAcademicYearLabel }}.
                     </p>
                 </div>
 
@@ -151,7 +151,7 @@
                                 </p>
 
                                 <h2 class="mt-3 text-4xl font-bold text-emerald-900">
-                                    128
+                                    {{ $levelStats['X'] ?? 0 }}
                                 </h2>
                             </div>
 
@@ -165,7 +165,7 @@
                         </div>
 
                         <p class="mt-6 text-sm leading-relaxed text-emerald-700">
-                            Murid akan dipindahkan ke kelas XI pada tahun ajaran baru.
+                            Murid kelas X akan dipindahkan ke kelas XI pada tahun ajaran berikutnya.
                         </p>
 
                     </div>
@@ -190,7 +190,7 @@
                                 </p>
 
                                 <h2 class="mt-3 text-4xl font-bold text-amber-900">
-                                    114
+                                    {{ $levelStats['XI'] ?? 0 }}
                                 </h2>
                             </div>
 
@@ -204,7 +204,7 @@
                         </div>
 
                         <p class="mt-6 text-sm leading-relaxed text-amber-700">
-                            Murid akan dipindahkan ke kelas XII pada tahun ajaran baru.
+                            Murid kelas XI akan dipindahkan ke kelas XII pada tahun ajaran berikutnya.
                         </p>
 
                     </div>
@@ -229,7 +229,7 @@
                                 </p>
 
                                 <h2 class="mt-3 text-4xl font-bold text-rose-900">
-                                    97
+                                    {{ $levelStats['XII'] ?? 0 }}
                                 </h2>
                             </div>
 
@@ -243,7 +243,7 @@
                         </div>
 
                         <p class="mt-6 text-sm leading-relaxed text-rose-700">
-                            Murid akan diproses menjadi alumni sekolah.
+                            Murid kelas XII tidak naik lagi dan akan ditandai selesai saat proses dijalankan.
                         </p>
 
                     </div>
@@ -278,7 +278,7 @@
                     </p>
 
                     <h2 class="font-semibold text-slate-700">
-                        Belum pernah diproses
+                        {{ $lastProcessedAt ? \Illuminate\Support\Carbon::parse($lastProcessedAt)->translatedFormat('d F Y H:i') : 'Belum pernah diproses' }}
                     </h2>
                 </div>
 
