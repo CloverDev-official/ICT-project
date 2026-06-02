@@ -46,8 +46,8 @@ return new class extends Migration
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->timestamps();
             $table->softDeletes();
+            $table->timestamps();
 
             // Aman untuk MySQL lama: hindari composite index panjang berisi nama 255 char.
             $table->index(['ulid', 'rombel_id']);

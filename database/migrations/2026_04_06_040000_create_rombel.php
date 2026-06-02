@@ -39,7 +39,8 @@ return new class extends Migration
             // Dibuat tanpa constraint dulu karena tabel guru dibuat setelah rombel.
             // Foreign key-nya ditambahkan di migration create_guru_table setelah tabel guru tersedia.
             $table->foreignId('wali_guru_id')->nullable()->index();
-
+            $table->softDeletes();
+            
             $table->timestamps();
 
             $table->unique(['tingkat_id', 'jurusan_id', 'indeks_id']);

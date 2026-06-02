@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name', 191)->nullable();
             $table->string('email', 191)->unique();
             $table->string('password');
+            $table->string('profile_photo_path')->nullable();
             $table->boolean('is_active')->default(true);
             $table->foreignId('role_id')->constrained('role')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
