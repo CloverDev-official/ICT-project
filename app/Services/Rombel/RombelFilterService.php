@@ -64,7 +64,13 @@ class RombelFilterService
         ?array $waliRombelIds,
     ) {
         return Jurusan::query()
-            ->whereIn('id', $this->rombelSubquery('jurusan_id', $tingkatId, $jurusanId, $indeksId, $waliRombelIds))
+            ->whereIn('id', $this->rombelSubquery(
+                'jurusan_id',
+                $tingkatId,
+                null, // jangan filter jurusan sendiri
+                $indeksId,
+                $waliRombelIds
+            ))
             ->orderBy('nama')
             ->orderBy('id')
             ->get(['id', 'nama']);
@@ -77,7 +83,13 @@ class RombelFilterService
         ?array $waliRombelIds,
     ) {
         return Indeks::query()
-            ->whereIn('id', $this->rombelSubquery('indeks_id', $tingkatId, $jurusanId, $indeksId, $waliRombelIds))
+            ->whereIn('id', $this->rombelSubquery(
+                'indeks_id',
+                $tingkatId,
+                $jurusanId,
+                null, // jangan filter indeks sendiri
+                $waliRombelIds
+            ))
             ->orderBy('nama')
             ->orderBy('id')
             ->get(['id', 'nama']);
