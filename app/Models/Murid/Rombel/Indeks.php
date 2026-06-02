@@ -24,7 +24,7 @@ class Indeks extends Model
             return $indeks;
         }
 
-        return collect(range('a', 'f'))->map(function (string $nama) {
+        return collect(range('A', 'Z'))->map(function (string $nama) {
             return (object) [
                 'id' => $nama,
                 'nama' => $nama,
@@ -42,20 +42,18 @@ class Indeks extends Model
             return self::query()->find((int) $value);
         }
 
-        $nama = strtolower((string) $value);
+        $nama = strtoupper(trim((string) $value));
 
         $existing = self::query()
-            ->whereRaw('LOWER(nama) = ?', [$nama])
+            ->whereRaw('UPPER(nama) = ?', [$nama])
             ->first();
 
         if ($existing instanceof self) {
             return $existing;
         }
 
-        if (!in_array($nama, range('a', 'f'), true)) {
-            return null;
-        }
-
-        return self::query()->firstOrCreate(['nama' => $nama]);
+        return self::query()->firstOrCreate([
+            'nama' => $nama
+        ]);
     }
 }
