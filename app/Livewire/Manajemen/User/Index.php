@@ -5,7 +5,6 @@ namespace App\Livewire\Manajemen\User;
 use App\Models\Role;
 use App\Models\User;
 use App\Helpers\ToastMagic;
-use Fruitcake\LaravelDebugbar\Facades\Debugbar;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -20,10 +19,6 @@ class Index extends Component
 
     public $roleId = null;
 
-    public function mount()
-    {
-        Debugbar::info('Mounting User Index Component');
-    }
 
     public function filterRole($query)
     {

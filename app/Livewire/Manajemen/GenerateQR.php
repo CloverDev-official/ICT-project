@@ -5,7 +5,6 @@ namespace App\Livewire\Manajemen;
 use App\Helpers\QRCodeHelper;
 use App\Models\Murid\Murid;
 use App\Services\Rombel\RombelFilterService;
-use Fruitcake\LaravelDebugbar\Facades\Debugbar;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -144,12 +143,9 @@ class GenerateQR extends Component
         $this->refreshFilterOptions();
     }
 
-    public float $startedAt;
-
     public function startGenerate()
     {
         if($this->isGenerating) {
-            Debugbar::warning('Generate QR is already in progress');
             return;
         }
 
@@ -159,7 +155,6 @@ class GenerateQR extends Component
         $this->activeFilterJurusan = $this->filterJurusan;
         $this->activeFilterIndeks = $this->filterIndeks;
         
-        $this->startedAt = microtime(true);
         $this->lastId = 0;
         $this->totalData = 0;
         $chunkData = $this->loadChunk();
@@ -177,8 +172,6 @@ class GenerateQR extends Component
         $chunkData = $this->loadChunk();
 
         if (!$chunkData->isNotEmpty()) {
-            $duration = microtime(true) - $this->startedAt;
-            Debugbar::info("Total generator time: {$duration} seconds");
             $this->lastId = 0;
             $this->totalData = 0;
             $this->isGenerating = false;
