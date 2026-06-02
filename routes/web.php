@@ -4,6 +4,7 @@ use App\Livewire\Murid\Create as CreateMurid;
 use App\Livewire\Murid\Edit as EditMurid;
 
 use App\Livewire\Murid\Absen\Index as IndexAbsen;
+use App\Livewire\Murid\Absen\Edit as EditAbsen;
 use App\Livewire\Murid\Absen\ScanQRCode;
 
 use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
@@ -43,8 +44,7 @@ use App\Livewire\Manajemen\Murid\EditFoto;
 use App\Livewire\Manajemen\Murid\ManajemenMurid;
 use App\Livewire\Manajemen\Murid\TambahFoto;
 use App\Livewire\Manajemen\Murid\TambahMurid;
-use App\Livewire\Murid\Absen\EditAbsen;
-use App\Livewire\Murid\Absen\EditAbsenMurid;
+
 use App\Livewire\Pengaturan;
 use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
@@ -86,9 +86,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::prefix('/absensi')->group(function () {
 
         // absensi murid
-        Route::prefix('/murid')->group(function () {
-            Route::get('/', IndexAbsen::class)->middleware('access:absensi-murid')->name('absensi-murid');
-            Route::get('/edit', EditAbsenMurid::class)->middleware('access:edit-absen-murid')->name('edit-absen-murid');
+        Route::prefix('/murid')->middleware('access:absensi-murid')->group(function () {
+            Route::get('/', IndexAbsen::class)->name('absensi-murid');
+            Route::get('/edit', EditAbsen::class)->name('edit-absen-murid');
         });
         Route::get('/guru', AbsensiGuru::class)->middleware('access:absensi-guru')->name('absensi-guru');
     });
