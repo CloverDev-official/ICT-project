@@ -27,7 +27,6 @@ class RoleSeeder extends Seeder
             'data-jurusan',
             'absensi',
             'absensi-murid',
-            'edit-absen-murid',
             'absensi-guru',
             'manajemen',
             'generate-qr',

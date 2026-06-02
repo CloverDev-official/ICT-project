@@ -42,7 +42,6 @@ class Index extends Component
         'Absensi' => [
             'absensi',
             'absensi-murid',
-            'edit-absen-murid',
             'absensi-guru',
         ],
         'Manajemen' => [
