@@ -16,10 +16,10 @@ return new class extends Migration
 
             $table->date('tanggal')->unique();
 
-            $table->time('jam_masuk');
-            $table->time('jam_pulang');
+            $table->time('jam_masuk')->nullable();
+            $table->time('jam_pulang')->nullable();
 
-            $table->string('tipe')->nullable(); // normal / khusus / libur / custom
+            $table->string('tipe', 50)->nullable(); // normal / khusus / libur / custom
             $table->text('keterangan')->nullable();
 
             $table->timestamps();

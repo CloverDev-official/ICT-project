@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('admin', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->string('name', 191);
+            $table->string('email', 191)->unique();
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained('users')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();

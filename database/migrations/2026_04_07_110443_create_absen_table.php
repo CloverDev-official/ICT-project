@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('murid_id')->constrained('murid')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('tanggal');
             $table->enum('status', ['Hadir', 'Sakit', 'Izin', 'Alpa']);
-            $table->string('keterangan')->nullable();
+            $table->string('keterangan', 191)->nullable();
             $table->time('waktu_masuk')->nullable();
             $table->time('waktu_keluar')->nullable();
             $table->softDeletes();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->foreignId('guru_id')->constrained('guru')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('tanggal');
             $table->enum('status', ['Hadir', 'Sakit', 'Izin', 'Alpa']);
-            $table->string('keterangan')->nullable();
+            $table->string('keterangan', 191)->nullable();
             $table->time('waktu_masuk')->nullable();
             $table->time('waktu_keluar')->nullable();
             $table->softDeletes();

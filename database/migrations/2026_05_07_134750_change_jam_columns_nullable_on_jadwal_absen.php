@@ -9,7 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('jadwal_absen', function (Blueprint $table) {
-
             $table->time('jam_masuk')
                 ->nullable()
                 ->change();
@@ -23,7 +22,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('jadwal_absen', function (Blueprint $table) {
-
             $table->time('jam_masuk')
                 ->nullable(false)
                 ->change();

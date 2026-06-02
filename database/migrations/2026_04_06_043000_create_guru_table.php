@@ -14,36 +14,36 @@ return new class extends Migration {
             $table->id();
             $table->ulid('public_id')->unique();
 
-            $table->string('nama');
-            $table->string('nuptk')->nullable()->unique();
+            $table->string('nama', 191);
+            $table->string('nuptk', 191)->nullable()->unique();
             $table->enum('jk', ['L', 'P']);
 
-            $table->string('tempat_lahir')->nullable();
+            $table->string('tempat_lahir', 191)->nullable();
             $table->date('tanggal_lahir')->nullable();
 
-            $table->string('nip')->nullable()->unique();
+            $table->string('nip', 191)->nullable()->unique();
 
-            $table->string('status_kepegawaian')->nullable();
-            $table->string('jenis_ptk')->nullable();
-            $table->string('agama')->nullable();
+            $table->string('status_kepegawaian', 191)->nullable();
+            $table->string('jenis_ptk', 191)->nullable();
+            $table->string('agama', 100)->nullable();
 
             $table->text('alamat_jalan')->nullable();
             $table->string('rt', 5)->nullable();
             $table->string('rw', 5)->nullable();
-            $table->string('desa_kelurahan')->nullable();
-            $table->string('kecamatan')->nullable();
+            $table->string('desa_kelurahan', 191)->nullable();
+            $table->string('kecamatan', 191)->nullable();
             $table->string('kode_pos', 10)->nullable();
 
-            $table->string('telepon')->nullable();
-            $table->string('hp')->nullable();
-            $table->string('email')->nullable()->unique();
+            $table->string('telepon', 30)->nullable();
+            $table->string('hp', 30)->nullable();
+            $table->string('email', 191)->nullable()->unique();
 
             $table->foreignId('user_id')
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
-            
+
             $table->softDeletes();
             $table->timestamps();
         });
@@ -56,16 +56,24 @@ return new class extends Migration {
                 ->constrained('guru')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
-                
+
             $table
                 ->foreignId('rombel_id')
                 ->constrained('rombel')
-                ->nullOnDelete()
+                ->cascadeOnDelete()
                 ->cascadeOnUpdate();
 
             $table->timestamps();
 
             $table->unique(['guru_id', 'rombel_id']);
+        });
+
+        Schema::table('rombel', function (Blueprint $table) {
+            $table->foreign('wali_guru_id')
+                ->references('id')
+                ->on('guru')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 
@@ -75,6 +83,13 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('guru_rombel');
+
+        if (Schema::hasTable('rombel')) {
+            Schema::table('rombel', function (Blueprint $table) {
+                $table->dropForeign(['wali_guru_id']);
+            });
+        }
+
         Schema::dropIfExists('guru');
     }
 };

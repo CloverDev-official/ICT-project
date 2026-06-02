@@ -21,7 +21,7 @@ return new class extends Migration
                 ->constrained('rombel')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
-            $table->string('tipe')->default('normal');
+            $table->string('tipe', 50)->default('normal');
             $table->time('jam_masuk')->nullable();
             $table->time('jam_pulang')->nullable();
             $table->text('keterangan')->nullable();
