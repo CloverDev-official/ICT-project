@@ -506,7 +506,7 @@
                             <div class="flex items-center justify-center">
                                 <!-- edit -->
                                 <a
-                                    href="{{ route('edit-absen-murid') }}"
+                                    href="{{ route('edit-absen-murid', $item->id) }}"
                                     wire:navigate>
 
                                     <button
@@ -531,7 +531,7 @@
                     <tr>
 
                         <td
-                            colspan="7"
+                            colspan="8"
                             class="px-6 py-14 text-center">
 
                             <div

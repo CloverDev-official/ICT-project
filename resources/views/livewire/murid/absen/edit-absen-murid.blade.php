@@ -60,7 +60,7 @@
                 </p>
 
                 <h2 class="mt-1 text-lg font-bold text-white capitalize">
-                    {{ $murid->nama ?? 'nama Murid' }}
+                    {{ $absen->murid->nama ?? 'nama Murid' }}
                 </h2>
 
             </div>
@@ -354,7 +354,7 @@
                     <div
                         class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
 
-                        <a href="{{ route('data-murid') }}" wire:navigate>
+                        <a href="{{ route('absensi-murid') }}" wire:navigate>
                             <button
                                 type="button"
                                 class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
@@ -367,12 +367,12 @@
                         <button
                             type="submit"
                             wire:loading.attr="disabled"
-                            wire:target="update,image"
+                            wire:target="update"
                             class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
 
                             <iconify-icon
                                 wire:loading.remove
-                                wire:target="update,image"
+                                wire:target="update"
                                 icon="lineicons:save"
                                 width="20"
                                 height="20"
@@ -381,23 +381,25 @@
 
                             <iconify-icon
                                 wire:loading
-                                wire:target="update,image"
+                                wire:target="update"
                                 icon="line-md:loading-twotone-loop"
                                 width="20"
                                 height="20">
                             </iconify-icon>
 
-                            <span wire:loading.remove wire:target="update,image">
+                            <span wire:loading.remove wire:target="update">
                                 Simpan Perubahan
                             </span>
 
-                            <span wire:loading wire:target="update,image">
+                            <span wire:loading wire:target="update">
                                 Menyimpan...
                             </span>
 
                         </button>
 
                     </div>
+                </div>
+            </div>
 
         </form>
 
