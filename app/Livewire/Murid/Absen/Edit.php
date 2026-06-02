@@ -11,6 +11,6 @@ class Edit extends Component
 {
     public function render()
     {
-        return view("livewire.murid.edit-murid");
+        return view("livewire.murid.absen.edit-absen-murid");
     }
 }
