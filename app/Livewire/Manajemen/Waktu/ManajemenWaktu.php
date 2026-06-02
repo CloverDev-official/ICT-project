@@ -108,6 +108,11 @@ class ManajemenWaktu extends Component
             'detail_kelas.*.tipe' => ['required', 'in:normal,pulang_cepat,pjj,libur,khusus'],
             'detail_kelas.*.jam_masuk' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.jam_pulang' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.gunakan_window_scan' => ['nullable', 'boolean'],
+            'detail_kelas.*.scan_masuk_mulai' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.scan_masuk_sampai' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.scan_keluar_mulai' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.scan_keluar_sampai' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.keterangan' => ['nullable', 'string'],
         ], [
             'nama_acara.required' => 'Nama event wajib diisi.',
@@ -119,6 +124,26 @@ class ManajemenWaktu extends Component
             throw ValidationException::withMessages([
                 'tanggal_selesai' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
             ]);
+        }
+
+        foreach (($validated['detail_kelas'] ?? []) as $rombelId => $row) {
+            $tipe = $row['tipe'] ?? 'libur';
+            $gunakanWindowScan = filter_var($row['gunakan_window_scan'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+            if ($tipe !== 'libur' && $gunakanWindowScan) {
+                foreach ([
+                    'scan_masuk_mulai' => 'Scan masuk mulai',
+                    'scan_masuk_sampai' => 'Scan masuk sampai',
+                    'scan_keluar_mulai' => 'Scan pulang mulai',
+                    'scan_keluar_sampai' => 'Scan pulang sampai',
+                ] as $field => $label) {
+                    if (blank($row[$field] ?? null)) {
+                        throw ValidationException::withMessages([
+                            "detail_kelas.{$rombelId}.{$field}" => "{$label} wajib diisi jika window scan kelas diaktifkan.",
+                        ]);
+                    }
+                }
+            }
         }
 
         $rombelIds = collect($validated['selected_rombel_ids'])
@@ -149,14 +174,29 @@ class ManajemenWaktu extends Component
                     $row = $detailKelas[$key] ?? [];
                     $tipe = $row['tipe'] ?? 'libur';
 
+                    $values = [
+                        'tipe' => $tipe,
+                        'jam_masuk' => $tipe === 'libur' ? null : ($row['jam_masuk'] ?? null),
+                        'jam_pulang' => $tipe === 'libur' ? null : ($row['jam_pulang'] ?? null),
+                        'keterangan' => $row['keterangan'] ?? null,
+                    ];
+
+                    if ($this->supportsRombelScanWindow()) {
+                        $gunakanWindowScan = $tipe !== 'libur'
+                            && filter_var($row['gunakan_window_scan'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+                        $values = array_merge($values, [
+                            'gunakan_window_scan' => $gunakanWindowScan,
+                            'scan_masuk_mulai' => $gunakanWindowScan ? ($row['scan_masuk_mulai'] ?? null) : null,
+                            'scan_masuk_sampai' => $gunakanWindowScan ? ($row['scan_masuk_sampai'] ?? null) : null,
+                            'scan_keluar_mulai' => $gunakanWindowScan ? ($row['scan_keluar_mulai'] ?? null) : null,
+                            'scan_keluar_sampai' => $gunakanWindowScan ? ($row['scan_keluar_sampai'] ?? null) : null,
+                        ]);
+                    }
+
                     $jadwal->rombelJadwal()->updateOrCreate(
                         ['rombel_id' => $rombelId],
-                        [
-                            'tipe' => $tipe,
-                            'jam_masuk' => $tipe === 'libur' ? null : ($row['jam_masuk'] ?? null),
-                            'jam_pulang' => $tipe === 'libur' ? null : ($row['jam_pulang'] ?? null),
-                            'keterangan' => $row['keterangan'] ?? null,
-                        ],
+                        $values,
                     );
                 }
 
@@ -279,6 +319,11 @@ class ManajemenWaktu extends Component
                 'tipe_label' => self::TIPE_OPTIONS[$detail->tipe] ?? ucfirst((string) $detail->tipe),
                 'jam_masuk' => $this->formatTime($detail->jam_masuk),
                 'jam_pulang' => $this->formatTime($detail->jam_pulang),
+                'gunakan_window_scan' => (bool) ($detail->gunakan_window_scan ?? false),
+                'scan_masuk_mulai' => $this->formatTime($detail->scan_masuk_mulai ?? null),
+                'scan_masuk_sampai' => $this->formatTime($detail->scan_masuk_sampai ?? null),
+                'scan_keluar_mulai' => $this->formatTime($detail->scan_keluar_mulai ?? null),
+                'scan_keluar_sampai' => $this->formatTime($detail->scan_keluar_sampai ?? null),
                 'keterangan' => $detail->keterangan,
             ])
             ->values()
@@ -349,6 +394,10 @@ class ManajemenWaktu extends Component
                 'label' => 'Default Jumat',
                 'jam_masuk' => $settings['jam_masuk'],
                 'jam_pulang' => $settings['jam_pulang_jumat'],
+                'scan_masuk_mulai' => $settings['scan_masuk_mulai'],
+                'scan_masuk_sampai' => $settings['scan_masuk_sampai'],
+                'scan_keluar_mulai' => $settings['scan_keluar_mulai'],
+                'scan_keluar_sampai' => $settings['scan_keluar_sampai'],
                 'keterangan' => 'Jadwal Jumat otomatis.',
             ];
         }
@@ -359,6 +408,10 @@ class ManajemenWaktu extends Component
                 'label' => 'Libur Default',
                 'jam_masuk' => null,
                 'jam_pulang' => null,
+                'scan_masuk_mulai' => null,
+                'scan_masuk_sampai' => null,
+                'scan_keluar_mulai' => null,
+                'scan_keluar_sampai' => null,
                 'keterangan' => 'Sabtu/Minggu libur default, masih bisa dioverride.',
             ];
         }
@@ -368,8 +421,39 @@ class ManajemenWaktu extends Component
             'label' => 'Normal',
             'jam_masuk' => $settings['jam_masuk'],
             'jam_pulang' => $settings['jam_pulang_normal'],
+            'scan_masuk_mulai' => $settings['scan_masuk_mulai'],
+            'scan_masuk_sampai' => $settings['scan_masuk_sampai'],
+            'scan_keluar_mulai' => $settings['scan_keluar_mulai'],
+            'scan_keluar_sampai' => $settings['scan_keluar_sampai'],
             'keterangan' => 'Jadwal normal.',
         ];
+    }
+
+    private function supportsRombelScanWindow(): bool
+    {
+        static $supported = null;
+
+        if ($supported !== null) {
+            return $supported;
+        }
+
+        if (!Schema::hasTable('jadwal_absen_rombel')) {
+            return $supported = false;
+        }
+
+        foreach ([
+            'gunakan_window_scan',
+            'scan_masuk_mulai',
+            'scan_masuk_sampai',
+            'scan_keluar_mulai',
+            'scan_keluar_sampai',
+        ] as $column) {
+            if (!Schema::hasColumn('jadwal_absen_rombel', $column)) {
+                return $supported = false;
+            }
+        }
+
+        return $supported = true;
     }
 
     private function dateRange(string $start, string $end): array

@@ -264,22 +264,70 @@
                         <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <p class="font-bold text-gray-800">Preset untuk Kelas Baru</p>
-                                <p class="text-xs text-gray-500">Preset ini diterapkan ke kelas yang dipilih setelahnya.</p>
+                                <p class="text-xs text-gray-500">Preset ini diterapkan ke kelas yang dipilih setelahnya, termasuk window scan jika diaktifkan.</p>
                             </div>
                             <button type="button" @click="applyPresetToAll" class="rounded-xl bg-white px-3 py-2 text-xs font-bold text-blue-main shadow-sm transition hover:bg-blue-50">
                                 Terapkan ke Terpilih
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            <select x-model="preset.tipe" @change="syncPresetTime" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none sm:col-span-3">
-                                <template x-for="(label, key) in state.tipeOptions" :key="key">
-                                    <option :value="key" x-text="label"></option>
-                                </template>
-                            </select>
-                            <input type="time" x-model="preset.jam_masuk" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                            <input type="time" x-model="preset.jam_pulang" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                            <input type="text" x-model="preset.keterangan" placeholder="Keterangan kelas" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                <select x-model="preset.tipe" @change="syncPresetTime" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none sm:col-span-3">
+                                    <template x-for="(label, key) in state.tipeOptions" :key="key">
+                                        <option :value="key" x-text="label"></option>
+                                    </template>
+                                </select>
+                                <input type="time" x-model="preset.jam_masuk" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                <input type="time" x-model="preset.jam_pulang" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                <input type="text" x-model="preset.keterangan" placeholder="Keterangan kelas" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none">
+                            </div>
+
+                            <div class="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm">
+                                <label class="flex cursor-pointer items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800">Atur jam bisa scan masuk dan scan pulang</p>
+                                        <p class="mt-1 text-xs text-gray-500">Aktifkan jika kelas baru perlu window scan khusus. Jika nonaktif, kelas memakai window default.</p>
+                                    </div>
+                                    <input type="checkbox" x-model="preset.gunakan_window_scan" :disabled="preset.tipe === 'libur'" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-main focus:ring-blue-main disabled:cursor-not-allowed disabled:opacity-50">
+                                </label>
+
+                                <div
+                                    x-show="preset.gunakan_window_scan && preset.tipe !== 'libur'"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2"
+                                >
+                                    <div>
+                                        <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Masuk Mulai</label>
+                                        <input type="time" x-model="preset.scan_masuk_mulai" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                        <p class="mt-1 text-[11px] text-gray-400">Awal siswa boleh scan masuk.</p>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Masuk Sampai</label>
+                                        <input type="time" x-model="preset.scan_masuk_sampai" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                        <p class="mt-1 text-[11px] text-gray-400">Batas akhir scan masuk.</p>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Pulang Mulai</label>
+                                        <input type="time" x-model="preset.scan_keluar_mulai" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                        <p class="mt-1 text-[11px] text-gray-400">Awal siswa boleh scan pulang.</p>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Pulang Sampai</label>
+                                        <input type="time" x-model="preset.scan_keluar_sampai" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                        <p class="mt-1 text-[11px] text-gray-400">Batas akhir scan pulang.</p>
+                                    </div>
+                                </div>
+
+                                <p class="mt-3 text-xs text-blue-700" x-show="preset.gunakan_window_scan && preset.tipe !== 'libur'">
+                                    Window scan preset akan disalin ke kelas yang dipilih berikutnya.
+                                </p>
+                                <p class="mt-3 text-xs text-gray-500" x-show="!preset.gunakan_window_scan || preset.tipe === 'libur'">
+                                    Preset kelas baru memakai window scan default/global.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -337,15 +385,63 @@
                                         <button type="button" @click="toggleRombel(rombel.id)" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100">Hapus</button>
                                     </div>
 
-                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        <select x-model="eventForm.detail_kelas[String(rombel.id)].tipe" @change="applyTypeDefault(rombel.id)" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2">
-                                            <template x-for="(label, key) in state.tipeOptions" :key="key">
-                                                <option :value="key" x-text="label"></option>
-                                            </template>
-                                        </select>
-                                        <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_masuk" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                        <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_pulang" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                        <textarea x-model="eventForm.detail_kelas[String(rombel.id)].keterangan" rows="2" placeholder="Keterangan khusus kelas ini" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2"></textarea>
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <select x-model="eventForm.detail_kelas[String(rombel.id)].tipe" @change="applyTypeDefault(rombel.id)" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2">
+                                                <template x-for="(label, key) in state.tipeOptions" :key="key">
+                                                    <option :value="key" x-text="label"></option>
+                                                </template>
+                                            </select>
+                                            <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_masuk" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                            <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_pulang" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
+                                            <textarea x-model="eventForm.detail_kelas[String(rombel.id)].keterangan" rows="2" placeholder="Keterangan khusus kelas ini" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2"></textarea>
+                                        </div>
+
+                                        <div class="rounded-2xl border border-blue-100 bg-blue-50/40 p-3">
+                                            <label class="flex cursor-pointer items-start justify-between gap-3">
+                                                <div>
+                                                    <p class="text-sm font-bold text-gray-800">Window scan khusus kelas</p>
+                                                    <p class="mt-1 text-xs text-gray-500">Aktifkan jika kelas ini punya jam scan masuk/pulang sendiri.</p>
+                                                </div>
+                                                <input type="checkbox" x-model="eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan" @change="fillDetailScanFromDefault(eventForm.detail_kelas[String(rombel.id)])" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-main focus:ring-blue-main disabled:cursor-not-allowed disabled:opacity-50">
+                                            </label>
+
+                                            <div
+                                                x-show="eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan && eventForm.detail_kelas[String(rombel.id)].tipe !== 'libur'"
+                                                x-transition:enter="transition ease-out duration-200"
+                                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                                x-transition:enter-end="opacity-100 translate-y-0"
+                                                class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2"
+                                            >
+                                                <div>
+                                                    <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Masuk Mulai</label>
+                                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].scan_masuk_mulai" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                                    <p class="mt-1 text-[11px] text-gray-400">Awal scan masuk.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Masuk Sampai</label>
+                                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].scan_masuk_sampai" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                                    <p class="mt-1 text-[11px] text-gray-400">Batas scan masuk.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Pulang Mulai</label>
+                                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].scan_keluar_mulai" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                                    <p class="mt-1 text-[11px] text-gray-400">Awal scan pulang.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Pulang Sampai</label>
+                                                    <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].scan_keluar_sampai" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                                    <p class="mt-1 text-[11px] text-gray-400">Batas scan pulang.</p>
+                                                </div>
+                                            </div>
+
+                                            <p class="mt-3 text-xs text-blue-700" x-show="eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan && eventForm.detail_kelas[String(rombel.id)].tipe !== 'libur'">
+                                                Scanner akan mendahulukan window scan kelas ini.
+                                            </p>
+                                            <p class="mt-3 text-xs text-gray-500" x-show="!eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan || eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'">
+                                                Kelas ini memakai window scan default/global.
+                                            </p>
+                                        </div>
                                     </div>
                                     </div>
                                 </template>
@@ -494,6 +590,10 @@
                             label: 'Normal',
                             jam_masuk: this.state.settings.jam_masuk,
                             jam_pulang: this.state.settings.jam_pulang_normal,
+                            scan_masuk_mulai: this.state.settings.scan_masuk_mulai,
+                            scan_masuk_sampai: this.state.settings.scan_masuk_sampai,
+                            scan_keluar_mulai: this.state.settings.scan_keluar_mulai,
+                            scan_keluar_sampai: this.state.settings.scan_keluar_sampai,
                             keterangan: 'Jadwal normal.',
                         };
                     },
@@ -508,6 +608,11 @@
                             tipe: defaultType,
                             jam_masuk: defaultType === 'libur' ? '' : (defaults.jam_masuk || this.state.settings.jam_masuk),
                             jam_pulang: defaultType === 'libur' ? '' : (defaults.jam_pulang || this.state.settings.jam_pulang_normal),
+                            gunakan_window_scan: false,
+                            scan_masuk_mulai: defaultType === 'libur' ? '' : (defaults.scan_masuk_mulai || this.state.settings.scan_masuk_mulai),
+                            scan_masuk_sampai: defaultType === 'libur' ? '' : (defaults.scan_masuk_sampai || this.state.settings.scan_masuk_sampai),
+                            scan_keluar_mulai: defaultType === 'libur' ? '' : (defaults.scan_keluar_mulai || this.state.settings.scan_keluar_mulai),
+                            scan_keluar_sampai: defaultType === 'libur' ? '' : (defaults.scan_keluar_sampai || this.state.settings.scan_keluar_sampai),
                             keterangan: '',
                         };
 
@@ -526,6 +631,11 @@
                                     tipe: item.tipe,
                                     jam_masuk: item.jam_masuk || '',
                                     jam_pulang: item.jam_pulang || '',
+                                    gunakan_window_scan: Boolean(item.gunakan_window_scan),
+                                    scan_masuk_mulai: item.scan_masuk_mulai || this.state.settings.scan_masuk_mulai || '',
+                                    scan_masuk_sampai: item.scan_masuk_sampai || this.state.settings.scan_masuk_sampai || '',
+                                    scan_keluar_mulai: item.scan_keluar_mulai || this.state.settings.scan_keluar_mulai || '',
+                                    scan_keluar_sampai: item.scan_keluar_sampai || this.state.settings.scan_keluar_sampai || '',
                                     keterangan: item.keterangan || '',
                                 };
                             });
@@ -536,6 +646,11 @@
                         if (this.preset.tipe === 'libur') {
                             this.preset.jam_masuk = '';
                             this.preset.jam_pulang = '';
+                            this.preset.gunakan_window_scan = false;
+                            this.preset.scan_masuk_mulai = '';
+                            this.preset.scan_masuk_sampai = '';
+                            this.preset.scan_keluar_mulai = '';
+                            this.preset.scan_keluar_sampai = '';
                             return;
                         }
 
@@ -548,15 +663,42 @@
                                 ? this.state.settings.jam_pulang_jumat
                                 : this.state.settings.jam_pulang_normal;
                         }
+
+                        this.fillPresetScanFromDefault();
+                    },
+
+                    fillPresetScanFromDefault() {
+                        if (!this.preset.scan_masuk_mulai) {
+                            this.preset.scan_masuk_mulai = this.state.settings.scan_masuk_mulai;
+                        }
+
+                        if (!this.preset.scan_masuk_sampai) {
+                            this.preset.scan_masuk_sampai = this.state.settings.scan_masuk_sampai;
+                        }
+
+                        if (!this.preset.scan_keluar_mulai) {
+                            this.preset.scan_keluar_mulai = this.state.settings.scan_keluar_mulai;
+                        }
+
+                        if (!this.preset.scan_keluar_sampai) {
+                            this.preset.scan_keluar_sampai = this.state.settings.scan_keluar_sampai;
+                        }
                     },
 
                     detailFromPreset() {
                         this.syncPresetTime();
 
+                        const gunakanWindowScan = this.preset.tipe !== 'libur' && Boolean(this.preset.gunakan_window_scan);
+
                         return {
                             tipe: this.preset.tipe,
                             jam_masuk: this.preset.tipe === 'libur' ? '' : this.preset.jam_masuk,
                             jam_pulang: this.preset.tipe === 'libur' ? '' : this.preset.jam_pulang,
+                            gunakan_window_scan: gunakanWindowScan,
+                            scan_masuk_mulai: gunakanWindowScan ? this.preset.scan_masuk_mulai : '',
+                            scan_masuk_sampai: gunakanWindowScan ? this.preset.scan_masuk_sampai : '',
+                            scan_keluar_mulai: gunakanWindowScan ? this.preset.scan_keluar_mulai : '',
+                            scan_keluar_sampai: gunakanWindowScan ? this.preset.scan_keluar_sampai : '',
                             keterangan: this.preset.keterangan || '',
                         };
                     },
@@ -610,6 +752,11 @@
                         if (detail.tipe === 'libur') {
                             detail.jam_masuk = '';
                             detail.jam_pulang = '';
+                            detail.gunakan_window_scan = false;
+                            detail.scan_masuk_mulai = '';
+                            detail.scan_masuk_sampai = '';
+                            detail.scan_keluar_mulai = '';
+                            detail.scan_keluar_sampai = '';
                             return;
                         }
 
@@ -621,6 +768,28 @@
                             detail.jam_pulang = detail.tipe === 'khusus'
                                 ? this.state.settings.jam_pulang_jumat
                                 : this.state.settings.jam_pulang_normal;
+                        }
+
+                        if (detail.gunakan_window_scan) {
+                            this.fillDetailScanFromDefault(detail);
+                        }
+                    },
+
+                    fillDetailScanFromDefault(detail) {
+                        if (!detail.scan_masuk_mulai) {
+                            detail.scan_masuk_mulai = this.state.settings.scan_masuk_mulai;
+                        }
+
+                        if (!detail.scan_masuk_sampai) {
+                            detail.scan_masuk_sampai = this.state.settings.scan_masuk_sampai;
+                        }
+
+                        if (!detail.scan_keluar_mulai) {
+                            detail.scan_keluar_mulai = this.state.settings.scan_keluar_mulai;
+                        }
+
+                        if (!detail.scan_keluar_sampai) {
+                            detail.scan_keluar_sampai = this.state.settings.scan_keluar_sampai;
                         }
                     },
 
@@ -654,7 +823,11 @@
                             return label;
                         }
 
-                        return `${label} • ${detail.jam_masuk || '--:--'} - ${detail.jam_pulang || '--:--'}`;
+                        const scanLabel = detail.gunakan_window_scan
+                            ? ` • Scan ${this.formatRange(detail.scan_masuk_mulai, detail.scan_masuk_sampai)} / ${this.formatRange(detail.scan_keluar_mulai, detail.scan_keluar_sampai)}`
+                            : ' • Scan default';
+
+                        return `${label} • ${detail.jam_masuk || '--:--'} - ${detail.jam_pulang || '--:--'}${scanLabel}`;
                     },
 
                     monthEvents() {
@@ -723,7 +896,25 @@
                             return;
                         }
 
-                        this.eventForm.selected_rombel_ids.forEach((id) => this.applyTypeDefault(id));
+                        for (const id of this.eventForm.selected_rombel_ids) {
+                            const detail = this.eventForm.detail_kelas[String(id)] || {};
+                            this.applyTypeDefault(id);
+
+                            if (detail.tipe !== 'libur' && detail.gunakan_window_scan) {
+                                const scanFields = [
+                                    detail.scan_masuk_mulai,
+                                    detail.scan_masuk_sampai,
+                                    detail.scan_keluar_mulai,
+                                    detail.scan_keluar_sampai,
+                                ];
+
+                                if (scanFields.some((value) => !value)) {
+                                    this.formError = 'Lengkapi semua jam scan masuk dan scan pulang untuk kelas yang window scan khususnya aktif.';
+                                    return;
+                                }
+                            }
+                        }
+
                         this.saving = true;
                         wire.saveEvent(JSON.parse(JSON.stringify(this.eventForm))).catch(() => {
                             this.saving = false;
