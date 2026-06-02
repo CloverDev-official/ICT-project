@@ -32,10 +32,11 @@
                     class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-blue-100 backdrop-blur">
 
                     <div class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></div>
-
-                    Absen Masuk
                     <span class="text-white">
-                        {{ $dateNow ?? 'Tanggal sekarang' }}
+                        {{ $dateNow ?? 'Tanggal sekarang' }},
+                    </span>
+                    <span class="text-white" id="clock">
+                        {{ now()->format('H:i:s') ?? 'Waktu sekarang' }}
                     </span>
 
                 </div>
@@ -304,6 +305,25 @@
 
 @script
 <script>
+    function updateClock() {
+        const now = new Date();
+
+        const formatted = now.toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+
+        document.getElementById('clock').textContent = formatted;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+
     import('{{ Vite::asset('resources/js/scanner.js') }}')
     .then(() => {
         window.initScanner()
@@ -315,7 +335,7 @@
                 $wire.set('murid', null);
                 window.scanned = false;
                 window.initScanner();
-            }, 1500);
+            }, 5500);
         });
 
         document.addEventListener('scanNotFound', () => {
@@ -331,7 +351,7 @@
                 $wire.set('murid', null);
                 window.scanned = false;
                 window.initScanner();
-            }, 2500);
+            }, 5500);
         });
     });
 </script>

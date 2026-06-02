@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Murid\Absen;
 
+use App\Models\JadwalAbsen;
 use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\Murid;
 use App\Services\Absensi\JadwalAbsensiService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -51,6 +53,7 @@ class ScanQRCode extends Component
         $today = $now->toDateString();
         $currentTime = $now->format('H:i:s');
         $jadwal = $jadwalService->forRombel($murid->rombel_id, $today);
+        $jadwal = $this->prioritaskanWindowScanKelas($jadwal, (int) $murid->rombel_id, $today);
 
         $this->murid = $murid;
         $this->jadwalHariIni = $jadwal;
@@ -126,6 +129,65 @@ class ScanQRCode extends Component
         $this->acceptScan('Absensi masuk sudah tercatat. Absensi pulang baru bisa dilakukan sesuai jam pulang.');
     }
 
+    private function prioritaskanWindowScanKelas(array $jadwal, int $rombelId, string $today): array
+    {
+        $detail = $this->detailWindowScanKelas($rombelId, $today);
+
+        if (!$detail || !($detail->gunakan_window_scan ?? false)) {
+            $jadwal['scan_window_source'] = $jadwal['scan_window_source'] ?? 'default';
+            return $jadwal;
+        }
+
+        $jadwal['scan_masuk_mulai'] = $this->formatTime($detail->scan_masuk_mulai ?? null) ?? ($jadwal['scan_masuk_mulai'] ?? null);
+        $jadwal['scan_masuk_sampai'] = $this->formatTime($detail->scan_masuk_sampai ?? null) ?? ($jadwal['scan_masuk_sampai'] ?? null);
+        $jadwal['scan_keluar_mulai'] = $this->formatTime($detail->scan_keluar_mulai ?? null) ?? ($jadwal['scan_keluar_mulai'] ?? null);
+        $jadwal['scan_keluar_sampai'] = $this->formatTime($detail->scan_keluar_sampai ?? null) ?? ($jadwal['scan_keluar_sampai'] ?? null);
+        $jadwal['scan_window_source'] = 'detail_kelas';
+
+        return $jadwal;
+    }
+
+    private function detailWindowScanKelas(int $rombelId, string $today): ?object
+    {
+        if (!$this->supportsRombelScanWindow()) {
+            return null;
+        }
+
+        $jadwal = JadwalAbsen::query()
+            ->with(['rombelJadwal' => fn ($query) => $query->where('rombel_id', $rombelId)])
+            ->whereDate('tanggal', $today)
+            ->first();
+
+        return $jadwal?->rombelJadwal?->first();
+    }
+
+    private function supportsRombelScanWindow(): bool
+    {
+        static $supported = null;
+
+        if ($supported !== null) {
+            return $supported;
+        }
+
+        if (!Schema::hasTable('jadwal_absen_rombel')) {
+            return $supported = false;
+        }
+
+        foreach ([
+            'gunakan_window_scan',
+            'scan_masuk_mulai',
+            'scan_masuk_sampai',
+            'scan_keluar_mulai',
+            'scan_keluar_sampai',
+        ] as $column) {
+            if (!Schema::hasColumn('jadwal_absen_rombel', $column)) {
+                return $supported = false;
+            }
+        }
+
+        return $supported = true;
+    }
+
     private function bisaLangsungPulang(string $currentTime, array $jadwal): bool
     {
         if (!$this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'] ?? null)) {
@@ -145,11 +207,17 @@ class ScanQRCode extends Component
             return true;
         }
 
-        $current = $this->normalizeTime($currentTime) ?? $currentTime;
-        $startTime = $this->normalizeTime($start) ?? $start;
-        $endTime = $this->normalizeTime($end) ?? $end;
+        $current = $this->normalizeTime($currentTime);
+        $startTime = $this->normalizeTime($start);
+        $endTime = $this->normalizeTime($end);
 
-        return $current >= $startTime && $current <= $endTime;
+        // Normal
+        if ($startTime <= $endTime) {
+            return $current >= $startTime && $current <= $endTime;
+        }
+
+        // Lewat tengah malam
+        return $current >= $startTime || $current <= $endTime;
     }
 
     private function statusMasuk(string $currentTime, ?string $jamMasuk): string
@@ -169,6 +237,15 @@ class ScanQRCode extends Component
         }
 
         return $currentTime >= $this->normalizeTime($jamPulang);
+    }
+
+    private function formatTime($time): ?string
+    {
+        if (!$time) {
+            return null;
+        }
+
+        return substr((string) $time, 0, 5);
     }
 
     private function normalizeTime(?string $time): ?string
