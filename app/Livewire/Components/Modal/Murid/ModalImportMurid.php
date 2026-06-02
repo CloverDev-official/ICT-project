@@ -21,7 +21,7 @@ class ModalImportMurid extends Component
     public int $importPercent = 0;
     public bool $isImporting = false;
     public int $currentRow = 6;
-    public int $chunkSize = 300;
+    public int $chunkSize = 365;
     public int $tahunMasuk = 0;
     private int $maxExecutionTime = 120;
 
