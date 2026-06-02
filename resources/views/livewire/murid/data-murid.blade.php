@@ -723,7 +723,7 @@
 @script
     <script>
         Promise.all([
-            import('{{ Vite::asset('resources/js/generateQr.js') }}'),
+            import('{{ Vite::asset('resources/js/generateQR.js') }}'),
             import('{{ Vite::asset('resources/js/generateCard.js') }}')
         ]).then(() => {
         });
