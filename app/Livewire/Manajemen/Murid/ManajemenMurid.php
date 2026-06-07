@@ -168,6 +168,7 @@ class ManajemenMurid extends Component
     public function refreshData(): void
     {
        $this->resetPage();
+       $this->refreshFilterOptions();
     }
 
     public function updatedFilterTingkat(): void
