@@ -1,11 +1,6 @@
 <div
-    x-data="{ openModalDelete: false }"
     x-show="openModalDelete"
-    x-on:open-delete-murid.window="
-        openModalDelete = true;
-        $wire.loadMurid($event.detail.ulid);
-    "
-    x-on:close-modal.window="openModalDelete = false"
+    @close-delete-modal.window="openModalDelete = false"
     x-transition
     style="display: none;"
     class="fixed inset-0 flex items-center justify-center bg-black/30 p-5 "
@@ -22,7 +17,7 @@
         <hr class="p-0 mb-4 text-gray-400" >
 
         <p class="text-gray-600 mb-6 px-6">
-            Apakah kamu yakin ingin menghapus data murid ini? "{{ $murid->nama ?? '-' }}",
+            Apakah kamu yakin ingin menghapus data murid ini? "{{ $muridName ?? '-' }}",
             Data yang dihapus tidak dapat dikembalikan.
         </p>
 

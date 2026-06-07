@@ -683,17 +683,23 @@
                                 </button>
 
                                 <!-- delete -->
-                                <button
-                                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
+                                <div x-data="{ openModalDelete: false }">
+                                    <button
+                                        @click="openModalDelete = true"
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
-                                    <iconify-icon
-                                        icon="lineicons:trash-3"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
+                                        <iconify-icon
+                                            icon="lineicons:trash-3"
+                                            width="20"
+                                            height="20">
+                                        </iconify-icon>
 
-                                </button>
-
+                                        
+                                    </button>
+                                <livewire:components.modal.murid.modal-hapus-murid :muridId="$murid->id" :muridName="$murid->nama" />
+                                
+                                </div>
+                                
                             </div>
 
                         </td>
