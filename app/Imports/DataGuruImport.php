@@ -288,8 +288,75 @@ class DataGuruImport implements ToCollection, WithCalculatedFormulas, WithHeadin
             return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
         }
 
+        $value = trim((string) $value);
+
+        // Konversi nama bulan Indonesia ke Inggris
+        $value = str_ireplace([
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+            'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+        ], [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December',
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ], $value);
+
+        $formats = [
+            // d/m/Y
+            'd/m/Y',
+            'd-m-Y',
+            'd.m.Y',
+
+            // Y/m/d
+            'Y/m/d',
+            'Y-m-d',
+            'Y.m.d',
+
+            // d/m/y
+            'd/m/y',
+            'd-m-y',
+            'd.m.y',
+
+            // Tanpa separator
+            'Ymd',
+            'dmY',
+
+            // Dengan waktu
+            'd/m/Y H:i:s',
+            'd-m-Y H:i:s',
+            'Y-m-d H:i:s',
+            'Y/m/d H:i:s',
+
+            'd/m/Y H:i',
+            'd-m-Y H:i',
+            'Y-m-d H:i',
+            'Y/m/d H:i',
+
+            // Nama bulan
+            'd M Y',
+            'd F Y',
+            'M d, Y',
+            'F d, Y',
+            'Y M d',
+            'Y F d',
+        ];
+
+        foreach ($formats as $format) {
+            try {
+                $date = Carbon::createFromFormat($format, $value);
+
+                // Validasi agar format benar-benar cocok
+                if ($date->format($format) === $value) {
+                    return $date->format('Y-m-d');
+                }
+            } catch (\Throwable $e) {
+            }
+        }
+
         try {
-            return Carbon::parse((string) $value)->format('Y-m-d');
+            return Carbon::parse($value)->format('Y-m-d');
         } catch (\Throwable $e) {
             return null;
         }
