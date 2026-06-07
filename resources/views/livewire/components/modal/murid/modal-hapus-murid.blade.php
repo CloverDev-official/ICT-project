@@ -1,5 +1,12 @@
 <div
+    x-data="{ openModalDelete: false }"
     x-show="openModalDelete"
+
+    x-on:open-delete-murid.window="
+        openModalDelete = true;
+        $wire.loadMurid($event.detail.id);
+    "
+
     @close-delete-modal.window="openModalDelete = false"
     x-transition
     style="display: none;"
@@ -17,7 +24,7 @@
         <hr class="p-0 mb-4 text-gray-400" >
 
         <p class="text-gray-600 mb-6 px-6">
-            Apakah kamu yakin ingin menghapus data murid ini? "{{ $muridName ?? '-' }}",
+            Apakah kamu yakin ingin menghapus data murid ini? "{{ $murid->nama ?? '-' }}",
             Data yang dihapus tidak dapat dikembalikan.
         </p>
 
@@ -25,7 +32,7 @@
 
             <!-- Batal -->
             <button
-                @click="toggleDelete()"
+                @click="openModalDelete = false"
                 class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
                 Batal
             </button>

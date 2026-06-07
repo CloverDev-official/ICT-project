@@ -8,20 +8,23 @@ use Livewire\Component;
 
 class ModalHapusMurid extends Component
 {
-    public $muridId;
-    public $muridName;
+    public $murid;
 
-    public function mount($muridId, $muridName)
+    public function loadMurid($muridId)
     {
-        $this->muridId = $muridId;
-        $this->muridName = $muridName;
+        $this->murid = Murid::findOrFail($muridId);
     }
 
     public function destroy()
     {
-        Murid::where('id', $this->muridId)->first()->delete();
+        if(!$this->murid) {
+            ToastMagic::error('Gagal Menghapus Murid', 'Data murid tidak ditemukan');
+            return;
+        }
 
-        ToastMagic::success('Berhasil Menghapus Murid', "Murid $this->muridName berhasil dihapus");
+        $this->murid->delete();
+
+        ToastMagic::success('Berhasil Menghapus Murid', "Murid $this->murid->nama berhasil dihapus");
         $this->dispatch('close-delete-modal');
         $this->dispatch('murid-refresh');
     }

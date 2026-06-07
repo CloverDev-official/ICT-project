@@ -683,9 +683,9 @@
                                 </button>
 
                                 <!-- delete -->
-                                <div x-data="{ openModalDelete: false }">
+                                <div>
                                     <button
-                                        @click="openModalDelete = true"
+                                        @click="$dispatch('open-delete-murid', { id: {{ $murid->id }} })"
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
                                         <iconify-icon
@@ -696,8 +696,7 @@
 
                                         
                                     </button>
-                                <livewire:components.modal.murid.modal-hapus-murid :muridId="$murid->id" :muridName="$murid->nama" />
-                                
+                                    
                                 </div>
                                 
                             </div>
@@ -705,25 +704,26 @@
                         </td>
 
                     </tr>
-
+                    
                     @endforeach
-
+                    
                 </tbody>
-
+                
             </table>
-
+            
         </div>
-
+        
         <!-- pagination -->
         <div
-            class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+        class="border-t border-gray-200 bg-gray-50 px-6 py-4">
 
             {{ $listMurid->links('livewire.components.pagination') }}
-
+            
         </div>
-
+        
     </div>
-
+    
+    <livewire:components.modal.murid.modal-hapus-murid/>
 </div>
 
 @script
