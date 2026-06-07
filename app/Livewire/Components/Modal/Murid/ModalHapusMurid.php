@@ -24,7 +24,7 @@ class ModalHapusMurid extends Component
 
         $this->murid->delete();
 
-        ToastMagic::success('Berhasil Menghapus Murid', "Murid $this->murid->nama berhasil dihapus");
+        ToastMagic::success('Berhasil Menghapus Murid', "Murid {$this->murid->nama} berhasil dihapus");
         $this->dispatch('close-delete-modal');
         $this->dispatch('murid-refresh');
     }
