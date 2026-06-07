@@ -17,10 +17,6 @@ class Index extends Component
     public ?int $filterStatus = null;
     public ?int $filterjenis = null;
 
-    public function mount(): void
-    {
-    }
-
     private function getStatusOptions(): array
     {
         return [
