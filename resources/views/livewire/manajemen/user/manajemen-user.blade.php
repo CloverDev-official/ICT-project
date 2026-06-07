@@ -382,8 +382,9 @@
                                     <div x-data="{ openModalDelete: false }">
 
                                         <button
+                                            @disabled($isSuperAdmin)
                                             @click="openModalDelete = true"
-                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 hover:-translate-y-0.5 hover:bg-rose-600">
 
                                             <iconify-icon
                                                 icon="lineicons:trash-3"
@@ -393,7 +394,7 @@
 
                                         </button>
 
-                                        <livewire:components.modal.manajemen.user.modal-hapus-user />
+                                        <livewire:components.modal.manajemen.user.modal-hapus-user :userId="$user->id" :userName="$user->name" />
 
                                     </div>
 
