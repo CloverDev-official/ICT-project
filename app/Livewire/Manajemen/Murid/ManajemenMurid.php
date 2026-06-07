@@ -4,8 +4,10 @@ namespace App\Livewire\Manajemen\Murid;
 
 use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Rombel;
 use App\Services\Rombel\RombelFilterService;
 use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -160,6 +162,12 @@ class ManajemenMurid extends Component
     {
         $this->filteredJurusan = $this->getAvailableJurusan();
         $this->filteredIndeks = $this->getAvailableIndeks();
+    }
+
+    #[On('manajemen-murid-refresh')]
+    public function refreshData(): void
+    {
+       $this->resetPage();
     }
 
     public function updatedFilterTingkat(): void

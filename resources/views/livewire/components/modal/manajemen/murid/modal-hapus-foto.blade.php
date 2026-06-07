@@ -1,15 +1,6 @@
 <div
-    x-data="{ openModalDelete: false }"
-
-    x-on:open-delete-modal.window="
-        openModalDelete = true
-    "
-
-    x-on:close-modal.window="
-        openModalDelete = false
-    "
-
     x-show="openModalDelete"
+    @close-delete-modal.window="openModalDelete = false"
     x-transition.opacity
     style="display: none;"
     class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
@@ -44,7 +35,7 @@
 
                     <div>
                         <h2 class="text-xl font-bold capitalize">
-                            Hapus Foto Murid
+                            Hapus Foto Murid "{{ $muridName }}"
                         </h2>
 
                         <p class="mt-1 text-sm text-rose-100">
@@ -105,29 +96,19 @@
             <div
                 class="rounded-3xl border border-gray-200 bg-gray-50 p-4">
 
-                <div class="flex items-center gap-3">
-
-                    <div
-                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gray-200 text-gray-500">
-
-                        <iconify-icon
-                            icon="solar:gallery-bold"
-                            width="22"
-                            height="22">
-                        </iconify-icon>
-
-                    </div>
-
+                <div class="flex items-center justify-center gap-3 text-center">
                     <div>
                         <p class="text-xs text-gray-400">
                             Data yang akan dihapus
                         </p>
 
                         <h4 class="mt-1 font-semibold text-gray-800">
-                            Foto Murid
+                            <img
+                                src="{{ $muridImagePath }}"
+                                alt="Foto Murid"
+                                class="mx-auto h-40 w-40 rounded-lg object-cover object-center">
                         </h4>
                     </div>
-
                 </div>
 
             </div>

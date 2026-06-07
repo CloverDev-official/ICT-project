@@ -472,9 +472,9 @@
                                         </button>
                                     </a>
 
-                                    <div x-data>
+                                    <div x-data="{ openModalDelete: false }">
                                         <button
-                                            @click="$dispatch('open-delete-modal')"
+                                            @click="openModalDelete = true"
                                             type="button"
                                             class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
@@ -486,7 +486,7 @@
 
                                         </button>
 
-                                        <livewire:components.modal.manajemen.murid.modal-hapus-foto />
+                                        <livewire:components.modal.manajemen.murid.modal-hapus-foto :muridId="$murid->id" :muridName="$murid->nama" :muridImagePath="$murid->image_path" />
                                     </div>
                                 </div>
 
