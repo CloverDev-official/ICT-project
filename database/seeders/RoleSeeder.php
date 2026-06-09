@@ -49,6 +49,8 @@ class RoleSeeder extends Seeder
             'absensi-murid',
             'data-master',
             'data-murid',
+            'manajemen',
+            'manajemen-murid',
             'profil',
         ],
         'operator' => [
