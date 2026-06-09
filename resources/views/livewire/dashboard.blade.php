@@ -124,6 +124,7 @@
                         x-transition
                         @click.outside="open = false"
                         style="display:none"
+                        wire:ignore
                         class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
 
                         @unless($isWaliKelas)
@@ -171,7 +172,7 @@
             </div>
 
             <div class="p-6">
-                <div id="main-murid" class="h-64 w-full"></div>
+                <div id="main-murid" wire:ignore class="h-64 w-full"></div>
             </div>
 
         </div>
@@ -193,7 +194,7 @@
             </div>
 
             <div class="p-6">
-                <div id="main-guru" class="h-64 w-full"></div>
+                <div id="main-guru" wire:ignore class="h-64 w-full"></div>
             </div>
 
         </div>
@@ -229,7 +230,7 @@
             </div>
 
             <div class="p-6">
-                <div id="chart-tingkat-kehadiran-murid" class="h-72 w-full"></div>
+                <div id="chart-tingkat-kehadiran-murid" wire:ignore class="h-72 w-full"></div>
 
                 <a
                     wire:navigate
@@ -273,7 +274,7 @@
             </div>
 
             <div class="p-6">
-                <div id="chart-tingkat-kehadiran-guru" class="h-72 w-full"></div>
+                <div id="chart-tingkat-kehadiran-guru" wire:ignore class="h-72 w-full"></div>
 
                 <a
                     wire:navigate

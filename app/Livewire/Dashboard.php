@@ -13,11 +13,20 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class Dashboard extends Component
 {
+    private const STATUS_OPTIONS = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alpa'];
+
+    private const STATUS_COLORS = [
+        'Hadir' => '#22c55e',
+        'Terlambat' => '#f97316',
+        'Izin' => '#eab308',
+        'Sakit' => '#3b82f6',
+        'Alpa' => '#ef4444',
+    ];
+
     public bool $isWaliKelas = false;
 
     public array $waliRombelIds = [];
@@ -28,67 +37,96 @@ class Dashboard extends Component
 
     public ?int $selectedRombelId = null;
 
-    public function render()
-    {   
-        Carbon::setLocale('id');
-        $dateNow = Carbon::now()->translatedFormat('d F Y');
-        $today = now()->toDateString();
+    public array $dashboardData = [];
 
+    public function mount(): void
+    {
+        Carbon::setLocale('id');
+
+        $this->applyWaliKelasContext();
+        $this->loadRombelList();
+        $this->refreshDashboardData();
+    }
+
+    public function render()
+    {
+        return view('livewire.dashboard', [
+            'dateNow' => now()->translatedFormat('d F Y'),
+            'statCards' => $this->getStatCards(),
+            'dashboardData' => $this->dashboardData,
+            'isWaliKelas' => $this->isWaliKelas,
+            'waliRombelList' => $this->waliRombelList,
+            'selectedRombelId' => $this->selectedRombelId,
+        ]);
+    }
+
+    public function setRombelFilter(?int $rombelId): void
+    {
+        if ($this->isWaliKelas && ! $this->isAllowedRombel($rombelId)) {
+            return;
+        }
+
+        $this->selectedRombelId = $rombelId;
+        $this->refreshDashboardData();
+        $this->dispatchDashboardData();
+    }
+
+    private function applyWaliKelasContext(): void
+    {
         [$isWaliKelas, $waliRombelIds, $waliGuruId] = $this->getWaliKelasContext();
+
         $this->isWaliKelas = $isWaliKelas;
         $this->waliRombelIds = $waliRombelIds ?? [];
         $this->waliGuruId = $waliGuruId;
+    }
 
-        if ($isWaliKelas) {
-            $this->waliRombelList = Rombel::query()
-                ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
-                ->whereIn('id', $this->waliRombelIds)
-                ->orderBy('tingkat_id')
-                ->orderBy('jurusan_id')
-                ->orderBy('indeks_id')
-                ->get();
-
-            if ($this->selectedRombelId === null && $this->waliRombelList->isNotEmpty()) {
-                $this->selectedRombelId = $this->waliRombelList->first()->id;
-            }
-
-            if ($this->selectedRombelId !== null && !in_array($this->selectedRombelId, $this->waliRombelIds, true)) {
-                $this->selectedRombelId = $this->waliRombelList->first()?->id;
-            }
-        } else {
-            $this->waliRombelList = Rombel::query()
-                ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
-                ->orderBy('tingkat_id')
-                ->orderBy('jurusan_id')
-                ->orderBy('indeks_id')
-                ->get();
+    private function isAllowedRombel(?int $rombelId): bool
+    {
+        if ($rombelId === null) {
+            return ! $this->isWaliKelas;
         }
 
-        if ($isWaliKelas && $waliRombelIds !== null) {
-            $rombelQuery = Rombel::query()->whereIn('id', $waliRombelIds);
+        return in_array($rombelId, $this->waliRombelIds, true);
+    }
 
-            $stats = [
-                'murid' => Murid::query()->whereIn('rombel_id', $waliRombelIds)->count(),
-                'guru' => $rombelQuery->whereNotNull('wali_guru_id')
-                    ->distinct('wali_guru_id')
-                    ->count('wali_guru_id'),
-                'kelas' => $rombelQuery->count(),
-                'jurusan' => $rombelQuery->distinct('jurusan_id')->count('jurusan_id'),
-                'petugas' => 0,
-            ];
-        } else {
-            $stats = [
-                'murid' => Murid::query()->count(),
-                'guru' => Guru::query()->count(),
-                'kelas' => Rombel::query()->count(),
-                'jurusan' => Jurusan::query()->count(),
-                'petugas' => Admin::query()->count(),
-            ];
+    private function loadRombelList(): void
+    {
+        $query = Rombel::query()
+            ->with([
+                'tingkat:id,nama',
+                'jurusan:id,nama',
+                'indeks:id,nama',
+            ])
+            ->orderBy('tingkat_id')
+            ->orderBy('jurusan_id')
+            ->orderBy('indeks_id');
+
+        if ($this->isWaliKelas) {
+            $query->whereIn('id', $this->waliRombelIds);
         }
 
-        $dashboardData = $this->buildDashboardData();
+        $this->waliRombelList = $query->get();
 
-        $statCards = [
+        if ($this->isWaliKelas && ! $this->isAllowedRombel($this->selectedRombelId)) {
+            $this->selectedRombelId = $this->waliRombelList->first()?->id;
+        }
+    }
+
+    private function refreshDashboardData(): void
+    {
+        $this->dashboardData = $this->getDashboardData();
+    }
+
+    private function dispatchDashboardData(): void
+    {
+        $this->dispatch('dashboard-data-updated', dashboardData: $this->dashboardData);
+    }
+
+    private function getStatCards(): array
+    {
+        $stats = $this->getStats();
+
+        return [
             [
                 'label' => 'Jumlah Murid',
                 'value' => $stats['murid'],
@@ -114,119 +152,133 @@ class Dashboard extends Component
                 'color' => 'bg-rose-100 text-rose-600',
             ],
         ];
-
-        return view('livewire.dashboard', [
-            'dateNow' => $dateNow,
-            'statCards' => $statCards,
-            'dashboardData' => $dashboardData,
-            'isWaliKelas' => $this->isWaliKelas,
-            'waliRombelList' => $this->waliRombelList,
-            'selectedRombelId' => $this->selectedRombelId,
-        ]);
     }
 
-    public function setRombelFilter(?int $rombelId): void
+    private function getStats(): array
     {
         if ($this->isWaliKelas) {
-            $allowed = collect($this->waliRombelIds)->contains($rombelId);
+            $rombelQuery = Rombel::query()->whereIn('id', $this->waliRombelIds);
 
-            if ($rombelId !== null && !$allowed) {
-                return;
-            }
+            return [
+                'murid' => Murid::query()
+                    ->whereIn('rombel_id', $this->waliRombelIds)
+                    ->count(),
+                'guru' => (clone $rombelQuery)
+                    ->whereNotNull('wali_guru_id')
+                    ->distinct('wali_guru_id')
+                    ->count('wali_guru_id'),
+                'kelas' => (clone $rombelQuery)->count(),
+                'jurusan' => (clone $rombelQuery)
+                    ->distinct('jurusan_id')
+                    ->count('jurusan_id'),
+                'petugas' => 0,
+            ];
         }
-
-        $this->selectedRombelId = $rombelId;
-
-        $this->dispatch('dashboard-data-updated', dashboardData: $this->buildDashboardData());
-    }
-
-    private function buildDashboardData(): array
-    {
-        $today = now()->toDateString();
-
-        $muridQuery = AbsenMurid::query();
-        $guruQuery = AbsenGuru::query();
-
-        if ($this->selectedRombelId) {
-            $muridQuery = $muridQuery->whereHas('murid.rombel', function ($q) {
-                $q->whereKey($this->selectedRombelId);
-            });
-        }
-
-        if ($this->isWaliKelas && $this->waliGuruId) {
-            $guruQuery = $guruQuery->where('guru_id', $this->waliGuruId);
-        } elseif ($this->isWaliKelas) {
-            $guruQuery = $guruQuery->whereRaw('1 = 0');
-        }
-
-        $muridStatus = $this->statusCounts($muridQuery, $today);
-        $guruStatus = $this->statusCounts($guruQuery, $today);
 
         return [
-            'murid' => $this->buildDonutData($muridStatus),
-            'guru' => $this->buildDonutData($guruStatus),
-            'murid7' => $this->buildSevenDayData($muridQuery),
-            'guru7' => $this->buildSevenDayData($guruQuery),
+            'murid' => Murid::count(),
+            'guru' => Guru::count(),
+            'kelas' => Rombel::count(),
+            'jurusan' => Jurusan::count(),
+            'petugas' => Admin::count(),
         ];
     }
 
-    private function statusCounts(Builder $query, string $date): array
+    private function getDashboardData(): array
     {
-        $statuses = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alpa'];
+        $today = now()->toDateString();
+        $muridQuery = $this->absenMuridBaseQuery();
+        $guruQuery = $this->absenGuruBaseQuery();
 
+        return [
+            'murid' => $this->buildDonutData(
+                $this->getStatusCounts(clone $muridQuery, $today)
+            ),
+            'guru' => $this->buildDonutData(
+                $this->getStatusCounts(clone $guruQuery, $today)
+            ),
+            'murid7' => $this->getSevenDayAttendance(clone $muridQuery),
+            'guru7' => $this->getSevenDayAttendance(clone $guruQuery),
+        ];
+    }
+
+    private function absenMuridBaseQuery(): Builder
+    {
+        return AbsenMurid::query()
+            ->when($this->selectedRombelId, function (Builder $query) {
+                $query->whereHas('murid.rombel', function (Builder $query) {
+                    $query->whereKey($this->selectedRombelId);
+                });
+            })
+            ->when(
+                $this->isWaliKelas,
+                function (Builder $query) {
+                    $query->whereHas('murid', function (Builder $query) {
+                        $query->whereIn('rombel_id', $this->waliRombelIds);
+                    });
+                }
+            );
+    }
+
+    private function absenGuruBaseQuery(): Builder
+    {
+        return AbsenGuru::query()
+            ->when(
+                $this->isWaliKelas && $this->waliGuruId,
+                fn (Builder $query) => $query->where('guru_id', $this->waliGuruId)
+            )
+            ->when(
+                $this->isWaliKelas && ! $this->waliGuruId,
+                fn (Builder $query) => $query->whereRaw('1 = 0')
+            );
+    }
+
+    private function getStatusCounts(Builder $query, string $date): array
+    {
         $rows = $query
             ->selectRaw('status, COUNT(*) as total')
             ->whereDate('tanggal', $date)
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $result = [];
+        $counts = [];
 
-        foreach ($statuses as $status) {
-            $result[$status] = (int) ($rows[$status] ?? 0);
+        foreach (self::STATUS_OPTIONS as $status) {
+            $counts[$status] = (int) ($rows[$status] ?? 0);
         }
 
-        return $result;
+        return $counts;
     }
 
     private function buildDonutData(array $counts): array
     {
-        $colors = [
-            'Hadir' => '#22c55e',
-            'Terlambat' => '#f97316',
-            'Izin' => '#eab308',
-            'Sakit' => '#3b82f6',
-            'Alpa' => '#ef4444',
-        ];
-
-        $series = [];
-        $total = 0;
-
-        foreach ($counts as $status => $value) {
-            $series[] = [
-                'name' => $status,
-                'value' => $value,
-                'color' => $colors[$status] ?? '#94a3b8',
-            ];
-            $total += $value;
-        }
+        $total = array_sum($counts);
 
         return [
             'total' => $total,
-            'series' => $series,
+            'series' => collect($counts)
+                ->map(fn (int $value, string $status) => [
+                    'name' => $status,
+                    'value' => $value,
+                    'color' => self::STATUS_COLORS[$status] ?? '#94a3b8',
+                ])
+                ->values()
+                ->all(),
         ];
     }
 
-    private function buildSevenDayData(Builder $query): array
+    private function getSevenDayAttendance(Builder $query): array
     {
         $end = Carbon::today();
         $start = $end->copy()->subDays(6);
-        $driver = DB::connection()->getDriverName();
-        $dateExpr = $driver === 'sqlite' ? "date(tanggal)" : 'DATE(tanggal)';
+        $dateExpr = $this->dateExpression('tanggal');
 
         $rows = $query
             ->selectRaw("{$dateExpr} as tanggal, COUNT(*) as total")
-            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('tanggal', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ])
             ->where('status', 'Hadir')
             ->groupBy(DB::raw($dateExpr))
             ->pluck('total', 'tanggal');
@@ -236,9 +288,9 @@ class Dashboard extends Component
 
         for ($i = 6; $i >= 0; $i--) {
             $date = $end->copy()->subDays($i);
-            $key = $date->toDateString();
-            $labels[] = $date->format('d M');
-            $values[] = (int) ($rows[$key] ?? 0);
+
+            $labels[] = $date->translatedFormat('d M');
+            $values[] = (int) ($rows[$date->toDateString()] ?? 0);
         }
 
         return [
@@ -247,22 +299,33 @@ class Dashboard extends Component
         ];
     }
 
+    private function dateExpression(string $column): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "date({$column})"
+            : "DATE({$column})";
+    }
+
     private function getWaliKelasContext(): array
     {
         $user = auth()->user();
-        if (!$user) {
+
+        if (! $user) {
             return [false, null, null];
         }
 
         $roleSlug = Str::slug($user->role?->name ?? '');
         $isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
 
-        if (!$isWaliKelas) {
+        if (! $isWaliKelas) {
             return [false, null, null];
         }
 
-        $guru = Guru::query()->where('user_id', $user->id)->first();
-        if (!$guru) {
+        $guru = Guru::query()
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $guru) {
             return [true, [], null];
         }
 
