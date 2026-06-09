@@ -36,7 +36,7 @@ class Rombel extends Model
      */
     public function jurusan()
     {
-        return $this->belongsTo(Jurusan::class);
+        return $this->belongsTo(Jurusan::class)->withTrashed();
     }
 
     /**
@@ -52,12 +52,12 @@ class Rombel extends Model
      */
     public function murid()
     {
-        return $this->hasMany(Murid::class);
+        return $this->hasMany(Murid::class)->withTrashed();
     }
 
     public function waliGuru()
     {
-        return $this->belongsTo(Guru::class, 'wali_guru_id');
+        return $this->belongsTo(Guru::class, 'wali_guru_id')->withTrashed();
     }
 
     public function getNamaLengkapAttribute()

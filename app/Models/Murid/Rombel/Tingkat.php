@@ -15,6 +15,6 @@ class Tingkat extends Model
      */
     public function rombel()
     {
-        return $this->hasMany(Rombel::class);
+        return $this->hasMany(Rombel::class)->withTrashed();
     }
 }

@@ -56,7 +56,7 @@ class Murid extends Model
      */
     public function rombel()
     {
-        return $this->belongsTo(Rombel::class);
+        return $this->belongsTo(Rombel::class)->withTrashed();
     }
 
     /**
@@ -64,7 +64,7 @@ class Murid extends Model
      */
     public function statusAbsen()
     {
-        return $this->hasMany(AbsenMurid::class);
+        return $this->hasMany(AbsenMurid::class)->withTrashed();
     }
 
     public function getRouteKeyName()

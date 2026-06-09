@@ -31,16 +31,33 @@ return new class extends Migration
 
         Schema::create('rombel', function (Blueprint $table) {
             $table->id();
-            $table->string('tahun_masuk', 20)->nullable();
-            $table->foreignId('tingkat_id')->constrained('tingkat')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('jurusan_id')->constrained('jurusan')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('indeks_id')->constrained('indeks')->cascadeOnDelete()->cascadeOnUpdate();
 
-            // Dibuat tanpa constraint dulu karena tabel guru dibuat setelah rombel.
-            // Foreign key-nya ditambahkan di migration create_guru_table setelah tabel guru tersedia.
-            $table->foreignId('wali_guru_id')->nullable()->index();
+            $table->string('tahun_masuk', 20)->nullable();
+
+            $table->foreignId('tingkat_id')
+                ->nullable()
+                ->constrained('tingkat')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
+
+            $table->foreignId('jurusan_id')
+                ->nullable()
+                ->constrained('jurusan')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
+
+            $table->foreignId('indeks_id')
+                ->nullable()
+                ->constrained('indeks')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
+
+            // Kolom dibuat dulu, FK ditambahkan setelah tabel guru ada
+            $table->foreignId('wali_guru_id')
+                ->nullable()
+                ->index();
+
             $table->softDeletes();
-            
             $table->timestamps();
 
             $table->unique(['tingkat_id', 'jurusan_id', 'indeks_id']);

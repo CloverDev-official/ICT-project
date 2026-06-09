@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('absen_murid', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('murid_id')->constrained('murid')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('murid_id')
+                ->constrained('murid')
+                ->cascadeOnUpdate();
+                // ->cascadeOnDelete()
             $table->date('tanggal');
             $table->string('status', 191);
             $table->string('keterangan', 191)->nullable();
@@ -27,7 +30,10 @@ return new class extends Migration
 
         Schema::create('absen_guru', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('guru_id')->constrained('guru')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('guru_id')
+                ->constrained('guru')
+                ->cascadeOnUpdate();
+                // ->cascadeOnDelete()
             $table->date('tanggal');
             $table->enum('status', ['Hadir', 'Sakit', 'Izin', 'Alpa']);
             $table->string('keterangan', 191)->nullable();

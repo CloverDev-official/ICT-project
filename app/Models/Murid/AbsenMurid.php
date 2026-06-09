@@ -31,6 +31,6 @@ class AbsenMurid extends Model
      */
     public function murid()
     {
-        return $this->belongsTo(Murid::class);
+        return $this->belongsTo(Murid::class)->withTrashed();
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models\Guru;
 use App\Models\Guru\Rombel\GuruRombel;
 use App\Models\Guru\Rombel\RoleGuruRombel;
 use App\Models\Murid\Rombel\Rombel;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

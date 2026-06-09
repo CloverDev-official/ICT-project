@@ -17,7 +17,7 @@ class GuruRombel extends Model
      */
     public function guru()
     {
-        return $this->belongsTo(Guru::class);
+        return $this->belongsTo(Guru::class)->withTrashed();
     }
 
     /**
@@ -25,6 +25,6 @@ class GuruRombel extends Model
      */
     public function rombel()
     {
-        return $this->belongsTo(Rombel::class);
+        return $this->belongsTo(Rombel::class)->withTrashed();
     }
 }

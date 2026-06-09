@@ -13,7 +13,7 @@ class Indeks extends Model
 
     public function rombel()
     {
-        return $this->hasMany(Rombel::class);
+        return $this->hasMany(Rombel::class)->withTrashed();
     }
 
     public static function options(): Collection

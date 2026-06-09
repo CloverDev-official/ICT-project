@@ -43,8 +43,8 @@ return new class extends Migration
             $table->foreignId('rombel_id')
                 ->nullable()
                 ->constrained('rombel')
-                ->nullOnDelete()
                 ->cascadeOnUpdate();
+                // ->nullOnDelete(); --- IGNORE ---
 
             $table->softDeletes();
             $table->timestamps();
