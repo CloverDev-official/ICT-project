@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Murid;
 
+use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Rombel;
@@ -50,9 +51,7 @@ class Edit extends Component
             "jk" => $this->murid->jk ?? "",
             "nisn" => $this->murid->nisn ?? "",
             "tempat_lahir" => $this->murid->tempat_lahir ?? "",
-            "tanggal_lahir" => $this->murid->tanggal_lahir 
-                ? (string) $this->murid->tanggal_lahir
-                : null,
+            "tanggal_lahir" => $this->murid->tanggal_lahir?->format('Y-m-d'),
             "agama" => $this->murid->agama,
             "alamat" => $this->murid->alamat,
             "rt" => $this->murid->rt,
@@ -150,6 +149,8 @@ class Edit extends Component
 
             "rombel_id" => $this->rombel_id,
         ]);
+
+        ToastMagic::success("Data murid berhasil diperbarui.");
     }
 
     public function render()
