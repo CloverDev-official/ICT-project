@@ -20,6 +20,9 @@ return new class extends Migration
         Schema::create('jurusan', function (Blueprint $table) {
             $table->id();
             $table->string('nama', 191)->unique();
+
+            $table->softDeletes();
+
             $table->timestamps();
         });
 
