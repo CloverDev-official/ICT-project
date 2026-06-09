@@ -6,6 +6,7 @@ use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
 use App\Models\Role;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Index extends Component
@@ -147,6 +148,12 @@ class Index extends Component
         }
 
         $this->resetForm();
+    }
+
+    #[On('manajemen-role-refresh')]
+    public function refreshTable(): void
+    {
+        unset($this->roles);
     }
 
     public function deleteRole(int $roleId): void

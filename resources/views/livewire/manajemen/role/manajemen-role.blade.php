@@ -246,8 +246,7 @@
 
                                         <button
                                             type="button"
-                                            onclick="return confirm('Yakin ingin menghapus role ini?')"
-                                            wire:click="deleteRole({{ $role->id }})"
+                                            @click="$dispatch('open-delete-role', { id: {{ $role->id }} })"
                                             @disabled($role->id === 1 || $role->users_count > 0)
                                             class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50">
                                             <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
@@ -261,5 +260,7 @@
             </div>
         </div>
     </div>
+
+    <livewire:components.modal.manajemen.role.modal-hapus-role />
 
 </div>
