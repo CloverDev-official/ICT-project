@@ -9,7 +9,7 @@ class TingkatSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['X', 'XI', 'XII'] as $nama) {
+        foreach (['X', 'XI', 'XII', 'XIII'] as $nama) {
             Tingkat::query()->firstOrCreate(['nama' => $nama]);
         }
     }
