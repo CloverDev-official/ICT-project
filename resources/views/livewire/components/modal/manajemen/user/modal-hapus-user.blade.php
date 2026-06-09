@@ -1,5 +1,11 @@
 <div
     x-show="openModalDelete"
+    x-data="{ openModalDelete: false }"
+    x-show="openModalDelete"
+    x-on:open-delete-user.window="
+        openModalDelete = true;
+        $wire.loadUser($event.detail.id);
+    "
     @close-delete-modal.window="openModalDelete = false"
     style="display: none;"
     class="fixed inset-0 flex items-center justify-center bg-black/30 p-5 "
@@ -16,7 +22,7 @@
         <hr class="p-0 mb-4 text-gray-400" >
 
         <p class="text-gray-600 mb-6 px-6">
-            Apakah kamu yakin ingin menghapus data User ini? "{{ $userName }}",
+            Apakah kamu yakin ingin menghapus data User ini? "{{ $user->name ??  '-' }}",
             Data yang dihapus tidak dapat dikembalikan.
         </p>
 

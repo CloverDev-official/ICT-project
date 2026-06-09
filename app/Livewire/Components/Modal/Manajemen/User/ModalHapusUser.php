@@ -8,18 +8,21 @@ use Livewire\Component;
 
 class ModalHapusUser extends Component
 {
-    public $userId;
-    public $userName;
+    public $user;
 
-    public function mount($userId, $userName)
+    public function loadUser($userId)
     {
-        $this->userId = $userId;
-        $this->userName = $userName;
+        $this->user = User::find($userId);
     }
 
     public function destroy()
     {
-        User::where('id', $this->userId)->delete();
+        if (!$this->user) {
+            ToastMagic::error('Data User tidak ditemukan!');
+            return;
+        }
+
+        $this->user->delete();
         ToastMagic::success('Data User berhasil dihapus!');
         $this->dispatch('close-delete-modal');
         $this->dispatch('user-refresh');
