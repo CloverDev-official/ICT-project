@@ -1,5 +1,10 @@
 <div
+    x-data="{ openModalDelete: false }"
     x-show="openModalDelete"
+    x-on:open-delete-foto.window="
+        openModalDelete = true;
+        $wire.loadMuridFoto($event.detail.id);
+    "
     @close-delete-modal.window="openModalDelete = false"
     x-transition.opacity
     style="display: none;"
@@ -35,7 +40,7 @@
 
                     <div>
                         <h2 class="text-xl font-bold capitalize">
-                            Hapus Foto Murid "{{ $muridName }}"
+                            Hapus Foto Murid "{{ $murid->nama ?? '-' }}"
                         </h2>
 
                         <p class="mt-1 text-sm text-rose-100">
@@ -104,7 +109,7 @@
 
                         <h4 class="mt-1 font-semibold text-gray-800">
                             <img
-                                src="{{ $muridImagePath }}"
+                                src="{{ $murid->image_path ?? '-' }}"
                                 alt="Foto Murid"
                                 class="mx-auto h-40 w-40 rounded-lg object-cover object-center">
                         </h4>

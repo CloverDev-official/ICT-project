@@ -8,20 +8,16 @@ use Livewire\Component;
 
 class ModalHapusFoto extends Component
 {
-    public $muridId;
-    public $muridName;
-    public $muridImagePath;
+    public $murid;
 
-    public function mount($muridId, $muridName, $muridImagePath = null)
+    public function loadMuridFoto($muridId)
     {
-        $this->muridId = $muridId;
-        $this->muridName = $muridName;
-        $this->muridImagePath = $muridImagePath ?? null;
+        $this->murid = Murid::findOrFail($muridId);
     }
 
     public function destroy()
     {
-        $murid = Murid::where('id', $this->muridId)->first();
+        $murid = $this->murid;
 
         if ($murid && $murid->image_path) {
             // Hapus file foto dari storage

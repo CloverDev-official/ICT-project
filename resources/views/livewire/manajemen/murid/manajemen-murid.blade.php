@@ -472,9 +472,9 @@
                                         </button>
                                     </a>
 
-                                    <div x-data="{ openModalDelete: false }">
+                                    <div>
                                         <button
-                                            @click="openModalDelete = true"
+                                            @click="$dispatch('open-delete-foto', { id: {{ $murid->id }} })"
                                             type="button"
                                             class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
@@ -486,7 +486,6 @@
 
                                         </button>
 
-                                        <livewire:components.modal.manajemen.murid.modal-hapus-foto :muridId="$murid->id" :muridName="$murid->nama" :muridImagePath="$murid->image_path" />
                                     </div>
                                 </div>
 
@@ -502,9 +501,9 @@
                             </td>
                         </tr>
 
-                    @endforelse
+                        @endforelse
                 </tbody>
-
+                
             </table>
 
         </div>
@@ -513,23 +512,24 @@
         <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
+                
                 <p class="text-sm text-gray-500">
                     Menampilkan data foto murid.
                 </p>
-
+                
                 <div class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-main">
                     Total {{ $totalMurid }} Murid
                 </div>
-
+                
             </div>
-
+            
             <div class="mt-4">
                 {{ $listMurid->links('livewire.components.pagination') }}
             </div>
-
+            
         </div>
-
+        
     </div>
-
+    
+    <livewire:components.modal.manajemen.murid.modal-hapus-foto/>
 </div>
