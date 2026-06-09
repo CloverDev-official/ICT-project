@@ -57,9 +57,7 @@ class Edit extends Component
             "jk" => $this->guru->jk ?? "",
 
             "tempat_lahir" => $this->guru->tempat_lahir,
-            "tanggal_lahir" => $this->guru->tanggal_lahir
-                ? (string) $this->guru->tanggal_lahir
-                : null,
+            "tanggal_lahir" => $this->guru->tanggal_lahir?->format('Y-m-d'),
 
             "nip" => $this->guru->nip,
 
