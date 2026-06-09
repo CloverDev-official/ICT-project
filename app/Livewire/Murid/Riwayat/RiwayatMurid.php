@@ -4,6 +4,7 @@ namespace App\Livewire\Murid\Riwayat;
 
 use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Rombel;
 use App\Models\Murid\Rombel\Tingkat;
 use App\Services\Rombel\RombelFilterService;
 use Illuminate\Support\Str;
