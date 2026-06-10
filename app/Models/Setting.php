@@ -47,9 +47,13 @@ class Setting extends Model
         }
 
         if (Str::startsWith($value, 'assets/')) {
-            return asset($value);
+            return '/' . ltrim($value, '/');
         }
 
-        return Storage::disk('public')->url($value);
+        if (!Storage::disk('public')->exists($value) && $fallback && $fallback !== $value) {
+            return static::resolveAssetUrl($fallback);
+        }
+
+        return '/storage/' . ltrim($value, '/');
     }
 }

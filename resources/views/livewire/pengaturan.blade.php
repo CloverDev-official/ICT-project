@@ -1,10 +1,5 @@
 <div class="mb-20 space-y-6">
 
-    @php
-        $logoSource = $logo ? $logo->temporaryUrl() : $logoPreview;
-        $loginImageSource = $loginImage ? $loginImage->temporaryUrl() : $loginImagePreview;
-    @endphp
-
     <!-- HERO -->
     <div
         class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main via-blue-deep to-[#07162f] p-6 shadow-lg">
@@ -275,10 +270,18 @@
                                 <input
                                     type="file"
                                     wire:model="logo"
-                                    accept="image/*"
+                                    accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml"
                                     class="hidden">
 
                             </label>
+
+                            <div
+                                wire:loading.flex
+                                wire:target="logo"
+                                class="mt-3 items-center gap-2 rounded-2xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-main">
+                                <iconify-icon icon="line-md:loading-twotone-loop" width="18" height="18"></iconify-icon>
+                                Mengupload logo...
+                            </div>
 
                             @error('logo')
                                 <p class="mt-2 text-sm text-rose-500">
@@ -363,10 +366,18 @@
                                 <input
                                     type="file"
                                     wire:model="loginImage"
-                                    accept="image/*"
+                                    accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
                                     class="hidden">
 
                             </label>
+
+                            <div
+                                wire:loading.flex
+                                wire:target="loginImage"
+                                class="mt-3 items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-600">
+                                <iconify-icon icon="line-md:loading-twotone-loop" width="18" height="18"></iconify-icon>
+                                Mengupload gambar login...
+                            </div>
 
                             @error('loginImage')
                                 <p class="mt-2 text-sm text-rose-500">
@@ -412,7 +423,7 @@
                                     class="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 p-3">
 
                                     <img
-                                        src="{{ $logoPreview ?? asset('assets/img/logo_smkn_2.png') }}"
+                                        src="{{ $logoSource ?? asset('assets/img/logo_smkn_2.png') }}"
                                         class="h-full w-full object-contain"
                                         alt="Logo Preview">
 
@@ -481,12 +492,12 @@
                 <button
                     type="submit"
                     wire:loading.attr="disabled"
-                    wire:target="save"
+                    wire:target="save,logo,loginImage"
                     class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
 
                     <iconify-icon
                         wire:loading.remove
-                        wire:target="save"
+                        wire:target="save,logo,loginImage"
                         icon="lineicons:save"
                         width="20"
                         height="20"
@@ -495,18 +506,22 @@
 
                     <iconify-icon
                         wire:loading
-                        wire:target="save"
+                        wire:target="save,logo,loginImage"
                         icon="line-md:loading-twotone-loop"
                         width="20"
                         height="20">
                     </iconify-icon>
 
-                    <span wire:loading.remove wire:target="save">
+                    <span wire:loading.remove wire:target="save,logo,loginImage">
                         Simpan Pengaturan
                     </span>
 
                     <span wire:loading wire:target="save">
                         Menyimpan...
+                    </span>
+
+                    <span wire:loading wire:target="logo,loginImage">
+                        Mengupload...
                     </span>
 
                 </button>
