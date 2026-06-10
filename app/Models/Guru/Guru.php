@@ -36,6 +36,7 @@ class Guru extends Model
         'telepon',
         'hp',
         'email',
+        'image_path',
         'user_id'
     ];
 

@@ -37,6 +37,7 @@ return new class extends Migration {
             $table->string('telepon', 30)->nullable();
             $table->string('hp', 30)->nullable();
             $table->string('email', 191)->nullable()->unique();
+            $table->string('image_path', 191)->nullable();
 
             $table->foreignId('user_id')
                 ->nullable()
