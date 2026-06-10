@@ -114,6 +114,7 @@ class MuridSeeder extends Seeder
                             ? $images[$i % $imageCount]
                             : $images[0] ?? null,
                     'rombel_id' => $rombelIds[$i % $rombelCount],
+                    'status' => 'aktif',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];

@@ -60,6 +60,7 @@ class TambahFoto extends Component
     private function getMuridList()
     {
         return Murid::query()
+            ->aktif()
             ->with(['rombel:id,tingkat_id,jurusan_id,indeks_id'])
             ->when(
                 $this->isWaliKelas && $this->waliRombelIds !== null,

@@ -31,6 +31,7 @@ class ScanQRCode extends Component
         }
 
         $murid = Murid::query()
+            ->aktif()
             ->with('rombel')
             ->where('uuid', $muridUuid)
             ->first();

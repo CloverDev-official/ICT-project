@@ -161,6 +161,7 @@ class Dashboard extends Component
 
             return [
                 'murid' => Murid::query()
+                    ->aktif()
                     ->whereIn('rombel_id', $this->waliRombelIds)
                     ->count(),
                 'guru' => (clone $rombelQuery)
@@ -176,7 +177,7 @@ class Dashboard extends Component
         }
 
         return [
-            'murid' => Murid::count(),
+            'murid' => Murid::query()->aktif()->count(),
             'guru' => Guru::count(),
             'kelas' => Rombel::count(),
             'jurusan' => Jurusan::count(),

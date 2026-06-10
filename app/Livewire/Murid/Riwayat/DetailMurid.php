@@ -19,7 +19,7 @@ class DetailMurid extends Component
 
     public function mount(string $muriduuid): void
     {
-        $this->murid = Murid::query()->where('uuid', $muriduuid)->firstOrFail();
+        $this->murid = Murid::query()->aktif()->where('uuid', $muriduuid)->firstOrFail();
         $this->ensureWaliKelasAccess();
         $this->filterTanggalDari = now()->startOfMonth()->toDateString();
         $this->filterTanggalSampai = now()->toDateString();

@@ -37,7 +37,7 @@ class Edit extends Component
 
     public function mount($muriduuid): void
     {
-        $this->murid = Murid::where('uuid', $muriduuid)->firstOrFail();
+        $this->murid = Murid::query()->aktif()->where('uuid', $muriduuid)->firstOrFail();
 
         $this->rombel = Rombel::query()
             ->with(["tingkat", "jurusan", "indeks"])

@@ -9,6 +9,7 @@ use App\Models\Murid\Rombel\Tingkat;
 use App\Models\Setting;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -86,6 +87,7 @@ class TahunAjaran extends Component
         $this->levelStats = collect(['X', 'XI', 'XII'])
             ->mapWithKeys(function ($level) {
                 $count = Murid::query()
+                    ->aktif()
                     ->whereHas('rombel.tingkat', function ($query) use ($level) {
                         $query->where('nama', $level);
                     })
@@ -94,6 +96,17 @@ class TahunAjaran extends Component
                 return [$level => $count];
             })
             ->all();
+
+        $this->levelStats['Lulus'] = $this->hasMuridStatusColumn()
+            ? Murid::query()->where('status', 'lulus')->count()
+            : Murid::query()->whereNull('rombel_id')->count();
+    }
+
+    private function hasMuridStatusColumn(): bool
+    {
+        static $hasStatusColumn = null;
+
+        return $hasStatusColumn ??= Schema::hasColumn('murid', 'status');
     }
 
     #[On('proses-kenaikan-kelas')]
@@ -104,7 +117,12 @@ class TahunAjaran extends Component
 
         $result = DB::transaction(function () use ($nextStart) {
             $rombels = Rombel::query()
-                ->with(['tingkat', 'jurusan', 'indeks', 'murid'])
+                ->with([
+                    'tingkat',
+                    'jurusan',
+                    'indeks',
+                    'murid' => fn ($query) => $query->aktif(),
+                ])
                 ->get()
                 ->sortByDesc(fn ($rombel) => $this->getTingkatOrder($rombel->tingkat?->nama ?? ''))
                 ->values();
@@ -114,9 +132,21 @@ class TahunAjaran extends Component
 
             foreach ($rombels as $rombel) {
                 $nextTingkat = $this->getNextTingkat($rombel->tingkat?->nama ?? '');
+                $activeStudentCount = $rombel->murid->count();
 
                 if (!$nextTingkat) {
-                    $graduatedCount += $rombel->murid->count();
+                    $graduatePayload = ['rombel_id' => null];
+
+                    if ($this->hasMuridStatusColumn()) {
+                        $graduatePayload['status'] = 'lulus';
+                    }
+
+                    Murid::query()
+                        ->aktif()
+                        ->where('rombel_id', $rombel->id)
+                        ->update($graduatePayload);
+
+                    $graduatedCount += $activeStudentCount;
                     continue;
                 }
 
@@ -144,10 +174,11 @@ class TahunAjaran extends Component
                 }
 
                 Murid::query()
+                    ->aktif()
                     ->where('rombel_id', $rombel->id)
                     ->update(['rombel_id' => $targetRombel->id]);
 
-                $promotedCount += $rombel->murid->count();
+                $promotedCount += $activeStudentCount;
             }
 
             Setting::updateOrCreate(

@@ -45,6 +45,7 @@ return new class extends Migration
                 ->constrained('rombel')
                 ->cascadeOnUpdate();
                 // ->nullOnDelete(); --- IGNORE ---
+            $table->string('status', 20)->default('aktif')->index();
 
             $table->softDeletes();
             $table->timestamps();

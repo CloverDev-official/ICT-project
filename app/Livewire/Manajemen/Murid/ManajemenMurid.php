@@ -126,6 +126,7 @@ class ManajemenMurid extends Component
     private function getMuridQuery()
     {
         return Murid::query()
+            ->aktif()
             ->with(['rombel:id,tingkat_id,jurusan_id,indeks_id'])
             ->when($this->search, function ($q) {
                 $search = trim($this->search);

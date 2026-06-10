@@ -106,6 +106,7 @@ class MuridFactory extends Factory
             'image_path' => $this->getFastImage(),
 
             'rombel_id' => null,
+            'status' => 'aktif',
         ];
     }
 }

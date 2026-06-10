@@ -6,6 +6,7 @@ use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Murid extends Model
@@ -36,6 +37,7 @@ class Murid extends Model
         'nama_wali',
         'image_path',
         'rombel_id',
+        'status',
     ];
 
     protected $casts = [
@@ -48,7 +50,24 @@ class Murid extends Model
             if (!$model->uuid) {
                 $model->uuid = (string) Str::uuid();
             }
+
+            if (Schema::hasColumn($model->getTable(), 'status') && !$model->status) {
+                $model->status = 'aktif';
+            }
         });
+    }
+
+    public function scopeAktif($query)
+    {
+        static $hasStatusColumn = null;
+
+        $hasStatusColumn ??= Schema::hasColumn($this->getTable(), 'status');
+
+        if ($hasStatusColumn) {
+            return $query->where('status', 'aktif');
+        }
+
+        return $query->whereNotNull('rombel_id');
     }
 
     /**

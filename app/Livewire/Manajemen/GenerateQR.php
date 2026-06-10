@@ -96,6 +96,7 @@ class GenerateQR extends Component
             : ($this->filterTingkat || $this->filterJurusan || $this->filterIndeks);
 
         $query = Murid::query()
+            ->aktif()
             ->with([
                 'rombel:id,tingkat_id,jurusan_id,indeks_id',
             ])

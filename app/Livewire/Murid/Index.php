@@ -100,6 +100,7 @@ class Index extends Component
     public function generateQRCode($muridData)
     {
         $murid = Murid::query()
+            ->aktif()
             ->with(['rombel.jurusan'])
             ->where('uuid', $muridData['uuid'] ?? null)
             ->first();
@@ -132,6 +133,7 @@ class Index extends Component
     private function getMurid()
     {
         return Murid::query()
+            ->aktif()
             ->with([
                 'rombel:id,tingkat_id,jurusan_id,indeks_id',
             ])

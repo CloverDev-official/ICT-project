@@ -15,7 +15,7 @@ class Delete extends Component
     {
         $this->muridUuid = $uuid;
 
-        $this->murid = Murid::where('uuid', $uuid)->firstOrFail();
+        $this->murid = Murid::query()->aktif()->where('uuid', $uuid)->firstOrFail();
     }
 
     public function destroy(): void

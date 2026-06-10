@@ -20,6 +20,7 @@ use App\Models\Murid\Rombel\Tingkat;
 use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Indeks;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadingRow, WithStartRow, WithChunkReading, WithEvents, ShouldQueue
 {
@@ -101,7 +102,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
 
             $rombelId = $this->resolveRombelId($row);
 
-            $rows[] = [
+            $payload = [
                 'uuid' => (string) Str::uuid(),
                 'nama' => $nama,
                 'nipd' => $nipd,
@@ -128,6 +129,12 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
+
+            if (Schema::hasColumn('murid', 'status')) {
+                $payload['status'] = 'aktif';
+            }
+
+            $rows[] = $payload;
         }
 
         if (!$rows) {
@@ -135,30 +142,36 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             return;
         }
 
+        $updateColumns = [
+            'nama',
+            'jk',
+            'nisn',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'agama',
+            'alamat',
+            'rt',
+            'rw',
+            'kelurahan',
+            'kecamatan',
+            'hp',
+            'email',
+            'nama_ayah',
+            'nama_ibu',
+            'nama_wali',
+            'image_path',
+            'rombel_id',
+            'updated_at',
+        ];
+
+        if (Schema::hasColumn('murid', 'status')) {
+            $updateColumns[] = 'status';
+        }
+
         Murid::query()->upsert(
             $rows,
             ['nipd'],
-            [
-                'nama',
-                'jk',
-                'nisn',
-                'tempat_lahir',
-                'tanggal_lahir',
-                'agama',
-                'alamat',
-                'rt',
-                'rw',
-                'kelurahan',
-                'kecamatan',
-                'hp',
-                'email',
-                'nama_ayah',
-                'nama_ibu',
-                'nama_wali',
-                'image_path',
-                'rombel_id',
-                'updated_at',
-            ]
+            $updateColumns
         );
 
         $this->importedCount += count($rows);

@@ -246,6 +246,7 @@ class Index extends Component
     private function getStatistik(): array
     {
         $totalMurid = Murid::query()
+            ->aktif()
             ->tap(fn($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
                 'rombel',

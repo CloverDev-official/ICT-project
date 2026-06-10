@@ -131,7 +131,7 @@
             </div>
 
             <!-- cards -->
-            <div class="grid gap-5 lg:grid-cols-3">
+            <div class="grid gap-5 lg:grid-cols-4">
 
                 <!-- X -->
                 <div
@@ -244,6 +244,45 @@
 
                         <p class="mt-6 text-sm leading-relaxed text-rose-700">
                             Murid kelas XII tidak naik lagi dan akan ditandai selesai saat proses dijalankan.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- Lulus -->
+                <div
+                    class="group relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 transition hover:-translate-y-1 hover:shadow-lg">
+
+                    <div
+                        class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-slate-100 transition group-hover:scale-110">
+                    </div>
+
+                    <div class="relative">
+
+                        <div class="flex items-center justify-between">
+
+                            <div>
+                                <p class="text-sm font-medium text-slate-700">
+                                    Lulus
+                                </p>
+
+                                <h2 class="mt-3 text-4xl font-bold text-slate-900">
+                                    {{ $levelStats['Lulus'] ?? 0 }}
+                                </h2>
+                            </div>
+
+                            <div
+                                class="rounded-2xl bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm">
+
+                                Arsip
+
+                            </div>
+
+                        </div>
+
+                        <p class="mt-6 text-sm leading-relaxed text-slate-600">
+                            Murid yang sudah lulus disimpan sebagai arsip dan tidak tampil lagi di data aktif.
                         </p>
 
                     </div>
