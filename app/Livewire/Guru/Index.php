@@ -14,30 +14,34 @@ class Index extends Component
     public int $perPage = 20;
 
     public ?string $search = null;
-    public ?int $filterStatus = null;
-    public ?int $filterjenis = null;
+    public ?string $filterStatus = null;
+    public ?string $filterjenis = null;
 
     private function getStatusOptions(): array
     {
-        return [
-            0 => 'PNS',
-            1 => 'Honorer',
-        ];
+        return $this->getDistinctGuruOptions('status_kepegawaian');
     }
 
     private function getJenisOptions(): array
     {
-        return [
-            0 => 'Guru Mapel',
-            1 => 'Guru BK',
-        ];
+        return $this->getDistinctGuruOptions('jenis_ptk');
+    }
+
+    private function getDistinctGuruOptions(string $column): array
+    {
+        return Guru::query()
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->select($column)
+            ->distinct()
+            ->orderBy($column)
+            ->pluck($column)
+            ->mapWithKeys(fn ($value) => [$value => $value])
+            ->all();
     }
 
     private function getGuru()
     {
-        $statusOptions = $this->getStatusOptions();
-        $jenisOptions = $this->getJenisOptions();
-
         return Guru::query()
             ->when($this->search, function ($q) {
                 $search = trim($this->search);
@@ -49,20 +53,8 @@ class Index extends Component
                       ->orWhere('email', 'like', "%{$search}%");
                 });
             })
-            ->when($this->filterStatus !== null, function ($q) use ($statusOptions) {
-                $status = $statusOptions[$this->filterStatus] ?? null;
-
-                if ($status) {
-                    $q->where('status_kepegawaian', $status);
-                }
-            })
-            ->when($this->filterjenis !== null, function ($q) use ($jenisOptions) {
-                $jenis = $jenisOptions[$this->filterjenis] ?? null;
-
-                if ($jenis) {
-                    $q->where('jenis_ptk', $jenis);
-                }
-            })
+            ->when(filled($this->filterStatus), fn ($q) => $q->where('status_kepegawaian', $this->filterStatus))
+            ->when(filled($this->filterjenis), fn ($q) => $q->where('jenis_ptk', $this->filterjenis))
             ->orderBy('nama')
             ->orderBy('id')
             ->fastPaginate($this->perPage);

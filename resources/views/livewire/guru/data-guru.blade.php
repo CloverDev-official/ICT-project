@@ -143,8 +143,8 @@
             <div
                 x-data="{
                 open: false,
-                selectedId: null,
-                selectedLabel: null,
+                selectedId: @js($filterStatus),
+                selectedLabel: @js(filled($filterStatus) ? ($statusOptions[$filterStatus] ?? $filterStatus) : null),
 
                 toggle() {
                     this.open = !this.open
@@ -183,10 +183,10 @@
 
                     @foreach ($statusOptions as $index => $status)
                     <div
-                        @click.prevent="select({{ $index }}, '{{ $status }}')"
+                        @click.prevent="select(@js($index), @js($status))"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
                         <span>{{ $status }}</span>
-                        <iconify-icon x-show="selectedId == {{ $index }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                        <iconify-icon x-show="selectedId === @js($index)" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
                     @endforeach
 
@@ -197,8 +197,8 @@
             <div
             x-data="{
                 open: false,
-                selectedId: null,
-                selectedLabel: null,
+                selectedId: @js($filterjenis),
+                selectedLabel: @js(filled($filterjenis) ? ($jenisOptions[$filterjenis] ?? $filterjenis) : null),
 
                 toggle() {
                     this.open = !this.open
@@ -234,10 +234,10 @@
 
                     @foreach ($jenisOptions as $index => $jenis)
                     <div
-                        @click.prevent="select({{ $index }}, '{{ $jenis }}')"
+                        @click.prevent="select(@js($index), @js($jenis))"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
                         <span>{{ $jenis }}</span>
-                        <iconify-icon x-show="selectedId == {{ $index }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                        <iconify-icon x-show="selectedId === @js($index)" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
                     @endforeach
 
