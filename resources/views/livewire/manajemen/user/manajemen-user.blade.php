@@ -60,32 +60,6 @@
                     </button>
                 </a>
 
-                <!-- import -->
-                <div x-data="{ openModalImport: false }">
-
-                    <button
-                        @click="openModalImport = true"
-                        class="group w-full sm:w-auto rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20">
-
-                        <div class="flex items-center justify-center gap-2">
-
-                            <iconify-icon
-                                class="transition group-hover:-translate-y-0.5"
-                                icon="line-md:file-import"
-                                width="22"
-                                height="22">
-                            </iconify-icon>
-
-                            Import CSV
-
-                        </div>
-
-                    </button>
-
-                    <!-- modal -->
-                    <livewire:components.modal.manajemen.user.modal-import-user />
-                </div>
-
             </div>
 
         </div>
