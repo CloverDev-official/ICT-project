@@ -102,7 +102,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             $rombelId = $this->resolveRombelId($row);
 
             $rows[] = [
-                'ulid' => (string) Str::ulid(),
+                'uuid' => (string) Str::uuid(),
                 'nama' => $nama,
                 'nipd' => $nipd,
                 'jk' => $jk,

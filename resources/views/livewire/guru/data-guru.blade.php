@@ -253,7 +253,7 @@
         x-data="{
             selected: [],
 
-            getPageUlids() {
+            getPageUuids() {
                 return Array.from(
                     this.$root.querySelectorAll('.guru-row-checkbox')
                 ).map(el => el.value)
@@ -261,7 +261,7 @@
 
             toggleAll(e) {
                 if (e.target.checked) {
-                    this.selected = this.getPageUlids()
+                    this.selected = this.getPageUuids()
                 } else {
                     this.selected = []
                 }

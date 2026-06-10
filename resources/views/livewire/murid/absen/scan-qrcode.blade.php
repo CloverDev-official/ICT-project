@@ -167,7 +167,7 @@
                         </div>
                     </div>
                     <div class="text-right text-xs opacity-80">
-                        <p>ID: {{ $murid->ulid }}</p>
+                        <p>ID: {{ $murid->uuid }}</p>
                     </div>
                 </div>
 

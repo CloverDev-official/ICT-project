@@ -63,7 +63,7 @@ class MuridFactory extends Factory
 
         self::$counter++;
         return [
-            'ulid' => (string) Str::ulid(),
+            'uuid' => (string) Str::uuid(),
 
             'nama' =>
                 $jk === 'L' ? fake()->name('male') : fake()->name('female'),

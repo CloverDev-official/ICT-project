@@ -19,20 +19,20 @@ class ScanQRCode extends Component
     public array $jadwalHariIni = [];
 
     #[On('verifiedQRCode')]
-    public function verifiedQRCode($muridUlid): void
+    public function verifiedQRCode($muridUuid): void
     {
         $this->resetScanState();
 
-        if (str_starts_with($muridUlid, 's:')) {
-            $decoded = @unserialize($muridUlid);
+        if (str_starts_with($muridUuid, 's:')) {
+            $decoded = @unserialize($muridUuid);
             if ($decoded !== false) {
-                $muridUlid = $decoded;
+                $muridUuid = $decoded;
             }
         }
 
         $murid = Murid::query()
             ->with('rombel')
-            ->where('ulid', $muridUlid)
+            ->where('uuid', $muridUuid)
             ->first();
 
         if (!$murid) {

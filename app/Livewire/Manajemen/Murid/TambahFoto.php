@@ -66,7 +66,7 @@ class TambahFoto extends Component
                 fn ($q) => $q->whereHas('rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds))
             )
             ->orderBy('nama')
-            ->get(['id', 'ulid', 'nama', 'nipd', 'image_path', 'rombel_id']);
+            ->get(['id', 'uuid', 'nama', 'nipd', 'image_path', 'rombel_id']);
     }
 
     public function updatedMuridId($value): void

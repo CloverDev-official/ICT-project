@@ -48,7 +48,7 @@ class Guru extends Model
     {
         static::creating(function ($model) {
             if (!$model->public_id) {
-                $model->public_id = \Str::ulid();
+                $model->public_id = \Str::uuid();
             }
         });
     }

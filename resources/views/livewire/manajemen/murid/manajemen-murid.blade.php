@@ -458,7 +458,7 @@
                                 <div class="flex items-center justify-center gap-2">
 
                                     <!-- edit foto -->
-                                    <a href="{{ route('edit-foto', ['murid' => $murid->ulid]) }}" wire:navigate>
+                                    <a href="{{ route('edit-foto', ['murid' => $murid->uuid]) }}" wire:navigate>
                                         <button
                                             type="button"
                                             class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">

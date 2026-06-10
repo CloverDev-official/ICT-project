@@ -17,9 +17,9 @@ class DetailMurid extends Component
     public ?string $filterTanggalDari = null;
     public ?string $filterTanggalSampai = null;
 
-    public function mount(string $muridulid): void
+    public function mount(string $muriduuid): void
     {
-        $this->murid = Murid::query()->where('ulid', $muridulid)->firstOrFail();
+        $this->murid = Murid::query()->where('uuid', $muriduuid)->firstOrFail();
         $this->ensureWaliKelasAccess();
         $this->filterTanggalDari = now()->startOfMonth()->toDateString();
         $this->filterTanggalSampai = now()->toDateString();

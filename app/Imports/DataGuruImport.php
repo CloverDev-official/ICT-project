@@ -68,7 +68,7 @@ class DataGuruImport implements ToCollection, WithCalculatedFormulas, WithHeadin
             $email = $this->getValueExact($row, ['e-mail', 'email', 'e_mail']);
 
             $payload = [
-                'public_id' => (string) Str::ulid(),
+                'public_id' => (string) Str::uuid(),
                 'nama' => $nama,
                 'nuptk' => $nuptk,
                 'jk' => $jk,

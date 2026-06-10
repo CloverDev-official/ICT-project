@@ -70,7 +70,7 @@ class MuridSeeder extends Seeder
                 $jk = ($i & 1) === 0 ? 'L' : 'P';
 
                 $batch[] = [
-                    'ulid' => (string) Str::ulid(),
+                    'uuid' => (string) Str::uuid(),
                     'nama' =>
                         $jk === 'L' ? $maleNames[$idx] : $femaleNames[$idx],
                     'jk' => $jk,

@@ -664,7 +664,7 @@
                 } = event;
 
                 for (const murid of dataMurid) {
-                    const svgString = await generateQRSVG(murid.ulid);
+                    const svgString = await generateQRSVG(murid.uuid);
 
                     const cardCanvas = await window.renderStudentCardCanvas({
                         murid,

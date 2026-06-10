@@ -67,17 +67,17 @@ class EditFoto extends Component
                 fn ($q) => $q->whereHas('rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds))
             )
             ->orderBy('nama')
-            ->get(['id', 'ulid', 'nama', 'nipd', 'image_path', 'rombel_id']);
+            ->get(['id', 'uuid', 'nama', 'nipd', 'image_path', 'rombel_id']);
     }
 
     private function applyQuerySelection(): void
     {
-        $muridUlid = request()->query('murid');
-        if (!$muridUlid) {
+        $muridUuid = request()->query('murid');
+        if (!$muridUuid) {
             return;
         }
 
-        $murid = $this->listMurid?->firstWhere('ulid', $muridUlid);
+        $murid = $this->listMurid?->firstWhere('uuid', $muridUuid);
         if (!$murid) {
             return;
         }

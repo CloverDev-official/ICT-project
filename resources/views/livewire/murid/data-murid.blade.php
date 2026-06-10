@@ -352,7 +352,7 @@
         x-data="{
             selected: [],
 
-            getPageUlids() {
+            getPageUuids() {
                 return Array.from(
                     this.$root.querySelectorAll('.murid-row-checkbox')
                 ).map(el => el.value)
@@ -360,7 +360,7 @@
 
             toggleAll(e) {
                 if (e.target.checked) {
-                    this.selected = this.getPageUlids()
+                    this.selected = this.getPageUuids()
                 } else {
                     this.selected = []
                 }
@@ -515,7 +515,7 @@
                             <input
                                 type="checkbox"
                                 class="murid-row-checkbox rounded border-gray-300"
-                                value="{{ $murid->ulid }}"
+                                value="{{ $murid->uuid }}"
                                 x-model="selected">
 
                         </td>
@@ -653,7 +653,7 @@
 
                                 <!-- edit -->
                                 <a
-                                    href="{{ route('edit-murid', $murid->ulid) }}"
+                                    href="{{ route('edit-murid', $murid->uuid) }}"
                                     wire:navigate>
 
                                     <button
@@ -671,7 +671,7 @@
 
                                 <!-- qr -->
                                 <button
-                                    wire:click="generateQRCode({ 'ulid': '{{ $murid->ulid }}', 'nama': '{{ $murid->nama }}', 'nipd': '{{ $murid->nipd }}' })"
+                                    wire:click="generateQRCode({ 'uuid': '{{ $murid->uuid }}', 'nama': '{{ $murid->nama }}', 'nipd': '{{ $murid->nipd }}' })"
                                     class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
                                     <iconify-icon

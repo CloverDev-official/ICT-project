@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('murid', function (Blueprint $table) {
             $table->id();
-            $table->ulid('ulid')->unique();
+            $table->uuid('uuid')->unique();
 
             $table->string('nama', 191);
             $table->string('nipd', 191)->unique();
@@ -50,7 +50,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Aman untuk MySQL lama: hindari composite index panjang berisi nama 255 char.
-            $table->index(['ulid', 'rombel_id']);
+            $table->index(['uuid', 'rombel_id']);
             $table->index('nama');
         });
     }

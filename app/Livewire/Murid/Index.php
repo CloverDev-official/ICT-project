@@ -101,7 +101,7 @@ class Index extends Component
     {
         $murid = Murid::query()
             ->with(['rombel.jurusan'])
-            ->where('ulid', $muridData['ulid'] ?? null)
+            ->where('uuid', $muridData['uuid'] ?? null)
             ->first();
 
         if (!$murid) {

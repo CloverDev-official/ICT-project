@@ -675,7 +675,7 @@ window.addEventListener("generateStudentCardPdf", async (event) => {
     const murid = detail.murid;
     if (!murid) return;
 
-    const qrSvg = await window.generateQRSVG?.(murid.ulid);
+    const qrSvg = await window.generateQRSVG?.(murid.uuid);
     const cardCanvas = await window.renderStudentCardCanvas({
         murid,
         qrSvg

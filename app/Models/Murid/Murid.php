@@ -15,7 +15,7 @@ class Murid extends Model
     protected $table = 'murid';
 
     protected $fillable = [
-        'ulid',
+        'uuid',
         'nama',
         'nipd',
         'jk',
@@ -45,8 +45,8 @@ class Murid extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            if (!$model->ulid) {
-                $model->ulid = (string) Str::ulid();
+            if (!$model->uuid) {
+                $model->uuid = (string) Str::uuid();
             }
         });
     }
@@ -69,6 +69,6 @@ class Murid extends Model
 
     public function getRouteKeyName()
     {
-        return 'ulid';
+        return 'uuid';
     }
 }

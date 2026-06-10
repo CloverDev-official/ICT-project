@@ -549,7 +549,7 @@
                                     class="flex items-center justify-center">
 
                                     <a
-                                        href="{{ route('riwayat-detail-absen-murid', $item->ulid) }}"
+                                        href="{{ route('riwayat-detail-absen-murid', $item->uuid) }}"
                                         wire:navigate>
 
                                         <button

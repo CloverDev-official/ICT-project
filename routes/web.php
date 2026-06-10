@@ -78,7 +78,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::prefix('/riwayat')->group(function () {
         Route::middleware('access:riwayat-murid')->group(function () {
             Route::get('/absen-murid', RiwayatMurid::class)->name('riwayat-absen-murid');
-            Route::get('/detail-absen-murid/{muridulid}', DetailMurid::class)->name('riwayat-detail-absen-murid');
+            Route::get('/detail-absen-murid/{muriduuid}', DetailMurid::class)->name('riwayat-detail-absen-murid');
         });
     });
 
@@ -97,7 +97,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::prefix('/data-murid')->middleware('access:data-murid')->group(function () {
         Route::get('/', IndexMurid::class)->name('data-murid');
         Route::get('/create', CreateMurid::class)->name('tambah-murid');
-        Route::get('/edit/{muridulid}', EditMurid::class)->name('edit-murid');
+        Route::get('/edit/{muriduuid}', EditMurid::class)->name('edit-murid');
         Route::get('/template', function () {
             return Excel::download(new MuridTemplateExport(), 'template-import-murid.xlsx');
         })->name('template-import-murid');

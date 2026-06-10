@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('guru', function (Blueprint $table) {
             $table->id();
-            $table->ulid('public_id')->unique();
+            $table->uuid('public_id')->unique();
 
             $table->string('nama', 191);
             $table->string('nuptk', 191)->nullable()->unique();

@@ -8,14 +8,14 @@ use Livewire\Component;
 
 class Delete extends Component
 {
-    public string $muridUlid = '';
+    public string $muridUuid = '';
     public ?Murid $murid = null;
 
-    public function loadMurid(string $ulid): void
+    public function loadMurid(string $uuid): void
     {
-        $this->muridUlid = $ulid;
+        $this->muridUuid = $uuid;
 
-        $this->murid = Murid::where('ulid', $ulid)->firstOrFail();
+        $this->murid = Murid::where('uuid', $uuid)->firstOrFail();
     }
 
     public function destroy(): void
