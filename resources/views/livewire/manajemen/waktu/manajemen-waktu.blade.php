@@ -555,6 +555,7 @@
                     loading: false,
                     saving: false,
                     savingDefault: false,
+                    requestTimer: null,
                     formError: '',
                     bulan: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
 
@@ -562,14 +563,72 @@
                         this.resetFormFromDate(this.selectedDate);
 
                         window.addEventListener('waktu-state-updated', (event) => {
-                            this.state = JSON.parse(JSON.stringify(event.detail.state));
-                            this.selectedDate = this.state.selectedDate;
-                            this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
-                            this.loading = false;
-                            this.saving = false;
-                            this.savingDefault = false;
-                            this.resetFormFromDate(this.selectedDate);
+                            this.applyServerState(event.detail?.state || event.detail);
                         });
+                    },
+
+                    applyServerState(nextState) {
+                        if (!nextState || typeof nextState !== 'object') {
+                            this.finishRequest();
+                            return;
+                        }
+
+                        this.state = JSON.parse(JSON.stringify(nextState));
+                        this.selectedDate = this.state.selectedDate;
+                        this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
+                        this.resetFormFromDate(this.selectedDate);
+                        this.finishRequest();
+                    },
+
+                    beginRequest(flag) {
+                        this.formError = '';
+                        this.loading = flag === 'loading';
+                        this.saving = flag === 'saving';
+                        this.savingDefault = flag === 'savingDefault';
+
+                        if (this.requestTimer) {
+                            clearTimeout(this.requestTimer);
+                        }
+
+                        this.requestTimer = setTimeout(() => {
+                            this.finishRequest();
+                            this.formError = 'Proses menyimpan terlalu lama. Cek koneksi/server, lalu coba lagi.';
+                        }, 20000);
+                    },
+
+                    finishRequest() {
+                        this.loading = false;
+                        this.saving = false;
+                        this.savingDefault = false;
+
+                        if (this.requestTimer) {
+                            clearTimeout(this.requestTimer);
+                            this.requestTimer = null;
+                        }
+                    },
+
+                    runServerAction(action, fallbackError) {
+                        let request;
+
+                        try {
+                            request = typeof action === 'function' ? action() : action;
+                        } catch (error) {
+                            this.finishRequest();
+                            this.formError = this.errorMessage(error, fallbackError);
+                            return Promise.resolve();
+                        }
+
+                        return Promise.resolve(request)
+                            .then((nextState) => {
+                                this.applyServerState(nextState);
+                            })
+                            .catch((error) => {
+                                this.finishRequest();
+                                this.formError = this.errorMessage(error, fallbackError);
+                            })
+                            .finally(() => {
+                                this.finishRequest();
+                            });
                     },
 
                     selectDate(date) {
@@ -860,17 +919,19 @@
                     },
 
                     loadMonth(year, month) {
-                        this.loading = true;
-                        wire.changeMonth(year, month).catch(() => {
-                            this.loading = false;
-                        });
+                        this.beginRequest('loading');
+                        this.runServerAction(
+                            () => wire.changeMonth(year, month),
+                            'Gagal memuat bulan. Coba lagi.',
+                        );
                     },
 
                     goToday() {
-                        this.loading = true;
-                        wire.goToday().catch(() => {
-                            this.loading = false;
-                        });
+                        this.beginRequest('loading');
+                        this.runServerAction(
+                            () => wire.goToday(),
+                            'Gagal memuat tanggal hari ini. Coba lagi.',
+                        );
                     },
 
                     saveEvent() {
@@ -915,18 +976,19 @@
                             }
                         }
 
-                        this.saving = true;
-                        wire.saveEvent(JSON.parse(JSON.stringify(this.eventForm))).catch(() => {
-                            this.saving = false;
-                            this.formError = 'Gagal menyimpan. Periksa kembali data yang diisi.';
-                        });
+                        this.beginRequest('saving');
+                        this.runServerAction(
+                            () => wire.saveEvent(JSON.parse(JSON.stringify(this.eventForm))),
+                            'Gagal menyimpan. Periksa kembali data yang diisi.',
+                        );
                     },
 
                     saveDefault() {
-                        this.savingDefault = true;
-                        wire.saveDefault(JSON.parse(JSON.stringify(this.defaultForm))).catch(() => {
-                            this.savingDefault = false;
-                        });
+                        this.beginRequest('savingDefault');
+                        this.runServerAction(
+                            () => wire.saveDefault(JSON.parse(JSON.stringify(this.defaultForm))),
+                            'Gagal menyimpan default. Periksa kembali jam yang diisi.',
+                        );
                     },
 
                     deleteSelectedDate() {
@@ -938,10 +1000,11 @@
                             return;
                         }
 
-                        this.saving = true;
-                        wire.deleteDate(this.selectedDate).catch(() => {
-                            this.saving = false;
-                        });
+                        this.beginRequest('saving');
+                        this.runServerAction(
+                            () => wire.deleteDate(this.selectedDate),
+                            'Gagal menghapus event. Coba lagi.',
+                        );
                     },
 
                     resetToDefault() {
@@ -953,16 +1016,31 @@
                             return;
                         }
 
-                        this.saving = true;
-                        wire.deleteDate(this.selectedDate).catch(() => {
-                            this.saving = false;
-                        });
+                        this.beginRequest('saving');
+                        this.runServerAction(
+                            () => wire.deleteDate(this.selectedDate),
+                            'Gagal reset jadwal ke default. Coba lagi.',
+                        );
                     },
 
                     scrollToForm() {
                         this.$nextTick(() => {
                             document.getElementById('form-event-waktu')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         });
+                    },
+
+
+                    errorMessage(error, fallback) {
+                        const errors = error?.response?.data?.errors || error?.errors || null;
+
+                        if (errors) {
+                            const first = Object.values(errors).flat()[0];
+                            if (first) {
+                                return first;
+                            }
+                        }
+
+                        return fallback;
                     },
 
                     formatDate(date) {

@@ -39,19 +39,21 @@ class ManajemenWaktu extends Component
         $this->refreshState($today->format('Y-m-d'));
     }
 
-    public function changeMonth(int $year, int $month): void
+    public function changeMonth(int $year, int $month): array
     {
         if ($month < 1 || $month > 12 || $year < 2000 || $year > 2100) {
-            return;
+            return $this->state;
         }
 
         $this->year = $year;
         $this->month = $month;
         $this->refreshState(sprintf('%04d-%02d-01', $year, $month));
         $this->dispatch('waktu-state-updated', state: $this->state);
+
+        return $this->state;
     }
 
-    public function goToday(): void
+    public function goToday(): array
     {
         $today = now();
 
@@ -59,9 +61,11 @@ class ManajemenWaktu extends Component
         $this->month = (int) $today->format('m');
         $this->refreshState($today->format('Y-m-d'));
         $this->dispatch('waktu-state-updated', state: $this->state);
+
+        return $this->state;
     }
 
-    public function saveDefault(array $payload): void
+    public function saveDefault(array $payload): array
     {
         $validated = validator($payload, [
             'jam_masuk' => ['required', 'date_format:H:i'],
@@ -81,21 +85,26 @@ class ManajemenWaktu extends Component
             'scan_keluar_sampai.required' => 'Jam akhir scan pulang wajib diisi.',
         ])->validate();
 
-        Setting::updateOrCreate(['key' => 'jadwal.default_masuk'], ['value' => $validated['jam_masuk']]);
-        Setting::updateOrCreate(['key' => 'jadwal.default_pulang_normal'], ['value' => $validated['jam_pulang_normal']]);
-        Setting::updateOrCreate(['key' => 'jadwal.default_pulang_jumat'], ['value' => $validated['jam_pulang_jumat']]);
-        Setting::updateOrCreate(['key' => 'jadwal.scan_masuk_mulai'], ['value' => $validated['scan_masuk_mulai']]);
-        Setting::updateOrCreate(['key' => 'jadwal.scan_masuk_sampai'], ['value' => $validated['scan_masuk_sampai']]);
-        Setting::updateOrCreate(['key' => 'jadwal.scan_keluar_mulai'], ['value' => $validated['scan_keluar_mulai']]);
-        Setting::updateOrCreate(['key' => 'jadwal.scan_keluar_sampai'], ['value' => $validated['scan_keluar_sampai']]);
+        $now = now();
+        Setting::upsert([
+            ['key' => 'jadwal.default_masuk', 'value' => $validated['jam_masuk'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.default_pulang_normal', 'value' => $validated['jam_pulang_normal'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.default_pulang_jumat', 'value' => $validated['jam_pulang_jumat'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_masuk_mulai', 'value' => $validated['scan_masuk_mulai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_masuk_sampai', 'value' => $validated['scan_masuk_sampai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_keluar_mulai', 'value' => $validated['scan_keluar_mulai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_keluar_sampai', 'value' => $validated['scan_keluar_sampai'], 'created_at' => $now, 'updated_at' => $now],
+        ], ['key'], ['value', 'updated_at']);
 
         $this->refreshState($this->state['selectedDate'] ?? now()->format('Y-m-d'));
         $this->dispatch('waktu-state-updated', state: $this->state);
 
         ToastMagic::success('Default Jadwal Disimpan', 'Jam default masuk, pulang normal, dan Jumat berhasil diperbarui.');
+
+        return $this->state;
     }
 
-    public function saveEvent(array $payload): void
+    public function saveEvent(array $payload): array
     {
         $validated = validator($payload, [
             'tanggal_mulai' => ['required', 'date_format:Y-m-d'],
@@ -157,35 +166,66 @@ class ManajemenWaktu extends Component
         $tanggalSelesai = $validated['tanggal_selesai'];
 
         DB::transaction(function () use ($validated, $rombelIds, $detailKelas, $tanggalMulai, $tanggalSelesai) {
-            foreach ($this->dateRange($tanggalMulai, $tanggalSelesai) as $tanggal) {
-                $jadwal = JadwalAbsen::updateOrCreate(
-                    ['tanggal' => $tanggal],
-                    [
-                        'nama_acara' => $validated['nama_acara'],
-                        'jam_masuk' => null,
-                        'jam_pulang' => null,
-                        'tipe' => 'custom',
-                        'keterangan' => $validated['keterangan'] ?? null,
-                    ],
-                );
+            $dates = $this->dateRange($tanggalMulai, $tanggalSelesai);
+            $now = now();
+
+            $jadwalRows = collect($dates)
+                ->map(fn (string $tanggal) => [
+                    'tanggal' => $tanggal,
+                    'nama_acara' => $validated['nama_acara'],
+                    'jam_masuk' => null,
+                    'jam_pulang' => null,
+                    'tipe' => 'custom',
+                    'keterangan' => $validated['keterangan'] ?? null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])
+                ->all();
+
+            JadwalAbsen::upsert($jadwalRows, ['tanggal'], [
+                'nama_acara',
+                'jam_masuk',
+                'jam_pulang',
+                'tipe',
+                'keterangan',
+                'updated_at',
+            ]);
+
+            $jadwalIdsByDate = JadwalAbsen::whereIn('tanggal', $dates)
+                ->pluck('id', 'tanggal')
+                ->all();
+
+            $supportsScanWindow = $this->supportsRombelScanWindow();
+            $detailRows = [];
+
+            foreach ($dates as $tanggal) {
+                $jadwalId = $jadwalIdsByDate[$tanggal] ?? null;
+
+                if (!$jadwalId) {
+                    continue;
+                }
 
                 foreach ($rombelIds as $rombelId) {
                     $key = (string) $rombelId;
                     $row = $detailKelas[$key] ?? [];
                     $tipe = $row['tipe'] ?? 'libur';
 
-                    $values = [
+                    $detail = [
+                        'jadwal_absen_id' => $jadwalId,
+                        'rombel_id' => $rombelId,
                         'tipe' => $tipe,
                         'jam_masuk' => $tipe === 'libur' ? null : ($row['jam_masuk'] ?? null),
                         'jam_pulang' => $tipe === 'libur' ? null : ($row['jam_pulang'] ?? null),
                         'keterangan' => $row['keterangan'] ?? null,
+                        'created_at' => $now,
+                        'updated_at' => $now,
                     ];
 
-                    if ($this->supportsRombelScanWindow()) {
+                    if ($supportsScanWindow) {
                         $gunakanWindowScan = $tipe !== 'libur'
                             && filter_var($row['gunakan_window_scan'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-                        $values = array_merge($values, [
+                        $detail = array_merge($detail, [
                             'gunakan_window_scan' => $gunakanWindowScan,
                             'scan_masuk_mulai' => $gunakanWindowScan ? ($row['scan_masuk_mulai'] ?? null) : null,
                             'scan_masuk_sampai' => $gunakanWindowScan ? ($row['scan_masuk_sampai'] ?? null) : null,
@@ -194,28 +234,48 @@ class ManajemenWaktu extends Component
                         ]);
                     }
 
-                    $jadwal->rombelJadwal()->updateOrCreate(
-                        ['rombel_id' => $rombelId],
-                        $values,
-                    );
+                    $detailRows[] = $detail;
+                }
+            }
+
+            if ($detailRows) {
+                $updateColumns = ['tipe', 'jam_masuk', 'jam_pulang', 'keterangan', 'updated_at'];
+
+                if ($supportsScanWindow) {
+                    $updateColumns = array_merge($updateColumns, [
+                        'gunakan_window_scan',
+                        'scan_masuk_mulai',
+                        'scan_masuk_sampai',
+                        'scan_keluar_mulai',
+                        'scan_keluar_sampai',
+                    ]);
                 }
 
-                $jadwal->rombelJadwal()
-                    ->whereNotIn('rombel_id', $rombelIds)
-                    ->delete();
+                DB::table('jadwal_absen_rombel')->upsert(
+                    $detailRows,
+                    ['jadwal_absen_id', 'rombel_id'],
+                    $updateColumns,
+                );
             }
+
+            DB::table('jadwal_absen_rombel')
+                ->whereIn('jadwal_absen_id', array_values($jadwalIdsByDate))
+                ->whereNotIn('rombel_id', $rombelIds)
+                ->delete();
         });
 
         $this->refreshState($tanggalMulai);
         $this->dispatch('waktu-state-updated', state: $this->state);
 
         ToastMagic::success('Event Kelas Disimpan', 'Jadwal untuk kelas terdampak berhasil diperbarui.');
+
+        return $this->state;
     }
 
-    public function deleteDate(string $tanggal): void
+    public function deleteDate(string $tanggal): array
     {
         if (!$this->isValidDate($tanggal)) {
-            return;
+            return $this->state;
         }
 
         JadwalAbsen::where('tanggal', $tanggal)->delete();
@@ -224,6 +284,8 @@ class ManajemenWaktu extends Component
         $this->dispatch('waktu-state-updated', state: $this->state);
 
         ToastMagic::success('Event Dihapus', 'Event pada tanggal tersebut berhasil dihapus.');
+
+        return $this->state;
     }
 
     private function refreshState(?string $selectedDate = null): void

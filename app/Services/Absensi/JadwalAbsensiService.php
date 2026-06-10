@@ -5,6 +5,7 @@ namespace App\Services\Absensi;
 use App\Models\JadwalAbsen;
 use App\Models\Setting;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class JadwalAbsensiService
 {
@@ -39,15 +40,18 @@ class JadwalAbsensiService
         $detailRombel = $jadwal->rombelJadwal->first();
 
         if ($detailRombel) {
+            $scanWindow = $this->scanWindowForRombel($detailRombel, $default);
+
             return $this->normalize([
                 'tanggal' => $date->toDateString(),
                 'tipe' => $detailRombel->tipe ?: $jadwal->tipe ?: $default['tipe'],
                 'jam_masuk' => $detailRombel->jam_masuk ?: $jadwal->jam_masuk ?: $default['jam_masuk'],
                 'jam_pulang' => $detailRombel->jam_pulang ?: $jadwal->jam_pulang ?: $default['jam_pulang'],
-                'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
-                'scan_masuk_sampai' => $default['scan_masuk_sampai'] ?? null,
-                'scan_keluar_mulai' => $default['scan_keluar_mulai'] ?? null,
-                'scan_keluar_sampai' => $default['scan_keluar_sampai'] ?? null,
+                'scan_masuk_mulai' => $scanWindow['scan_masuk_mulai'],
+                'scan_masuk_sampai' => $scanWindow['scan_masuk_sampai'],
+                'scan_keluar_mulai' => $scanWindow['scan_keluar_mulai'],
+                'scan_keluar_sampai' => $scanWindow['scan_keluar_sampai'],
+                'scan_window_source' => $scanWindow['source'],
                 'nama_acara' => $jadwal->nama_acara,
                 'keterangan' => $detailRombel->keterangan ?: $jadwal->keterangan ?: $default['keterangan'],
                 'source' => 'rombel',
@@ -169,6 +173,63 @@ class JadwalAbsensiService
             'scan_keluar_mulai' => $settings['jadwal.scan_keluar_mulai'] ?? $jamPulang,
             'scan_keluar_sampai' => $settings['jadwal.scan_keluar_sampai'] ?? $jamPulang,
         ];
+    }
+
+    private function scanWindowForRombel(object $detailRombel, array $default): array
+    {
+        if (!$this->supportsRombelScanWindow() || !($detailRombel->gunakan_window_scan ?? false)) {
+            return [
+                'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
+                'scan_masuk_sampai' => $default['scan_masuk_sampai'] ?? null,
+                'scan_keluar_mulai' => $default['scan_keluar_mulai'] ?? null,
+                'scan_keluar_sampai' => $default['scan_keluar_sampai'] ?? null,
+                'source' => 'default',
+            ];
+        }
+
+        return [
+            'scan_masuk_mulai' => $this->formatTime($detailRombel->scan_masuk_mulai ?? null) ?? ($default['scan_masuk_mulai'] ?? null),
+            'scan_masuk_sampai' => $this->formatTime($detailRombel->scan_masuk_sampai ?? null) ?? ($default['scan_masuk_sampai'] ?? null),
+            'scan_keluar_mulai' => $this->formatTime($detailRombel->scan_keluar_mulai ?? null) ?? ($default['scan_keluar_mulai'] ?? null),
+            'scan_keluar_sampai' => $this->formatTime($detailRombel->scan_keluar_sampai ?? null) ?? ($default['scan_keluar_sampai'] ?? null),
+            'source' => 'rombel',
+        ];
+    }
+
+    private function supportsRombelScanWindow(): bool
+    {
+        static $supported = null;
+
+        if ($supported !== null) {
+            return $supported;
+        }
+
+        if (!Schema::hasTable('jadwal_absen_rombel')) {
+            return $supported = false;
+        }
+
+        foreach ([
+            'gunakan_window_scan',
+            'scan_masuk_mulai',
+            'scan_masuk_sampai',
+            'scan_keluar_mulai',
+            'scan_keluar_sampai',
+        ] as $column) {
+            if (!Schema::hasColumn('jadwal_absen_rombel', $column)) {
+                return $supported = false;
+            }
+        }
+
+        return $supported = true;
+    }
+
+    private function formatTime($time): ?string
+    {
+        if (!$time) {
+            return null;
+        }
+
+        return substr((string) $time, 0, 5);
     }
 
     private function normalize(array $jadwal): array

@@ -15,12 +15,22 @@ class JadwalAbsenRombel extends Model
         'tipe',
         'jam_masuk',
         'jam_pulang',
+        'gunakan_window_scan',
+        'scan_masuk_mulai',
+        'scan_masuk_sampai',
+        'scan_keluar_mulai',
+        'scan_keluar_sampai',
         'keterangan',
     ];
 
     protected $casts = [
         'jam_masuk' => 'string',
         'jam_pulang' => 'string',
+        'gunakan_window_scan' => 'boolean',
+        'scan_masuk_mulai' => 'string',
+        'scan_masuk_sampai' => 'string',
+        'scan_keluar_mulai' => 'string',
+        'scan_keluar_sampai' => 'string',
     ];
 
     public function jadwalAbsen()
