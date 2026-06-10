@@ -27,7 +27,7 @@ class Index extends Component
     public $filteredJurusan;
     public $filteredIndeks;
 
-    public array $statusOptions = ['Sakit', 'Izin', 'Alpa'];
+    public array $statusOptions = ['sakit', 'izin', 'alpa'];
 
     public ?string $search = null;
     public ?int $filterTingkat = null;
@@ -223,7 +223,7 @@ class Index extends Component
             ->selectRaw("{$monthExpr} as month, COUNT(*) as total")
             ->whereYear('tanggal', $year)
             ->whereBetween('tanggal', $this->getTanggalRange())
-            ->where('status', 'Hadir')
+            ->whereRaw('LOWER(status) = ?', ['hadir'])
             ->groupBy(DB::raw($monthExpr))
             ->pluck('total', 'month');
 
@@ -263,14 +263,15 @@ class Index extends Component
         $baseQuery = $this->absenBaseQuery();
 
         $rows = (clone $baseQuery)
-            ->selectRaw('status, COUNT(*) as total')
-            ->whereIn('status', ['Hadir', 'Sakit', 'Izin'])
-            ->groupBy('status')
-            ->pluck('total', 'status');
+            ->selectRaw('LOWER(status) as status_key, COUNT(*) as total')
+            ->whereIn(DB::raw('LOWER(status)'), ['hadir', 'sakit', 'izin', 'alpa'])
+            ->groupBy(DB::raw('LOWER(status)'))
+            ->pluck('total', 'status_key');
 
-        $hadir = (int) ($rows['Hadir'] ?? 0);
-        $sakit = (int) ($rows['Sakit'] ?? 0);
-        $izin = (int) ($rows['Izin'] ?? 0);
+        $hadir = (int) ($rows['hadir'] ?? 0);
+        $sakit = (int) ($rows['sakit'] ?? 0);
+        $izin = (int) ($rows['izin'] ?? 0);
+        $alpa = (int) ($rows['alpa'] ?? 0);
 
         $persentase = $totalMurid > 0 ? (int) round(($hadir / $totalMurid) * 100) : 0;
 
@@ -279,6 +280,7 @@ class Index extends Component
             'hadir' => $hadir,
             'sakit' => $sakit,
             'izin' => $izin,
+            'alpa' => $alpa,
             'persentase' => $persentase,
         ];
     }
@@ -305,8 +307,8 @@ class Index extends Component
             })
             ->when(
                 $this->filterStatus,
-                fn($q) => $q->where('status', $this->filterStatus),
-                fn($q) => $q->whereIn('status', $this->statusOptions),
+                fn ($q) => $q->whereRaw('LOWER(status) = ?', [strtolower($this->filterStatus)]),
+                fn ($q) => $q->whereIn(DB::raw('LOWER(status)'), $this->statusOptions),
             )
             ->fastPaginate($this->perPage);
     }

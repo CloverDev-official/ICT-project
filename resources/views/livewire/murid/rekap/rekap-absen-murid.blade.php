@@ -49,7 +49,7 @@
                 </p>
 
                 <h2 class="mt-1 text-3xl font-bold text-white">
-                    {{ $statistik['persentase'] }}%
+                    {{ $statistik['persentase'] ?? 0 }}%
                 </h2>
 
             </div>
@@ -59,7 +59,7 @@
     </div>
 
     <!-- STATISTIC -->
-    <div class="grid grid-cols-2 gap-5 xl:grid-cols-5">
+    <div class="grid grid-cols-2 gap-5 xl:grid-cols-6">
 
         <!-- total -->
         <div
@@ -76,7 +76,7 @@
                     </p>
 
                     <h2 class="mt-2 text-3xl font-bold text-gray-800">
-                        {{ number_format($statistik['totalMurid']) }}
+                        {{ number_format($statistik['totalMurid'] ?? 0) }}
                     </h2>
 
                 </div>
@@ -110,7 +110,7 @@
                     </p>
 
                     <h2 class="mt-2 text-3xl font-bold text-emerald-600">
-                        {{ number_format($statistik['hadir']) }}
+                        {{ number_format($statistik['hadir'] ?? 0) }}
                     </h2>
 
                 </div>
@@ -144,7 +144,7 @@
                     </p>
 
                     <h2 class="mt-2 text-3xl font-bold text-amber-600">
-                        {{ number_format($statistik['sakit']) }}
+                        {{ number_format($statistik['sakit'] ?? 0) }}
                     </h2>
 
                 </div>
@@ -178,7 +178,7 @@
                     </p>
 
                     <h2 class="mt-2 text-3xl font-bold text-orange-500">
-                        {{ number_format($statistik['izin']) }}
+                        {{ number_format($statistik['izin'] ?? 0) }}
                     </h2>
 
                 </div>
@@ -188,6 +188,40 @@
 
                     <iconify-icon
                         icon="mdi:file-document-outline"
+                        width="28">
+                    </iconify-icon>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- alpa -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div class="absolute right-0 top-0 h-24 w-24 rounded-full bg-rose-100 blur-2xl"></div>
+
+            <div class="relative flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-sm text-gray-400">
+                        Alpa
+                    </p>
+
+                    <h2 class="mt-2 text-3xl font-bold text-rose-600">
+                        {{ number_format($statistik['alpa'] ?? 0) }}
+                    </h2>
+
+                </div>
+
+                <div
+                    class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+
+                    <iconify-icon
+                        icon="mdi:close-circle-outline"
                         width="28">
                     </iconify-icon>
 
@@ -212,7 +246,7 @@
                     </p>
 
                     <h2 class="mt-2 text-3xl font-bold text-cyan-600">
-                        {{ $statistik['persentase'] }}%
+                        {{ $statistik['persentase'] ?? 0 }}%
                     </h2>
 
                 </div>
@@ -406,7 +440,7 @@
                         <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach ($this->filteredJurusan as $jurusan)
+                    @foreach ($filteredJurusan as $jurusan)
                     <div
                         @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
                         class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
