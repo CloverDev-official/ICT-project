@@ -43,7 +43,7 @@ class Create extends Component
                 'tingkat_id' => ['required', 'exists:tingkat,id'],
                 'jurusan_id' => ['required', 'exists:jurusan,id'],
                 'indeks_id' => ['required'],
-                'tahun_masuk' => ['required', 'integer', 'min:1900', 'max:' . (now()->year + 1)],
+                'tahun_masuk' => ['required', 'integer', 'min:1900'],
                 'guru_id' => ['nullable', 'exists:guru,id'],
             ],
             [
