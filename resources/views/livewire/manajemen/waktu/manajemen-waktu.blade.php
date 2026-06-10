@@ -1,6 +1,6 @@
 <div
     x-data="manajemenWaktu(@js($state), $wire)"
-    x-init="init()"
+    x-init="init(); loadInitialState()"
     x-cloak
     wire:ignore
     class="space-y-6"
@@ -29,7 +29,7 @@
             <button
                 type="button"
                 @click="goToday()"
-                :disabled="loading"
+                :disabled="loading || !isReady"
                 class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-main shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-wait disabled:opacity-60"
             >
                 <iconify-icon icon="solar:calendar-mark-bold" width="20" height="20"></iconify-icon>
@@ -38,7 +38,63 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <div
+        x-show="!isReady"
+        x-transition.opacity
+        class="grid grid-cols-1 gap-6 xl:grid-cols-12"
+    >
+        <section class="space-y-6 xl:col-span-8">
+            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div class="h-7 w-48 animate-pulse rounded-xl bg-gray-200"></div>
+                        <div class="mt-3 h-4 w-72 max-w-full animate-pulse rounded-xl bg-gray-100"></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-11 w-11 animate-pulse rounded-2xl bg-gray-100"></div>
+                        <div class="h-11 w-11 animate-pulse rounded-2xl bg-gray-100"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 sm:gap-2">
+                    <template x-for="index in 42" :key="index">
+                        <div class="min-h-16 animate-pulse rounded-2xl border border-gray-100 bg-gray-50 sm:min-h-24"></div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="mb-4 h-6 w-40 animate-pulse rounded-xl bg-gray-200"></div>
+                <div class="space-y-3">
+                    <div class="h-12 animate-pulse rounded-2xl bg-gray-100"></div>
+                    <div class="h-12 animate-pulse rounded-2xl bg-gray-100"></div>
+                    <div class="h-12 animate-pulse rounded-2xl bg-gray-100"></div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="space-y-6 xl:col-span-4">
+            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                <div class="h-5 w-28 animate-pulse rounded-xl bg-blue-100"></div>
+                <div class="mt-3 h-8 w-44 animate-pulse rounded-xl bg-gray-200"></div>
+                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div class="h-24 animate-pulse rounded-2xl bg-gray-100"></div>
+                    <div class="h-24 animate-pulse rounded-2xl bg-gray-100"></div>
+                </div>
+                <div class="mt-5 space-y-3">
+                    <div class="h-12 animate-pulse rounded-2xl bg-gray-100"></div>
+                    <div class="h-12 animate-pulse rounded-2xl bg-gray-100"></div>
+                    <div class="h-28 animate-pulse rounded-2xl bg-gray-100"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div
+        x-show="isReady"
+        x-transition.opacity
+        class="grid grid-cols-1 gap-6 xl:grid-cols-12"
+    >
         <section class="space-y-6 xl:col-span-8">
             <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -53,7 +109,7 @@
                         <button
                             type="button"
                             @click="previousMonth()"
-                            :disabled="loading"
+                            :disabled="loading || !isReady"
                             class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:border-blue-main hover:text-blue-main disabled:cursor-wait disabled:opacity-50"
                             aria-label="Bulan sebelumnya"
                         >
@@ -62,7 +118,7 @@
                         <button
                             type="button"
                             @click="nextMonth()"
-                            :disabled="loading"
+                            :disabled="loading || !isReady"
                             class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:border-blue-main hover:text-blue-main disabled:cursor-wait disabled:opacity-50"
                             aria-label="Bulan berikutnya"
                         >
@@ -184,7 +240,7 @@
         </section>
 
         <aside class="space-y-6 xl:col-span-4 xl:sticky xl:top-6 self-start">
-            <div id="form-event-waktu" class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <div id="form-event-waktu" class="relative rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-blue-main">Tanggal Dipilih</p>
@@ -200,6 +256,20 @@
                         >
                             Reset ke Default
                         </button>
+                    </div>
+                </div>
+
+                <div
+                    x-show="dateLoading"
+                    x-transition.opacity
+                    class="absolute inset-x-4 top-24 z-20 rounded-2xl border border-blue-100 bg-white/95 p-4 shadow-lg backdrop-blur sm:inset-x-5"
+                >
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 animate-pulse rounded-2xl bg-blue-100"></div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-bold text-gray-800">Memuat detail tanggal...</p>
+                            <div class="mt-2 h-3 w-52 max-w-full animate-pulse rounded-full bg-gray-100"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -375,7 +445,7 @@
 
                         <div class="max-h-[520px] space-y-3 overflow-y-auto pr-1">
                             <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                                <template x-for="rombel in selectedRombel()" :key="rombel.id">
+	                                <template x-for="rombel in visibleSelectedRombel()" :key="rombel.id">
                                     <div class="rounded-2xl border border-gray-200 p-3">
                                     <div class="mb-3 flex items-center justify-between gap-3">
                                         <div class="min-w-0">
@@ -441,9 +511,18 @@
                                             <p class="mt-3 text-xs text-gray-500" x-show="!eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan || eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'">
                                                 Kelas ini memakai window scan default/global.
                                             </p>
-                                        </div>
-                                    </div>
-                                    </div>
+	                            </div>
+                                <div class="pt-3" x-show="selectedRombel().length > selectedDetailLimit">
+                                    <button
+                                        type="button"
+                                        @click="showMoreSelectedDetails"
+                                        class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-blue-main transition hover:border-blue-main hover:bg-blue-50"
+                                    >
+                                        Tampilkan <span x-text="Math.min(detailBatchSize, selectedRombel().length - selectedDetailLimit)"></span> kelas lagi
+                                    </button>
+                                </div>
+	                        </div>
+	                    </div>
                                 </template>
                             </div>
                         </div>
@@ -456,7 +535,7 @@
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <button
                             type="submit"
-                            :disabled="saving"
+                            :disabled="saving || dateLoading || !isReady"
                             class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-main px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-deep disabled:cursor-wait disabled:opacity-60"
                         >
                             <span x-show="!saving">Simpan Event</span>
@@ -465,6 +544,7 @@
                         <button
                             type="button"
                             @click="resetFormFromDate(selectedDate)"
+                            :disabled="dateLoading"
                             class="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:border-blue-main hover:text-blue-main"
                         >
                             Reset Form
@@ -475,7 +555,7 @@
                         type="button"
                         x-show="selectedEvent()"
                         @click="deleteSelectedDate"
-                        :disabled="saving"
+                        :disabled="saving || dateLoading || !isReady"
                         class="w-full rounded-2xl bg-red-50 px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
                     >
                         Hapus Semua Event di Tanggal Ini
@@ -531,7 +611,7 @@
                     </div>
                     <button
                         type="submit"
-                        :disabled="savingDefault"
+                        :disabled="savingDefault || !isReady"
                         class="w-full rounded-2xl bg-gray-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-gray-800 disabled:cursor-wait disabled:opacity-60"
                     >
                         <span x-show="!savingDefault">Simpan Default</span>
@@ -552,6 +632,13 @@
                     preset: {},
                     defaultForm: JSON.parse(JSON.stringify(initialState.settings)),
                     rombelSearch: '',
+                    isReady: Boolean(initialState.ready),
+                    bootingInitial: false,
+                    dateLoading: false,
+                    dateLoadTimer: null,
+                    dateRequestToken: 0,
+                    selectedDetailLimit: 24,
+                    detailBatchSize: 24,
                     loading: false,
                     saving: false,
                     savingDefault: false,
@@ -567,6 +654,22 @@
                         });
                     },
 
+                    loadInitialState() {
+                        if (this.isReady || this.bootingInitial) {
+                            return;
+                        }
+
+                        this.bootingInitial = true;
+                        this.beginRequest('loading');
+                        this.runServerAction(
+                            () => wire.loadInitialState(),
+                            'Gagal memuat kalender. Coba muat ulang halaman.',
+                        ).finally(() => {
+                            this.bootingInitial = false;
+                            this.scheduleSelectedDateDetails(this.selectedDate);
+                        });
+                    },
+
                     applyServerState(nextState) {
                         if (!nextState || typeof nextState !== 'object') {
                             this.finishRequest();
@@ -574,6 +677,7 @@
                         }
 
                         this.state = JSON.parse(JSON.stringify(nextState));
+                        this.isReady = Boolean(this.state.ready);
                         this.selectedDate = this.state.selectedDate;
                         this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
                         this.resetFormFromDate(this.selectedDate);
@@ -585,6 +689,7 @@
                         this.loading = flag === 'loading';
                         this.saving = flag === 'saving';
                         this.savingDefault = flag === 'savingDefault';
+                        this.dateLoading = flag === 'dateLoading';
 
                         if (this.requestTimer) {
                             clearTimeout(this.requestTimer);
@@ -600,6 +705,7 @@
                         this.loading = false;
                         this.saving = false;
                         this.savingDefault = false;
+                        this.dateLoading = false;
 
                         if (this.requestTimer) {
                             clearTimeout(this.requestTimer);
@@ -632,9 +738,72 @@
                     },
 
                     selectDate(date) {
+                        this.dateRequestToken++;
+                        this.dateLoading = false;
                         this.selectedDate = date;
                         this.state.selectedDate = date;
                         this.resetFormFromDate(date);
+                        this.scheduleSelectedDateDetails(date);
+                    },
+
+                    scheduleSelectedDateDetails(date) {
+                        const event = this.state.eventsByDate[date] || null;
+
+                        if (!event || event.details_loaded) {
+                            return;
+                        }
+
+                        if (this.dateLoadTimer) {
+                            clearTimeout(this.dateLoadTimer);
+                        }
+
+                        const token = ++this.dateRequestToken;
+
+                        this.dateLoadTimer = setTimeout(() => {
+                            this.loadSelectedDateDetails(date, token);
+                        }, 120);
+                    },
+
+                    loadSelectedDateDetails(date, token = ++this.dateRequestToken) {
+                        const event = this.state.eventsByDate[date] || null;
+
+                        if (!event || event.details_loaded || date !== this.selectedDate) {
+                            return Promise.resolve();
+                        }
+
+                        this.beginRequest('dateLoading');
+
+                        return Promise.resolve(wire.loadDateDetails(date))
+                            .then((response) => {
+                                if (token === this.dateRequestToken && date === this.selectedDate) {
+                                    this.applyDateDetails(response);
+                                }
+                            })
+                            .catch((error) => {
+                                if (token === this.dateRequestToken) {
+                                    this.finishRequest();
+                                    this.formError = this.errorMessage(error, 'Gagal memuat detail tanggal. Coba pilih tanggal lagi.');
+                                }
+                            })
+                            .finally(() => {
+                                if (token === this.dateRequestToken) {
+                                    this.finishRequest();
+                                }
+                            });
+                    },
+
+                    applyDateDetails(response) {
+                        if (!response || response.selectedDate !== this.selectedDate) {
+                            return;
+                        }
+
+                        if (response.event) {
+                            this.state.eventsByDate[response.selectedDate] = JSON.parse(JSON.stringify(response.event));
+                        } else {
+                            delete this.state.eventsByDate[response.selectedDate];
+                        }
+
+                        this.resetFormFromDate(response.selectedDate);
                     },
 
                     selectedEvent() {
@@ -659,6 +828,7 @@
 
                     resetFormFromDate(date) {
                         this.formError = '';
+                        this.selectedDetailLimit = this.detailBatchSize;
                         const event = this.state.eventsByDate[date] || null;
                         const defaults = this.selectedDefault();
                         const defaultType = defaults.tipe === 'normal' ? 'pulang_cepat' : defaults.tipe;
@@ -680,11 +850,11 @@
                             tanggal_selesai: date,
                             nama_acara: event ? (event.nama_acara || '') : '',
                             keterangan: event ? (event.keterangan || '') : '',
-                            selected_rombel_ids: event ? event.details.map((item) => Number(item.rombel_id)) : [],
+                            selected_rombel_ids: event && event.details_loaded ? event.details.map((item) => Number(item.rombel_id)) : [],
                             detail_kelas: {},
                         };
 
-                        if (event) {
+                        if (event && event.details_loaded) {
                             event.details.forEach((item) => {
                                 this.eventForm.detail_kelas[String(item.rombel_id)] = {
                                     tipe: item.tipe,
@@ -874,6 +1044,14 @@
                         return this.state.rombel.filter((rombel) => ids.includes(Number(rombel.id)));
                     },
 
+                    visibleSelectedRombel() {
+                        return this.selectedRombel().slice(0, this.selectedDetailLimit);
+                    },
+
+                    showMoreSelectedDetails() {
+                        this.selectedDetailLimit += this.detailBatchSize;
+                    },
+
                     detailLabel(id) {
                         const detail = this.eventForm.detail_kelas[String(id)] || {};
                         const label = this.state.tipeOptions[detail.tipe] || detail.tipe || '-';
@@ -923,7 +1101,9 @@
                         this.runServerAction(
                             () => wire.changeMonth(year, month),
                             'Gagal memuat bulan. Coba lagi.',
-                        );
+                        ).finally(() => {
+                            this.scheduleSelectedDateDetails(this.selectedDate);
+                        });
                     },
 
                     goToday() {
@@ -931,7 +1111,9 @@
                         this.runServerAction(
                             () => wire.goToday(),
                             'Gagal memuat tanggal hari ini. Coba lagi.',
-                        );
+                        ).finally(() => {
+                            this.scheduleSelectedDateDetails(this.selectedDate);
+                        });
                     },
 
                     saveEvent() {
@@ -980,7 +1162,9 @@
                         this.runServerAction(
                             () => wire.saveEvent(JSON.parse(JSON.stringify(this.eventForm))),
                             'Gagal menyimpan. Periksa kembali data yang diisi.',
-                        );
+                        ).finally(() => {
+                            this.scheduleSelectedDateDetails(this.selectedDate);
+                        });
                     },
 
                     saveDefault() {

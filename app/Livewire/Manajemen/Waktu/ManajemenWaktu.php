@@ -36,7 +36,17 @@ class ManajemenWaktu extends Component
 
         $this->month = (int) $today->format('m');
         $this->year = (int) $today->format('Y');
-        $this->refreshState($today->format('Y-m-d'));
+        $this->state = $this->emptyState($today->format('Y-m-d'));
+    }
+
+    public function loadInitialState(): array
+    {
+        $selectedDate = $this->state['selectedDate'] ?? now()->format('Y-m-d');
+
+        $this->refreshState($selectedDate);
+        $this->dispatch('waktu-state-updated', state: $this->state);
+
+        return $this->state;
     }
 
     public function changeMonth(int $year, int $month): array
@@ -288,6 +298,27 @@ class ManajemenWaktu extends Component
         return $this->state;
     }
 
+    public function loadDateDetails(string $tanggal): array
+    {
+        if (!$this->isValidDate($tanggal)) {
+            return [
+                'selectedDate' => $this->state['selectedDate'] ?? null,
+                'event' => null,
+            ];
+        }
+
+        $this->state['selectedDate'] = $tanggal;
+
+        $event = JadwalAbsen::with(['rombelJadwal.rombel.tingkat', 'rombelJadwal.rombel.jurusan', 'rombelJadwal.rombel.indeks'])
+            ->whereDate('tanggal', $tanggal)
+            ->first();
+
+        return [
+            'selectedDate' => $tanggal,
+            'event' => $event ? $this->formatEvent($event, true) : null,
+        ];
+    }
+
     private function refreshState(?string $selectedDate = null): void
     {
         $settings = $this->defaultSettings();
@@ -305,6 +336,40 @@ class ManajemenWaktu extends Component
             'rombel' => $this->loadRombel(),
             'eventsByDate' => $eventsByDate,
             'days' => $this->buildCalendarDays($eventsByDate, $settings),
+            'ready' => true,
+        ];
+    }
+
+    private function emptyState(?string $selectedDate = null): array
+    {
+        $settings = $this->fallbackSettings();
+        $selectedDate = $this->normalizeSelectedDate($selectedDate);
+
+        return [
+            'year' => $this->year,
+            'month' => $this->month,
+            'monthLabel' => $this->monthLabel($this->year, $this->month),
+            'today' => now()->format('Y-m-d'),
+            'selectedDate' => $selectedDate,
+            'settings' => $settings,
+            'tipeOptions' => self::TIPE_OPTIONS,
+            'rombel' => [],
+            'eventsByDate' => [],
+            'days' => $this->buildCalendarDays([], $settings),
+            'ready' => false,
+        ];
+    }
+
+    private function fallbackSettings(): array
+    {
+        return [
+            'jam_masuk' => self::DEFAULT_MASUK,
+            'jam_pulang_normal' => self::DEFAULT_PULANG_NORMAL,
+            'jam_pulang_jumat' => self::DEFAULT_PULANG_JUMAT,
+            'scan_masuk_mulai' => self::DEFAULT_MASUK,
+            'scan_masuk_sampai' => self::DEFAULT_MASUK,
+            'scan_keluar_mulai' => self::DEFAULT_PULANG_NORMAL,
+            'scan_keluar_sampai' => self::DEFAULT_PULANG_NORMAL,
         ];
     }
 
@@ -366,12 +431,12 @@ class ManajemenWaktu extends Component
             ->orderBy('tanggal')
             ->get()
             ->mapWithKeys(fn (JadwalAbsen $jadwal) => [
-                $jadwal->tanggal->format('Y-m-d') => $this->formatEvent($jadwal),
+                $jadwal->tanggal->format('Y-m-d') => $this->formatEvent($jadwal, false),
             ])
             ->all();
     }
 
-    private function formatEvent(JadwalAbsen $jadwal): array
+    private function formatEvent(JadwalAbsen $jadwal, bool $includeDetails = true): array
     {
         $details = $jadwal->rombelJadwal
             ->map(fn ($detail) => [
@@ -405,7 +470,8 @@ class ManajemenWaktu extends Component
             'keterangan' => $jadwal->keterangan,
             'affected_count' => count($details),
             'summary' => $summary ?: 'Tidak ada kelas terdampak',
-            'details' => $details,
+            'details' => $includeDetails ? $details : [],
+            'details_loaded' => $includeDetails,
         ];
     }
 
