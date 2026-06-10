@@ -444,7 +444,6 @@
                         <input
                             type="text"
                             wire:model.defer="hp"
-                            required
                             placeholder="Contoh : 0812345678"
                             class="{{ $inputClass }}">
 
@@ -462,7 +461,6 @@
                         <input
                             type="email"
                             wire:model.defer="email"
-                            required
                             placeholder="contoh@gmail.com"
                             class="{{ $inputClass }}">
 
@@ -658,7 +656,6 @@
                         <input
                             type="text"
                             wire:model.defer="nama_wali"
-                            required
                             placeholder="Nama wali"
                             class="{{ $inputClass }} capitalize">
 
