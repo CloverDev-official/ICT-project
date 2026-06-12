@@ -77,6 +77,16 @@ class ManajemenWaktu extends Component
 
     public function saveDefault(array $payload): array
     {
+        $payload = $this->normalizeTimeFields($payload, [
+            'jam_masuk',
+            'jam_pulang_normal',
+            'jam_pulang_jumat',
+            'scan_masuk_mulai',
+            'scan_masuk_sampai',
+            'scan_keluar_mulai',
+            'scan_keluar_sampai',
+        ]);
+
         $validated = validator($payload, [
             'jam_masuk' => ['required', 'date_format:H:i'],
             'jam_pulang_normal' => ['required', 'date_format:H:i'],
@@ -116,6 +126,17 @@ class ManajemenWaktu extends Component
 
     public function saveEvent(array $payload): array
     {
+        foreach (($payload['detail_kelas'] ?? []) as $rombelId => $row) {
+            $payload['detail_kelas'][$rombelId] = $this->normalizeTimeFields($row, [
+                'jam_masuk',
+                'jam_pulang',
+                'scan_masuk_mulai',
+                'scan_masuk_sampai',
+                'scan_keluar_mulai',
+                'scan_keluar_sampai',
+            ], true);
+        }
+
         $validated = validator($payload, [
             'tanggal_mulai' => ['required', 'date_format:Y-m-d'],
             'tanggal_selesai' => ['required', 'date_format:Y-m-d'],
@@ -389,13 +410,13 @@ class ManajemenWaktu extends Component
         $jamPulangNormal = $settings['jadwal.default_pulang_normal'] ?? self::DEFAULT_PULANG_NORMAL;
 
         return [
-            'jam_masuk' => $jamMasuk,
-            'jam_pulang_normal' => $jamPulangNormal,
-            'jam_pulang_jumat' => $settings['jadwal.default_pulang_jumat'] ?? self::DEFAULT_PULANG_JUMAT,
-            'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? $jamMasuk,
-            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? $jamMasuk,
-            'scan_keluar_mulai' => $settings['jadwal.scan_keluar_mulai'] ?? $jamPulangNormal,
-            'scan_keluar_sampai' => $settings['jadwal.scan_keluar_sampai'] ?? $jamPulangNormal,
+            'jam_masuk' => $this->formatTime($jamMasuk),
+            'jam_pulang_normal' => $this->formatTime($jamPulangNormal),
+            'jam_pulang_jumat' => $this->formatTime($settings['jadwal.default_pulang_jumat'] ?? self::DEFAULT_PULANG_JUMAT),
+            'scan_masuk_mulai' => $this->formatTime($settings['jadwal.scan_masuk_mulai'] ?? $jamMasuk),
+            'scan_masuk_sampai' => $this->formatTime($settings['jadwal.scan_masuk_sampai'] ?? $jamMasuk),
+            'scan_keluar_mulai' => $this->formatTime($settings['jadwal.scan_keluar_mulai'] ?? $jamPulangNormal),
+            'scan_keluar_sampai' => $this->formatTime($settings['jadwal.scan_keluar_sampai'] ?? $jamPulangNormal),
         ];
     }
 
@@ -637,6 +658,24 @@ class ManajemenWaktu extends Component
         }
 
         return substr((string) $time, 0, 5);
+    }
+
+    private function normalizeTimeFields(array $payload, array $fields, bool $emptyAsNull = false): array
+    {
+        foreach ($fields as $field) {
+            if (!array_key_exists($field, $payload)) {
+                continue;
+            }
+
+            if ($payload[$field] === '' || $payload[$field] === null) {
+                $payload[$field] = $emptyAsNull ? null : $payload[$field];
+                continue;
+            }
+
+            $payload[$field] = $this->formatTime($payload[$field]);
+        }
+
+        return $payload;
     }
 
     public function render()

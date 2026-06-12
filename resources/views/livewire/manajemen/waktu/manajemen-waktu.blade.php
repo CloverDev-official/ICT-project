@@ -678,8 +678,12 @@
 
                         this.state = JSON.parse(JSON.stringify(nextState));
                         this.isReady = Boolean(this.state.ready);
-                        this.selectedDate = this.state.selectedDate;
-                        this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
+                        this.selectedDate = this.state.selectedDate || this.selectedDate;
+
+                        if (this.state.settings) {
+                            this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
+                        }
+
                         this.resetFormFromDate(this.selectedDate);
                         this.finishRequest();
                     },
@@ -1118,37 +1122,55 @@
 
                     saveEvent() {
                         this.formError = '';
+                        const payload = JSON.parse(JSON.stringify(this.eventForm));
 
-                        if (!this.eventForm.tanggal_mulai || !this.eventForm.tanggal_selesai) {
+                        if (!payload.tanggal_mulai || !payload.tanggal_selesai) {
                             this.formError = 'Tanggal mulai dan tanggal selesai wajib diisi.';
                             return;
                         }
 
-                        if (this.eventForm.tanggal_selesai < this.eventForm.tanggal_mulai) {
+                        if (payload.tanggal_selesai < payload.tanggal_mulai) {
                             this.formError = 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
                             return;
                         }
 
-                        if (!this.eventForm.nama_acara.trim()) {
+                        payload.nama_acara = (payload.nama_acara || '').trim();
+                        payload.keterangan = payload.keterangan || '';
+                        payload.selected_rombel_ids = (payload.selected_rombel_ids || []).map((id) => Number(id));
+                        payload.detail_kelas = payload.detail_kelas || {};
+
+                        if (!payload.nama_acara) {
                             this.formError = 'Nama event wajib diisi.';
                             return;
                         }
 
-                        if (this.eventForm.selected_rombel_ids.length === 0) {
+                        if (payload.selected_rombel_ids.length === 0) {
                             this.formError = 'Minimal pilih satu kelas terdampak.';
                             return;
                         }
 
-                        for (const id of this.eventForm.selected_rombel_ids) {
-                            const detail = this.eventForm.detail_kelas[String(id)] || {};
+                        for (const id of payload.selected_rombel_ids) {
                             this.applyTypeDefault(id);
+                            const key = String(id);
+                            const detail = this.eventForm.detail_kelas[key] || {};
+                            payload.detail_kelas[key] = {
+                                tipe: detail.tipe || 'libur',
+                                jam_masuk: detail.tipe === 'libur' ? '' : (detail.jam_masuk || ''),
+                                jam_pulang: detail.tipe === 'libur' ? '' : (detail.jam_pulang || ''),
+                                gunakan_window_scan: detail.tipe !== 'libur' && Boolean(detail.gunakan_window_scan),
+                                scan_masuk_mulai: detail.scan_masuk_mulai || '',
+                                scan_masuk_sampai: detail.scan_masuk_sampai || '',
+                                scan_keluar_mulai: detail.scan_keluar_mulai || '',
+                                scan_keluar_sampai: detail.scan_keluar_sampai || '',
+                                keterangan: detail.keterangan || '',
+                            };
 
-                            if (detail.tipe !== 'libur' && detail.gunakan_window_scan) {
+                            if (payload.detail_kelas[key].gunakan_window_scan) {
                                 const scanFields = [
-                                    detail.scan_masuk_mulai,
-                                    detail.scan_masuk_sampai,
-                                    detail.scan_keluar_mulai,
-                                    detail.scan_keluar_sampai,
+                                    payload.detail_kelas[key].scan_masuk_mulai,
+                                    payload.detail_kelas[key].scan_masuk_sampai,
+                                    payload.detail_kelas[key].scan_keluar_mulai,
+                                    payload.detail_kelas[key].scan_keluar_sampai,
                                 ];
 
                                 if (scanFields.some((value) => !value)) {
@@ -1160,7 +1182,7 @@
 
                         this.beginRequest('saving');
                         this.runServerAction(
-                            () => wire.saveEvent(JSON.parse(JSON.stringify(this.eventForm))),
+                            () => wire.saveEvent(payload),
                             'Gagal menyimpan. Periksa kembali data yang diisi.',
                         ).finally(() => {
                             this.scheduleSelectedDateDetails(this.selectedDate);
@@ -1168,9 +1190,29 @@
                     },
 
                     saveDefault() {
+                        const payload = JSON.parse(JSON.stringify(this.defaultForm || {}));
+                        const requiredTimes = {
+                            jam_masuk: 'Jam masuk default wajib diisi.',
+                            jam_pulang_normal: 'Jam pulang normal wajib diisi.',
+                            jam_pulang_jumat: 'Jam pulang Jumat wajib diisi.',
+                            scan_masuk_mulai: 'Jam mulai scan masuk wajib diisi.',
+                            scan_masuk_sampai: 'Jam akhir scan masuk wajib diisi.',
+                            scan_keluar_mulai: 'Jam mulai scan pulang wajib diisi.',
+                            scan_keluar_sampai: 'Jam akhir scan pulang wajib diisi.',
+                        };
+
+                        for (const [field, message] of Object.entries(requiredTimes)) {
+                            payload[field] = payload[field] || '';
+
+                            if (!payload[field]) {
+                                this.formError = message;
+                                return;
+                            }
+                        }
+
                         this.beginRequest('savingDefault');
                         this.runServerAction(
-                            () => wire.saveDefault(JSON.parse(JSON.stringify(this.defaultForm))),
+                            () => wire.saveDefault(payload),
                             'Gagal menyimpan default. Periksa kembali jam yang diisi.',
                         );
                     },
@@ -1215,7 +1257,11 @@
 
 
                     errorMessage(error, fallback) {
-                        const errors = error?.response?.data?.errors || error?.errors || null;
+                        const errors = error?.response?.data?.errors
+                            || error?.response?.data?.serverMemo?.errors
+                            || error?.errors
+                            || error?.serverMemo?.errors
+                            || null;
 
                         if (errors) {
                             const first = Object.values(errors).flat()[0];
@@ -1224,7 +1270,7 @@
                             }
                         }
 
-                        return fallback;
+                        return error?.message || fallback;
                     },
 
                     formatDate(date) {
