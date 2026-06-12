@@ -4,6 +4,8 @@ namespace App\Livewire\Components\Modal\Manajemen\Murid;
 
 use App\Helpers\ToastMagic;
 use App\Models\Murid\Murid;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class ModalHapusFoto extends Component
@@ -20,10 +22,8 @@ class ModalHapusFoto extends Component
         $murid = $this->murid;
 
         if ($murid && $murid->image_path) {
-            // Hapus file foto dari storage
-            \Storage::delete($murid->image_path);
+            $this->deleteImage($murid->image_path);
 
-            // Update kolom foto menjadi null
             $murid->image_path = null;
             $murid->save();
         }
@@ -33,7 +33,24 @@ class ModalHapusFoto extends Component
         $this->dispatch('manajemen-murid-refresh');
     }
 
-    
+    private function deleteImage(?string $path): void
+    {
+        if (!$path || Str::startsWith($path, ['http://', 'https://'])) {
+            return;
+        }
+
+        if (Str::startsWith($path, '/storage/')) {
+            $path = ltrim(Str::replaceFirst('/storage/', '', $path), '/');
+        }
+
+        if (Str::startsWith($path, 'storage/')) {
+            $path = Str::replaceFirst('storage/', '', $path);
+        }
+
+        if ($path !== '') {
+            Storage::disk('public')->delete($path);
+        }
+    }
 
     public function render()
     {

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Helpers\ToastMagic;
+use App\Helpers\UploadFileNamer;
 use App\Helpers\ValidateMagic;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -70,7 +71,14 @@ class Profil extends Component
             return;
         }
 
-        $path = $this->photo->store('profile-photos', 'public');
+        $path = $this->photo->storeAs(
+            'profile-photos',
+            basename(UploadFileNamer::makePath($this->photo, 'profile-photos', [
+                $user->name,
+                $user->email,
+            ])),
+            'public',
+        );
 
         $this->deleteOldProfilePhoto($user->profile_photo_path ?? null);
 

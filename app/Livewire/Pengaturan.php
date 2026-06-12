@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Helpers\ToastMagic;
+use App\Helpers\UploadFileNamer;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
@@ -104,7 +105,7 @@ class Pengaturan extends Component
         }
     }
 
-    private function storeUploadedFile($file, string $directory, ?string $currentPath): ?string
+    private function storeUploadedFile($file, string $directory, string $namePrefix, ?string $currentPath): ?string
     {
         if (!$file) {
             return $currentPath;
@@ -112,7 +113,11 @@ class Pengaturan extends Component
 
         Storage::disk('public')->makeDirectory($directory);
 
-        $newPath = $file->store($directory, 'public');
+        $newPath = $file->storeAs(
+            $directory,
+            basename(UploadFileNamer::makePath($file, $directory, [$namePrefix])),
+            'public',
+        );
 
         if ($currentPath && !str_starts_with($currentPath, 'assets/')) {
             Storage::disk('public')->delete($currentPath);
@@ -125,8 +130,8 @@ class Pengaturan extends Component
     {
         $this->validate($this->rules(), $this->messages());
 
-        $this->logoPath = $this->storeUploadedFile($this->logo, 'settings', $this->logoPath);
-        $this->loginImagePath = $this->storeUploadedFile($this->loginImage, 'settings', $this->loginImagePath);
+        $this->logoPath = $this->storeUploadedFile($this->logo, 'settings', 'logo', $this->logoPath);
+        $this->loginImagePath = $this->storeUploadedFile($this->loginImage, 'settings', 'login-image', $this->loginImagePath);
 
         Setting::upsertValue('nama_website', $this->namaWebsite);
         Setting::upsertValue('copyright', $this->copyright);

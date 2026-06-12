@@ -3,6 +3,7 @@
 namespace App\Livewire\Manajemen\Murid;
 
 use App\Helpers\ToastMagic;
+use App\Helpers\UploadFileNamer;
 use App\Helpers\ValidateMagic;
 use App\Models\Guru\Guru;
 use App\Models\Murid\Murid;
@@ -67,7 +68,7 @@ class TambahFoto extends Component
                 fn ($q) => $q->whereHas('rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds))
             )
             ->orderBy('nama')
-            ->get(['id', 'uuid', 'nama', 'nipd', 'image_path', 'rombel_id']);
+            ->get(['id', 'uuid', 'nama', 'nipd', 'nisn', 'image_path', 'rombel_id']);
     }
 
     public function updatedMuridId($value): void
@@ -116,7 +117,10 @@ class TambahFoto extends Component
             return;
         }
 
-        $path = $this->image->store('murid', 'public');
+        $murid->loadMissing(['rombel.tingkat', 'rombel.jurusan', 'rombel.indeks']);
+
+        $path = $this->muridPhotoPath($murid);
+        $path = $this->image->storeAs(dirname($path), basename($path), 'public');
         $imageUrl = Storage::url($path);
 
         $this->deleteOldImage($murid->image_path);
@@ -129,6 +133,21 @@ class TambahFoto extends Component
         $this->reset('image');
 
         ToastMagic::success('Foto Disimpan', 'Foto murid berhasil ditambahkan.');
+    }
+
+    private function muridPhotoPath(Murid $murid): string
+    {
+        return UploadFileNamer::makePath($this->image, $this->muridPhotoDirectory($murid), [
+            $murid->nama,
+            $murid->nisn ?: $murid->nipd ?: $murid->id,
+        ]);
+    }
+
+    private function muridPhotoDirectory(Murid $murid): string
+    {
+        $kelas = $murid->rombel?->nama_lengkap ?: 'tanpa-kelas';
+
+        return 'murid/' . Str::slug($kelas);
     }
 
     private function deleteOldImage(?string $path): void
