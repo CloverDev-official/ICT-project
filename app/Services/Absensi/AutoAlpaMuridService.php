@@ -8,12 +8,48 @@ use Illuminate\Support\Facades\Schema;
 
 class AutoAlpaMuridService
 {
+    public function syncForRombels(iterable $rombelIds, Carbon|string $tanggal, ?Carbon $now = null): int
+    {
+        $date = $tanggal instanceof Carbon
+            ? $tanggal->copy()
+            : Carbon::parse($tanggal);
+
+        if ($date->isFuture()) {
+            return 0;
+        }
+
+        $now ??= $date->isToday() ? now() : $date->copy()->endOfDay();
+        $totalCreated = 0;
+        $jadwalService = app(JadwalAbsensiService::class);
+
+        foreach ($jadwalService->forRombels($rombelIds, $date) as $rombelId => $jadwal) {
+            if (!$jadwalService->bolehScan($jadwal)) {
+                continue;
+            }
+
+            $totalCreated += $this->syncForRombel(
+                (int) $rombelId,
+                $date->toDateString(),
+                $jadwal,
+                $now,
+            );
+        }
+
+        return $totalCreated;
+    }
+
     public function syncForRombel(int $rombelId, string $tanggal, array $jadwal, ?Carbon $now = null): int
     {
         $now ??= now();
         $jamMasuk = $this->normalizeTime($jadwal['jam_masuk'] ?? null);
 
-        if (!$jamMasuk || $now->format('H:i:s') <= $jamMasuk) {
+        if (!$jamMasuk) {
+            return 0;
+        }
+
+        $autoAlpaStartsAt = Carbon::parse("{$tanggal} {$jamMasuk}")->addMinute();
+
+        if ($now->lt($autoAlpaStartsAt)) {
             return 0;
         }
 
