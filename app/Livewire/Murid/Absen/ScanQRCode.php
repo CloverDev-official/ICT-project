@@ -4,6 +4,7 @@ namespace App\Livewire\Murid\Absen;
 
 use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\Murid;
+use App\Services\Absensi\AutoAlpaMuridService;
 use App\Services\Absensi\JadwalAbsensiService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
@@ -61,6 +62,8 @@ class ScanQRCode extends Component
             return;
         }
 
+        app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
+
         $absen = AbsenMurid::query()
             ->where('murid_id', $murid->id)
             ->whereDate('tanggal', $today)
@@ -98,6 +101,26 @@ class ScanQRCode extends Component
             ]);
 
             $this->acceptScan('Absensi masuk berhasil disimpan.');
+            return;
+        }
+
+        if ($absen->status === 'Alpa' && !$absen->waktu_masuk && !$absen->waktu_keluar) {
+            if (!$this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
+                $this->rejectScan(sprintf(
+                    'Murid sudah otomatis Alpa. Scan masuk hanya bisa diubah menjadi hadir pukul %s - %s.',
+                    $jadwal['scan_masuk_mulai'] ?? '--:--',
+                    $jadwal['scan_masuk_sampai'] ?? '--:--',
+                ));
+                return;
+            }
+
+            $absen->update([
+                'waktu_masuk' => $currentTime,
+                'status' => 'Hadir',
+                'keterangan' => $this->keteranganAbsensi($jadwal),
+            ]);
+
+            $this->acceptScan('Absensi masuk berhasil.');
             return;
         }
 
@@ -161,11 +184,6 @@ class ScanQRCode extends Component
 
     private function statusMasuk(string $currentTime, ?string $jamMasuk): string
     {
-        // if (!$jamMasuk) {
-        //     return 'Hadir';
-        // }
-
-        // return $currentTime <= $this->normalizeTime($jamMasuk) ? 'Hadir' : 'Alpa';
         return 'Hadir';
     }
 

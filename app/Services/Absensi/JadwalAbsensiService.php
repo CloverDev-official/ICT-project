@@ -80,6 +80,82 @@ class JadwalAbsensiService
         ]);
     }
 
+    public function forRombels(iterable $rombelIds, Carbon|string|null $date = null): array
+    {
+        $date = $date instanceof Carbon
+            ? $date->copy()
+            : Carbon::parse($date ?: now()->toDateString());
+
+        $rombelIds = collect($rombelIds)
+            ->filter()
+            ->map(fn ($rombelId) => (int) $rombelId)
+            ->unique()
+            ->values();
+
+        if ($rombelIds->isEmpty()) {
+            return [];
+        }
+
+        $settings = $this->settings();
+        $default = $this->defaultForDate($date, $settings);
+        $jadwalRombel = $rombelIds
+            ->mapWithKeys(fn (int $rombelId) => [$rombelId => $default])
+            ->all();
+
+        $jadwal = JadwalAbsen::query()
+            ->withCount('rombelJadwal')
+            ->with(['rombelJadwal' => function ($query) use ($rombelIds) {
+                $query->whereIn('rombel_id', $rombelIds);
+            }])
+            ->whereDate('tanggal', $date->toDateString())
+            ->first();
+
+        if (!$jadwal) {
+            return $jadwalRombel;
+        }
+
+        foreach ($jadwal->rombelJadwal as $detailRombel) {
+            $scanWindow = $this->scanWindowForRombel($detailRombel, $default);
+
+            $jadwalRombel[$detailRombel->rombel_id] = $this->normalize([
+                'tanggal' => $date->toDateString(),
+                'tipe' => $detailRombel->tipe ?: $jadwal->tipe ?: $default['tipe'],
+                'jam_masuk' => $detailRombel->jam_masuk ?: $jadwal->jam_masuk ?: $default['jam_masuk'],
+                'jam_pulang' => $detailRombel->jam_pulang ?: $jadwal->jam_pulang ?: $default['jam_pulang'],
+                'scan_masuk_mulai' => $scanWindow['scan_masuk_mulai'],
+                'scan_masuk_sampai' => $scanWindow['scan_masuk_sampai'],
+                'scan_keluar_mulai' => $scanWindow['scan_keluar_mulai'],
+                'scan_keluar_sampai' => $scanWindow['scan_keluar_sampai'],
+                'scan_window_source' => $scanWindow['source'],
+                'nama_acara' => $jadwal->nama_acara,
+                'keterangan' => $detailRombel->keterangan ?: $jadwal->keterangan ?: $default['keterangan'],
+                'source' => 'rombel',
+            ]);
+        }
+
+        if ($jadwal->rombel_jadwal_count > 0) {
+            return $jadwalRombel;
+        }
+
+        $global = $this->normalize([
+            'tanggal' => $date->toDateString(),
+            'tipe' => $jadwal->tipe ?: $default['tipe'],
+            'jam_masuk' => $jadwal->jam_masuk ?: $default['jam_masuk'],
+            'jam_pulang' => $jadwal->jam_pulang ?: $default['jam_pulang'],
+            'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
+            'scan_masuk_sampai' => $default['scan_masuk_sampai'] ?? null,
+            'scan_keluar_mulai' => $default['scan_keluar_mulai'] ?? null,
+            'scan_keluar_sampai' => $default['scan_keluar_sampai'] ?? null,
+            'nama_acara' => $jadwal->nama_acara,
+            'keterangan' => $jadwal->keterangan ?: $default['keterangan'],
+            'source' => 'global',
+        ]);
+
+        return $rombelIds
+            ->mapWithKeys(fn (int $rombelId) => [$rombelId => $global])
+            ->all();
+    }
+
     public function bolehScan(array $jadwal): bool
     {
         return !in_array($jadwal['tipe'], ['libur', 'pjj'], true);
