@@ -73,14 +73,59 @@
                     ></iconify-icon>
                 </button>
 
-                @if($user?->canAccess('rekap-absen'))
                 <ul
-                    x-show="open"
-                    x-transition
-                    class="ml-4 mt-2 flex flex-col gap-2"
-                    style="display: none;"
-                >
+                x-show="open"
+                x-transition
+                class="ml-4 mt-2 flex flex-col gap-2"
+                style="display: none;"
+                >   
+                    <!-- laporan pengawas -->
+                    @if($user?->canAccess('laporan'))
+                    <li x-data="{open: {{ request()->routeIs('laporan-*') ? 'true' : 'false' }}}">
+                        <button
+                            @click="open = !open"
+                            class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
+                        >
+                            <span class="flex items-center gap-2 capitalize">
+                                <iconify-icon
+                                    :icon="open ? 'mdi:folder-file' : 'mdi:folder-file-outline'"
+                                    width="24"
+                                    height="24"
+                                ></iconify-icon>
+
+                                pengawas
+                            </span>
+
+                            <iconify-icon
+                                class="transition-transform"
+                                :class="{ 'rotate-180': open }"
+                                icon="lineicons:chevron-up"
+                                width="25"
+                                height="24"
+                            ></iconify-icon>
+                        </button>
+
+                        <ul
+                            x-show="open"
+                            x-transition
+                            class="ml-4 mt-2 flex flex-col gap-2"
+                            style="display: none;"
+                        >
+                            @if($user?->canAccess('laporan-izin'))
+                            <li>
+                                <x-nav-link href="{{ route('laporan-izin') }}" icon="rekapAbsenMurid">
+                                    laporan izin
+                                </x-nav-link>
+                            </li>
+                            @endif
+                            
+                    
+                        </ul>
+                    </li>
+                    @endif
+
                     <!-- rekap absen -->
+                    @if($user?->canAccess('rekap-absen'))
                     <li x-data="{open: {{ request()->routeIs('rekap-absen-*') ? 'true' : 'false' }}}">
                         <button
                             @click="open = !open"
@@ -128,6 +173,7 @@
                             @endif
                         </ul>
                     </li>
+                    @endif
 
                     <!-- riwayat -->
                     @if($user?->canAccess('riwayat'))
@@ -138,7 +184,7 @@
                         >
                             <span class="flex items-center gap-2 capitalize">
                                 <iconify-icon
-                                    :icon="open ? 'mdi:folder-check' : 'mdi:folder-check-outline'"
+                                    :icon="open ? 'mdi:folder-clock' : 'mdi:folder-clock-outline'"
                                     width="24"
                                     height="24"
                                 ></iconify-icon>
@@ -172,7 +218,6 @@
                     </li>
                     @endif
                 </ul>
-                @endif
             </li>
             @endif
 
@@ -185,7 +230,7 @@
                 >
                     <span class="flex items-center gap-2 capitalize">
                         <iconify-icon
-                            :icon="open ? 'mdi:folder-check' : 'mdi:folder-check-outline'"
+                            :icon="open ? 'mdi:folder-edit' : 'mdi:folder-edit-outline'"
                             width="24"
                             height="24"
                         ></iconify-icon>

@@ -12,6 +12,7 @@ return new class extends Migration
             'dashboard',
             'pilih-absen',
             'laporan',
+            'laporan-izin',
             'rekap-absen',
             'rekap-absen-murid',
             'rekap-absen-guru',
