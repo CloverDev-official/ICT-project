@@ -118,6 +118,14 @@
                                 </x-nav-link>
                             </li>
                             @endif
+
+                            @if($user?->canAccess('cetak-izin'))
+                            <li>
+                                <x-nav-link href="{{ route('cetak-izin') }}" icon="rekapAbsenMurid">
+                                    cetak izin
+                                </x-nav-link>
+                            </li>
+                            @endif
                             
                     
                         </ul>

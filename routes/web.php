@@ -7,6 +7,7 @@ use App\Livewire\Murid\Absen\Index as IndexAbsen;
 use App\Livewire\Murid\Absen\Edit as EditAbsen;
 use App\Livewire\Murid\Absen\ScanQRCode;
 
+use App\Livewire\Pengawas\CetakIzin;
 use App\Livewire\Pengawas\Laporan\LaporanIzin;
 use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
 
@@ -73,7 +74,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // laporan
     Route::prefix('/laporan-pengawas')->group(function () {
         Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin')->name('laporan-izin');
+        Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin')->name('cetak-izin');
     });
+    
     Route::prefix('/rekap')->group(function () {
         Route::get('/absen-murid', IndexRekapMurid::class)->middleware('access:rekap-absen-murid')->name('rekap-absen-murid');
         Route::get('/absen-guru', RekapAbsenGuru::class)->middleware('access:rekap-absen-guru')->name('rekap-absen-guru');
