@@ -46,11 +46,11 @@
                 <div>
     
                     <h1 class="text-2xl font-bold text-white">
-                        Surat Izin Murid
+                        edit Surat Izin Murid
                     </h1>
     
                     <p class="mt-1 text-sm text-blue-100">
-                        Pilih murid kemudian isi alasan izin untuk mencetak surat.
+                        Pilih murid kemudian isi alasan izin untuk mengedit surat izin.
                     </p>
     
                 </div>
@@ -172,7 +172,7 @@
                     class="transition group-hover:scale-110">
                 </iconify-icon>
     
-                Cetak Surat Izin
+                edit Surat Izin
     
             </button>
     

@@ -48,6 +48,7 @@ use App\Livewire\Manajemen\Murid\TambahFoto;
 use App\Livewire\Manajemen\Murid\TambahMurid;
 
 use App\Livewire\Pengaturan;
+use App\Livewire\Pengawas\Laporan\EditIzin;
 use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -74,6 +75,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // laporan
     Route::prefix('/laporan-pengawas')->group(function () {
         Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin')->name('laporan-izin');
+        Route::get('/edit-izin', EditIzin::class)->middleware('access:edit-izin')->name('edit-izin');
         Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin')->name('cetak-izin');
     });
     
