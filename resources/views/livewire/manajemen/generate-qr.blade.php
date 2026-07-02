@@ -405,12 +405,13 @@
                 </div>
 
                 <!-- action -->
-                <div class="mt-6 flex justify-end">
+                <div class="mt-6 grid grid-cols-2 gap-4">
 
+                    <!-- horizontal  -->
                     <button
                         wire:click="startGenerate"
                         @disabled($isGenerating)
-                        class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-5 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto">
+                        class="py-4 px-2 group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-5 py-3 font-semibold text-white shadow-lg text-sm transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto">
 
                         <iconify-icon
                             icon="{{ $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
@@ -418,7 +419,23 @@
                             height="22">
                         </iconify-icon>
 
-                        {{ $isGenerating ? 'Generating...' : 'Download QR Murid' }}
+                        {{ $isGenerating ? 'Generating...' : 'Download QR Murid (HORIZONTAL)' }}
+
+                    </button>
+                    
+                    <!-- VERTICAL -->
+                    <button
+                        wire:click="startGenerate"
+                        @disabled($isGenerating)
+                        class="py-4 px-2 group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-5 py-3 font-semibold text-white shadow-lg text-sm transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto">
+
+                        <iconify-icon
+                            icon="{{ $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
+                            width="22"
+                            height="22">
+                        </iconify-icon>
+
+                        {{ $isGenerating ? 'Generating...' : 'Download QR Murid (VERTICAL)' }}
 
                     </button>
 

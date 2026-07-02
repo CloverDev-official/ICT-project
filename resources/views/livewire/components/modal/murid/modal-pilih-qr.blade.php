@@ -1,0 +1,101 @@
+<div
+    x-data="{ openModalDownload: false }"
+    x-show="openModalDownload"
+
+    x-on:open-download-modal.window="
+        openModalDownload = true;
+    "
+
+    @close-download-modal.window="openModalDownload = false"
+    x-transition
+    style="display: none;"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-5"
+>
+    <div
+        @click.outside="openModalDownload = false"
+        class="bg-white rounded-lg shadow-lg w-[430px] py-6"
+    >
+
+        <!-- Header -->
+        <h2 class="flex items-center gap-2 text-lg font-semibold mb-4 px-6">
+            <div class="bg-blue-100 text-blue-600 p-2 rounded-lg flex items-center justify-center">
+                <iconify-icon icon="solar:download-bold" width="20" height="20"></iconify-icon>
+            </div>
+            Download Kartu Pelajar / QR code
+        </h2>
+
+        <hr class="mb-5 text-gray-300">
+
+        <!-- Content -->
+        <div class="px-6">
+            <p class="text-gray-600 mb-5">
+                Pilih format kartu yang ingin diunduh.
+            </p>
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <!-- Vertical -->
+                <button
+                    wire:click="downloadVertical"
+                    class="group border-2 border-gray-200 rounded-xl p-5 hover:border-blue-500 hover:bg-blue-50 transition"
+                >
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-20 border-2 border-blue-500 rounded-md mb-3 flex items-center justify-center">
+                            <iconify-icon
+                                icon="solar:document-bold"
+                                width="28"
+                                height="28"
+                                class="text-blue-500"
+                            ></iconify-icon>
+                        </div>
+
+                        <h3 class="font-semibold text-gray-800">
+                            Vertical
+                        </h3>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Ukuran portrait
+                        </p>
+                    </div>
+                </button>
+
+                <!-- Horizontal -->
+                <button
+                    wire:click="downloadHorizontal"
+                    class="group border-2 border-gray-200 rounded-xl p-5 hover:border-green-500 hover:bg-green-50 transition"
+                >
+                    <div class="flex flex-col items-center">
+                        <div class="w-20 h-14 border-2 border-green-500 rounded-md mb-3 flex items-center justify-center">
+                            <iconify-icon
+                                icon="solar:document-bold"
+                                width="28"
+                                height="28"
+                                class="text-green-500"
+                            ></iconify-icon>
+                        </div>
+
+                        <h3 class="font-semibold text-gray-800">
+                            Horizontal
+                        </h3>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Ukuran landscape
+                        </p>
+                    </div>
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 mt-6 px-6">
+            <button
+                @click="openModalDownload = false"
+                class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+            >
+                Batal
+            </button>
+        </div>
+
+    </div>
+</div>

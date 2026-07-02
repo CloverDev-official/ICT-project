@@ -671,7 +671,7 @@
 
                                 <!-- qr -->
                                 <button
-                                    wire:click="generateQRCode({ 'uuid': '{{ $murid->uuid }}', 'nama': '{{ $murid->nama }}', 'nipd': '{{ $murid->nipd }}' })"
+                                    @click="$dispatch('open-download-modal')"
                                     class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
                                     <iconify-icon
@@ -680,7 +680,10 @@
                                         height="20">
                                     </iconify-icon>
 
-                                </button>
+                                </button>       
+                                
+                                <!-- modal pilih download qr -->
+                                <livewire:components.modal.murid.modal-pilih-qr/>
 
                                 <!-- delete -->
                                 <div>
