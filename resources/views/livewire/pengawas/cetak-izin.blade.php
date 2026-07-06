@@ -72,8 +72,9 @@
     
                     <input
                         type="text"
-                        wire:model.defer="nama"
-                        placeholder="Masukkan nama lengkap"
+                        disabled
+                        placeholder="Nama lengkap"
+                        wire:model ="name"
                         class="{{ $inputClass }} capitalize" />
     
                     @error('nama')
@@ -89,7 +90,7 @@
     
                     <input
                         type="number"
-                        wire:model.defer="nipd"
+                        wire:model.live.debounce.500ms="nipd"
                         placeholder="Contoh : 1234"
                         class="{{ $inputClass }}" />
     
@@ -102,12 +103,13 @@
                 <div>
                     <label
                         class="mb-2 block text-sm font-semibold text-gray-700">
-                        Tanggal
+                        Tanggal <br>
+                        -- Langusng ambil kapan di bikin aja
                     </label>
     
-                    <input
+                    <!-- <input
                         type="date"
-                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" /> -->
                 </div>
     
                 <!-- form waktu container -->
@@ -115,25 +117,47 @@
                     <!-- dari waktu -->
                     <div>
                         <label
-                            class="mb-2 block text-sm font-semibold text-gray-700">
+                            class="mb-3 block text-sm font-semibold text-gray-700">
                             Dari jam
                         </label>
         
                         <input
                             type="time"
+                            wire:model.defer="dariJam"
                             class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
                     </div>
     
                     <!-- sampai waktu -->
                     <div>
-                        <label
-                            class="mb-2 block text-sm font-semibold text-gray-700">
-                            Sampai jam
-                        </label>
-        
-                        <input
-                            type="time"
-                            class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                        <form>
+                            <div class="flex items-center justify-between">
+                                <label
+                                    class="mb-2 block text-sm font-semibold text-gray-700">
+                                    Sampai jam (Optional)
+                                </label>
+
+                                <button
+                                    type="reset"
+                                    wire:click.prevent="resetJam"
+                                    class="mb-2 mr-1 flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700
+                                        transition hover:bg-gray-200 active:scale-95">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582M20 20v-5h-.581M5 9a7 7 0 0113.418-2M19 15a7 7 0 01-13.418 2" />
+                                    </svg>
+
+                                    Reset
+                                </button>
+                                
+                            </div>
+
+                            <input
+                                type="time"
+                                wire:model.defer="sampaiJam"
+                                class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                        </form>
                     </div>
     
                 </div>

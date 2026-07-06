@@ -11,70 +11,46 @@ use Livewire\Component;
 
 class CetakIzin extends Component
 {
-    public $listMurid;
+    public $name;
+    public $nipd;
     public $alasan;
-    public ?int $murid_id = null;
-    public ?string $selectedLabel = null;
-    public bool $isWaliKelas = false;
-    public ?array $waliRombelIds = null;
 
-    public function mount(): void
+    public $dariJam;
+    public $sampaiJam;
+
+    public $muridDitemukan = false;
+    
+    public function updatedNipd()
     {
-        $this->applyWaliKelasLock();
-        $this->listMurid = $this->getMuridList();
+        $murid = Murid::where('nipd', $this->nipd)->first();
+        if ($murid) {
+            $this->name = $murid->nama;
+            $this->muridDitemukan = true;
+        } else {
+            $this->name = '';
+            $this->muridDitemukan = false;
+            ToastMagic::warning('Tidak ada murid dengan NIPD ' . $this->nipd . '.');
+        }
     }
 
-    private function applyWaliKelasLock(): void
+    public function resetJam()
     {
-        $user = auth()->user();
-        if (!$user) {
-            return;
-        }
-
-        $roleSlug = Str::slug($user->role?->name ?? '');
-        $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
-
-        if (!$this->isWaliKelas) {
-            return;
-        }
-
-        $guru = Guru::query()->where('user_id', $user->id)->first();
-        if (!$guru) {
-            $this->waliRombelIds = [];
-            return;
-        }
-
-        $this->waliRombelIds = Rombel::query()
-            ->where('wali_guru_id', $guru->id)
-            ->pluck('id')
-            ->all();
-    }
-
-    private function getMuridList()
-    {
-        return Murid::query()
-            ->aktif()
-            ->with(['rombel:id,tingkat_id,jurusan_id,indeks_id'])
-            ->when(
-                $this->isWaliKelas && $this->waliRombelIds !== null,
-                fn ($q) => $q->whereHas('rombel', fn ($q) => $q->whereIn('id', $this->waliRombelIds))
-            )
-            ->orderBy('nama')
-            ->get(['id', 'uuid', 'nama', 'nipd', 'nisn', 'image_path', 'rombel_id']);
+        $this->sampaiJam = null;
     }
 
     public function cetakIzin()
     {
-        if (!$this->murid_id || !$this->alasan) {
+        if (!$this->muridDitemukan) {
+            ToastMagic::error('Murid tidak ditemukan. Silakan masukkan NIPD yang valid.');
+            return;
+        }
+
+        if (!$this->nipd || !$this->alasan) {
             ToastMagic::error('Murid dan alasan harus diisi.');
             return;
         }
 
-        $murid = Murid::find($this->murid_id);
-        if (!$murid) {
-            ToastMagic::error('Murid tidak ditemukan.');
-            return;
-        }
+        dd($this->nipd, $this->name,  $this->alasan, $this->dariJam, $this->sampaiJam);
 
         // Logika untuk mencetak izin (misalnya, membuat PDF atau mengirim ke printer)
         // ...
