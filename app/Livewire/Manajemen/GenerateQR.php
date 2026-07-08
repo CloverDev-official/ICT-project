@@ -2,14 +2,10 @@
 
 namespace App\Livewire\Manajemen;
 
-use App\Helpers\QRCodeHelper;
 use App\Models\Murid\Murid;
 use App\Services\Rombel\RombelFilterService;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use ZipStream\ZipStream;
 
 class GenerateQR extends Component
 {
@@ -28,6 +24,7 @@ class GenerateQR extends Component
     public int $totalData = 0;
     public int $lastId = 0;
     public bool $isGenerating = false;
+    public string $orientation = 'horizontal';
     public int $runId = 0;
 
     public function mount(): void
@@ -39,24 +36,6 @@ class GenerateQR extends Component
     private function rombelFilterService(): RombelFilterService
     {
         return app(RombelFilterService::class);
-    }
-
-    private function applyRombelFilter($q)
-    {
-        $filterTingkat = $this->isGenerating ? $this->activeFilterTingkat : $this->filterTingkat;
-        $filterJurusan = $this->isGenerating ? $this->activeFilterJurusan : $this->filterJurusan;
-        $filterIndeks = $this->isGenerating ? $this->activeFilterIndeks : $this->filterIndeks;
-        $this->rombelFilterService()->applyRombelFilters($q, $filterTingkat, $filterJurusan, $filterIndeks, null);
-    }
-
-    private function rombelBaseQuery()
-    {
-        return app(RombelFilterService::class)->getRombelList(
-            $this->filterTingkat,
-            $this->filterJurusan,
-            $this->filterIndeks,
-            null,
-        );
     }
 
     private function getRombel()
@@ -144,13 +123,14 @@ class GenerateQR extends Component
         $this->refreshFilterOptions();
     }
 
-    public function startGenerate()
+    public function startGenerate($orientation = 'horizontal')
     {
         if($this->isGenerating) {
             return;
         }
-
+        
         $this->isGenerating = true;
+        $this->orientation = $orientation;
         $this->runId++;
         $this->activeFilterTingkat = $this->filterTingkat;
         $this->activeFilterJurusan = $this->filterJurusan;
@@ -165,10 +145,11 @@ class GenerateQR extends Component
             runId: $this->runId,
             dataMurid: $chunkData->toArray(),
             totalData: $this->totalData,
+            orientation: $orientation
         );
     }
 
-    public function nextChunk()
+    public function nextChunk($orientation = 'horizontal')
     {
         $chunkData = $this->loadChunk();
 
@@ -176,6 +157,7 @@ class GenerateQR extends Component
             $this->lastId = 0;
             $this->totalData = 0;
             $this->isGenerating = false;
+            $this->orientation = 'horizontal';
             $this->activeFilterTingkat = null;
             $this->activeFilterJurusan = null;
             $this->activeFilterIndeks = null;
@@ -187,6 +169,7 @@ class GenerateQR extends Component
             runId: $this->runId,
             dataMurid: $chunkData->toArray(),
             totalData: $this->totalData,
+            orientation: $orientation
         );
     }
 

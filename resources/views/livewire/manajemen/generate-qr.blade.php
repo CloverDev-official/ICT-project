@@ -409,12 +409,12 @@
 
                     <!-- horizontal  -->
                     <button
-                        wire:click="startGenerate"
-                        @disabled($isGenerating)
+                        wire:click="startGenerate('horizontal')"
+                        @disabled($orientation === 'horizontal' && $isGenerating)
                         class="py-4 px-2 group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-5 py-3 font-semibold text-white shadow-lg text-sm transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto">
 
                         <iconify-icon
-                            icon="{{ $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
+                            icon="{{ $orientation === 'horizontal' && $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
                             width="22"
                             height="22">
                         </iconify-icon>
@@ -425,12 +425,12 @@
                     
                     <!-- VERTICAL -->
                     <button
-                        wire:click="startGenerate"
-                        @disabled($isGenerating)
+                        wire:click="startGenerate('vertical')"
+                       @disabled($orientation === 'vertical' && $isGenerating)
                         class="py-4 px-2 group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-5 py-3 font-semibold text-white shadow-lg text-sm transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto">
 
                         <iconify-icon
-                            icon="{{ $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
+                            icon="{{ $orientation === 'vertical' && $isGenerating ? 'line-md:loading-twotone-loop' : 'lineicons:cloud-download' }}"
                             width="22"
                             height="22">
                         </iconify-icon>
@@ -658,6 +658,52 @@
                 URL.revokeObjectURL(url);
             };
 
+            let lastYieldAt = 0;
+
+            const yieldToBrowser = async (force = false) => {
+                const now = performance.now();
+
+                if (!force && now - lastYieldAt < 24) {
+                    return;
+                }
+
+                lastYieldAt = now;
+
+                if (globalThis.scheduler?.yield) {
+                    await globalThis.scheduler.yield();
+                    return;
+                }
+
+                await new Promise(resolve => {
+                    if (document.hidden || typeof requestAnimationFrame !== 'function') {
+                        setTimeout(resolve, 0);
+                        return;
+                    }
+
+                    requestAnimationFrame(() => resolve());
+                });
+            };
+
+            const releaseCanvas = (canvas) => {
+                if (!canvas) {
+                    return;
+                }
+
+                canvas.width = 1;
+                canvas.height = 1;
+            };
+
+            const preloadImage = (src) => {
+                if (!src) {
+                    return;
+                }
+
+                const image = new Image();
+                image.crossOrigin = 'anonymous';
+                image.decoding = 'async';
+                image.src = new URL(src, window.location.origin).href;
+            };
+
             $wire.$on('generate-qr', async (event) => {
                 if (processing) {
                     return;
@@ -665,80 +711,115 @@
 
                 processing = true;
 
-                if (currentRunId !== event.runId) {
-                    currentRunId = event.runId;
-                    resetProgress();
-                    createZip();
-                    window.resetStudentCardPdf?.();
-                }
+                try {
+                    if (currentRunId !== event.runId) {
+                        currentRunId = event.runId;
+                        resetProgress();
+                        createZip();
+                        window.resetStudentCardPdf?.();
+                        await window.preloadStudentCardAssets?.([event.orientation ?? 'horizontal']);
+                        await yieldToBrowser(true);
+                    }
 
-                if (typeof event.totalData === 'number' && event.totalData >= 0) {
-                    totalData = event.totalData;
-                }
+                    if (typeof event.totalData === 'number' && event.totalData >= 0) {
+                        totalData = event.totalData;
+                    }
 
-                const {
-                    dataMurid
-                } = event;
+                    const {
+                        dataMurid
+                    } = event;
+                    const qrTasks = new Map();
+                    const lookAhead = 3;
+                    const queueAssets = (index) => {
+                        const murid = dataMurid[index];
 
-                for (const murid of dataMurid) {
-                    const svgString = await generateQRSVG(murid.uuid);
+                        if (!murid) {
+                            return;
+                        }
 
-                    const cardCanvas = await window.renderStudentCardCanvas({
-                        murid,
-                        qrSvg: svgString
-                    });
+                        if (!qrTasks.has(index)) {
+                            qrTasks.set(index, generateQRSVG(murid.uuid));
+                        }
 
-                    if (cardCanvas) {
-                        const className = murid?.rombel?.nama_lengkap ?? 'Kelas';
-                        await window.addStudentCardToPdf?.({
-                            className,
-                            canvas: cardCanvas
+                        preloadImage(murid.image_path);
+                    };
+
+                    for (let index = 0; index < Math.min(lookAhead, dataMurid.length); index++) {
+                        queueAssets(index);
+                    }
+
+                    for (let index = 0; index < dataMurid.length; index++) {
+                        const murid = dataMurid[index];
+                        queueAssets(index + lookAhead);
+                        const svgString = await qrTasks.get(index);
+                        qrTasks.delete(index);
+                        await yieldToBrowser();
+
+                        const renderer = event.orientation === 'horizontal'
+                            ? window.renderStudentCardCanvas
+                            : window.renderStudentCardVerticalCanvas;
+
+                        const cardCanvas = await renderer({
+                            murid,
+                            qrSvg: svgString
                         });
+
+
+                        if (cardCanvas) {
+                            const className = murid?.rombel?.nama_lengkap ?? 'Kelas';
+                            await window.addStudentCardToPdf?.({
+                                className,
+                                canvas: cardCanvas,
+                                orientation: event.orientation ?? 'horizontal'
+                            });
+                            releaseCanvas(cardCanvas);
+                        }
+
+                        processed++;
+
+                        const percent = totalData > 0 ?
+                            Math.round((processed / totalData) * 100) :
+                            0;
+
+                        progressTextMurid.textContent = `${processed}/${totalData}`;
+                        progressPercentMurid.textContent = `${percent}%`;
+                        progressBarMurid.style.width = `${percent}%`;
+
+                        await yieldToBrowser();
                     }
 
-                    processed++;
+                    if (processed >= totalData) {
+                        await yieldToBrowser(true);
+                        const pdfFiles = await (
+                            window.exportStudentCardPdfsAsync?.() ??
+                            Promise.resolve(window.exportStudentCardPdfs?.() ?? [])
+                        );
+                        await yieldToBrowser(true);
 
-                    if (processed % 50 === 0) {
-                        if (globalThis.scheduler?.yield) {
-                            await globalThis.scheduler.yield();
+                        if (pdfFiles.length === 1) {
+                            const single = pdfFiles[0];
+                            const pdfName = `${sanitizeFileName(single.className)}.pdf`;
+                            downloadPdf(pdfName, single.pdfBytes);
                         } else {
-                            await new Promise(resolve => setTimeout(resolve, 0));
-                        }
-                    }
+                            for (const pdf of pdfFiles) {
+                                const pdfName = `${sanitizeFileName(pdf.className)}.pdf`;
+                                const file = new ZipPassThrough(pdfName);
+                                zip.add(file);
+                                file.push(pdf.pdfBytes, true);
+                                await yieldToBrowser();
+                            }
 
-                    const percent = totalData > 0 ?
-                        Math.round((processed / totalData) * 100) :
-                        0;
-
-                    progressTextMurid.textContent = `${processed}/${totalData}`;
-                    progressPercentMurid.textContent = `${percent}%`;
-                    progressBarMurid.style.width = `${percent}%`;
-                }
-
-                if (processed >= totalData) {
-                    const pdfFiles = window.exportStudentCardPdfs?.() ?? [];
-
-                    if (pdfFiles.length === 1) {
-                        const single = pdfFiles[0];
-                        const pdfName = `${sanitizeFileName(single.className)}.pdf`;
-                        downloadPdf(pdfName, single.pdfBytes);
-                    } else {
-                        for (const pdf of pdfFiles) {
-                            const pdfName = `${sanitizeFileName(pdf.className)}.pdf`;
-                            const file = new ZipPassThrough(pdfName);
-                            zip.add(file);
-                            file.push(pdf.pdfBytes, true);
+                            zip.end();
                         }
 
-                        zip.end();
+                        window.clearStudentCardMemory?.();
                     }
-
-                    window.clearStudentCardMemory?.();
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    processing = false;
+                    $wire.nextChunk(event.orientation ?? 'horizontal');
                 }
-
-                processing = false;
-
-                $wire.nextChunk();
             });
         })
     </script>

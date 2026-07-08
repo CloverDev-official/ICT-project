@@ -1,701 +1,1200 @@
 import { jsPDF } from "jspdf";
+import { domToCanvas } from "modern-screenshot";
 
-const BASE_WIDTH = 900;
-const BASE_HEIGHT = 540;
-const CARD_MM_WIDTH = 85.6;
-const CARD_MM_HEIGHT = 53.98;
-const CARD_DPI = 300;
-const PDF_IMAGE_FORMAT = "JPEG";
-const PDF_JPEG_QUALITY = 0.9;
-const CARD_WIDTH = Math.round((CARD_MM_WIDTH / 25.4) * CARD_DPI);
-const CARD_HEIGHT = Math.round((CARD_MM_HEIGHT / 25.4) * CARD_DPI);
-const TAU = Math.PI * 2;
+const CONFIG = {
+    CARD: {
+        horizontal: {
+            width: 85.6,
+            height: 53.98
+        }
+    },
+    PDF: {
+        format: "a4",
+        unit: "mm",
+        orientation: "portrait",
+        imageFormat: "JPEG",
+        jpegQuality: 0.9,
+        backgroundColor: "#ffffff",
+        compression: "FAST",
+        margin: {
+            min: 5,
+            max: 12
+        },
+        gap: {
+            min: 3,
+            max: 5
+        }
+    },
+    CACHE: {
+        canvasLimit: 2
+    },
+    FONT: {
+        stylesheets: [
+            "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        ],
+        families: [
+            "Arial",
+            "Poppins",
+            "Inter"
+        ],
+        weights: [
+            400,
+            600,
+            700,
+            800,
+            900
+        ],
+        timeoutMs: 3000
+    },
+    TEMPLATE: {
+        route: (orientation) => `/admin/card-template/${orientation}`,
+        selector: ".student-card",
+        scale: 1,
+        logoUrl: "/assets/img/logo_smkn_2.png",
+        frameWidth: 1000,
+        frameHeight: 1000,
+        transparentPixel: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+    },
+    TEXT: {
+        studentName: 40,
+        className: 28,
+        major: 28,
+        nisn: 20
+    }
+};
 
-const imageCache = new Map();
-const imageElementCache = new Map();
-const logoUrl = "/assets/img/logo_smkn_2.png";
+const templateCache = new Map();
+const templateRequestCache = new Map();
+const canvasCache = new Map();
+const canvasCacheKeys = new WeakMap();
+const jpegCache = new WeakMap();
+const renderedCanvasRegistry = new Set();
+let whiteCanvas = null;
+let whiteCanvasContext = null;
+
+const normalizeOrientation = (orientation) => (
+    orientation === "vertical" ? "vertical" : "horizontal"
+);
+
+const getCardSize = (orientation = "horizontal") => {
+    const base = CONFIG.CARD.horizontal;
+
+    if (normalizeOrientation(orientation) === "vertical") {
+        return {
+            width: base.height,
+            height: base.width
+        };
+    }
+
+    return {
+        width: base.width,
+        height: base.height
+    };
+};
 
 const truncateText = (value, maxLength) => {
     const text = String(value ?? "").trim();
 
     if (text.length <= maxLength) return text;
 
-    const sliceLength = Math.max(0, maxLength - 3);
-    return `${text.slice(0, sliceLength)}...`;
+    return `${text.slice(0, Math.max(0, maxLength - 3))}...`;
 };
 
-const blobToDataUrl = (blob) => {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-    });
-};
-
-const fetchAsDataUrl = async (url, useCache = true) => {
-    if (!url) return null;
-
-    if (useCache && imageCache.has(url)) {
-        return imageCache.get(url);
-    }
-
-    try {
-        const response = await fetch(url, {
-            cache: "force-cache"
-        });
-
-        if (!response.ok) {
-            return null;
-        }
-
-        const blob = await response.blob();
-        const dataUrl = await blobToDataUrl(blob);
-
-        if (useCache) {
-            imageCache.set(url, dataUrl);
-        }
-        return dataUrl;
-    } catch (error) {
-        console.error("Failed to load image:", url, error);
-        return null;
-    }
-};
-
-const encodeSvgDataUrl = (svgString) => {
-    if (!svgString) return null;
-
-    const encoded = btoa(unescape(encodeURIComponent(svgString)));
-    return `data:image/svg+xml;base64,${encoded}`;
-};
-
-const loadImageFromUrl = (url, useCache = true) => {
-    if (!url) return Promise.resolve(null);
-
-    if (useCache && imageElementCache.has(url)) {
-        return Promise.resolve(imageElementCache.get(url));
-    }
-
-    return new Promise((resolve) => {
-        const image = new Image();
-        image.onload = () => {
-            if (useCache) {
-                imageElementCache.set(url, image);
-            }
-            resolve(image);
-        };
-        image.onerror = () => resolve(null);
-        image.src = url;
-    });
-};
-
-const createHtmlCanvas = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = CARD_WIDTH;
-    canvas.height = CARD_HEIGHT;
-    return canvas;
-};
-
-let sharedCanvas = null;
-let sharedContext = null;
-
-const getSharedCanvas = () => {
-    if (!sharedCanvas) {
-        sharedCanvas = createHtmlCanvas();
-        sharedContext = sharedCanvas.getContext("2d");
-    }
-
-    return {
-        canvas: sharedCanvas,
-        ctx: sharedContext
-    };
-};
-
-const roundRectPath = (ctx, x, y, width, height, radius) => {
-    const r = Math.min(radius, width / 2, height / 2);
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + width - r, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-    ctx.lineTo(x + width, y + height - r);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-    ctx.lineTo(x + r, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-};
-
-const applyObjectFitCover = (ctx, image, x, y, width, height) => {
-    if (!image) return;
-    const sourceWidth = image.naturalWidth || image.width;
-    const sourceHeight = image.naturalHeight || image.height;
-    if (!sourceWidth || !sourceHeight) return;
-
-    const scale = Math.max(width / sourceWidth, height / sourceHeight);
-    const drawWidth = sourceWidth * scale;
-    const drawHeight = sourceHeight * scale;
-    const drawX = x + (width - drawWidth) / 2;
-    const drawY = y + (height - drawHeight) / 2;
-    ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
-};
-
-const setFont = (ctx, weight, size, style = "normal") => {
-    ctx.font = `${style} ${weight} ${size}px Arial, Helvetica, sans-serif`;
-};
-
-const measureLetterSpacing = (ctx, text, letterSpacing) => {
-    if (!letterSpacing) return ctx.measureText(text).width;
-    return ctx.measureText(text).width + Math.max(0, text.length - 1) * letterSpacing;
-};
-
-const drawLetterSpacingText = (ctx, text, x, y, letterSpacing = 0, options = {}) => {
-    const upperText = options.uppercase ? text.toUpperCase() : text;
-    let drawX = x;
-    const measuredWidth = measureLetterSpacing(ctx, upperText, letterSpacing);
-
-    if (options.align === "center") drawX -= measuredWidth / 2;
-    if (options.align === "right") drawX -= measuredWidth;
-
-    for (const char of upperText) {
-        ctx.fillText(char, drawX, y);
-        drawX += ctx.measureText(char).width + letterSpacing;
-    }
-};
-
-const wrapTextByWords = (ctx, text, maxWidth) => {
-    const words = String(text ?? "").trim().split(/\s+/);
-    const lines = [];
-    let line = "";
-
-    for (const word of words) {
-        const candidate = line ? `${line} ${word}` : word;
-        if (ctx.measureText(candidate).width <= maxWidth || !line) {
-            line = candidate;
-        } else {
-            lines.push(line);
-            line = word;
-        }
-    }
-
-    if (line) lines.push(line);
-    return lines;
-};
-
-const drawWrappedText = (ctx, text, x, y, maxWidth, lineHeight, maxLines = Infinity) => {
-    const lines = wrapTextByWords(ctx, text, maxWidth);
-    const visibleLines = lines.slice(0, maxLines);
-
-    visibleLines.forEach((line, index) => {
-        ctx.fillText(line, x, y + index * lineHeight);
-    });
-
-    return visibleLines.length;
-};
-
-const drawSkewedRectangle = (ctx, x, y, width, height, skewDeg, fillStyle) => {
-    const skew = Math.tan((skewDeg * Math.PI) / 180);
-    const cx = x + width / 2;
-    const cy = y + height / 2;
-    const points = [
-        [x, y],
-        [x + width, y],
-        [x + width, y + height],
-        [x, y + height]
-    ].map(([px, py]) => [cx + (px - cx) + skew * (py - cy), py]);
-
-    ctx.fillStyle = fillStyle;
-    ctx.beginPath();
-    ctx.moveTo(points[0][0], points[0][1]);
-    points.slice(1).forEach(([px, py]) => ctx.lineTo(px, py));
-    ctx.closePath();
-    ctx.fill();
-};
-
-const iconPaths = {
-    kelas: new Path2D("M12 3L1 9l11 6l9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"),
-    jurusan: new Path2D("M12 21.5c-1.35-.85-3.8-1.5-5.5-1.5c-1.65 0-3.35.3-4.75 1.05c-.1.05-.15.05-.25.05c-.25 0-.5-.25-.5-.5V6c.6-.45 1.25-.75 2-1c1.11-.35 2.33-.5 3.5-.5c1.95 0 4.05.4 5.5 1.5c1.45-1.1 3.55-1.5 5.5-1.5c1.17 0 2.39.15 3.5.5c.75.25 1.4.55 2 1v14.6c0 .25-.25.5-.5.5c-.1 0-.15 0-.25-.05c-1.4-.75-3.1-1.05-4.75-1.05c-1.7 0-4.15.65-5.5 1.5M12 8v11.5c1.35-.85 3.8-1.5 5.5-1.5c1.2 0 2.4.15 3.5.5V7c-1.1-.35-2.3-.5-3.5-.5c-1.7 0-4.15.65-5.5 1.5m1 3.5c1.11-.68 2.6-1 4.5-1c.91 0 1.76.09 2.5.28V9.23c-.87-.15-1.71-.23-2.5-.23q-2.655 0-4.5.84zm4.5.17c-1.71 0-3.21.26-4.5.79v1.69c1.11-.65 2.6-.99 4.5-.99c1.04 0 1.88.08 2.5.24v-1.5c-.87-.16-1.71-.23-2.5-.23m2.5 2.9c-.87-.16-1.71-.24-2.5-.24c-1.83 0-3.33.27-4.5.8v1.69c1.11-.66 2.6-.99 4.5-.99c1.04 0 1.88.08 2.5.24z"),
-    nisn: new Path2D("M2 3h20c1.05 0 2 .95 2 2v14c0 1.05-.95 2-2 2H2c-1.05 0-2-.95-2-2V5c0-1.05.95-2 2-2m12 3v1h8V6zm0 2v1h8V8zm0 2v1h7v-1zm-6 3.91C6 13.91 2 15 2 17v1h12v-1c0-2-4-3.09-6-3.09M8 6a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3")
-};
-
-const drawIcon = (ctx, centerX, centerY, iconKey) => {
-    const pathData = iconPaths[iconKey];
-    if (!pathData) return;
-    ctx.save();
-    ctx.fillStyle = "#0b4fa8";
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 15, 0, TAU);
-    ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.translate(centerX - 11, centerY - 11);
-    ctx.scale(22 / 24, 22 / 24);
-    ctx.fill(pathData);
-    ctx.restore();
-};
-
-const drawBackgroundLayer = (ctx) => {
-    const baseGradient = ctx.createLinearGradient(0, 0, BASE_WIDTH, BASE_HEIGHT);
-    baseGradient.addColorStop(0, "#ffffff");
-    baseGradient.addColorStop(0.58, "#eef5ff");
-    baseGradient.addColorStop(1, "#d7e9ff");
-    ctx.fillStyle = baseGradient;
-    ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
-
-    ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
-    ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
-    ctx.globalAlpha = 0.45;
-    ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
-    ctx.globalAlpha = 1;
-};
-
-let staticLayerCanvas = null;
-let staticLayerLogoSrc = null;
-
-const drawStaticLayer = (ctx, logoImage) => {
-    ctx.clearRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-
-    ctx.save();
-    roundRectPath(ctx, 1.5, 1.5, BASE_WIDTH - 3, BASE_HEIGHT - 3, 24);
-    ctx.clip();
-
-    drawBackgroundLayer(ctx);
-
-    const topShapeGradient = ctx.createLinearGradient(720, -80, 1020, 160);
-    topShapeGradient.addColorStop(0, "#0b6fdc");
-    topShapeGradient.addColorStop(1, "#08245c");
-    drawSkewedRectangle(ctx, 720, -80, 300, 240, 28, topShapeGradient);
-
-    ctx.fillStyle = "#05275c";
-    ctx.fillRect(0, 460, BASE_WIDTH, 80);
-
-    if (logoImage) {
-        applyObjectFitCover(ctx, logoImage, 36, 28, 108, 108);
-    }
-
-    ctx.fillStyle = "#06275e";
-    setFont(ctx, 900, 42);
-    ctx.textBaseline = "alphabetic";
-    drawLetterSpacingText(ctx, "SMKN 2 BANJARMASIN", 168, 82, 2, {
-        uppercase: false
-    });
-
-    ctx.fillStyle = "#1761ae";
-    setFont(ctx, 700, 14);
-    drawLetterSpacingText(ctx, "Jl. Brigjend H. Hasan Basri No. 6, Banjarmasin - Kalimantan Selatan 70123", 168, 118, 0, {
-        uppercase: false
-    });
-
-    ctx.textAlign = "right";
-    ctx.textBaseline = "top";
-    setFont(ctx, 400, 18, "italic");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("Berilmu", 870, 40);
-    ctx.fillText("Berkarakter", 870, 61.6);
-    ctx.fillStyle = "#f8cf28";
-    setFont(ctx, 800, 18, "italic");
-    ctx.fillText("Berprestasi", 870, 83.2);
-    ctx.textAlign = "left";
-
-    const labelText = "KARTU PELAJAR";
-    setFont(ctx, 900, 27);
-    const labelX = 272;
-    const labelY = 178;
-    const labelH = 59;
-    const labelW = measureLetterSpacing(ctx, labelText, 5) + 96;
-
-    ctx.save();
-    ctx.shadowColor = "rgba(0, 35, 90, 0.18)";
-    ctx.shadowBlur = 18;
-    ctx.shadowOffsetY = 10;
-    ctx.fillStyle = "#08275d";
-    roundRectPath(ctx, labelX, labelY, labelW, labelH, 4);
-    ctx.fill();
-    ctx.restore();
-
-    const ribbonGradient = ctx.createLinearGradient(labelX + labelW - 28, labelY, labelX + labelW + 42, labelY);
-    ribbonGradient.addColorStop(0, "#0a86e9");
-    ribbonGradient.addColorStop(1, "#5fc7ff");
-    ctx.fillStyle = ribbonGradient;
-    ctx.beginPath();
-    ctx.moveTo(labelX + labelW - 8.4, labelY);
-    ctx.lineTo(labelX + labelW + 42, labelY);
-    ctx.lineTo(labelX + labelW + 22.4, labelY + labelH);
-    ctx.lineTo(labelX + labelW - 28, labelY + labelH);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.textBaseline = "middle";
-    setFont(ctx, 900, 27);
-    drawLetterSpacingText(ctx, labelText, labelX + 48, labelY + labelH / 2 + 1, 5);
-
-    ctx.save();
-    ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
-    ctx.shadowBlur = 28;
-    ctx.shadowOffsetY = 14;
-    ctx.fillStyle = "#ffffff";
-    roundRectPath(ctx, 36, 178, 230, 305, 18);
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    roundRectPath(ctx, 43, 185, 216, 291, 11);
-    ctx.clip();
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(43, 185, 216, 291);
-    ctx.restore();
-
-    ctx.save();
-    ctx.shadowColor = "rgba(0, 0, 0, 0.14)";
-    ctx.shadowBlur = 24;
-    ctx.shadowOffsetY = 10;
-    ctx.fillStyle = "#ffffff";
-    roundRectPath(ctx, 630, 250, 230, 230, 14);
-    ctx.fill();
-    ctx.restore();
-
-    ctx.restore();
-};
-
-const getStaticLayer = (logoImage) => {
-    const logoSrc = logoImage?.src ?? "";
-
-    if (!staticLayerCanvas || staticLayerLogoSrc !== logoSrc) {
-        const canvas = document.createElement("canvas");
-        canvas.width = BASE_WIDTH;
-        canvas.height = BASE_HEIGHT;
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-            return null;
-        }
-
-        drawStaticLayer(ctx, logoImage);
-        staticLayerCanvas = canvas;
-        staticLayerLogoSrc = logoSrc;
-    }
-
-    return staticLayerCanvas;
-};
-
-const drawCard = (ctx, payload, images) => {
-    ctx.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "medium";
-
-    const scaleX = CARD_WIDTH / BASE_WIDTH;
-    const scaleY = CARD_HEIGHT / BASE_HEIGHT;
-
-    ctx.save();
-    ctx.scale(scaleX, scaleY);
-
-    roundRectPath(ctx, 1.5, 1.5, BASE_WIDTH - 3, BASE_HEIGHT - 3, 24);
-    ctx.clip();
-    const staticLayer = getStaticLayer(images.logo);
-    if (staticLayer) {
-        ctx.drawImage(staticLayer, 0, 0);
-    } else {
-        drawBackgroundLayer(ctx);
-    }
-
-    ctx.save();
-    roundRectPath(ctx, 43, 185, 216, 291, 11);
-    ctx.clip();
-    if (images.photo) {
-        applyObjectFitCover(ctx, images.photo, 43, 185, 216, 291);
-    }
-    ctx.restore();
-
-    ctx.fillStyle = "#111827";
-    setFont(ctx, 900, 16);
-    ctx.textBaseline = "top";
-    const nameLineHeight = 19;
-    const nameLines = drawWrappedText(
-        ctx,
-        payload.studentName.toUpperCase(),
-        300,
-        252,
-        300,
-        nameLineHeight,
-        2
-    );
-
-    const rowStartY = 252 + nameLines * nameLineHeight + 10;
-    payload.rows.forEach((row, index) => {
-        const rowY = rowStartY + index * 50;
-        const rowCenterY = rowY + 25;
-
-        ctx.strokeStyle = "rgba(5, 39, 92, 0.18)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(300, rowY + 50.5);
-        ctx.lineTo(600, rowY + 50.5);
-        ctx.stroke();
-
-        drawIcon(ctx, 315, rowCenterY, row.iconKey);
-
-        ctx.fillStyle = "#111827";
-        ctx.textBaseline = "middle";
-        setFont(ctx, 800, 14);
-        drawLetterSpacingText(ctx, row.label, 344, rowCenterY + 0.5, 2, {
-            uppercase: true
-        });
-
-        ctx.fillStyle = "#05275c";
-        setFont(ctx, 900, 14);
-        ctx.fillText(":", 462, rowCenterY + 0.5);
-
-        ctx.fillStyle = "#111827";
-        setFont(ctx, 900, 12);
-        drawLetterSpacingText(ctx, row.value, 480, rowCenterY + 0.5, 1, {
-            uppercase: true
-        });
-    });
-
-    if (images.qr) {
-        applyObjectFitCover(ctx, images.qr, 640, 260, 210, 210);
-    }
-
-    ctx.strokeStyle = "#082d63";
-    ctx.lineWidth = 3;
-    roundRectPath(ctx, 1.5, 1.5, BASE_WIDTH - 3, BASE_HEIGHT - 3, 24);
-    ctx.stroke();
-    ctx.restore();
-};
-
-
-const buildPayload = (murid) => {
-    return {
-        schoolName: "SMKN 2 Banjarmasin",
-        schoolAddress: "Jl. Brigjend H. Hasan Basri No. 6, Banjarmasin - Kalimantan Selatan 70123",
-        motto: ["Berilmu", "Berkarakter", "Berprestasi"],
-        cardTitle: "Kartu Pelajar",
-        studentName: truncateText(murid?.nama ?? "", 40),
-        rows: [
-            {
-                label: "Kelas",
-                value: truncateText(murid?.rombel?.nama_lengkap ?? "", 28),
-                iconKey: "kelas"
-            },
-            {
-                label: "Jurusan",
-                value: truncateText(murid?.rombel?.jurusan?.nama ?? "", 28),
-                iconKey: "jurusan"
-            },
-            {
-                label: "NISN",
-                value: truncateText(murid?.nisn ?? "", 20),
-                iconKey: "nisn"
-            }
-        ]
-    };
-};
-
-window.renderStudentCardCanvas = async ({ murid, qrSvg }) => {
-    const payload = buildPayload(murid);
-    const [photoDataUrl, logoDataUrl] = await Promise.all([
-        fetchAsDataUrl(murid?.image_path ?? null, false),
-        fetchAsDataUrl(logoUrl, true)
-    ]);
-
-    const [photo, logo, qr] = await Promise.all([
-        loadImageFromUrl(photoDataUrl, false),
-        loadImageFromUrl(logoDataUrl, true),
-        loadImageFromUrl(encodeSvgDataUrl(qrSvg), false)
-    ]);
-
-    const { canvas, ctx } = getSharedCanvas();
-    if (!ctx) return null;
-
-    drawCard(ctx, payload, {
-        photo,
-        logo,
-        qr
-    });
-
-    return canvas;
-};
-
-const canvasToJpegDataUrl = async (canvas, quality) => {
-    if (canvas && typeof canvas.toDataURL === "function") {
-        return canvas.toDataURL("image/jpeg", quality);
-    }
-
-    if (canvas && typeof canvas.convertToBlob === "function") {
-        const blob = await canvas.convertToBlob({
-            type: "image/jpeg",
-            quality
-        });
-        return blobToDataUrl(blob);
-    }
-
-    return null;
-};
-
-const buildPdfDoc = () => {
-    return new jsPDF({
-        format: "a4",
-        orientation: "portrait",
-        unit: "mm",
-        compress: true
-    });
-};
-
-const getPdfGrid = (doc) => {
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 6;
-    const gap = 4;
-    const availableWidth = pageWidth - margin * 2;
-    const availableHeight = pageHeight - margin * 2;
-    const cols = Math.max(1, Math.floor((availableWidth + gap) / (CARD_MM_WIDTH + gap)));
-    const rows = Math.max(1, Math.floor((availableHeight + gap) / (CARD_MM_HEIGHT + gap)));
-
-    return {
-        margin,
-        gap,
-        cols,
-        rows,
-        pageWidth,
-        pageHeight
-    };
-};
-
-const pdfState = new Map();
-
-window.resetStudentCardPdf = () => {
-    pdfState.clear();
-};
-
-window.addStudentCardToPdf = async ({ className, canvas }) => {
-    if (!className || !canvas) return;
-
-    let entry = pdfState.get(className);
-
-    if (!entry) {
-        const doc = buildPdfDoc();
-        const grid = getPdfGrid(doc);
-
-        entry = {
-            doc,
-            grid,
-            col: 0,
-            row: 0
-        };
-
-        pdfState.set(className, entry);
-    }
-
-    const { doc, grid } = entry;
-    const x = grid.margin + entry.col * (CARD_MM_WIDTH + grid.gap);
-    const y = grid.margin + entry.row * (CARD_MM_HEIGHT + grid.gap);
-
-    const dataUrl = await canvasToJpegDataUrl(canvas, PDF_JPEG_QUALITY);
-    if (!dataUrl) return;
-
-    doc.addImage(dataUrl, PDF_IMAGE_FORMAT, x, y, CARD_MM_WIDTH, CARD_MM_HEIGHT, undefined, "FAST");
-
-    entry.col += 1;
-    if (entry.col >= grid.cols) {
-        entry.col = 0;
-        entry.row += 1;
-    }
-
-    if (entry.row >= grid.rows) {
-        doc.addPage();
-        entry.row = 0;
-    }
-};
-
-window.exportStudentCardPdfs = () => {
-    const results = [];
-
-    for (const [className, entry] of pdfState.entries()) {
-        const arrayBuffer = entry.doc.output("arraybuffer");
-        results.push({
-            className,
-            pdfBytes: new Uint8Array(arrayBuffer)
-        });
-    }
-
-    return results;
-};
-
-window.clearStudentCardMemory = () => {
-    imageCache.clear();
-    imageElementCache.clear();
-
-    staticLayerCanvas = null;
-    staticLayerLogoSrc = null;
-
-    sharedCanvas = null;
-    sharedContext = null;
-
-    pdfState.clear();
-};
-
-const sanitizeFileName = (value) => {
-    return String(value ?? "")
-        .trim()
-        .replace(/[\\?%*:|"<>]/g, "-")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^[-.]+|[-.]+$/g, "");
-};
+const sanitizeFileName = (value) => String(value ?? "")
+    .trim()
+    .replace(/[\\?%*:|"<>]/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-.]+|[-.]+$/g, "");
 
 const buildStudentCardFileName = (murid) => {
     const className = murid?.rombel?.nama_lengkap ?? "Kelas";
     const name = murid?.nama ?? "Murid";
     const nisn = murid?.nisn ?? "NISN";
-    const base = `${className}-${name}-${nisn}`;
-    const sanitized = sanitizeFileName(base) || "kartu-pelajar";
+    const sanitized = sanitizeFileName(`${className}-${name}-${nisn}`) || "kartu-pelajar";
+
     return `${sanitized}.pdf`;
 };
 
-const downloadPdfBytes = (fileName, bytes) => {
-    const blob = new Blob([bytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Unable to convert blob to data URL."));
+    reader.readAsDataURL(blob);
+});
+
+const canvasToBlob = (canvas, type, quality) => new Promise((resolve) => {
+    if (typeof canvas.toBlob !== "function") {
+        resolve(null);
+        return;
+    }
+
+    canvas.toBlob(resolve, type, quality);
+});
+
+const fetchText = async (url, options = {}) => {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+        throw new Error(`Unable to fetch ${url}: ${response.status} ${response.statusText}`);
+    }
+
+    return response.text();
 };
 
-window.addEventListener("generateStudentCardPdf", async (event) => {
-    const detail = event?.detail ?? {};
-    const murid = detail.murid;
-    if (!murid) return;
+const toAbsoluteUrl = (url) => {
+    if (!url) return null;
 
-    const qrSvg = await window.generateQRSVG?.(murid.uuid);
-    const cardCanvas = await window.renderStudentCardCanvas({
+    try {
+        return new URL(url, window.location.origin).href;
+    } catch {
+        return url;
+    }
+};
+
+const getImageSource = (url) => {
+    if (!url) return null;
+    if (String(url).startsWith("data:")) return url;
+
+    return toAbsoluteUrl(url);
+};
+
+// Warms the browser's HTTP cache for a student's photo ahead of time so that,
+// by the time renderTemplateCanvas() actually needs it, the image is already
+// downloaded and decoding can happen instantly instead of blocking on a
+// network round trip. crossOrigin must match what setImageSource() uses below
+// (anonymous) or the browser will treat it as a different cache entry and
+// fetch it twice.
+const prefetchPhoto = (murid) => {
+    const src = getImageSource(murid?.image_path ?? null);
+
+    if (!src || src.startsWith("data:")) return;
+
+    const image = new Image();
+
+    image.decoding = "async";
+    image.crossOrigin = "anonymous";
+    image.src = src;
+};
+
+const waitForFrameLoad = (frame) => new Promise((resolve) => {
+    frame.addEventListener("load", resolve, { once: true });
+});
+
+const waitForImage = async (image) => {
+    if (!image) return;
+
+    if (image.complete && image.naturalWidth > 0) return;
+
+    try {
+        if (typeof image.decode === "function") {
+            await image.decode();
+            return;
+        }
+    } catch {
+        // Fall through to load/error events when decode is not reliable.
+    }
+
+    await new Promise((resolve) => {
+        image.addEventListener("load", resolve, { once: true });
+        image.addEventListener("error", resolve, { once: true });
+    });
+};
+
+const withTimeout = async (promise, timeoutMs) => {
+    let timeoutId = null;
+
+    try {
+        return await Promise.race([
+            promise,
+            new Promise((resolve) => {
+                timeoutId = setTimeout(resolve, timeoutMs);
+            })
+        ]);
+    } finally {
+        clearTimeout(timeoutId);
+    }
+};
+
+const yieldToBrowser = async () => {
+    if (globalThis.scheduler?.yield) {
+        await globalThis.scheduler.yield();
+        return;
+    }
+
+    await new Promise((resolve) => {
+        if (document.hidden || typeof requestAnimationFrame !== "function") {
+            setTimeout(resolve, 0);
+            return;
+        }
+
+        requestAnimationFrame(() => resolve());
+    });
+};
+
+const encodeSvgDataUrl = (svgString) => {
+    if (!svgString) return "";
+
+    const encoded = btoa(unescape(encodeURIComponent(svgString)));
+    return `data:image/svg+xml;base64,${encoded}`;
+};
+
+const getWhiteCanvas = (width, height) => {
+    if (!whiteCanvas) {
+        whiteCanvas = document.createElement("canvas");
+        whiteCanvasContext = whiteCanvas.getContext("2d", {
+            alpha: false,
+            willReadFrequently: false
+        });
+    }
+
+    if (!whiteCanvasContext) {
+        throw new Error("Unable to create canvas context for PDF export.");
+    }
+
+    if (whiteCanvas.width !== width) whiteCanvas.width = width;
+    if (whiteCanvas.height !== height) whiteCanvas.height = height;
+
+    return {
+        canvas: whiteCanvas,
+        context: whiteCanvasContext
+    };
+};
+
+const canvasToJpegDataUrl = async (canvas, quality = CONFIG.PDF.jpegQuality) => {
+    if (!canvas) return null;
+    if (jpegCache.has(canvas)) return jpegCache.get(canvas);
+
+    let dataUrl = null;
+    const { canvas: flattenedCanvas, context } = getWhiteCanvas(canvas.width, canvas.height);
+
+    context.fillStyle = CONFIG.PDF.backgroundColor;
+    context.fillRect(0, 0, flattenedCanvas.width, flattenedCanvas.height);
+    context.drawImage(canvas, 0, 0);
+
+    const blob = await canvasToBlob(flattenedCanvas, "image/jpeg", quality);
+
+    if (blob) {
+        dataUrl = await blobToDataUrl(blob);
+    } else if (typeof flattenedCanvas.toDataURL === "function") {
+        dataUrl = flattenedCanvas.toDataURL("image/jpeg", quality);
+    } else if (typeof flattenedCanvas.convertToBlob === "function") {
+        const convertedBlob = await flattenedCanvas.convertToBlob({
+            type: "image/jpeg",
+            quality
+        });
+
+        dataUrl = await blobToDataUrl(convertedBlob);
+    } else {
+        throw new Error("Unable to convert canvas to JPEG data URL.");
+    }
+
+    jpegCache.set(canvas, dataUrl);
+
+    return dataUrl;
+};
+
+const createRenderCacheKey = ({ orientation, murid, qrSvg }) => JSON.stringify({
+    orientation: normalizeOrientation(orientation),
+    uuid: murid?.uuid ?? "",
+    image: murid?.image_path ?? "",
+    name: murid?.nama ?? "",
+    className: murid?.rombel?.nama_lengkap ?? "",
+    major: murid?.rombel?.jurusan?.nama ?? "",
+    nisn: murid?.nisn ?? "",
+    qrSvg: qrSvg ?? ""
+});
+
+const cacheRenderedCanvas = (key, canvas) => {
+    if (!key || !canvas) return;
+
+    canvasCache.set(key, canvas);
+    canvasCacheKeys.set(canvas, key);
+    renderedCanvasRegistry.add(canvas);
+
+    while (canvasCache.size > CONFIG.CACHE.canvasLimit) {
+        const oldestKey = canvasCache.keys().next().value;
+        const oldestCanvas = canvasCache.get(oldestKey);
+
+        canvasCache.delete(oldestKey);
+        renderedCanvasRegistry.delete(oldestCanvas);
+    }
+};
+
+const releaseRenderedCanvas = (canvas) => {
+    const key = canvasCacheKeys.get(canvas);
+
+    if (key) canvasCache.delete(key);
+
+    renderedCanvasRegistry.delete(canvas);
+};
+
+const createPdfDocument = () => new jsPDF({
+    format: CONFIG.PDF.format,
+    orientation: CONFIG.PDF.orientation,
+    unit: CONFIG.PDF.unit,
+    compress: true
+});
+
+const calculateGridAxis = ({ pageLength, cardLength, minMargin, maxMargin, minGap, maxGap }) => {
+    let best = null;
+
+    for (let count = 1; count <= 20; count += 1) {
+        const remaining = pageLength - (count * cardLength);
+        if (remaining < minMargin * 2) break;
+
+        const rawGap = count > 1
+            ? Math.min(maxGap, Math.max(minGap, (remaining - minMargin * 2) / (count - 1)))
+            : 0;
+        const margin = (pageLength - (count * cardLength) - ((count - 1) * rawGap)) / 2;
+
+        if (margin < minMargin) continue;
+
+        best = {
+            count,
+            gap: rawGap,
+            margin: Math.min(maxMargin, margin)
+        };
+    }
+
+    return best ?? {
+        count: 1,
+        gap: 0,
+        margin: Math.max(minMargin, (pageLength - cardLength) / 2)
+    };
+};
+
+const getPdfGrid = (doc, orientation = "horizontal") => {
+    const size = getCardSize(orientation);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const columnAxis = calculateGridAxis({
+        pageLength: pageWidth,
+        cardLength: size.width,
+        minMargin: CONFIG.PDF.margin.min,
+        maxMargin: CONFIG.PDF.margin.max,
+        minGap: CONFIG.PDF.gap.min,
+        maxGap: CONFIG.PDF.gap.max
+    });
+    const rowAxis = calculateGridAxis({
+        pageLength: pageHeight,
+        cardLength: size.height,
+        minMargin: CONFIG.PDF.margin.min,
+        maxMargin: CONFIG.PDF.margin.max,
+        minGap: CONFIG.PDF.gap.min,
+        maxGap: CONFIG.PDF.gap.max
+    });
+
+    return {
+        rows: rowAxis.count,
+        columns: columnAxis.count,
+        pageWidth,
+        pageHeight,
+        card: size,
+        margin: {
+            x: columnAxis.margin,
+            y: rowAxis.margin
+        },
+        gap: {
+            x: columnAxis.gap,
+            y: rowAxis.gap
+        },
+        positions: Array.from({ length: rowAxis.count * columnAxis.count }, (_, index) => {
+            const row = Math.floor(index / columnAxis.count);
+            const column = index % columnAxis.count;
+
+            return {
+                x: columnAxis.margin + (column * (size.width + columnAxis.gap)),
+                y: rowAxis.margin + (row * (size.height + rowAxis.gap))
+            };
+        })
+    };
+};
+
+const addCardToPdf = async ({ pdf, canvas, orientation = "horizontal", position }) => {
+    if (!pdf) throw new Error("PDF document is required.");
+    if (!canvas) throw new Error("Canvas is required to add a card to PDF.");
+
+    const size = getCardSize(orientation);
+    const dataUrl = await canvasToJpegDataUrl(canvas);
+
+    if (!dataUrl) throw new Error("Unable to create PDF image from canvas.");
+
+    console.log(
+        position.x,
+        position.y,
+        size.width,
+        size.height,
+    )
+
+    pdf.addImage(
+        dataUrl,
+        CONFIG.PDF.imageFormat,
+        position.x,
+        position.y,
+        size.width,
+        size.height,
+        undefined,
+        CONFIG.PDF.compression
+    );
+
+    releaseRenderedCanvas(canvas);
+};
+
+class TemplateLoader {
+    constructor({
+        templateCacheStore = templateCache
+    } = {}) {
+        this.templateCache = templateCacheStore;
+        this.sessions = new Map();
+        this.logoDataUrlPromise = null;
+    }
+
+    async fetchTemplate(orientation) {
+        const normalizedOrientation = normalizeOrientation(orientation);
+
+        if (this.templateCache.has(normalizedOrientation)) {
+            return this.templateCache.get(normalizedOrientation);
+        }
+
+        if (templateRequestCache.has(normalizedOrientation)) {
+            return templateRequestCache.get(normalizedOrientation);
+        }
+
+        const request = fetchText(CONFIG.TEMPLATE.route(normalizedOrientation), {
+            cache: "no-store"
+        });
+
+        templateRequestCache.set(normalizedOrientation, request);
+
+        try {
+            const template = await request;
+
+            this.templateCache.set(normalizedOrientation, template);
+
+            return template;
+        } finally {
+            templateRequestCache.delete(normalizedOrientation);
+        }
+    }
+
+    createFontMarkup() {
+        const stylesheetLinks = CONFIG.FONT.stylesheets.map((href) => (
+            `<link rel="stylesheet" href="${href}">`
+        )).join("");
+
+        return [
+            '<link rel="preconnect" href="https://fonts.googleapis.com">',
+            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+            stylesheetLinks
+        ].join("");
+    }
+
+    createInitialTemplateHtml(template) {
+        const html = template
+            .replaceAll("__LOGO__", CONFIG.TEMPLATE.transparentPixel)
+            .replaceAll("__PHOTO__", CONFIG.TEMPLATE.transparentPixel)
+            .replaceAll("__QR__", CONFIG.TEMPLATE.transparentPixel);
+        const fontMarkup = this.createFontMarkup();
+
+        if (html.includes("</head>")) {
+            return html.replace("</head>", `${fontMarkup}</head>`);
+        }
+
+        return `${fontMarkup}${html}`;
+    }
+
+    createFrame() {
+        const iframe = document.createElement("iframe");
+
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.style.position = "fixed";
+        iframe.style.left = "-10000px";
+        iframe.style.top = "0";
+        iframe.style.width = `${CONFIG.TEMPLATE.frameWidth}px`;
+        iframe.style.height = `${CONFIG.TEMPLATE.frameHeight}px`;
+        iframe.style.border = "0";
+        iframe.style.opacity = "0";
+        iframe.style.pointerEvents = "none";
+        // Without an explicit z-index, this fixed-position offscreen frame
+        // follows default DOM-order stacking and can end up rendered above
+        // other fixed/absolute UI (modals, dropdowns, sidebars) in some
+        // browsers/layouts, even though it's shifted far off-screen.
+        // Pinning it to the bottom of the stack prevents that.
+        iframe.style.zIndex = "-1";
+
+        document.body.appendChild(iframe);
+
+        return iframe;
+    }
+
+    findTextNode(doc, token) {
+        const textFilter = doc.defaultView?.NodeFilter?.SHOW_TEXT ?? 4;
+        const walker = doc.createTreeWalker(doc.body, textFilter);
+        let node = walker.nextNode();
+
+        while (node) {
+            if (node.nodeValue.includes(token)) return node;
+            node = walker.nextNode();
+        }
+
+        return null;
+    }
+
+    findImage(doc, token, altPattern) {
+        return doc.querySelector(`img[src="${token}"]`)
+            ?? Array.from(doc.querySelectorAll("img")).find((image) => (
+                altPattern.test(image.getAttribute("alt") ?? "")
+            ))
+            ?? null;
+    }
+
+    collectSessionRefs(doc) {
+        return {
+            logoImage: this.findImage(doc, "__LOGO__", /logo/i),
+            photoImage: this.findImage(doc, "__PHOTO__", /foto|photo/i),
+            qrImage: this.findImage(doc, "__QR__", /qr/i),
+            studentNameNode: this.findTextNode(doc, "__STUDENT_NAME__"),
+            classNameNode: this.findTextNode(doc, "__KELAS__"),
+            majorNode: this.findTextNode(doc, "__JURUSAN__"),
+            nisnNode: this.findTextNode(doc, "__NISN__")
+        };
+    }
+
+    async waitForFonts(doc) {
+        // Previously this walked every element in the card with getComputedStyle()
+        // to "discover" font families. That forces a synchronous style
+        // recalculation over the whole subtree on every session creation, which
+        // is pure main-thread cost for no real benefit (the templates only ever
+        // use the families already declared in CONFIG.FONT.families). Loading
+        // only the known families/weights is just as correct and cheaper.
+        const fontSet = doc?.fonts;
+
+        if (!fontSet) return;
+
+        const loads = CONFIG.FONT.families.flatMap((family) => (
+            CONFIG.FONT.weights.map((weight) => fontSet.load(`${weight} 16px "${family}"`))
+        ));
+
+        await withTimeout(Promise.allSettled(loads), CONFIG.FONT.timeoutMs);
+        await withTimeout(fontSet.ready, CONFIG.FONT.timeoutMs);
+    }
+
+    async createSession(orientation) {
+        const normalizedOrientation = normalizeOrientation(orientation);
+        const template = await this.fetchTemplate(normalizedOrientation);
+        const frame = this.createFrame();
+        const loadPromise = waitForFrameLoad(frame);
+
+        frame.srcdoc = this.createInitialTemplateHtml(template);
+        await loadPromise;
+
+        const doc = frame.contentDocument;
+        const card = doc?.querySelector(CONFIG.TEMPLATE.selector);
+
+        if (!doc || !card) {
+            frame.remove();
+            throw new Error(`Card template is missing "${CONFIG.TEMPLATE.selector}".`);
+        }
+
+        const session = {
+            frame,
+            doc,
+            card,
+            refs: this.collectSessionRefs(doc)
+        };
+
+        await this.waitForFonts(doc);
+
+        this.sessions.set(normalizedOrientation, session);
+
+        return session;
+    }
+
+    async getSession(orientation) {
+        const normalizedOrientation = normalizeOrientation(orientation);
+        const session = this.sessions.get(normalizedOrientation);
+
+        if (session?.frame?.isConnected) return session;
+
+        return this.createSession(normalizedOrientation);
+    }
+
+    async setImageSource(image, source) {
+        if (!image) return;
+
+        const nextSource = source || CONFIG.TEMPLATE.transparentPixel;
+
+        if (image.getAttribute("src") !== nextSource) {
+            if (!nextSource.startsWith("data:")) {
+                image.crossOrigin = "anonymous";
+            } else {
+                image.removeAttribute("crossorigin");
+            }
+
+            image.decoding = "async";
+            image.setAttribute("src", nextSource);
+        }
+
+        await waitForImage(image);
+    }
+
+    setText(node, value) {
+        if (!node) return;
+
+        node.nodeValue = value ?? "";
+    }
+
+    getLogoDataUrl() {
+        this.logoDataUrlPromise ??= Promise.resolve(getImageSource(CONFIG.TEMPLATE.logoUrl));
+
+        return this.logoDataUrlPromise;
+    }
+
+    async applyData(session, { murid, qrSvg }) {
+        const [photoSource, logoDataUrl] = await Promise.all([
+            Promise.resolve(getImageSource(murid?.image_path ?? null)),
+            this.getLogoDataUrl()
+        ]);
+        const { refs } = session;
+
+        this.setText(refs.studentNameNode, truncateText(murid?.nama ?? "", CONFIG.TEXT.studentName).toUpperCase());
+        this.setText(refs.classNameNode, truncateText(murid?.rombel?.nama_lengkap ?? "", CONFIG.TEXT.className));
+        this.setText(refs.majorNode, truncateText(murid?.rombel?.jurusan?.nama ?? "", CONFIG.TEXT.major));
+        this.setText(refs.nisnNode, truncateText(murid?.nisn ?? "", CONFIG.TEXT.nisn));
+
+        await Promise.all([
+            this.setImageSource(refs.logoImage, logoDataUrl),
+            this.setImageSource(refs.photoImage, photoSource),
+            this.setImageSource(refs.qrImage, encodeSvgDataUrl(qrSvg))
+        ]);
+
+        if (session.doc?.fonts?.ready) {
+            await session.doc.fonts.ready;
+        }
+    }
+
+    async renderCanvas({ orientation = "horizontal", murid, qrSvg }) {
+        const normalizedOrientation = normalizeOrientation(orientation);
+        const cacheKey = createRenderCacheKey({
+            orientation: normalizedOrientation,
+            murid,
+            qrSvg
+        });
+
+        if (canvasCache.has(cacheKey)) return canvasCache.get(cacheKey);
+
+        const session = await this.getSession(normalizedOrientation);
+
+        await this.applyData(session, {
+            murid,
+            qrSvg
+        });
+
+        // domToCanvas (modern-screenshot) serializes the card into an SVG
+        // <foreignObject> and lets the browser's native renderer draw it, then
+        // reads that back into a canvas. Unlike html2canvas — which re-parses
+        // CSS and re-implements layout/paint by hand in JS — this leans on
+        // rendering the browser already does, which is why it's noticeably
+        // faster and more faithful to the real on-screen appearance.
+        const canvas = await domToCanvas(session.card, {
+            backgroundColor: CONFIG.PDF.backgroundColor,
+            scale: CONFIG.TEMPLATE.scale,
+            width: session.card.offsetWidth,
+            height: session.card.offsetHeight,
+            fetch: {
+                // Reuse whatever the browser already has cached (including
+                // anything warmed up by prefetchPhoto()) instead of re-fetching.
+                requestInit: { mode: "cors", cache: "force-cache" },
+                placeholderImage: CONFIG.TEMPLATE.transparentPixel
+            }
+        });
+
+        cacheRenderedCanvas(cacheKey, canvas);
+
+        return canvas;
+    }
+
+    async preload(orientations = ["horizontal"]) {
+        const uniqueOrientations = [...new Set(orientations.map(normalizeOrientation))];
+
+        await Promise.allSettled([
+            this.getLogoDataUrl(),
+            ...uniqueOrientations.map((orientation) => this.getSession(orientation))
+        ]);
+    }
+
+    clear() {
+        for (const session of this.sessions.values()) {
+            session.frame?.remove();
+        }
+
+        this.sessions.clear();
+        this.logoDataUrlPromise = null;
+    }
+}
+
+class PdfManager {
+    constructor() {
+        this.entries = new Map();
+    }
+
+    createPdf() {
+        return createPdfDocument();
+    }
+
+    createEntry(orientation = "horizontal") {
+        const pdf = this.createPdf();
+
+        return {
+            pdf,
+            orientation: normalizeOrientation(orientation),
+            grid: getPdfGrid(pdf, orientation),
+            cursor: 0
+        };
+    }
+
+    resolveEntry(key = "default", orientation = "horizontal") {
+        if (!this.entries.has(key)) {
+            this.entries.set(key, this.createEntry(orientation));
+        }
+
+        return this.entries.get(key);
+    }
+
+    nextPosition(entry) {
+        if (entry.cursor > 0 && entry.cursor % entry.grid.positions.length === 0) {
+            entry.pdf.addPage();
+            entry.grid = getPdfGrid(entry.pdf, entry.orientation);
+            entry.cursor = 0;
+        }
+
+        const position = entry.grid.positions[entry.cursor];
+        entry.cursor += 1;
+
+        return position;
+    }
+
+    async addCard({ key = "default", canvas, orientation = "horizontal" }) {
+        const normalizedOrientation = normalizeOrientation(orientation);
+        const entry = this.resolveEntry(key, normalizedOrientation);
+
+        if (entry.orientation !== normalizedOrientation && entry.cursor > 0) {
+            entry.pdf.addPage();
+            entry.orientation = normalizedOrientation;
+            entry.grid = getPdfGrid(entry.pdf, normalizedOrientation);
+            entry.cursor = 0;
+        }
+
+        await addCardToPdf({
+            pdf: entry.pdf,
+            canvas,
+            orientation: normalizedOrientation,
+            position: this.nextPosition(entry)
+        });
+    }
+
+    export() {
+        return Array.from(this.entries.entries()).map(([className, entry]) => ({
+            className,
+            pdfBytes: new Uint8Array(entry.pdf.output("arraybuffer"))
+        }));
+    }
+
+    async exportAsync() {
+        const results = [];
+
+        for (const [className, entry] of this.entries.entries()) {
+            await yieldToBrowser();
+            results.push({
+                className,
+                pdfBytes: new Uint8Array(entry.pdf.output("arraybuffer"))
+            });
+        }
+
+        return results;
+    }
+
+    clear() {
+        this.entries.clear();
+    }
+}
+
+const templateLoader = new TemplateLoader();
+const pdfManager = new PdfManager();
+
+/**
+ * Render a student card template to canvas.
+ *
+ * @param {Object} options
+ * @param {"horizontal"|"vertical"} options.orientation
+ * @param {Object} options.murid
+ * @param {string} options.qrSvg
+ * @returns {Promise<HTMLCanvasElement>}
+ */
+const renderTemplateCanvas = async ({ orientation = "horizontal", murid, qrSvg } = {}) => {
+    if (!murid) throw new Error("Student data is required to render a card.");
+
+    return templateLoader.renderCanvas({
+        orientation: normalizeOrientation(orientation),
         murid,
         qrSvg
     });
+};
 
-    if (!cardCanvas) return;
+const downloadPdfBytes = (fileName, bytes) => {
+    if (!bytes) throw new Error("PDF bytes are required for download.");
 
-    window.resetStudentCardPdf?.();
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
 
-    const className = murid?.rombel?.nama_lengkap ?? "Kelas";
-    await window.addStudentCardToPdf?.({
-        className,
-        canvas: cardCanvas
+    anchor.href = url;
+    anchor.download = fileName || "kartu-pelajar.pdf";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+};
+
+const getQrSvg = async (murid) => {
+    if (!murid?.uuid) return "";
+    if (typeof window.generateQRSVG !== "function") return "";
+
+    return window.generateQRSVG(murid.uuid);
+};
+
+const renderStudentCanvas = async ({ murid, qrSvg, orientation = "horizontal" }) => renderTemplateCanvas({
+    orientation,
+    murid,
+    qrSvg
+});
+
+const createSingleCardPdfBytes = async ({ canvas, orientation = "horizontal" }) => {
+    const manager = new PdfManager();
+
+    await manager.addCard({
+        key: "single",
+        canvas,
+        orientation
     });
 
-    const pdfFiles = window.exportStudentCardPdfs?.() ?? [];
-    if (pdfFiles.length === 0) return;
+    return manager.export()[0]?.pdfBytes ?? null;
+};
 
-    const pdfName = detail.filename || buildStudentCardFileName(murid);
-    downloadPdfBytes(pdfName, pdfFiles[0].pdfBytes);
+const downloadSingleCardPdf = async ({ murid, orientation = "horizontal", filename }) => {
+    if (!murid) throw new Error("Student data is required to generate a PDF.");
 
-    window.clearStudentCardMemory?.();
+    const normalizedOrientation = normalizeOrientation(orientation);
+    const qrSvg = await getQrSvg(murid);
+    const canvas = await renderStudentCanvas({
+        murid,
+        qrSvg,
+        orientation: normalizedOrientation
+    });
+    const pdfBytes = await createSingleCardPdfBytes({
+        canvas,
+        orientation: normalizedOrientation
+    });
+
+    if (!pdfBytes) throw new Error("Unable to generate student card PDF.");
+
+    downloadPdfBytes(filename || buildStudentCardFileName(murid), pdfBytes);
+};
+
+const downloadGeneratedStudentCardPdf = async ({ murid, orientation = "horizontal", filename }) => {
+    if (!murid) throw new Error("Student data is required to generate a PDF.");
+
+    const normalizedOrientation = normalizeOrientation(orientation);
+    const qrSvg = await getQrSvg(murid);
+    const canvas = await renderStudentCanvas({
+        murid,
+        qrSvg,
+        orientation: normalizedOrientation
+    });
+    const manager = new PdfManager();
+
+    await manager.addCard({
+        key: murid?.rombel?.nama_lengkap ?? "Kelas",
+        canvas,
+        orientation: normalizedOrientation
+    });
+
+    const pdfBytes = manager.export()[0]?.pdfBytes;
+
+    if (!pdfBytes) throw new Error("Unable to export student card PDF.");
+
+    downloadPdfBytes(filename || buildStudentCardFileName(murid), pdfBytes);
+};
+
+const groupKeyFor = (murid) => murid?.rombel?.nama_lengkap ?? "Kelas";
+
+/**
+ * Render and lay out a batch of student cards into one PDF per class,
+ * without freezing the UI.
+ *
+ * The render itself is still synchronous main-thread work (domToCanvas has
+ * to draw into a real canvas), so this can't make a single card render
+ * faster by itself — what it does instead is:
+ *  1. Prefetch the *next* student's photo while the *current* card is being
+ *     rendered/encoded, overlapping network latency with CPU work.
+ *  2. Yield back to the browser after every card (rAF/scheduler.yield) so the
+ *     page can repaint and handle input, which is what actually removes the
+ *     "lag"/freeze feeling during a big batch — total time is similar, but
+ *     the tab stays responsive throughout.
+ *
+ * @param {Object} options
+ * @param {Object[]} options.students
+ * @param {"horizontal"|"vertical"} [options.orientation]
+ * @param {(progress: {index: number, total: number, murid: Object}) => void} [options.onProgress]
+ * @returns {Promise<{className: string, pdfBytes: Uint8Array}[]>}
+ */
+const generateStudentCardsBatch = async ({
+    students = [],
+    orientation = "horizontal",
+    onProgress
+} = {}) => {
+    if (!Array.isArray(students) || students.length === 0) {
+        throw new Error("A non-empty list of students is required.");
+    }
+
+    const normalizedOrientation = normalizeOrientation(orientation);
+    const manager = new PdfManager();
+
+    await templateLoader.preload([normalizedOrientation]);
+
+    for (let index = 0; index < students.length; index += 1) {
+        const murid = students[index];
+
+        prefetchPhoto(students[index + 1]);
+
+        // eslint-disable-next-line no-await-in-loop -- batch must stay sequential; rendering is single-threaded main-thread work
+        const qrSvg = await getQrSvg(murid);
+        // eslint-disable-next-line no-await-in-loop
+        const canvas = await renderTemplateCanvas({
+            orientation: normalizedOrientation,
+            murid,
+            qrSvg
+        });
+
+        // eslint-disable-next-line no-await-in-loop
+        await manager.addCard({
+            key: groupKeyFor(murid),
+            canvas,
+            orientation: normalizedOrientation
+        });
+
+        onProgress?.({ index, total: students.length, murid });
+
+        // eslint-disable-next-line no-await-in-loop
+        await yieldToBrowser();
+    }
+
+    return manager.exportAsync();
+};
+
+/**
+ * Render a batch of student cards and immediately download one PDF per
+ * class (grouped by rombel).
+ *
+ * @param {Object} options
+ * @param {Object[]} options.students
+ * @param {"horizontal"|"vertical"} [options.orientation]
+ * @param {(progress: {index: number, total: number, murid: Object}) => void} [options.onProgress]
+ * @returns {Promise<{className: string, pdfBytes: Uint8Array}[]>}
+ */
+const downloadStudentCardsBatch = async ({ students, orientation = "horizontal", onProgress } = {}) => {
+    const results = await generateStudentCardsBatch({ students, orientation, onProgress });
+
+    results.forEach(({ className, pdfBytes }) => {
+        const sanitized = sanitizeFileName(className);
+
+        downloadPdfBytes(sanitized ? `${sanitized}.pdf` : "kartu-pelajar.pdf", pdfBytes);
+    });
+
+    return results;
+};
+
+/**
+ * Render horizontal student card.
+ *
+ * @param {Object} payload
+ * @returns {Promise<HTMLCanvasElement>}
+ */
+window.renderStudentCardCanvas = (payload = {}) => renderTemplateCanvas({
+    ...payload,
+    orientation: "horizontal"
+});
+
+/**
+ * Render vertical student card.
+ *
+ * @param {Object} payload
+ * @returns {Promise<HTMLCanvasElement>}
+ */
+window.renderStudentCardVerticalCanvas = (payload = {}) => renderTemplateCanvas({
+    ...payload,
+    orientation: "vertical"
+});
+
+/**
+ * Reset accumulated student card PDF documents.
+ *
+ * @returns {void}
+ */
+window.resetStudentCardPdf = () => {
+    pdfManager.clear();
+};
+
+/**
+ * Add a rendered student card canvas to its class PDF.
+ *
+ * @param {Object} options
+ * @param {string} options.className
+ * @param {HTMLCanvasElement} options.canvas
+ * @param {"horizontal"|"vertical"} [options.orientation]
+ * @returns {Promise<void>}
+ */
+window.addStudentCardToPdf = async ({ className, canvas, orientation = "horizontal" } = {}) => {
+    if (!className || !canvas) return;
+
+    await pdfManager.addCard({
+        key: className,
+        canvas,
+        orientation
+    });
+};
+
+/**
+ * Export accumulated student card PDFs.
+ *
+ * @returns {{className: string, pdfBytes: Uint8Array}[]}
+ */
+window.exportStudentCardPdfs = () => pdfManager.export();
+
+/**
+ * Export accumulated student card PDFs without blocking the UI for one long task.
+ *
+ * @returns {Promise<{className: string, pdfBytes: Uint8Array}[]>}
+ */
+window.exportStudentCardPdfsAsync = () => pdfManager.exportAsync();
+
+/**
+ * Preload card templates, logo, and fonts.
+ *
+ * @param {("horizontal"|"vertical")[]} [orientations]
+ * @returns {Promise<void>}
+ */
+window.preloadStudentCardAssets = async (orientations = ["horizontal", "vertical"]) => {
+    await templateLoader.preload(orientations);
+};
+
+/**
+ * Clear caches, rendered canvases, and PDF state.
+ *
+ * @returns {void}
+ */
+window.clearStudentCardMemory = () => {
+    templateCache.clear();
+    templateRequestCache.clear();
+    canvasCache.clear();
+    renderedCanvasRegistry.clear();
+    whiteCanvas = null;
+    whiteCanvasContext = null;
+    templateLoader.clear();
+    pdfManager.clear();
+};
+
+window.renderTemplateCanvas = renderTemplateCanvas;
+window.getStudentCardSize = getCardSize;
+window.getStudentCardPdfGrid = getPdfGrid;
+
+/**
+ * Render + download a single student card as a PDF (horizontal or vertical).
+ *
+ * @param {Object} options
+ * @param {Object} options.murid
+ * @param {"horizontal"|"vertical"} [options.orientation]
+ * @param {string} [options.filename]
+ * @returns {Promise<void>}
+ */
+window.downloadStudentCardPdf = downloadSingleCardPdf;
+
+/**
+ * Render a batch of student cards into one PDF per class without freezing the UI.
+ * See generateStudentCardsBatch above for details.
+ *
+ * @returns {Promise<{className: string, pdfBytes: Uint8Array}[]>}
+ */
+window.generateStudentCardsBatch = generateStudentCardsBatch;
+
+/**
+ * Render a batch of student cards and download one PDF per class immediately.
+ *
+ * @returns {Promise<{className: string, pdfBytes: Uint8Array}[]>}
+ */
+window.downloadStudentCardsBatch = downloadStudentCardsBatch;
+
+const scheduleStudentCardPreload = () => {
+    const preload = () => {
+        window.preloadStudentCardAssets?.(["horizontal", "vertical"]);
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(preload, { timeout: 1500 });
+        return;
+    }
+
+    window.setTimeout(preload, 0);
+};
+
+scheduleStudentCardPreload();
+
+window.addEventListener("generateStudentCardSinglePdf", async (event) => {
+    const detail = event?.detail ?? {};
+
+    if (!detail.murid) return;
+
+    try {
+        await downloadSingleCardPdf({
+            murid: detail.murid,
+            orientation: detail.orientation,
+            filename: detail.filename
+        });
+    } finally {
+        window.clearStudentCardMemory?.();
+    }
+});
+
+window.addEventListener("generateStudentCardPdf", async (event) => {
+    const detail = event?.detail ?? {};
+
+    if (!detail.murid) return;
+
+    try {
+        await downloadGeneratedStudentCardPdf({
+            murid: detail.murid,
+            orientation: detail.orientation,
+            filename: detail.filename
+        });
+    } finally {
+        window.clearStudentCardMemory?.();
+    }
+});
+
+window.addEventListener("generateStudentCardsBatchPdf", async (event) => {
+    const detail = event?.detail ?? {};
+
+    if (!Array.isArray(detail.students) || detail.students.length === 0) return;
+
+    try {
+        await downloadStudentCardsBatch({
+            students: detail.students,
+            orientation: detail.orientation,
+            onProgress: detail.onProgress
+        });
+    } finally {
+        window.clearStudentCardMemory?.();
+    }
 });

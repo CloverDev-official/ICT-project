@@ -4,6 +4,7 @@
 
     x-on:open-download-modal.window="
         openModalDownload = true;
+        $wire.loadMurid($event.detail.id);
     "
 
     @close-download-modal.window="openModalDownload = false"
@@ -29,13 +30,14 @@
         <!-- Content -->
         <div class="px-6">
             <p class="text-gray-600 mb-5">
-                Pilih format kartu yang ingin diunduh.
+                Pilih format kartu yang ingin diunduh untuk {{ $murid?->nama ?? 'murid ini' }}.
             </p>
 
             <div class="grid grid-cols-2 gap-4">
 
                 <!-- Vertical -->
                 <button
+                    type="button"
                     wire:click="downloadVertical"
                     class="group border-2 border-gray-200 rounded-xl p-5 hover:border-blue-500 hover:bg-blue-50 transition"
                 >
@@ -61,6 +63,7 @@
 
                 <!-- Horizontal -->
                 <button
+                    type="button"
                     wire:click="downloadHorizontal"
                     class="group border-2 border-gray-200 rounded-xl p-5 hover:border-green-500 hover:bg-green-50 transition"
                 >

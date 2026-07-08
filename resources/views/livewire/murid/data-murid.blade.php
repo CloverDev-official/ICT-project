@@ -671,7 +671,7 @@
 
                                 <!-- qr -->
                                 <button
-                                    @click="$dispatch('open-download-modal')"
+                                    @click="$dispatch('open-download-modal', { id: {{ $murid->id }} })"
                                     class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
                                     <iconify-icon
@@ -682,9 +682,6 @@
 
                                 </button>       
                                 
-                                <!-- modal pilih download qr -->
-                                <livewire:components.modal.murid.modal-pilih-qr/>
-
                                 <!-- delete -->
                                 <div>
                                     <button
@@ -726,6 +723,9 @@
         
     </div>
     
+    <!-- modal pilih download qr -->
+    <livewire:components.modal.murid.modal-pilih-qr />
+
     <livewire:components.modal.murid.modal-hapus-murid/>
 </div>
 
