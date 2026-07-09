@@ -3,10 +3,9 @@
 namespace App\Livewire\Pengawas;
 
 use App\Helpers\ToastMagic;
-use App\Models\Guru\Guru;
+use App\Helpers\ValidateMagic;
+use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel\Rombel;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class CetakIzin extends Component
@@ -18,10 +17,18 @@ class CetakIzin extends Component
     public $dariJam;
     public $sampaiJam;
 
+    public $izinMuridId;
+
     public $muridDitemukan = false;
     
     public function updatedNipd()
     {
+        if (!$this->nipd) {
+            $this->name = '';
+            $this->muridDitemukan = false;
+            return;
+        }
+
         $murid = Murid::where('nipd', $this->nipd)->first();
         if ($murid) {
             $this->name = $murid->nama;
@@ -40,25 +47,48 @@ class CetakIzin extends Component
 
     public function cetakIzin()
     {
-        if (!$this->muridDitemukan) {
+        $validated = ValidateMagic::run([
+            'nipd' => ['required', 'exists:murid,nipd'],
+            'alasan' => ['required', 'string'],
+            'dariJam' => ['required', 'date_format:H:i'],
+            'sampaiJam' => ['nullable', 'date_format:H:i'],
+        ], [
+            'nipd.required' => 'NIPD wajib diisi.',
+            'nipd.exists' => 'Murid tidak ditemukan. Silakan masukkan NIPD yang valid.',
+            'alasan.required' => 'Alasan izin wajib diisi.',
+            'dariJam.required' => 'Jam mulai wajib diisi.',
+        ]);
+
+        if(!$validated) {
+            return;
+        }
+
+        $murid = Murid::where('nipd', $this->nipd)->first();
+
+        if (!$murid) {
             ToastMagic::error('Murid tidak ditemukan. Silakan masukkan NIPD yang valid.');
             return;
         }
 
-        if (!$this->nipd || !$this->alasan) {
-            ToastMagic::error('Murid dan alasan harus diisi.');
-            return;
-        }
+        $izinMurid = IzinMurid::create([
+            'murid_id' => $murid->id,
+            'alasan' => $this->alasan,
+            'tanggal' => now()->toDateString(),
+            'dari_jam' => $this->dariJam,
+            'sampai_jam' => $this->sampaiJam ?? null,
+        ]);
 
-        dd($this->nipd, $this->name,  $this->alasan, $this->dariJam, $this->sampaiJam);
+        $this->izinMuridId = $izinMurid->id;
 
-        // Logika untuk mencetak izin (misalnya, membuat PDF atau mengirim ke printer)
-        // ...
+        ToastMagic::success('Data izin berhasil disimpan untuk murid: ' . $murid->nama . '.');
 
-        // $this->dispatchBrowserEvent('show-toast', [
-        //     'type' => 'success',
-        //     'message' => 'Izin berhasil dicetak untuk murid: ' . $murid->nama,
-        // ]);
+        $this->reset(['name', 'nipd', 'alasan', 'dariJam', 'sampaiJam']);
+
+        $url = route('surat-izin', [
+            'id' => $this->izinMuridId,
+        ]);
+
+        return $this->redirect($url, navigate: true);
     }
 
 

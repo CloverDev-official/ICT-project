@@ -86,6 +86,14 @@ class Murid extends Model
         return $this->hasMany(AbsenMurid::class)->withTrashed();
     }
 
+    /**
+     * Relasi ke data izin murid.
+     */
+    public function izinMurid()
+    {
+        return $this->hasMany(IzinMurid::class)->withTrashed();
+    }
+
     public function getRouteKeyName()
     {
         return 'uuid';

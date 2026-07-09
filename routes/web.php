@@ -23,6 +23,7 @@ use App\Livewire\Manajemen\User\Index as IndexUser;
 use App\Livewire\Manajemen\User\Create as CreateUser;
 use App\Livewire\Manajemen\User\Edit as EditUser;
 
+use App\Livewire\Pengawas\SuratIzin;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use App\Livewire\Auth\Login;
@@ -59,7 +60,8 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
 
-Route::middleware('auth')->prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('auth')->group(function () {
+
     Route::get('/card-template/{orientation}', function (string $orientation) {
         if (!in_array($orientation, ['horizontal', 'vertical'], true)) {
             abort(404);
@@ -74,9 +76,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
         ]);
     })->name('card-template');
-});
-
-Route::prefix('admin')->middleware('auth')->group(function () {
 
     // dashboard
     Route::get('/dashboard', Dashboard::class)->middleware('access:dashboard')->name('dashboard');
@@ -95,6 +94,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin')->name('laporan-izin');
         Route::get('/edit-izin/{id}', EditIzin::class)->middleware('access:edit-izin')->name('edit-izin');
         Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin')->name('cetak-izin');
+        Route::get('/surat-izin/{id}', SuratIzin::class)->middleware('access:surat-izin')->name('surat-izin');
     });
     
     Route::prefix('/rekap')->group(function () {

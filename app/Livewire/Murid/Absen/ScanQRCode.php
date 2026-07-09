@@ -3,6 +3,7 @@
 namespace App\Livewire\Murid\Absen;
 
 use App\Models\Murid\AbsenMurid;
+use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
 use App\Services\Absensi\AutoAlpaMuridService;
 use App\Services\Absensi\JadwalAbsensiService;
@@ -17,6 +18,8 @@ class ScanQRCode extends Component
     public bool $tersimpan = false;
     public ?string $scanStatus = null;
     public ?string $scanMessage = null;
+    public ?string $izinUuid = null;
+    public bool $isContainsIzin = false;
     public array $jadwalHariIni = [];
 
     #[On('verifiedQRCode')]
@@ -31,12 +34,43 @@ class ScanQRCode extends Component
             }
         }
 
+        if (str_contains($muridUuid, '>')) {
+            $this->isContainsIzin = true;
+            [$muridUuid, $izinUuid] = explode('>', $muridUuid, 2);
+            $this->izinUuid = $izinUuid;
+        }
+
         $murid = Murid::query()
             ->aktif()
             ->with('rombel')
             ->where('uuid', $muridUuid)
             ->first();
 
+        $izin = IzinMurid::query()
+            ->where('murid_id', $murid->id)
+            ->firstOr(function () {
+                return null;
+            });
+
+        if($izin && $this->isContainsIzin && $izin?->uuid === $this->izinUuid && $izin?->status === 'Izin') {
+            $izin->update([
+                'status' => 'Selesai',
+            ]);
+
+            $this->acceptMessage('Izin berhasil diproses.');
+            return;
+        }
+
+        if ($izin && $izin?->status === 'Izin') {
+            $this->rejectScan('Murid sedang dalam izin, absensi tidak dapat disimpan. Silakan scan QR izin terlebih dahulu.');
+            return;
+        }
+
+        if($izin && $izin?->status === 'Selesai') {
+            $this->rejectScan('Murid sudah selesai izin, absensi tidak dapat disimpan. Silakan scan QR absensi.');
+            return;
+        }
+        
         if (!$murid) {
             $this->rejectScan('QR murid tidak ditemukan di database.');
             return;
@@ -47,6 +81,7 @@ class ScanQRCode extends Component
             $this->rejectScan('Murid belum memiliki kelas/rombel, absensi tidak dapat disimpan.');
             return;
         }
+
 
         $jadwalService = app(JadwalAbsensiService::class);
         $now = now();
@@ -232,6 +267,15 @@ class ScanQRCode extends Component
         $this->tersimpan = true;
 
         $this->dispatch('scanSuccess');
+    }
+
+    private function acceptMessage(string $message): void
+    {
+        $this->scanStatus = 'message';
+        $this->scanMessage = $message;
+        $this->tersimpan = false;
+
+        $this->dispatch('scanMessage');
     }
 
     private function rejectScan(string $message): void

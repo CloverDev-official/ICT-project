@@ -131,7 +131,7 @@
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            Nis
+                            Nipd
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -156,67 +156,42 @@
 
                 <tbody>
 
-                    @forelse ([
-                    [
-                    'id' => 1,
-                    'nama' => 'Deden Agus Rahman',
-                    'nis' => '23010001',
-                    'keperluan' => 'adalah pokoknya',
-                    'tanggal' => '17 - 01 - 2026',
-                    'waktu' => '09.00 - 12.00'
-                    ],
-                    [
-                    'id' => 2,
-                    'nama' => 'Muhammad Rizky',
-                    'nis' => '23010002',
-                    'keperluan' => 'adalah pokoknya',
-                    'tanggal' => '17 - 01 - 2026',
-                    'waktu' => '09.00 - 12.00'
-                    ],
-                    [
-                    'id' => 3,
-                    'nama' => 'Siti Aisyah',
-                    'nis' => '23010003',
-                    'keperluan' => 'adalah pokoknya bemainan',
-                    'tanggal' => '17 - 01 - 2026',
-                    'waktu' => '09.00 - 12.00'
-                    ],
-                    ] as $murid)
+                    @forelse ($dataIzin as $izin)
 
                     <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
                         <!-- nomor -->
                         <td class="px-5 py-5 text-center font-medium text-gray-700">
-                            {{ $loop->iteration }}
+                            {{ $dataIzin->firstItem() + $loop->index }}
                         </td>
 
                         <!-- nama -->
                         <td class="px-5 py-5">
 
                             <h2 class="font-semibold text-center text-gray-800 capitalize">
-                                {{ $murid['nama'] }}
+                                {{ $izin->murid->nama ?? '-' }}
                             </h2>
 
                         </td>
 
-                        <!-- nis -->
+                        <!-- nipd -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $murid['nis'] }}
+                            {{ $izin->murid->nipd ?? '-' }}
                         </td>
 
                         <!-- keperluan -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $murid['keperluan'] }}
+                            {{ $izin->alasan }}
                         </td>
 
                         <!--tanggal -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $murid['tanggal'] }}
+                            {{ optional($izin->tanggal)->format('d - m - Y') ?? '-' }}
                         </td>
 
                         <!-- waktu -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $murid['waktu'] }}
+                            {{ $izin->dari_jam }}{{ $izin->sampai_jam ? ' - ' . $izin->sampai_jam : '' }}
                         </td>
 
                         <!-- aksi button -->
@@ -224,7 +199,7 @@
                             <div class="flex items-center justify-center gap-2">
                                 <!-- edit -->
                                 <a
-                                    href="{{ route('edit-izin') }}"
+                                    href="{{ route('edit-izin', $izin->id) }}"
                                     wire:navigate>
 
                                     <button
@@ -241,7 +216,9 @@
                                 </a>
 
                                 <!-- cetak ulang izin -->
-                                <button class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
+                                <a href="{{ route('surat-izin', $izin->id) }}" wire:navigate>
+                                    <button 
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
                                     <iconify-icon
                                         icon="solar:printer-bold"
@@ -249,14 +226,16 @@
                                         height="20">
                                     </iconify-icon>
 
-                                </button>
+                                    </button>
+                                </a>
 
                                 <!-- delete -->
                                 <div
                                     x-data="{ openModalDelete: false }"
                                 >
                                     <button
-                                        @click="openModalDelete = true"
+                                        type="button"
+                                        @click="$dispatch('open-delete-izin', { id: {{ $izin->id }} })"
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
                                         <iconify-icon
@@ -267,9 +246,6 @@
 
                                         
                                     </button>
-                                    
-                                    <!-- modal -->
-                                    <livewire:components.modal.pengawas.laporan.modal-hapus-izin/>
                                 </div>
                             </div>
                         </td>
@@ -281,7 +257,7 @@
                     <tr>
 
                         <td
-                            colspan="4"
+                            colspan="7"
                             class="px-6 py-14 text-center">
 
                             <div
@@ -301,14 +277,14 @@
                                 <h2
                                     class="text-lg font-bold text-gray-700">
 
-                                    Data murid kosong
+                                    Data izin kosong
 
                                 </h2>
 
                                 <p
                                     class="mt-1 text-sm text-gray-500">
 
-                                    Belum ada data murid yang tersedia.
+                                    Belum ada data izin yang tersedia.
 
                                 </p>
 
@@ -329,9 +305,10 @@
         <!-- pagination -->
         <div
             class="border-t border-gray-200 bg-gray-50 px-6 py-4">
-
-            
+            {{ $dataIzin->links() }}
         </div>
+
+        <livewire:components.modal.pengawas.laporan.modal-hapus-izin />
 
     </div>
 </div>
