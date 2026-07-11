@@ -10,7 +10,7 @@
     @close-download-modal.window="openModalDownload = false"
     x-transition
     style="display: none;"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-5"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-5 m-0"
 >
     <div
         @click.outside="openModalDownload = false"
