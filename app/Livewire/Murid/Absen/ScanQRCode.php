@@ -127,11 +127,19 @@ class ScanQRCode extends Component
                 return;
             }
 
+            // AbsenMurid::create([
+            //     'murid_id' => $murid->id,
+            //     'tanggal' => $today,
+            //     'waktu_masuk' => $currentTime,
+            //     'status' => $this->statusMasuk($currentTime, $jadwal['jam_masuk']),
+            //     'keterangan' => $this->keteranganAbsensi($jadwal),
+            // ]);
+
             AbsenMurid::create([
                 'murid_id' => $murid->id,
                 'tanggal' => $today,
                 'waktu_masuk' => $currentTime,
-                'status' => $this->statusMasuk($currentTime, $jadwal['jam_masuk']),
+                'status' => 'Masuk',
                 'keterangan' => $this->keteranganAbsensi($jadwal),
             ]);
 
@@ -151,7 +159,7 @@ class ScanQRCode extends Component
 
             $absen->update([
                 'waktu_masuk' => $currentTime,
-                'status' => 'Hadir',
+                'status' => 'Masuk',
                 'keterangan' => $this->keteranganAbsensi($jadwal),
             ]);
 
@@ -171,6 +179,7 @@ class ScanQRCode extends Component
 
             $absen->update([
                 'waktu_keluar' => $currentTime,
+                'status' => 'Hadir',
             ]);
 
             $this->acceptScan('Absensi pulang berhasil disimpan.');
