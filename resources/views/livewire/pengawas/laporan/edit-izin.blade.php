@@ -63,17 +63,17 @@
         <form wire:submit.prevent="update" class="space-y-6 p-6">
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
+                <div class="md:col-span-2">
                     <label class="{{ $labelClass }}">Nama Lengkap</label>
                     <input type="text" disabled wire:model="nama" class="{{ $inputClass }} capitalize" />
                 </div>
 
-                <div>
+                <div class="md:col-span-2">
                     <label class="{{ $labelClass }}">NIPD</label>
                     <input type="text" disabled wire:model="nipd" class="{{ $inputClass }}" />
                 </div>
 
-                <div>
+                <div class="md:col-span-2">
                     <label class="{{ $labelClass }}">Tanggal</label>
                     <input type="date" wire:model.defer="tanggal" class="{{ $inputClass }}" />
                     @error('tanggal')
@@ -81,7 +81,7 @@
                     @enderror
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4 md:col-span-2">
                     <div>
                         <label class="{{ $labelClass }}">Dari jam</label>
                         <input type="time" wire:model.defer="dariJam" class="{{ $inputClass }}" />

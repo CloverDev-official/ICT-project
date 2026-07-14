@@ -99,19 +99,6 @@
                     @enderror
                 </div>
     
-                <!-- tanggal -->
-                <div>
-                    <label
-                        class="mb-2 block text-sm font-semibold text-gray-700">
-                        Tanggal <br>
-                        -- Langusng ambil kapan di bikin aja
-                    </label>
-    
-                    <!-- <input
-                        type="date"
-                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" /> -->
-                </div>
-    
                 <!-- form waktu container -->
                 <div class="grid grid-cols-2 gap-4">
                     <!-- dari waktu -->
