@@ -120,6 +120,8 @@
                 <textarea
                     wire:model.defer="alasan"
                     rows="5"
+                    required
+                    maxlength="35"
                     placeholder="Contoh: Mengikuti acara keluarga, pemeriksaan kesehatan, atau keperluan lainnya..."
                     class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-5 py-4 text-sm transition focus:border-blue-main focus:bg-white focus:ring-4 focus:ring-blue-100 focus:outline-none @error('alasan') border-rose-500 @enderror"></textarea>
 
