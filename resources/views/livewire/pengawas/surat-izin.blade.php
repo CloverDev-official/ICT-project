@@ -33,7 +33,10 @@
     #printArea {
         position: static;
 
-        width: 72mm;
+        width: 58mm;
+        max-width: 100%;
+
+        height: 80mm;
         max-width: 100%;
 
         margin: 0 auto;
@@ -91,9 +94,9 @@
 
     <div
         id="printArea"
-        class="mx-auto w-full max-w-sm rounded bg-white p-3 shadow">
+        class="mx-auto w-full max-w-[58mm] rounded bg-white p-3 shadow">
 
-        <div class="flex items-start gap-3">
+        <div class="flex flex-col justify-center items-center gap-3">
 
             <!-- QR -->
             <div class="flex shrink-0 items-center justify-center">
@@ -104,53 +107,31 @@
             </div>
 
             <!-- Informasi -->
-            <div class="min-w-0 flex-1 overflow-hidden">
+            <div class="min-w-0 w-[100px] max-w-[100px] flex-1 overflow-hidden">
+                
+                <div class="border border-dotted w-full mb-4"></div>
 
-                <h1 class="mb-2 text-center text-sm font-bold uppercase leading-none">
+                <h1 class="mb-2 text-center text-[10px] font-bold uppercase leading-none">
                     Surat Izin Keluar
                 </h1>
 
-                <table class="w-full table-fixed text-[11px] leading-tight">
-                    <tbody>
-
-                        <tr>
-                            <td class="w-[55px] whitespace-nowrap font-semibold align-top">
-                                Nama
-                            </td>
-                            <td class="w-3 text-center align-top">
-                                :
-                            </td>
-                            <td class="whitespace-normal break-all align-top">
-                                {{ $izin->murid->nama }}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="w-[55px] whitespace-nowrap pt-1 font-semibold align-top">
-                                NIPD
-                            </td>
-                            <td class="pt-1 text-center align-top">
-                                :
-                            </td>
-                            <td class="pt-1 whitespace-normal break-all align-top">
-                                {{ $izin->murid->nipd }}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="w-[55px] whitespace-nowrap pt-1 font-semibold align-top">
-                                Keperluan
-                            </td>
-                            <td class="pt-1 text-center align-top">
-                                :
-                            </td>
-                            <td class="pt-1 whitespace-normal break-all align-top">
-                                {{ $izin->alasan }}
-                            </td>
-                        </tr>
-
-                    </tbody>
-                </table>
+                <div class="flex flex-col space-y-2" >
+                    <!-- nama -->
+                    <div class="flex flex-col text-[8px]">
+                        <p class="text-start whitespace-nowrap font-semibold" >Nama :</p>
+                        <p class="text-start" >{{ $izin->murid->nama }}</p>
+                    </div>
+                    <!-- nipd -->
+                    <div class="flex flex-col text-[8px]">
+                        <p class="text-start whitespace-nowrap font-semibold" >NIPD :</p>
+                        <p class="text-start">{{ $izin->murid->nipd }}</p>
+                    </div>
+                    <!-- keperluan -->
+                    <div class="flex flex-col text-[8px]">
+                        <p class="text-start whitespace-nowrap font-semibold" >Keperluan :</p>
+                        <p class="text-start">{{ $izin->alasan }}</p>
+                    </div>
+                </div>
 
             </div>
 
