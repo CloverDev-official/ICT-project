@@ -352,7 +352,7 @@
                 $wire.set('murid', null);
                 window.scanned = false;
                 window.initScanner();
-            }, 5500);
+            }, 2000);
         });
 
         document.addEventListener('scanNotFound', () => {
@@ -368,7 +368,7 @@
                 $wire.set('murid', null);
                 window.scanned = false;
                 window.initScanner();
-            }, 5500);
+            }, 2000);
         });
 
         document.addEventListener('scanMessage', () => {
@@ -380,7 +380,7 @@
                 $wire.set('murid', null);
                 window.scanned = false;
                 window.initScanner();
-            }, 5500);
+            }, 2000);
         });
     });
 </script>
