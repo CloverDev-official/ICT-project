@@ -202,15 +202,23 @@
                         x-data="{
                             open: false,
                             selectedId: null,
-                            selectedLabel: null,
+                            query: '',
+                            kelas: @js($rombel->map(fn ($r) => ['id' => (string) $r->id, 'label' => $r->nama_lengkap])->values()),
 
-                            toggle() {
-                                this.open = !this.open
+                            get filteredKelas() {
+                                const keyword = this.query.trim().toLowerCase()
+
+                                return this.kelas.filter((item) => item.label.toLowerCase().includes(keyword))
+                            },
+
+                            search() {
+                                this.selectedId = null
+                                $wire.set('rombel_id', null)
                             },
 
                             select(id, label) {
-                                this.selectedId = id
-                                this.selectedLabel = label
+                                this.selectedId = String(id)
+                                this.query = label
                                 this.open = false
 
                                 $wire.set('rombel_id', id)
@@ -222,38 +230,24 @@
                             Kelas
                         </label>
 
-                        <div
-                            @click="toggle()"
-                            class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
-
-                            <div class="flex items-center gap-3">
-
-                                <div
-                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
-
-                                    <iconify-icon
-                                        icon="solar:buildings-2-bold"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
-
-                                </div>
-
-                                <span
-                                    x-text="selectedLabel ?? 'Pilih kelas'"
-                                    class="line-clamp-1 text-gray-700">
-                                </span>
-
-                            </div>
-
+                        <div class="relative">
                             <iconify-icon
-                                icon="lineicons:chevron-up"
+                                icon="solar:buildings-2-bold"
                                 width="20"
                                 height="20"
-                                class="text-gray-400 transition-transform"
-                                :class="{ 'rotate-180': open }">
+                                class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-blue-main">
                             </iconify-icon>
 
+                            <input
+                                type="search"
+                                x-ref="search"
+                                x-model="query"
+                                @focus="open = true"
+                                @input="open = true; search()"
+                                @keydown.escape="open = false"
+                                placeholder="Cari kelas..."
+                                autocomplete="off"
+                                class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100" />
                         </div>
 
                         <div
@@ -263,22 +257,28 @@
                             style="display:none"
                             class="absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
 
-                            @foreach ($rombel as $r)
-                            <div
-                                @click="select({{ $r->id }}, @js($r->nama_lengkap))"
-                                class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
+                            <template x-for="item in filteredKelas" :key="item.id">
+                            <button
+                                type="button"
+                                @mousedown.prevent="select(item.id, item.label)"
+                                class="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left transition hover:bg-blue-main hover:text-white"
+                                :class="selectedId === item.id ? 'bg-blue-main text-white' : ''">
 
-                                <span>{{ $r->nama_lengkap }}</span>
+                                <span x-text="item.label"></span>
 
                                 <iconify-icon
-                                    x-show="selectedId == {{ $r->id }}"
+                                    x-show="selectedId === item.id"
                                     icon="lineicons:check"
                                     width="18"
                                     height="18">
                                 </iconify-icon>
 
-                            </div>
-                            @endforeach
+                            </button>
+                            </template>
+
+                            <p x-show="filteredKelas.length === 0" class="px-4 py-3 text-sm text-gray-500">
+                                Kelas tidak ditemukan.
+                            </p>
 
                         </div>
 
