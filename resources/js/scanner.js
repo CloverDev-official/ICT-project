@@ -184,9 +184,10 @@ window.initScanner = async () => {
             }
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: {
-                        exact: "user"
-                    },
+                    // "user" memilih kamera depan pada perangkat mobile.
+                    // ideal tetap memberi fallback pada perangkat yang hanya
+                    // menyediakan satu kamera.
+                    facingMode: { ideal: "user" },
                     width     : { ideal: SCAN_WIDTH },
                     height    : { ideal: SCAN_HEIGHT }
                 },
