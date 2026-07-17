@@ -11,6 +11,7 @@ return new class extends Migration
         'super-admin' => [
             'dashboard',
             'pilih-absen',
+            'scan-qrcode',
             'laporan',
             'laporan-izin',
             'rekap-absen',
@@ -54,6 +55,7 @@ return new class extends Migration
             'pilih-absen',
             'generate-qr',
             'manajemen-waktu',
+            'scan-qrcode',
             'profil',
         ],
     ];

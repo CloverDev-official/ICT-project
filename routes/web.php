@@ -58,7 +58,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login-page');
 });
 
-Route::get('/scan-qrcode', ScanQRCode::class)->name('scan-qrcode');
 
 Route::prefix('admin')->middleware('auth')->group(function () {
 
@@ -66,17 +65,20 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         if (!in_array($orientation, ['horizontal', 'vertical'], true)) {
             abort(404);
         }
-
+        
         $fileName = $orientation === 'vertical'
-            ? 'card/kartu-pelajar-vertical.html'
-            : 'card/kartu-pelajar-horizontal.html';
+        ? 'card/kartu-pelajar-vertical.html'
+        : 'card/kartu-pelajar-horizontal.html';
 
         return response(Storage::disk('local')->get($fileName), 200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
-        ]);
-    })->name('card-template');
+            ]);
+            })->name('card-template');
 
+    //  scan qr code
+    Route::get('/scan-qrcode', ScanQRCode::class)->middleware('access:scan-qrcode')->name('scan-qrcode');
+    
     // dashboard
     Route::get('/dashboard', Dashboard::class)->middleware('access:dashboard')->name('dashboard');
 
