@@ -184,7 +184,9 @@ window.initScanner = async () => {
             }
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: "user",
+                    facingMode: {
+                        exact: "user"
+                    },
                     width     : { ideal: SCAN_WIDTH },
                     height    : { ideal: SCAN_HEIGHT }
                 },
