@@ -46,6 +46,11 @@ class ScanQRCode extends Component
             ->where('uuid', $muridUuid)
             ->first();
 
+        if (!$murid) {
+            $this->rejectScan('QR Code tidak valid atau murid tidak ditemukan.');
+            return;
+        }
+
         $izin = IzinMurid::query()
             ->where('murid_id', $murid->id)
             ->firstOr(function () {
