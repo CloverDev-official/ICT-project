@@ -52,30 +52,15 @@ class DataMuridFromImageListSeeder extends Seeder
 
     private function createMuridIfNotExists(int $rombelId, string $name, string $imagePath): void
     {
-        $murid = Murid::where('rombel_id', $rombelId)
-            ->where('nama', $name)
-            ->first();
-
-        if ($murid) {
-            $murid->update([
-                'image_path' => $imagePath,
-            ]);
-
+        if ($rombelId === 0) {
             return;
         }
 
-        Murid::create([
-            'uuid' => Str::uuid(),
-            'rombel_id' => $rombelId,
-            'nama' => $name,
-            'nipd' => $this->generateUniqueNipd(),
-            'nisn' => $this->generateUniqueNisn(),
-            'jk' => rand(0, 1) === 0 ? 'L' : 'P',
-            'tempat_lahir' => '-',
-            'tanggal_lahir' => now()->subYears(rand(10, 15))->format('Y-m-d'),
-            'agama' => '-',
-            'image_path' => $imagePath,
-        ]);
+        Murid::where('rombel_id', $rombelId)
+            ->where('nama', $name)
+            ->update([
+                'image_path' => $imagePath,
+            ]);
     }
 
     private function createRombelIfNotExists(array $parts): int
@@ -84,36 +69,31 @@ class DataMuridFromImageListSeeder extends Seeder
             return 0;
         }
 
-        $tingkatId = $this->getOrCreateTingkatId($parts[0]);
-        $jurusanId = $this->getOrCreateJurusanId($parts[1]);
-        $indeksId = isset($parts[2])
-            ? $this->getOrCreateIndeksId($parts[2])
-            : null;
+        $tingkat = Tingkat::where('nama', $parts[0])->first();
+        $jurusan = Jurusan::where('nama', $parts[1])->first();
 
-        if (!$tingkatId || !$jurusanId) {
+        if (!$tingkat || !$jurusan) {
             return 0;
         }
 
-        $search = [
-            'tingkat_id' => $tingkatId,
-            'jurusan_id' => $jurusanId,
-        ];
+        $query = Rombel::where('tingkat_id', $tingkat->id)
+            ->where('jurusan_id', $jurusan->id);
 
-        if ($indeksId !== null) {
-            $search['indeks_id'] = $indeksId;
+        if (isset($parts[2])) {
+            $indeks = Indeks::where('nama', $parts[2])->first();
+
+            if (!$indeks) {
+                return 0;
+            }
+
+            $query->where('indeks_id', $indeks->id);
         } else {
-            // Penting agar mencari indeks_id IS NULL
-            $search['indeks_id'] = null;
+            $query->whereNull('indeks_id');
         }
 
-        $rombel = Rombel::firstOrCreate(
-            $search,
-            [
-                'tahun_masuk' => 2025,
-            ]
-        );
+        $rombel = $query->first();
 
-        return $rombel->id;
+        return $rombel?->id ?? 0;
     }
 
     private function getKelasFromImagePath(string $imagePath): string
