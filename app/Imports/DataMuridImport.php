@@ -404,35 +404,76 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     }
     private function resolveRombelId(array $row): ?int
     {
-        $tingkat = $this->getValueExact($row, ['tingkat', 'kelas_tingkat', 'tingkat_kelas']);
-        $jurusan = $this->getValueExact($row, ['jurusan', 'program_keahlian', 'kompetensi_keahlian']);
-        $indeks = $this->getValueExact($row, ['indeks', 'kelas_indeks', 'rombel_indeks']);
+        $tingkat = $this->getValueExact($row, [
+            'tingkat',
+            'kelas_tingkat',
+            'tingkat_kelas',
+        ]);
 
-        if (!$tingkat || !$jurusan || !$indeks) {
-            $kelasRaw = $this->getValueExact($row, ['Rombel Saat Ini','kelas', 'rombel', 'kelas_rombel', 'rombongan_belajar']);
+        $jurusan = $this->getValueExact($row, [
+            'jurusan',
+            'program_keahlian',
+            'kompetensi_keahlian',
+        ]);
+
+        $indeks = $this->getValueExact($row, [
+            'indeks',
+            'kelas_indeks',
+            'rombel_indeks',
+        ]);
+
+        // Jika tingkat atau jurusan belum ada, coba parse dari nama kelas
+        if (!$tingkat || !$jurusan) {
+            $kelasRaw = $this->getValueExact($row, [
+                'Rombel Saat Ini',
+                'kelas',
+                'rombel',
+                'kelas_rombel',
+                'rombongan_belajar',
+            ]);
+
             if ($kelasRaw) {
                 [$parsedTingkat, $parsedJurusan, $parsedIndeks] = $this->parseKelasString($kelasRaw);
+
                 $tingkat = $tingkat ?: $parsedTingkat;
                 $jurusan = $jurusan ?: $parsedJurusan;
-                $indeks = $indeks ?: $parsedIndeks;
+
+                // Indeks hanya diisi jika berhasil diparse
+                if (!$indeks) {
+                    $indeks = $parsedIndeks;
+                }
             }
         }
 
         $tingkatId = $this->getOrCreateTingkatId($tingkat);
         $jurusanId = $this->getOrCreateJurusanId($jurusan);
-        $indeksId = $this->getOrCreateIndeksId($indeks);
+        $indeksId = $indeks ? $this->getOrCreateIndeksId($indeks) : null;
+
         $tahunMasuk = $this->resolveTahunMasukForTingkat($tingkat);
 
-        if (!$tingkatId || !$jurusanId || !$indeksId) {
+        // Tingkat dan jurusan wajib ada
+        if (!$tingkatId || !$jurusanId) {
             return null;
         }
 
-        $key = $tingkatId . '|' . $jurusanId . '|' . $indeksId;
+        $key = implode('|', [
+            $tingkatId,
+            $jurusanId,
+            $indeksId ?? 'null',
+        ]);
+
         if (isset($this->rombelCache[$key])) {
-            if ($tahunMasuk && Rombel::query()->whereKey($this->rombelCache[$key])->value('tahun_masuk') !== $tahunMasuk) {
-                Rombel::query()->whereKey($this->rombelCache[$key])->update([
-                    'tahun_masuk' => $tahunMasuk,
-                ]);
+            if (
+                $tahunMasuk &&
+                Rombel::query()
+                    ->whereKey($this->rombelCache[$key])
+                    ->value('tahun_masuk') !== $tahunMasuk
+            ) {
+                Rombel::query()
+                    ->whereKey($this->rombelCache[$key])
+                    ->update([
+                        'tahun_masuk' => $tahunMasuk,
+                    ]);
             }
 
             return $this->rombelCache[$key];
@@ -442,14 +483,15 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             [
                 'tingkat_id' => $tingkatId,
                 'jurusan_id' => $jurusanId,
-                'indeks_id' => $indeksId,
+                'indeks_id' => $indeksId, // Bisa null
             ],
             [
                 'tahun_masuk' => $tahunMasuk,
-            ],
+            ]
         );
 
         $this->rombelCache[$key] = $rombel->id;
+
         return $rombel->id;
     }
 
@@ -473,26 +515,29 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
 
     private function parseKelasString(string $kelas): array
     {
-        $kelas = trim($kelas);
-        $kelas = str_replace(['/', '-', '_', '.'], ' ', $kelas);
-        $parts = array_values(array_filter(explode(' ', $kelas), fn ($p) => $p !== ''));
+        $kelas = trim(preg_replace('/\s+/', ' ', $kelas));
+
+        $parts = explode(' ', $kelas);
 
         $tingkat = $parts[0] ?? null;
         $indeks = null;
-        $jurusan = null;
 
-        if (count($parts) >= 2) {
-            $last = $parts[count($parts) - 1];
-            if (preg_match('/^[A-Za-z0-9]+$/', $last)) {
-                $indeks = $last;
-                $jurusanParts = array_slice($parts, 1, -1);
-            } else {
-                $jurusanParts = array_slice($parts, 1);
-            }
-            $jurusan = $jurusanParts ? implode(' ', $jurusanParts) : null;
+        // Ambil bagian terakhir sebagai indeks jika hanya 1 huruf
+        if (count($parts) >= 3 && preg_match('/^[A-Z]$/i', end($parts))) {
+            $indeks = array_pop($parts);
         }
 
-        return [$tingkat, $jurusan, $indeks];
+        // Hapus tingkat
+        array_shift($parts);
+
+        // Sisanya adalah jurusan
+        $jurusan = implode(' ', $parts);
+
+        return [
+            $tingkat ?: null,
+            $jurusan ?: null,
+            $indeks,
+        ];
     }
 
     private function getOrCreateTingkatId(?string $nama): ?int

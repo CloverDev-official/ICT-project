@@ -53,8 +53,9 @@ class TahunAjaran extends Component
     private function getNextTingkat(?string $nama): ?string
     {
         return match (strtoupper(trim((string) $nama))) {
-            'X' => 'XI',
-            'XI' => 'XII',
+            'X'   => 'XI',
+            'XI'  => 'XII',
+            'XII' => 'XIII',
             default => null,
         };
     }
@@ -135,7 +136,9 @@ class TahunAjaran extends Component
                 $activeStudentCount = $rombel->murid->count();
 
                 if (!$nextTingkat) {
-                    $graduatePayload = ['rombel_id' => null];
+                    $graduatePayload = [
+                        'rombel_id' => null,
+                    ];
 
                     if ($this->hasMuridStatusColumn()) {
                         $graduatePayload['status'] = 'lulus';
@@ -150,48 +153,72 @@ class TahunAjaran extends Component
                     continue;
                 }
 
-                $nextTingkatModel = $this->getTingkatModel($nextTingkat);
-
-                if (!$nextTingkatModel) {
-                    continue;
-                }
+                $nextTingkatModel = Tingkat::firstOrCreate(
+                    [
+                        'nama' => $nextTingkat,
+                    ]
+                );
 
                 $targetRombel = Rombel::firstOrCreate(
                     [
                         'tingkat_id' => $nextTingkatModel->id,
-                        'jurusan_id' => $rombel->jurusan->id,
-                        'indeks_id' => $rombel->indeks->id,
+                        'jurusan_id' => $rombel->jurusan_id,
+                        'indeks_id'  => $rombel->indeks_id, // Bisa null
                     ],
                     [
-                        'tahun_masuk' => $this->getTargetTahunMasukForTingkat($nextTingkat, $nextStart),
+                        'tahun_masuk' => $this->getTargetTahunMasukForTingkat(
+                            $nextTingkat,
+                            $nextStart
+                        ),
                     ],
                 );
 
-                if (!$targetRombel->tahun_masuk || (int) $targetRombel->tahun_masuk !== $this->getTargetTahunMasukForTingkat($nextTingkat, $nextStart)) {
+                $targetTahunMasuk = $this->getTargetTahunMasukForTingkat(
+                    $nextTingkat,
+                    $nextStart
+                );
+
+                if (
+                    !$targetRombel->tahun_masuk ||
+                    (int) $targetRombel->tahun_masuk !== $targetTahunMasuk
+                ) {
                     $targetRombel->update([
-                        'tahun_masuk' => $this->getTargetTahunMasukForTingkat($nextTingkat, $nextStart),
+                        'tahun_masuk' => $targetTahunMasuk,
                     ]);
                 }
 
                 Murid::query()
                     ->aktif()
                     ->where('rombel_id', $rombel->id)
-                    ->update(['rombel_id' => $targetRombel->id]);
+                    ->update([
+                        'rombel_id' => $targetRombel->id,
+                    ]);
 
                 $promotedCount += $activeStudentCount;
             }
 
             Setting::updateOrCreate(
-                ['key' => 'tahun_ajaran_terakhir_diproses'],
-                ['value' => now()->format('Y-m-d H:i:s')],
+                [
+                    'key' => 'tahun_ajaran_terakhir_diproses',
+                ],
+                [
+                    'value' => now()->format('Y-m-d H:i:s'),
+                ],
             );
 
             Setting::updateOrCreate(
-                ['key' => 'tahun_ajaran_aktif'],
-                ['value' => $this->formatAcademicYear($nextStart)],
+                [
+                    'key' => 'tahun_ajaran_aktif',
+                ],
+                [
+                    'value' => $this->formatAcademicYear($nextStart),
+                ],
             );
 
-            return [$promotedCount, $graduatedCount];
+            return [
+                $promotedCount,
+                $graduatedCount,
+            ];
         });
 
         ToastMagic::success(
