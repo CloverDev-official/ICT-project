@@ -25,7 +25,7 @@
 
         @livewireStyles
     </head>
-    <body class="cursor-auto bg-blue-50 overflow-hidden" x-data="{openside: false}" x-init="$watch('open', value => sidebarOpen = value)" >
+    <body class="cursor-auto bg-blue-50 overflow-hidden" x-data="{ openside: false }">
         <main class="h-screen flex justify-start" >
             <livewire:components.sidebar/>
             <div class="flex-1 flex flex-col min-h-0 overflow-y-auto" >
