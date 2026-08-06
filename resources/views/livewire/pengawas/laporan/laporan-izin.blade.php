@@ -532,7 +532,7 @@
         <!-- pagination -->
         <div
             class="border-t border-gray-200 bg-gray-50 px-6 py-4">
-            {{ $dataIzin->links() }}
+            {{ $dataIzin->links('livewire.components.pagination') }}
         </div>
 
         <livewire:components.modal.pengawas.laporan.modal-hapus-izin />
