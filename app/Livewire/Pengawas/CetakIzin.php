@@ -6,38 +6,71 @@ use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
 use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Indeks;
+use App\Models\Murid\Rombel\Jurusan;
+use App\Models\Murid\Rombel\Tingkat;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 
 class CetakIzin extends Component
 {
-    public $name;
-    public $nipd;
-    public $alasan;
+    public ?int $tingkatId = null;
 
-    public $dariJam;
-    public $sampaiJam;
+    public ?int $jurusanId = null;
 
-    public $izinMuridId;
+    public ?int $indeksId = null;
 
-    public $muridDitemukan = false;
-    
-    public function updatedNipd()
+    public string $muridSearch = '';
+
+    public ?int $muridId = null;
+
+    public ?string $alasan = null;
+
+    public ?string $dariJam = null;
+
+    public ?string $sampaiJam = null;
+
+    public ?int $izinMuridId = null;
+
+    public function updatedMuridSearch(): void
     {
-        if (!$this->nipd) {
-            $this->name = '';
-            $this->muridDitemukan = false;
+        $this->muridId = null;
+    }
+
+    public function updatedJurusanId(): void
+    {
+        $this->resetMuridSelection();
+    }
+
+    public function updatedTingkatId(): void
+    {
+        $this->resetMuridSelection();
+    }
+
+    public function updatedIndeksId(): void
+    {
+        $this->resetMuridSelection();
+    }
+
+    private function resetMuridSelection(): void
+    {
+        $this->muridId = null;
+        $this->muridSearch = '';
+        $this->resetErrorBag('muridId');
+    }
+
+    public function selectMurid(int $muridId): void
+    {
+        $murid = $this->muridQuery()->find($muridId);
+
+        if (! $murid) {
+            $this->addError('muridId', 'Murid yang dipilih tidak ditemukan.');
+
             return;
         }
 
-        $murid = Murid::where('nipd', $this->nipd)->first();
-        if ($murid) {
-            $this->name = $murid->nama;
-            $this->muridDitemukan = true;
-        } else {
-            $this->name = '';
-            $this->muridDitemukan = false;
-            ToastMagic::warning('Tidak ada murid dengan NIPD ' . $this->nipd . '.');
-        }
+        $this->muridId = $murid->id;
+        $this->muridSearch = $murid->nama;
     }
 
     public function resetJam()
@@ -48,25 +81,26 @@ class CetakIzin extends Component
     public function cetakIzin()
     {
         $validated = ValidateMagic::run([
-            'nipd' => ['required', 'exists:murid,nipd'],
+            'muridId' => ['required', 'exists:murid,id'],
             'alasan' => ['required', 'string'],
             'dariJam' => ['required', 'date_format:H:i'],
             'sampaiJam' => ['nullable', 'date_format:H:i'],
         ], [
-            'nipd.required' => 'NIPD wajib diisi.',
-            'nipd.exists' => 'Murid tidak ditemukan. Silakan masukkan NIPD yang valid.',
+            'muridId.required' => 'Pilih murid dari daftar pencarian.',
+            'muridId.exists' => 'Murid yang dipilih tidak valid.',
             'alasan.required' => 'Alasan izin wajib diisi.',
             'dariJam.required' => 'Jam mulai wajib diisi.',
         ]);
 
-        if(!$validated) {
+        if (! $validated) {
             return;
         }
 
-        $murid = Murid::where('nipd', $this->nipd)->first();
+        $murid = $this->muridQuery()->find($this->muridId);
 
-        if (!$murid) {
-            ToastMagic::error('Murid tidak ditemukan. Silakan masukkan NIPD yang valid.');
+        if (! $murid) {
+            $this->addError('muridId', 'Murid yang dipilih tidak ditemukan.');
+
             return;
         }
 
@@ -80,9 +114,9 @@ class CetakIzin extends Component
 
         $this->izinMuridId = $izinMurid->id;
 
-        ToastMagic::success('Data izin berhasil disimpan untuk murid: ' . $murid->nama . '.');
+        ToastMagic::success('Data izin berhasil disimpan untuk murid: '.$murid->nama.'.');
 
-        $this->reset(['name', 'nipd', 'alasan', 'dariJam', 'sampaiJam']);
+        $this->reset(['tingkatId', 'jurusanId', 'indeksId', 'muridSearch', 'muridId', 'alasan', 'dariJam', 'sampaiJam']);
 
         $url = route('surat-izin', [
             'id' => $this->izinMuridId,
@@ -91,9 +125,50 @@ class CetakIzin extends Component
         return $this->redirect($url, navigate: true);
     }
 
-
     public function render()
     {
-        return view('livewire.pengawas.cetak-izin');
+        return view('livewire.pengawas.cetak-izin', [
+            'tingkatList' => Tingkat::query()->orderBy('nama')->get(['id', 'nama']),
+            'jurusanList' => Jurusan::query()->orderBy('nama')->get(['id', 'nama']),
+            'indeksList' => Indeks::query()->orderBy('nama')->get(['id', 'nama']),
+            'muridSuggestions' => $this->muridSuggestions(),
+        ]);
+    }
+
+    private function muridSuggestions()
+    {
+        $search = trim($this->muridSearch);
+
+        if ($search === '' || $this->muridId !== null) {
+            return collect();
+        }
+
+        return $this->muridQuery()
+            ->where(function (Builder $query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nipd', 'like', "%{$search}%");
+            })
+            ->orderBy('nama')
+            ->limit(10)
+            ->get();
+    }
+
+    private function muridQuery(): Builder
+    {
+        return Murid::query()
+            ->aktif()
+            ->when($this->tingkatId, fn (Builder $query) => $query->whereHas(
+                'rombel',
+                fn (Builder $query) => $query->where('tingkat_id', $this->tingkatId)
+            ))
+            ->when($this->jurusanId, fn (Builder $query) => $query->whereHas(
+                'rombel',
+                fn (Builder $query) => $query->where('jurusan_id', $this->jurusanId)
+            ))
+            ->when($this->indeksId, fn (Builder $query) => $query->whereHas(
+                'rombel',
+                fn (Builder $query) => $query->where('indeks_id', $this->indeksId)
+            ))
+            ->with(['rombel.tingkat', 'rombel.jurusan', 'rombel.indeks']);
     }
 }

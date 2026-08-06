@@ -1,24 +1,5 @@
 <div class="mb-20 space-y-6">
     
-    <!-- BACK -->
-    <div>
-        <a href="{{ route('laporan-izin') }}" wire:navigate>
-            <button
-                class="group flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-main hover:text-blue-main hover:shadow-md">
-
-                <iconify-icon
-                    icon="lineicons:chevron-left"
-                    width="20"
-                    height="20"
-                    class="transition group-hover:-translate-x-1">
-                </iconify-icon>
-
-                Kembali
-
-            </button>
-        </a>
-    </div>
-
     <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         @php
             $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
@@ -64,37 +45,100 @@
     
             <!--  Murid -->
             <div class="relative space-y-6">
-                <!-- nama -->
-                <div>
-                    <label class="{{ $labelClass }}">
-                        Nama Lengkap
-                    </label>
-    
-                    <input
-                        type="text"
-                        disabled
-                        placeholder="Nama lengkap"
-                        wire:model ="name"
-                        class="{{ $inputClass }} capitalize" />
-    
-                    @error('nama')
-                    <p class="{{ $errorClass }}">{{ $message }}</p>
-                    @enderror
+                <!-- filter rombel -->
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Kelas
+                        </label>
+
+                        <select
+                            wire:model.live="tingkatId"
+                            class="{{ $inputClass }}">
+                            <option value="">Semua kelas</option>
+                            @foreach ($tingkatList as $tingkat)
+                            <option value="{{ $tingkat->id }}">{{ $tingkat->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Jurusan
+                        </label>
+
+                        <select
+                            wire:model.live="jurusanId"
+                            class="{{ $inputClass }}">
+                            <option value="">Semua jurusan</option>
+                            @foreach ($jurusanList as $jurusan)
+                            <option value="{{ $jurusan->id }}">{{ $jurusan->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="{{ $labelClass }}">
+                            Indeks
+                        </label>
+
+                        <select
+                            wire:model.live="indeksId"
+                            class="{{ $inputClass }}">
+                            <option value="">Semua indeks</option>
+                            @foreach ($indeksList as $indeks)
+                            <option value="{{ $indeks->id }}">{{ $indeks->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
-    
-                <!-- nipd -->
+
+                <!-- cari murid -->
                 <div>
                     <label class="{{ $labelClass }}">
-                        NIPD
+                        Cari Nama atau NIPD
                     </label>
-    
-                    <input
-                        type="number"
-                        wire:model.live.debounce.500ms="nipd"
-                        placeholder="Contoh : 1234"
-                        class="{{ $inputClass }}" />
-    
-                    @error('nipd')
+
+                    <div class="relative">
+                        <iconify-icon
+                            icon="mdi:account-search-outline"
+                            width="20"
+                            height="20"
+                            class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-blue-main">
+                        </iconify-icon>
+
+                        <input
+                            type="search"
+                            wire:model.live.debounce.250ms="muridSearch"
+                            placeholder="Ketik nama murid atau NIPD..."
+                            autocomplete="on"
+                            class="{{ $inputClass }} pl-12" />
+                    </div>
+
+                    @if ($muridSearch !== '' && $muridId === null)
+                    <div class="absolute z-50 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
+                        @forelse ($muridSuggestions as $murid)
+                        <button
+                            type="button"
+                            wire:click="selectMurid({{ $murid->id }})"
+                            class="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-blue-main hover:text-white">
+
+                            <span class="min-w-0">
+                                <span class="block truncate font-semibold capitalize">{{ $murid->nama }}</span>
+                                <span class="mt-1 block truncate text-xs opacity-75">{{ $murid->rombel?->nama_lengkap ?: 'Tanpa kelas' }}</span>
+                            </span>
+
+                            <span class="shrink-0 text-xs font-semibold">NIPD: {{ $murid->nipd }}</span>
+                        </button>
+                        @empty
+                        <p class="px-4 py-3 text-sm text-gray-500">
+                            Murid atau NIPD tidak ditemukan.
+                        </p>
+                        @endforelse
+                    </div>
+                    @endif
+
+                    @error('muridId')
                     <p class="{{ $errorClass }}">{{ $message }}</p>
                     @enderror
                 </div>
