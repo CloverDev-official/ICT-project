@@ -105,7 +105,10 @@
                         </div>
 
                     </div>
-
+                    <!-- logout -->
+                    <button wire:click="logout" class="bg-rose-500 rounded-lg w-full p-2 text-white flex justify-center items-center text-sm transition-all duration-150 hover:bg-rose-600 active:scale-95" >
+                            <iconify-icon icon="lineicons:exit" width="20" height="20"></iconify-icon> Logout
+                    </button>
                 </div>
 
             </div>

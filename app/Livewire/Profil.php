@@ -12,9 +12,10 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
 
 class Profil extends Component
-{
+{   
     use WithFileUploads;
 
     public ?User $user = null;
@@ -35,7 +36,7 @@ class Profil extends Component
     {
         $this->loadUser();
     }
-
+    
     private function loadUser(): void
     {
         $this->user = auth()->user();
@@ -156,6 +157,15 @@ class Profil extends Component
     {
         $this->reset(['current_password', 'password', 'password_confirmation']);
         $this->resetErrorBag();
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return $this->redirectRoute('login', navigate: true);
     }
 
     public function render()
