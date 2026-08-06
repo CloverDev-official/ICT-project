@@ -58,7 +58,7 @@ class Guru extends Model
      */
     public function rombel()
     {
-        return $this->belongsToMany(Rombel::class, 'guru_rombel')->withTimestamps();
+        return $this->belongsToMany(Rombel::class, 'guru_rombel_id')->withTimestamps();
     }
 
     /**
@@ -66,7 +66,7 @@ class Guru extends Model
      */
     public function guruRombel()
     {
-        return $this->hasMany(GuruRombel::class);
+        return $this->hasOne(Rombel::class, 'wali_guru_id');
     }
 
     /**
