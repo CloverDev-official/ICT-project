@@ -7,11 +7,11 @@
         $siteCopyright = $siteSettings['copyright'] ?? 'SMKN 2 Banjarmasin © 2026';
     @endphp
     <aside
-        class="fixed md:static top-0 right-0 z-50 flex h-screen w-64 md:w-72 flex-col rounded-tl-4xl md:rounded-tl-none md:rounded-tr-4xl border-r border-white/10 bg-gradient-to-b from-blue-deep to-[#03152d] p-4 pb-2 shadow-[8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300"
+        class="fixed md:static top-0 right-0 z-50 flex h-screen w-64 md:w-80 flex-col p-1 rounded-tl-4xl md:rounded-tl-none md:rounded-tr-4xl border-r border-white/10 bg-gradient-to-b from-blue-deep to-[#03152d] shadow-[8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300"
         :class="openside ? 'translate-x-0' : 'translate-x-full md:translate-x-0'"
     >
         <!-- header -->
-        <div class="flex items-center justify-center gap-4 pt-4">
+        <div class="flex items-center justify-start pl-5 md:pl-10 gap-4 pt-4">
             <img src="{{ $siteLogo }}" class="w-10" alt="">
 
             <div>
@@ -28,7 +28,7 @@
         <hr class="mt-5 text-white">
 
         <!-- menu -->
-        <ul class="my-5 flex flex-1 flex-col gap-2 overflow-y-auto pr-0 md:pr-2 scroll-thin">
+        <ul class="mt-5 md:pb-20 pb-40 flex-1 overflow-y-auto pr-0 md:pr-2 scroll-thin space-y-2">
             @if($user?->canAccess('dashboard'))
             <!-- dashboard -->
             <li>
@@ -49,7 +49,7 @@
 
             <!-- laporan -->
             @if($user?->canAccess('laporan'))
-            <li x-data="{open: {{ request()->routeIs(['rekap-*', 'laporan-*', 'riwayat-absen-*']) ? 'true' : 'false' }}}">
+            <li x-data="{open: {{ request()->routeIs(['rekap-*', 'laporan-*', 'riwayat-absen-*', 'cetak-izin-*']) ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -80,22 +80,22 @@
                 style="display: none;"
                 >   
                     <!-- laporan pengawas -->
-                    @if($user?->canAccess('laporan'))
-                    <li x-data="{open: {{ request()->routeIs('laporan-*') ? 'true' : 'false' }}}">
+                    @if($user?->canAccess('laporan-pengawas'))
+                    <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}">
+                        
                         <button
                             @click="open = !open"
                             class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
                         >
                             <span class="flex items-center gap-2 capitalize">
                                 <iconify-icon
-                                    :icon="open ? 'mdi:folder-file' : 'mdi:folder-file-outline'"
+                                    :icon="open ? 'mdi:folder-eye' : 'mdi:folder-eye-outline'"
                                     width="24"
                                     height="24"
                                 ></iconify-icon>
 
                                 pengawas
                             </span>
-
                             <iconify-icon
                                 class="transition-transform"
                                 :class="{ 'rotate-180': open }"
@@ -110,15 +110,103 @@
                             x-transition
                             class="ml-4 mt-2 flex flex-col gap-2"
                             style="display: none;"
-                        >
-                            @if($user?->canAccess('laporan-izin'))
-                            <li>
-                                <x-nav-link href="{{ route('laporan-izin') }}" icon="rekapAbsenMurid">
-                                    laporan izin
-                                </x-nav-link>
+                        >   
+                            {{-- izin keluar --}}
+                            <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}" >
+                                <button
+                                    @click="open = !open"
+                                    class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
+                                >
+                                    <span class="flex items-center gap-2 capitalize">
+                                        <iconify-icon
+                                            :icon="open ? 'mdi:folder-file' : 'mdi:folder-file-outline'"
+                                            width="24"
+                                            height="24"
+                                        ></iconify-icon>
+    
+                                        izin keluar
+                                    </span>
+                                    <iconify-icon
+                                        class="transition-transform"
+                                        :class="{ 'rotate-180': open }"
+                                        icon="lineicons:chevron-up"
+                                        width="25"
+                                        height="24"
+                                    ></iconify-icon>
+                                </button>
+                                {{-- sub menu izin keluar --}}
+                                <ul
+                                    x-show="open"
+                                    x-transition
+                                    class="ml-4 mt-2 flex flex-col gap-2"
+                                    style="display: none;"
+                                >   
+                                    {{-- menu laporam izin keluar --}}
+                                    @if($user?->canAccess('laporan-izin-keluar'))
+                                        <li>
+                                            <x-nav-link href="{{ route('laporan-izin-keluar') }}" icon="rekapAbsenMurid">
+                                                laporan izin keluar
+                                            </x-nav-link>
+                                        </li>
+                                    @endif
+                                    {{-- menu cetak izin keluar --}}
+                                    @if($user?->canAccess('cetak-izin-keluar'))
+                                        <li>
+                                            <x-nav-link href="{{ route('cetak-izin-keluar') }}" icon="cetak-izin">
+                                                cetak izin keluar
+                                            </x-nav-link>
+                                        </li>
+                                    @endif
+                                </ul>
                             </li>
-                            @endif
-
+                            {{-- izin telat --}}
+                            <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}" >
+                                <button
+                                    @click="open = !open"
+                                    class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
+                                >
+                                    <span class="flex items-center gap-2 capitalize">
+                                        <iconify-icon
+                                            :icon="open ? 'mdi:folder-alert' : 'mdi:folder-alert-outline'"
+                                            width="24"
+                                            height="24"
+                                        ></iconify-icon>
+    
+                                        izin telat
+                                    </span>
+                                    <iconify-icon
+                                        class="transition-transform"
+                                        :class="{ 'rotate-180': open }"
+                                        icon="lineicons:chevron-up"
+                                        width="25"
+                                        height="24"
+                                    ></iconify-icon>
+                                </button>
+                                {{-- sub menu izin telat --}}
+                                <ul
+                                    x-show="open"
+                                    x-transition
+                                    class="ml-4 mt-2 flex flex-col gap-2"
+                                    style="display: none;"
+                                >   
+                                    {{-- menu laporam izin tekat --}}
+                                    @if($user?->canAccess('laporan-izin-telat'))
+                                        <li>
+                                            <x-nav-link href="{{ route('laporan-izin-telat') }}" icon="rekapAbsenMurid">
+                                                laporan izin telat
+                                            </x-nav-link>
+                                        </li>
+                                    @endif
+                                    {{-- menu cetak izin telat --}}
+                                    @if($user?->canAccess('cetak-izin-keluar'))
+                                        <li>
+                                            <x-nav-link href="{{ route('cetak-izin-keluar') }}" icon="cetak-izin">
+                                                cetak izin telat
+                                            </x-nav-link>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     @endif
@@ -163,13 +251,13 @@
                             </li>
                             @endif
 
-                            @if($user?->canAccess('rekap-absen-guru'))
+                            {{-- @if($user?->canAccess('rekap-absen-guru'))
                             <li>
                                 <x-nav-link href="{{ route('rekap-absen-guru') }}" icon="rekapAbsenGuru">
                                     absen guru
                                 </x-nav-link>
                             </li>
-                            @endif
+                            @endif --}}
                         </ul>
                     </li>
                     @endif
@@ -260,13 +348,13 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('absensi-guru'))
+                    {{-- @if($user?->canAccess('absensi-guru'))
                     <li>
                         <x-nav-link href="{{ route('absensi-guru') }}" icon="absenGuru">
                             absensi guru
                         </x-nav-link>
                     </li>
-                    @endif
+                    @endif --}}
                 </ul>
             </li>
             @endif
@@ -430,22 +518,37 @@
         </ul>
 
         <!-- footer -->
-        <div class="border-t border-white/10 py-4">
-            <div class="flex md:hidden items-center gap-2">
-                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-white text-blue-deep-solid shadow-sm">
-                    <iconify-icon icon="lineicons:user-4" width="20" height="20"></iconify-icon>
-                </div>
+        <div class="fixed bottom-0 bg-[#03152E] w-full max-w-75 shrink-0 border-t border-white/10 py-2">
+            <a href="{{ route('profil') }}" wire:navigate>
+                <div class="flex md:hidden items-center gap-2 p-2 px-5">
+                    <div class="cursor-pointer w-8 h-8 rounded-full bg-white shadow-sm overflow-hidden flex items-center justify-center">
+                        @if ($user?->profile_photo_path)
+                            <img
+                                src="{{ $user->profile_photo_url }}"
+                                alt="Profile"
+                                class="w-full h-full object-cover"
+                            >
+                        @else
+                            <iconify-icon
+                                icon="lineicons:user-4"
+                                width="25"
+                                height="24"
+                                class="text-blue-deep-solid"
+                            ></iconify-icon>
+                        @endif
+                    </div>
 
-                <div class="flex flex-col">
-                    <h1 class="text-sm font-semibold capitalize text-white">
-                        {{ auth()->user()->name }}
-                    </h1>
+                    <div class="flex flex-col">
+                        <h1 class="text-sm font-semibold capitalize text-white">
+                            {{ auth()->user()->name }}
+                        </h1>
 
-                    <p class="text-xs capitalize text-gray-200">
-                        {{ auth()->user()->role->name }}
-                    </p>
+                        <p class="text-xs capitalize text-gray-200">
+                            {{ auth()->user()->role->name }}
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
             <p class="mt-4 text-center text-[8px] uppercase text-white">
                 {{ $siteCopyright }}

@@ -8,6 +8,7 @@ use App\Livewire\Murid\Absen\Edit as EditAbsen;
 use App\Livewire\Murid\Absen\ScanQRCode;
 
 use App\Livewire\Pengawas\CetakIzin;
+use App\Livewire\Pengawas\Laporan\IzinTelat\LaporanIzinTelat;
 use App\Livewire\Pengawas\Laporan\LaporanIzin;
 use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
 
@@ -24,6 +25,7 @@ use App\Livewire\Manajemen\User\Create as CreateUser;
 use App\Livewire\Manajemen\User\Edit as EditUser;
 
 use App\Livewire\Pengawas\SuratIzin;
+use App\Livewire\Pengawas\SuratIzinTelat;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use App\Livewire\Auth\Login;
@@ -59,7 +61,7 @@ Route::middleware('guest')->group(function () {
 });
 
 
-Route::prefix('admin')->middleware('auth')->group(function () {
+Route::prefix('mpanel')->middleware('auth')->group(function () {
 
     Route::get('/card-template/{orientation}', function (string $orientation) {
         if (!in_array($orientation, ['horizontal', 'vertical'], true)) {
@@ -90,18 +92,26 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // profil
     Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
-    
+        
     // laporan
-    Route::prefix('/laporan-pengawas')->group(function () {
-        Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin')->name('laporan-izin');
-        Route::get('/edit-izin/{id}', EditIzin::class)->middleware('access:edit-izin')->name('edit-izin');
-        Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin')->name('cetak-izin');
-        Route::get('/surat-izin/{id}', SuratIzin::class)->middleware('access:surat-izin')->name('surat-izin');
+    Route::prefix('/laporan-pengawas')->middleware('access:laporan-pengawas')->group(function () {
+        // izin keluar
+        Route::prefix('/izin-keluar')->middleware('access:izin-keluar')->group(function () {
+            Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin-keluar')->name('laporan-izin-keluar');
+            Route::get('/edit-izin/{id}', EditIzin::class)->middleware('access:edit-izin-keluar')->name('edit-izin-keluar');
+            Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin-keluar')->name('cetak-izin-keluar');
+            Route::get('/surat-izin/{id}', SuratIzin::class)->middleware('access:surat-izin-keluar')->name('surat-izin-keluar');
+        });
+        // izin telat
+        Route::prefix('/izin-telat')->middleware('access:izin-telat')->group(function (){
+            Route::get('/izin', LaporanIzinTelat::class)->middleware('access:laporan-izin-telat')->name('laporan-izin-telat');
+        });
+
     });
     
     Route::prefix('/rekap')->group(function () {
         Route::get('/absen-murid', IndexRekapMurid::class)->middleware('access:rekap-absen-murid')->name('rekap-absen-murid');
-        Route::get('/absen-guru', RekapAbsenGuru::class)->middleware('access:rekap-absen-guru')->name('rekap-absen-guru');
+        // Route::get('/absen-guru', RekapAbsenGuru::class)->middleware('access:rekap-absen-guru')->name('rekap-absen-guru');
     });
 
     Route::prefix('/riwayat')->group(function () {
@@ -119,7 +129,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
             Route::get('/', IndexAbsen::class)->name('absensi-murid');
             Route::get('/edit/{absenId}', EditAbsen::class)->name('edit-absen-murid');
         });
-        Route::get('/guru', AbsensiGuru::class)->middleware('access:absensi-guru')->name('absensi-guru');
+        // Route::get('/guru', AbsensiGuru::class)->middleware('access:absensi-guru')->name('absensi-guru');
     });
     
     // data  murid

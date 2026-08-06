@@ -16,6 +16,14 @@
             'active' => 'mdi:qrcode-scan',
             'inactive' => 'mdi:qrcode'
         ],
+        'pengawas' => [
+            'active' => 'mdi:account-supervisor',
+            'inactive' => 'mdi:account-supervisor-outline'
+        ],
+        'cetak-izin' => [
+            'active' => 'mdi:printer',
+            'inactive' => 'mdi:printer-outline'
+        ],
         'rekapAbsenMurid' => [
             'active' => 'mdi:account-file-text',
             'inactive' => 'mdi:account-file-text-outline'
@@ -97,7 +105,7 @@
         {{ $attributes->merge([
             'class' => 'transition-all duration-150 px-4 py-2 rounded-xl capitalize font-semibold flex items-center gap-2 ' . 
                         ($active 
-                            ? 'bg-blue-deep-solid text-white' 
+                            ? 'bg-blue-deep-solid text-white mx-2' 
                             : 'hover:bg-blue-deep-solid text-gray-200')
         ]) }}
         
