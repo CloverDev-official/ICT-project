@@ -373,52 +373,52 @@
 
                 <tbody>
 
-                    @forelse ($dataIzin as $izin)
+                    @forelse ($listMuridTerlambat as $terlambat)
 
                     <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
                         <!-- nomor -->
                         <td class="px-5 py-5 text-center font-medium text-gray-700">
-                            {{ $dataIzin->firstItem() + $loop->index }}
+                            {{ $listMuridTerlambat->firstItem() + $loop->index }}
                         </td>
 
                         <!-- nama -->
                         <td class="px-5 py-5">
 
                             <h2 class="font-semibold text-center text-gray-800 capitalize">
-                                {{ $izin->murid->nama ?? '-' }}
+                                {{ $terlambat->murid->nama ?? '-' }}
                             </h2>
 
                         </td>
 
                         <!-- kelas -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
+                            {{ $terlambat->murid->rombel->nama_lengkap ?? 'N/A' }}
                         </td>
 
                         <!-- nipd -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->murid->nipd ?? '-' }}
+                            {{ $terlambat->murid->nipd ?? '-' }}
                         </td>
 
                         <!-- keperluan -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->alasan }}
+                            {{ $terlambat->alasan }}
                         </td>
 
                         <!--tanggal -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ optional($izin->tanggal)->format('d - m - Y') ?? '-' }}
+                            {{ optional($terlambat->tanggal)->format('d - m - Y') ?? '-' }}
                         </td>
 
                         <!-- waktu -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->dari_jam }}{{ $izin->sampai_jam ? ' - ' . $izin->sampai_jam : '' }}
+                            {{ $terlambat->dari_jam }}{{ $terlambat->sampai_jam ? ' - ' . $terlambat->sampai_jam : '' }}
                         </td>
 
                         <!-- status -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->status ?? '-' }}
+                            {{ $terlambat->status ?? '-' }}
                         </td>
 
                         <!-- aksi button -->
@@ -426,7 +426,7 @@
                             <div class="flex items-center justify-center gap-2">
                                 
                                 <!-- cetak ulang izin -->
-                                <a href="{{ route('surat-izin', $izin->id) }}" wire:navigate>
+                                <a href="{{ route('surat-izin-keluar', $terlambat->id) }}" wire:navigate>
                                     <button 
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
@@ -445,7 +445,7 @@
                                 >
                                     <button
                                         type="button"
-                                        @click="$dispatch('open-delete-izin', { id: {{ $izin->id }} })"
+                                        @click="$dispatch('open-delete-izin', { id: {{ $terlambat->id }} })"
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
                                         <iconify-icon
@@ -514,7 +514,7 @@
         <!-- pagination -->
         <div
             class="border-t border-gray-200 bg-gray-50 px-6 py-4">
-            {{ $dataIzin->links() }}
+            {{ $listMuridTerlambat->links('livewire.components.pagination') }}
         </div>
 
         <livewire:components.modal.pengawas.laporan.modal-hapus-izin-telat />

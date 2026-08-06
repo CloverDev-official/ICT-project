@@ -3,7 +3,7 @@
     x-show="openModalDelete"
     x-on:open-delete-izin.window="
         openModalDelete = true;
-        $wire.loadIzin($event.detail.id);
+        $wire.loadMuridTerlambat($event.detail.id);
     "
     @close-delete-modal.window="openModalDelete = false"
     x-transition
@@ -22,7 +22,7 @@
         <hr class="p-0 mb-4 text-gray-400" >
 
         <p class="text-gray-600 mb-6 px-6">
-            Apakah kamu yakin ingin menghapus data izin telat murid ini? "{{ $izin?->murid?->nama ?? '-' }}",
+            Apakah kamu yakin ingin menghapus data izin telat murid ini? "{{ $listMuridTerlambat?->murid?->nama ?? '-' }}",
             Data yang dihapus tidak dapat dikembalikan.
         </p>
 
