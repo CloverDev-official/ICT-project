@@ -43,7 +43,7 @@
 
         <!-- ABSEN MURID -->
         <a href="{{ route('scan-qrcode') }}"
-            class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl">
+            class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl col-span-2">
 
             <!-- ornament -->
             <div
@@ -108,7 +108,7 @@
         </a>
 
         <!-- ABSEN GURU -->
-        <a href="{{ route('scan-qrcode') }}"
+        {{-- <a href="{{ route('scan-qrcode') }}"
             class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 p-6 text-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl">
 
             <!-- ornament -->
@@ -153,25 +153,10 @@
                         </iconify-icon>
 
                     </div>
-
-                    <!-- jadwal -->
-                    {{-- <div
-                        class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur">
-
-                        <iconify-icon
-                            icon="solar:clock-circle-bold"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                        06.30 - 08.30
-
-                    </div> --}}
-
                 </div>
 
             </div>
-        </a>
+        </a> --}}
 
     </div>
 
