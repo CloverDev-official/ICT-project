@@ -2,12 +2,19 @@
 
 namespace App\Livewire\Components;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Header extends Component
-{
+{   
+    public ?User $user = null;
+
+    public function mount()
+    {
+        $this->user = Auth::user();
+    }
     public function logout()
     {
         Auth::logout();
