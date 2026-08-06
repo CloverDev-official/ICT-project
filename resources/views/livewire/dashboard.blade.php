@@ -77,7 +77,7 @@
     <div class="grid grid-cols-1 gap-6 {{ $isWaliKelas ? '' : 'xl:grid-cols-2' }}">
 
         <!-- MURID -->
-        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm col-span-2">
 
             <div
                 class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
@@ -177,7 +177,7 @@
 
         </div>
 
-        @unless($isWaliKelas)
+        {{-- @unless($isWaliKelas)
         <!-- GURU -->
         <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
@@ -198,7 +198,7 @@
             </div>
 
         </div>
-        @endunless
+        @endunless --}}
 
     </div>
 
@@ -207,7 +207,7 @@
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
         <!-- MURID -->
-        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm col-span-2">
 
             <div
                 class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
@@ -251,7 +251,7 @@
         </div>
 
         <!-- GURU -->
-        <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        {{-- <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
             <div
                 class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
@@ -292,7 +292,7 @@
                 </a>
             </div>
 
-        </div>
+        </div> --}}
 
     </div>
     @endunless
