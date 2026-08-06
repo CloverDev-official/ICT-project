@@ -444,7 +444,7 @@
                         </div>
 
                         <div class="max-h-[520px] space-y-3 overflow-y-auto pr-1">
-                            <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                            <div class="grid grid-cols-1 gap-3">
 	                                <template x-for="rombel in visibleSelectedRombel()" :key="rombel.id">
                                     <div class="rounded-2xl border border-gray-200 p-3">
                                     <div class="mb-3 flex items-center justify-between gap-3">
