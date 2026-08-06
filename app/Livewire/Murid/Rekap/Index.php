@@ -27,7 +27,7 @@ class Index extends Component
     public $filteredJurusan;
     public $filteredIndeks;
 
-    public array $statusOptions = ['sakit', 'izin', 'alpa'];
+    public array $statusOptions = ['sakit', 'izin', 'alpa', 'selesai'];
 
     public ?string $search = null;
     public ?int $filterTingkat = null;
@@ -265,7 +265,7 @@ class Index extends Component
 
         $rows = (clone $baseQuery)
             ->selectRaw('LOWER(status) as status_key, COUNT(*) as total')
-            ->whereIn(DB::raw('LOWER(status)'), ['hadir', 'sakit', 'izin', 'alpa'])
+            ->whereIn(DB::raw('LOWER(status)'), ['hadir', 'sakit', 'izin', 'alpa', 'selesai'])
             ->groupBy(DB::raw('LOWER(status)'))
             ->pluck('total', 'status_key');
 
@@ -273,6 +273,7 @@ class Index extends Component
         $sakit = (int) ($rows['sakit'] ?? 0);
         $izin = (int) ($rows['izin'] ?? 0);
         $alpa = (int) ($rows['alpa'] ?? 0);
+        $selesai = (int) ($rows['selesai'] ?? 0);
 
         $persentase = $totalMurid > 0 ? (int) round(($hadir / $totalMurid) * 100) : 0;
 
@@ -282,6 +283,7 @@ class Index extends Component
             'sakit' => $sakit,
             'izin' => $izin,
             'alpa' => $alpa,
+            'selesai' => $selesai,
             'persentase' => $persentase,
         ];
     }
