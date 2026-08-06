@@ -76,7 +76,7 @@ class Create extends Component
                 "hp" => "nullable",
                 "email" => "nullable|email|unique:guru,email",
 
-                "rombel_id" => "required|exists:rombel,id",
+                // "rombel_id" => "required|exists:rombel,id",
             ],
             [
                 "nama.required" => "Nama wajib diisi.",
@@ -92,7 +92,7 @@ class Create extends Component
                 "nip.unique" => "NIP sudah digunakan.",
                 "email.unique" => "Email sudah digunakan.",
 
-                "rombel_id.exists" => "Rombel yang dipilih tidak valid.",
+                // "rombel_id.exists" => "Rombel yang dipilih tidak valid.",
             ],
         );
 
@@ -126,10 +126,10 @@ class Create extends Component
             "email" => $this->email,
         ]);
 
-        GuruRombel::create([
-            "guru_id" => $guru->id,
-            "rombel_id" => $this->rombel_id,
-        ]);
+        // GuruRombel::create([
+        //     "guru_id" => $guru->id,
+        //     "rombel_id" => $this->rombel_id,
+        // ]);
 
         ToastMagic::success("Menambahkan Guru", "Berhasil menambahkan guru $this->nama.");
 
@@ -152,7 +152,7 @@ class Create extends Component
             "telepon",
             "hp",
             "email",
-            "rombel_id",
+            // "rombel_id",
         ]);
     }
 

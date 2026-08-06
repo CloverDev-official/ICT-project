@@ -76,7 +76,7 @@ class Edit extends Component
             "hp" => $this->guru->hp,
             "email" => $this->guru->email,
 
-            "rombel_id" => $this->guru->rombel()->first()?->id,
+            // "rombel_id" => $this->guru->guruRombel()->first()?->id,
         ]);
     }
 
@@ -111,7 +111,7 @@ class Edit extends Component
                 "email" =>
                     "nullable|email|unique:guru,email," . $this->guru->id,
 
-                "rombel_id" => "nullable|exists:rombel,id",
+                // "rombel_id" => "nullable|exists:rombel,id",
             ],
             [
                 "nama.required" => "Nama wajib diisi.",
@@ -127,7 +127,7 @@ class Edit extends Component
                 "nip.unique" => "NIP sudah digunakan.",
                 "email.unique" => "Email sudah digunakan.",
 
-                "rombel_id.exists" => "Rombel yang dipilih tidak valid.",
+                // "rombel_id.exists" => "Rombel yang dipilih tidak valid.",
             ],
         );
 
@@ -161,12 +161,11 @@ class Edit extends Component
             "email" => $this->email,
         ]);
 
-        if ($this->rombel_id) {
-            GuruRombel::updateOrCreate(
-                ['guru_id' => $this->guru->id],
-                ['rombel_id' => $this->rombel_id],
-            );
-        }
+        // if ($this->rombel_id) {
+        //     Rombel::updateOrCreate(
+        //         ['wali_guru_id' => $this->guru->id],
+        //     );
+        // }
 
         ToastMagic::success("Mengubah Guru", "Data guru $this->nama berhasil diperbarui.");
     }

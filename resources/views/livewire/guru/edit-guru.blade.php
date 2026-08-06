@@ -191,7 +191,7 @@
                         placeholder="Contoh : 70116">
                 </div>
     
-                <!-- rombel -->
+                {{-- <!-- rombel -->
                 <div class="md:col-span-2">
                     <label class="text-sm text-gray-600 capitalize">Kelas</label>
                     <select wire:model.defer="rombel_id"
@@ -201,7 +201,7 @@
                             <option value="{{ $r->id }}">{{ $r->nama_lengkap }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
     
                 <!-- btn batal & save -->
                 <div class="md:col-span-2 flex justify-end gap-3 pt-4 mt-2">
