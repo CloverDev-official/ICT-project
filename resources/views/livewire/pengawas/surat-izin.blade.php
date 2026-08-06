@@ -3,7 +3,7 @@
 @media print {
 
     @page {
-        size: auto;
+        size: 58mm auto;
         margin: 0;
     }
 
@@ -11,7 +11,7 @@
     body {
         margin: 0;
         padding: 0;
-        width: 100%;
+        width: 58mm;
         background: #fff;
     }
 
@@ -34,13 +34,10 @@
         position: static;
 
         width: 58mm;
-        max-width: 100%;
-
-        height: 80mm;
-        max-width: 100%;
-
-        margin: 0 auto;
-        padding: 4mm;
+        min-height: auto;
+        margin: 0;
+        padding: 3mm;
+        box-sizing: border-box;
 
         box-sizing: border-box;
 
@@ -79,6 +76,7 @@
     button {
         display: none !important;
     }
+
 }
 </style>
 @endassets
@@ -120,6 +118,11 @@
                     <div class="flex flex-col text-[8px]">
                         <p class="text-start whitespace-nowrap font-semibold" >Nama :</p>
                         <p class="text-start" >{{ $izin->murid->nama }}</p>
+                    </div>
+                    <!-- kelas -->
+                    <div class="flex flex-col text-[8px]">
+                        <p class="text-start whitespace-nowrap font-semibold" >Kelas :</p>
+                        <p class="text-start">{{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}</p>
                     </div>
                     <!-- nipd -->
                     <div class="flex flex-col text-[8px]">
