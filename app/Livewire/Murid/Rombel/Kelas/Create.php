@@ -42,7 +42,7 @@ class Create extends Component
             [
                 'tingkat_id' => ['required', 'exists:tingkat,id'],
                 'jurusan_id' => ['required', 'exists:jurusan,id'],
-                'indeks_id' => ['required'],
+                'indeks_id' => ['nullable', 'exists:indeks,id'],
                 'tahun_masuk' => ['required', 'integer', 'min:1900'],
                 'guru_id' => ['nullable', 'exists:guru,id'],
             ],
@@ -51,7 +51,7 @@ class Create extends Component
                 'tingkat_id.exists' => 'Tingkat yang dipilih tidak valid.',
                 'jurusan_id.required' => 'Jurusan wajib dipilih.',
                 'jurusan_id.exists' => 'Jurusan yang dipilih tidak valid.',
-                'indeks_id.required' => 'Kelas wajib dipilih.',
+                'indeks_id.exists' => 'Indeks yang dipilih tidak valid.',
                 'tahun_masuk.required' => 'Tahun masuk wajib dipilih.',
                 'tahun_masuk.integer' => 'Tahun masuk tidak valid.',
                 'guru_id.exists' => 'Wali kelas yang dipilih tidak valid.',
@@ -66,9 +66,11 @@ class Create extends Component
             return;
         }
 
-        $indeks = Indeks::resolveSelection($this->indeks_id);
+        $indeks = $this->indeks_id
+            ? Indeks::resolveSelection($this->indeks_id)
+            : null;
 
-        if (!$indeks) {
+        if ($this->indeks_id && !$indeks) {
             ToastMagic::error('Kelas yang dipilih tidak valid.');
             return;
         }
@@ -76,7 +78,8 @@ class Create extends Component
         $exists = Rombel::query()
             ->where('tingkat_id', $this->tingkat_id)
             ->where('jurusan_id', $this->jurusan_id)
-            ->where('indeks_id', $indeks->id)
+            ->where('indeks_id', $indeks?->id)
+            ->whereKeyNot($this->rombel->id)
             ->exists();
 
         if ($exists) {
@@ -88,7 +91,7 @@ class Create extends Component
             'tahun_masuk' => $this->tahun_masuk,
             'tingkat_id' => $this->tingkat_id,
             'jurusan_id' => $this->jurusan_id,
-            'indeks_id' => $indeks->id,
+            'indeks_id' => $indeks?->id,
             'wali_guru_id' => $this->guru_id,
         ]);
 

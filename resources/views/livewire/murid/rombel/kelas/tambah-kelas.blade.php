@@ -319,7 +319,7 @@
                 class="relative">
 
                 <label class="{{ $labelClass }}">
-                    Kelas
+                    Indeks kelas (Opsional)
                 </label>
 
                 <div
@@ -340,7 +340,7 @@
                         </div>
 
                         <span
-                            x-text="selectedLabel ?? 'Pilih kelas'"
+                            x-text="selectedLabel ?? 'Pilih indeks kelas'"
                             class="text-gray-700">
                         </span>
 

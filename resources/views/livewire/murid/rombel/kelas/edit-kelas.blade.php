@@ -332,7 +332,7 @@
                 class="relative">
 
                 <label class="{{ $labelClass }}">
-                    Kelas
+                    Indeks kelas (Opsional)
                 </label>
 
                 <div

@@ -43,7 +43,7 @@ class Edit extends Component
         $this->fill([
             'tingkat_id' => $this->rombel->tingkat_id,
             'jurusan_id' => $this->rombel->jurusan_id,
-            'indeks_id' => $this->rombel->indeks_id,
+            'indeks_id' => $this->rombel->indeks_id ?? null,
             'tahun_masuk' => $this->rombel->tahun_masuk,
             'guru_id' => $this->rombel->wali_guru_id,
         ]);
@@ -55,7 +55,7 @@ class Edit extends Component
             [
                 'tingkat_id' => ['required', 'exists:tingkat,id'],
                 'jurusan_id' => ['required', 'exists:jurusan,id'],
-                'indeks_id' => ['required'],
+                'indeks_id' => ['nullable', 'exists:indeks,id'],
                 'tahun_masuk' => ['required', 'integer', 'min:1900'],
                 'guru_id' => ['nullable', 'exists:guru,id'],
             ],
@@ -63,8 +63,8 @@ class Edit extends Component
                 'tingkat_id.required' => 'Tingkat wajib dipilih.',
                 'tingkat_id.exists' => 'Tingkat yang dipilih tidak valid.',
                 'jurusan_id.required' => 'Jurusan wajib dipilih.',
+                'indeks_id.exists' => 'Indeks yang dipilih tidak valid.',
                 'jurusan_id.exists' => 'Jurusan yang dipilih tidak valid.',
-                'indeks_id.required' => 'Kelas wajib dipilih.',
                 'tahun_masuk.required' => 'Tahun masuk wajib dipilih.',
                 'tahun_masuk.integer' => 'Tahun masuk tidak valid.',
                 'guru_id.exists' => 'Wali kelas yang dipilih tidak valid.',
@@ -79,19 +79,21 @@ class Edit extends Component
             return;
         }
 
-        $indeks = Indeks::resolveSelection($this->indeks_id);
+        $indeks = $this->indeks_id
+            ? Indeks::resolveSelection($this->indeks_id)
+            : null;
 
-        if (!$indeks) {
+        if ($this->indeks_id && !$indeks) {
             ToastMagic::error('Kelas yang dipilih tidak valid.');
             return;
         }
 
-        $exists = Rombel::query()
-            ->where('tingkat_id', $this->tingkat_id)
-            ->where('jurusan_id', $this->jurusan_id)
-            ->where('indeks_id', $indeks->id)
-            ->whereKeyNot($this->rombel->id)
-            ->exists();
+    $exists = Rombel::query()
+        ->where('tingkat_id', $this->tingkat_id)
+        ->where('jurusan_id', $this->jurusan_id)
+        ->where('indeks_id', $indeks?->id)
+        ->whereKeyNot($this->rombel->id)
+        ->exists();
 
         if ($exists) {
             ToastMagic::error('Kelas tersebut sudah terdaftar.');
@@ -102,7 +104,7 @@ class Edit extends Component
             'tahun_masuk' => $this->tahun_masuk,
             'tingkat_id' => $this->tingkat_id,
             'jurusan_id' => $this->jurusan_id,
-            'indeks_id' => $indeks->id,
+            'indeks_id' => $indeks?->id,
             'wali_guru_id' => $this->guru_id,
         ]);
 
