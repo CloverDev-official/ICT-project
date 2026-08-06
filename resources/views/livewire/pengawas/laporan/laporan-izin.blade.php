@@ -36,27 +36,264 @@
                     </p>
 
                 </div>
+            </div>        
+        </div>
+    </div>
+
+        <!-- FILTER -->
+    <div
+        class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+
+        <!-- top -->
+        <div
+            class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+            <div>
+
+                <h2 class="text-lg font-bold text-gray-800">
+                    Filter Data
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Filter berdasarkan tingkat, jurusan, dan kelas.
+                </p>
 
             </div>
 
-            <!-- cetak izin -->
-            <a href="{{ route('cetak-izin') }}" wire:navigate>
+            <!-- search -->
+            <div class="relative w-full lg:w-80">
 
-                <button
-                    class="w-full group flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-main shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+                <input
+                    type="search"
+                    name="search"
+                    wire:model.live.debounce.500ms="search"
+                    placeholder="Cari nama murid..."
+                    class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-4 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+
+                <div
+                    class="absolute inset-y-0 right-4 flex items-center text-gray-400">
 
                     <iconify-icon
-                        icon="line-md:plus"
+                        icon="mdi:account-search-outline"
                         width="22"
-                        height="22"
-                        class="transition duration-300 group-hover:rotate-90">
+                        height="22">
                     </iconify-icon>
 
-                    Tambah Izin
+                </div>
 
-                </button>
+            </div>
 
-            </a>
+        </div>
+
+        <!-- dropdown -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+
+            <!-- tingkat -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('filterTingkat', id)
+                    }
+                }"
+                class="relative">
+
+                <label class="mb-2 block text-sm font-semibold text-gray-700">
+                    Tingkat
+                </label>
+
+                <!-- toggle -->
+                <div
+                    @click="toggle()"
+                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
+
+                    <span
+                        x-text="selectedLabel ?? 'Semua tingkat'"
+                        class="text-sm text-gray-700">
+                    </span>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <!-- dropdown -->
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
+                    <div
+                        @click.prevent="select(null, 'Semua tingkat')"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua tingkat</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+
+                    @foreach ($listRombel->pluck('tingkat')->filter()->sortBy('nama')->unique('id') as $tingkat)
+                    <div
+                        @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $tingkat->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+                    @endforeach
+
+                </div>
+
+            </div>
+
+            <!-- jurusan -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('filterJurusan', id)
+                    }
+                }"
+                class="relative">
+
+                <label class="mb-2 block text-sm font-semibold text-gray-700">
+                    Jurusan
+                </label>
+
+                <!-- toggle -->
+                <div
+                    @click="toggle()"
+                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
+
+                    <span
+                        x-text="selectedLabel ?? 'Semua jurusan'"
+                        class="text-sm text-gray-700">
+                    </span>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <!-- dropdown -->
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
+                    <div
+                        @click.prevent="select(null, 'Semua jurusan')"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua jurusan</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+
+                    @foreach ($this->filteredJurusan as $jurusan)
+                    <div
+                        @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $jurusan->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+                    @endforeach
+
+                </div>
+            </div>
+
+            <!-- kelas -->
+            <div
+                x-data="{
+                    open: false,
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
+
+                    select(id, label) {
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.open = false
+
+                        $wire.set('filterIndeks', id)
+                    }
+                }"
+                class="relative">
+
+                <label class="mb-2 block text-sm font-semibold text-gray-700">
+                    Kelas
+                </label>
+
+                <!-- toggle -->
+                <div
+                    @click="toggle()"
+                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
+
+                    <span
+                        x-text="selectedLabel ?? 'Semua kelas'"
+                        class="text-sm text-gray-700">
+                    </span>
+
+                    <iconify-icon
+                        icon="lineicons:chevron-up"
+                        width="20"
+                        height="20"
+                        class="text-gray-400 transition-transform"
+                        :class="{ 'rotate-180': open }">
+                    </iconify-icon>
+
+                </div>
+
+                <!-- dropdown -->
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+
+                    <div
+                        @click.prevent="select(null, 'Semua Kelas')"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua Kelas</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+
+                    @foreach ($filteredIndeks as $indeks)
+                    <div
+                        @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $indeks->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $indeks->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
+                    @endforeach
+
+                </div>
+
+
+            </div>
 
         </div>
 
@@ -83,34 +320,6 @@
 
             </div>
 
-            <!-- right -->
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-
-                <!-- search -->
-                <div class="relative w-full sm:w-72">
-
-                    <input
-                        type="search"
-                        name="search"
-                        wire:model.live.debounce.500ms="search"
-                        placeholder="Cari nama murid  ..."
-                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-4 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
-
-                    <div
-                        class="absolute inset-y-0 right-4 flex items-center text-gray-400">
-
-                        <iconify-icon
-                            icon="mdi:account-search-outline"
-                            width="22"
-                            height="22">
-                        </iconify-icon>
-
-                    </div>
-
-                </div>
-
-            </div>
-
         </div>
 
         <!-- table -->
@@ -129,6 +338,10 @@
                         <th class="px-5 py-4 text-center font-semibold">
                             Nama
                         </th>
+                        
+                        <th class="px-5 py-4 text-center font-semibold">
+                            Kelas
+                        </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
                             Nipd
@@ -144,6 +357,10 @@
 
                         <th class="px-5 py-4 text-center font-semibold">
                             waktu
+                        </th>
+
+                        <th class="px-5 py-4 text-center font-semibold">
+                            Status
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -174,6 +391,11 @@
 
                         </td>
 
+                        <!-- kelas -->
+                        <td class="px-5 py-5 text-center text-gray-700">
+                            {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
+                        </td>
+
                         <!-- nipd -->
                         <td class="px-5 py-5 text-center text-gray-700">
                             {{ $izin->murid->nipd ?? '-' }}
@@ -192,6 +414,11 @@
                         <!-- waktu -->
                         <td class="px-5 py-5 text-center text-gray-700">
                             {{ $izin->dari_jam }}{{ $izin->sampai_jam ? ' - ' . $izin->sampai_jam : '' }}
+                        </td>
+
+                        <!-- status -->
+                        <td class="px-5 py-5 text-center text-gray-700">
+                            {{ $izin->status ?? '-' }}
                         </td>
 
                         <!-- aksi button -->
@@ -257,7 +484,7 @@
                     <tr>
 
                         <td
-                            colspan="7"
+                            colspan="10"
                             class="px-6 py-14 text-center">
 
                             <div
