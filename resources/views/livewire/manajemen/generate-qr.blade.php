@@ -56,7 +56,7 @@
 
         <!-- GENERATE QR MURID -->
         <div
-            class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+            class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm col-span-2">
 
             <!-- header -->
             <div
@@ -446,7 +446,7 @@
         </div>
 
         <!-- GENERATE QR GURU -->
-        <div
+        {{-- <div
             class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
             <!-- header -->
@@ -577,7 +577,7 @@
 
             </div>
 
-        </div>
+        </div> --}}
 
     </div>
 
