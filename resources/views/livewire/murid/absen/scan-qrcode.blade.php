@@ -1,5 +1,9 @@
 <div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans">
-
+    @php
+        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
+        $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
+        $errorClass = 'mt-2 text-sm text-rose-500';
+    @endphp
     <header
         class="sticky top-0 z-30 border-b border-white/10 bg-slate-950/80 px-4 py-4 shadow-2xl backdrop-blur-xl">
 
@@ -67,12 +71,11 @@
     </header>
 
     <main class="flex items-center justify-center p-4">
-
         <!-- SCANNER AREA -->
         <div class="w-full max-w-2xl">
 
             <!-- mobile label -->
-            <div class="mb-5 block text-center md:hidden">
+            {{-- <div class="mb-5 block text-center md:hidden">
 
                 <div
                     class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-blue-100 backdrop-blur">
@@ -87,7 +90,7 @@
                     {{ $dateNow ?? 'Tanggal sekarang' }}
                 </p>
 
-            </div>
+            </div> --}}
 
             <!-- scanner card -->
             <div
@@ -138,7 +141,6 @@
             </div>
 
         </div>
-
     </main>
 
     {{-- @if ($tersimpan)
@@ -281,6 +283,81 @@
     </div>
     @endif
 
+    @if ($scanStatus === 'terlambat')
+        <div id="error-modal" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+            <div class="relative flex min-h-screen items-center justify-center p-4">
+                <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+                    <div class="bg-red-600 px-6 py-4 text-white">
+                        <h2 class="text-lg font-bold">Terlambat</h2>
+                        <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
+                    </div>
+                    <div class="p-6 text-sm text-gray-700">
+                        <form wire:submit.prevent class="space-y-4" >
+                            <!-- keterangan atau alasan terlambat -->
+                            <div>
+                                <label class="{{ $labelClass }}">
+                                    Alasan terlambat
+                                </label>
+                                
+                                {{-- input alasan --}}
+                                <input
+                                    type="text"
+                                    required
+                                    wire:model.defer="keterangan"
+                                    placeholder="Masukkan Alasan Anda Terlambat"
+                                    class="{{ $inputClass }}" />
+
+                                @error('keterangan')
+                                <p class="{{ $errorClass }}">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div>
+                                <button
+                                    type="submit"
+                                    wire:click="konfirmasiTerlambat"
+                                    wire:loading.attr="disabled"
+                                    wire:target="store"
+                                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70">
+        
+                                    <iconify-icon
+                                        wire:loading.remove
+                                        wire:target="store,image"
+                                        icon="lineicons:save"
+                                        width="20"
+                                        height="20"
+                                        class="transition group-hover:scale-110">
+                                    </iconify-icon>
+        
+                                    <iconify-icon
+                                        wire:loading
+                                        wire:target="store,image"
+                                        icon="line-md:loading-twotone-loop"
+                                        width="20"
+                                        height="20">
+                                    </iconify-icon>
+        
+                                    <span wire:loading.remove wire:target="store,image">
+                                        Kirim Alasan
+                                    </span>
+        
+                                    <span wire:loading wire:target="store,image">
+                                        Mengirim...
+                                    </span>
+        
+                                </button>
+                            </div>
+
+                            
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+
     @if($scanStatus === 'error' && $scanMessage)
     <div id="error-modal" class="fixed inset-0 z-50">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
@@ -369,6 +446,18 @@
                 window.scanned = false;
                 window.initScanner();
             }, 2000);
+        });
+
+        document.addEventListener('lateMessage', () => {
+            window.destroyScanner();
+        });
+
+        document.addEventListener('lateConfirm', () => {
+            $wire.set('scanStatus', null);
+            $wire.set('scanMessage', null);
+            $wire.set('murid', null);
+            window.scanned = false;
+            window.initScanner();
         });
 
         document.addEventListener('scanMessage', () => {

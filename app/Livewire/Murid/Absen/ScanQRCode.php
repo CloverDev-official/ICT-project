@@ -18,6 +18,7 @@ class ScanQRCode extends Component
     public bool $tersimpan = false;
     public ?string $scanStatus = null;
     public ?string $scanMessage = null;
+    public ?string $keterangan = '';
     public ?string $izinUuid = null;
     public bool $isContainsIzin = false;
     public array $jadwalHariIni = [];
@@ -154,22 +155,13 @@ class ScanQRCode extends Component
 
         if ($absen->status === 'Alpa' && !$absen->waktu_masuk && !$absen->waktu_keluar) {
             if (!$this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
-                $this->rejectScan(sprintf(
+                $this->lateScan(sprintf(
                     'Murid sudah otomatis Alpa. Scan masuk hanya bisa diubah menjadi hadir pukul %s - %s.',
                     $jadwal['scan_masuk_mulai'] ?? '--:--',
                     $jadwal['scan_masuk_sampai'] ?? '--:--',
                 ));
                 return;
             }
-
-            $absen->update([
-                'waktu_masuk' => $currentTime,
-                'status' => 'Masuk',
-                'keterangan' => $this->keteranganAbsensi($jadwal),
-            ]);
-
-            $this->acceptScan('Absensi masuk berhasil.');
-            return;
         }
 
         if (!$absen->waktu_keluar && $this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
@@ -197,6 +189,27 @@ class ScanQRCode extends Component
         }
 
         $this->acceptScan('Absensi masuk sudah tercatat. Absensi pulang baru bisa dilakukan sesuai jam pulang.');
+    }
+
+    public function konfirmasiTerlambat(){
+            $now = now();
+            $today = $now->toDateString();
+            $currentTime = $now->format('H:i:s');
+
+            $absen = AbsenMurid::query()
+                ->where('murid_id', $this->murid->id)
+                ->whereDate('tanggal', $today)
+                ->first();
+
+            $absen->update([
+                'waktu_masuk' => $currentTime,
+                'status' => 'Terlambat',
+                'keterangan' => $this->keterangan,
+            ]);
+
+            $this->acceptScan('Alasan terlambat tersimpan.');
+            $this->dispatch('lateConfirm');
+            return;
     }
 
     private function bisaLangsungPulang(string $currentTime, array $jadwal): bool
@@ -290,6 +303,15 @@ class ScanQRCode extends Component
         $this->tersimpan = false;
 
         $this->dispatch('scanMessage');
+    }
+
+    private function lateScan(string $message): void
+    {
+        $this->scanStatus = 'terlambat';
+        $this->scanMessage = $message;
+        $this->tersimpan = false;
+
+        $this->dispatch('lateMessage');
     }
 
     private function rejectScan(string $message): void
