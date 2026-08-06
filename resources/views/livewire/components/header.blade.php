@@ -14,8 +14,24 @@
                 <p class="text-xs capitalize" >{{ auth()->user()->role->name }}</p>
             </div>
             <div x-data="{ openModal: false }" >
-                <div @click="openModal = !openModal" class="cursor-pointer w-8 h-8 rounded-full bg-white shadow-sm text-blue-deep-solid  flex items-center justify-center relative">
-                    <iconify-icon icon="lineicons:user-4" width="25" height="24"></iconify-icon>
+                <div
+                    @click="openModal = !openModal"
+                    class="cursor-pointer w-8 h-8 rounded-full bg-white shadow-sm overflow-hidden flex items-center justify-center"
+                >
+                    @if ($user?->profile_photo_path)
+                        <img
+                            src="{{ $user->profile_photo_url }}"
+                            alt="Profile"
+                            class="w-full h-full object-cover"
+                        >
+                    @else
+                        <iconify-icon
+                            icon="lineicons:user-4"
+                            width="25"
+                            height="24"
+                            class="text-blue-deep-solid"
+                        ></iconify-icon>
+                    @endif
                 </div>
                 <div x-show="openModal" @click.outside="openModal = false" x-transition style="display: none;" class="bg-white p-2 w-40 shadow-md rounded-lg z-50 absolute top-16 right-10 grid grid-cols-1 gap-2">
                     <!-- btn profil -->
