@@ -103,7 +103,7 @@ class ScanQRCode extends Component
             return;
         }
 
-        app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
+        // app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
 
         $absen = AbsenMurid::query()
             ->where('murid_id', $murid->id)
@@ -153,15 +153,16 @@ class ScanQRCode extends Component
             return;
         }
 
-        if ($absen->status === 'Alpa' && !$absen->waktu_masuk && !$absen->waktu_keluar) {
+        if (!$absen->waktu_masuk && !$this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
             if (!$this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
-                $this->lateScan(sprintf(
-                    'Murid sudah otomatis Alpa. Scan masuk hanya bisa diubah menjadi hadir pukul %s - %s.',
-                    $jadwal['scan_masuk_mulai'] ?? '--:--',
-                    $jadwal['scan_masuk_sampai'] ?? '--:--',
-                ));
+                $this->lateScan('Murid sudah terlambat absen masuk.');
                 return;
             }
+        }
+
+        if (!$absen->waktu_masuk && $this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
+            $this->rejectScan('Maaf kamu tidak bisa absen pulang karena belum absen masuk');
+            return;
         }
 
         if (!$absen->waktu_keluar && $this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
