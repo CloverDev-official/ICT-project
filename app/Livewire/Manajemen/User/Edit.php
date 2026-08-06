@@ -15,8 +15,8 @@ class Edit extends Component
     public User $user;
     public string $name = "";
     public string $email = "";
-    public ?string $password = null;
-    public ?string $password_confirmation = null;
+    public ?string $password = '';
+    public ?string $password_confirmation = '';
 
     public ?int $roleId = null;
     public ?int $guruId = null;
