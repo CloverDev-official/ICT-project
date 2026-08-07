@@ -1,0 +1,11 @@
+<?php
+
+namespace $NAMESPACE$;
+
+use App\Providers\BaseRouteServiceProvider;
+use Illuminate\Support\Facades\Route;
+
+class $CLASS$ extends BaseRouteServiceProvider
+{
+    protected string $name = '$MODULE$';
+}
