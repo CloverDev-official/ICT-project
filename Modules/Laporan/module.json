@@ -1,0 +1,11 @@
+{
+    "name": "Laporan",
+    "alias": "laporan",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Laporan\\Providers\\LaporanServiceProvider"
+    ],
+    "files": []
+}

@@ -92,34 +92,6 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
 
     // profil
     Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
-        
-    // laporan
-    Route::prefix('/laporan-pengawas')->middleware('access:laporan-pengawas')->group(function () {
-        // izin keluar
-        Route::prefix('/izin-keluar')->middleware('access:izin-keluar')->group(function () {
-            Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin-keluar')->name('laporan-izin-keluar');
-            Route::get('/edit-izin/{id}', EditIzin::class)->middleware('access:edit-izin-keluar')->name('edit-izin-keluar');
-            Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin-keluar')->name('cetak-izin-keluar');
-            Route::get('/surat-izin/{id}', SuratIzin::class)->middleware('access:surat-izin-keluar')->name('surat-izin-keluar');
-        });
-        // izin telat
-        Route::prefix('/izin-telat')->middleware('access:izin-telat')->group(function (){
-            Route::get('/cetak-izin', CetakIzinTelat::class)->middleware('access:cetak-izin-telat')->name('cetak-izin-telat');
-        });
-
-    });
-    
-    Route::prefix('/rekap')->group(function () {
-        Route::get('/absen-murid', IndexRekapMurid::class)->middleware('access:rekap-absen-murid')->name('rekap-absen-murid');
-        // Route::get('/absen-guru', RekapAbsenGuru::class)->middleware('access:rekap-absen-guru')->name('rekap-absen-guru');
-    });
-
-    Route::prefix('/riwayat')->group(function () {
-        Route::middleware('access:riwayat-murid')->group(function () {
-            Route::get('/absen-murid', RiwayatMurid::class)->name('riwayat-absen-murid');
-            Route::get('/detail-absen-murid/{muriduuid}', DetailMurid::class)->name('riwayat-detail-absen-murid');
-        });
-    });
 
     // absensi
     Route::prefix('/absensi')->group(function () {
