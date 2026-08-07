@@ -189,22 +189,14 @@
                                     class="ml-4 mt-2 flex flex-col gap-2"
                                     style="display: none;"
                                 >   
-                                    {{-- menu laporam izin tekat --}}
-                                    @if($user?->canAccess('laporan-izin-telat'))
+                                    {{-- menu cetak izin tekat --}}
+                                    @if($user?->canAccess('cetak-izin-telat'))
                                         <li>
-                                            <x-nav-link href="{{ route('laporan-izin-telat') }}" icon="rekapAbsenMurid">
-                                                laporan izin telat
-                                            </x-nav-link>
-                                        </li>
-                                    @endif
-                                    {{-- menu cetak izin telat --}}
-                                    @if($user?->canAccess('cetak-izin-keluar'))
-                                        <li>
-                                            <x-nav-link href="{{ route('cetak-izin-keluar') }}" icon="cetak-izin">
+                                            <x-nav-link href="{{ route('cetak-izin-telat') }}" icon="rekapAbsenMurid">
                                                 cetak izin telat
                                             </x-nav-link>
                                         </li>
-                                    @endif
+                                    @endif                                    
                                 </ul>
                             </li>
                         </ul>

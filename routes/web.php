@@ -8,7 +8,6 @@ use App\Livewire\Murid\Absen\Edit as EditAbsen;
 use App\Livewire\Murid\Absen\ScanQRCode;
 
 use App\Livewire\Pengawas\CetakIzin;
-use App\Livewire\Pengawas\Laporan\IzinTelat\LaporanIzinTelat;
 use App\Livewire\Pengawas\Laporan\LaporanIzin;
 use App\Livewire\Murid\Rekap\Index as IndexRekapMurid;
 
@@ -53,6 +52,7 @@ use App\Livewire\Manajemen\Murid\TambahMurid;
 
 use App\Livewire\Pengaturan;
 use App\Livewire\Pengawas\Laporan\EditIzin;
+use App\Livewire\Pengawas\Laporan\IzinTelat\CetakIzinTelat;
 use App\Livewire\Profil;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -104,7 +104,7 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
         });
         // izin telat
         Route::prefix('/izin-telat')->middleware('access:izin-telat')->group(function (){
-            Route::get('/izin', LaporanIzinTelat::class)->middleware('access:laporan-izin-telat')->name('laporan-izin-telat');
+            Route::get('/cetak-izin', CetakIzinTelat::class)->middleware('access:cetak-izin-telat')->name('cetak-izin-telat');
         });
 
     });

@@ -13,7 +13,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class LaporanIzinTelat extends Component
+class CetakIzinTelat extends Component
 {   
     use WithPagination;
 
@@ -234,7 +234,7 @@ class LaporanIzinTelat extends Component
     
     public function render()
     {
-        return view('livewire.pengawas.laporan.izin-telat.laporan-izin-telat', [
+        return view('livewire.pengawas.laporan.izin-telat.cetak-izin-telat', [
                 'listMuridTerlambat' => $this->getTerlambatMurid(),
         ]);
     }

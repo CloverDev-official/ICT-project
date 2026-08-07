@@ -32,7 +32,7 @@
                     </h1>
 
                     <p class="mt-1 text-sm text-blue-100">
-                        Daftar dan laporan izin keluar murid secara realtime.
+                        Daftar dan laporan izin telat murid secara realtime.
                     </p>
 
                 </div>
@@ -453,7 +453,6 @@
                                             width="20"
                                             height="20">
                                         </iconify-icon>
-                          
                                     </button>
                                 </div>
                             </div>
