@@ -440,7 +440,7 @@
                                 </a>
 
                                 <!-- delete -->
-                                <div
+                                <!-- <div
                                     x-data="{ openModalDelete: false }"
                                 >
                                     <button
@@ -454,7 +454,7 @@
                                             height="20">
                                         </iconify-icon>
                                     </button>
-                                </div>
+                                </div> -->
                             </div>
                         </td>
 
@@ -516,7 +516,7 @@
             {{ $listMuridTerlambat->links('livewire.components.pagination') }}
         </div>
 
-        <livewire:components.modal.pengawas.laporan.modal-hapus-izin-telat />
+        <!-- <livewire:components.modal.pengawas.laporan.modal-hapus-izin-telat /> -->
 
     </div>
 </div>
