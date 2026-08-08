@@ -516,7 +516,5 @@
             {{ $listMuridTerlambat->links('livewire.components.pagination') }}
         </div>
 
-        <!-- <livewire:components.modal.pengawas.laporan.modal-hapus-izin-telat /> -->
-
     </div>
 </div>
