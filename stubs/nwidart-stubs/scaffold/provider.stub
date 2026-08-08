@@ -4,6 +4,7 @@ namespace $NAMESPACE$;
 
 use Nwidart\Modules\Support\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use App\Support\ModuleLivewireRegistrar;
 
 class $CLASS$ extends ModuleServiceProvider
 {
