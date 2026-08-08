@@ -4,6 +4,7 @@ namespace Modules\Laporan\Providers;
 
 use Nwidart\Modules\Support\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use App\Support\ModuleLivewireRegistrar;
 
 class LaporanServiceProvider extends ModuleServiceProvider
 {
@@ -33,6 +34,16 @@ class LaporanServiceProvider extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        parent::boot();
+        
+        ModuleLivewireRegistrar::register($this->name);
+    }
 
     /**
      * Define module schedules.
