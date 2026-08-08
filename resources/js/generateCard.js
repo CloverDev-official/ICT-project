@@ -47,7 +47,7 @@ const CONFIG = {
         timeoutMs: 3000
     },
     TEMPLATE: {
-        route: (orientation) => `/admin/card-template/${orientation}`,
+        route: (orientation) => `/mpanel/card-template/${orientation}`,
         selector: ".student-card",
         scale: 1,
         logoUrl: "/assets/img/logo_smkn_2.png",
@@ -68,9 +68,32 @@ const templateRequestCache = new Map();
 const canvasCache = new Map();
 const canvasCacheKeys = new WeakMap();
 const jpegCache = new WeakMap();
+const qrSvgCache = new Map();
+const qrSvgRequestCache = new Map();
+const photoPrefetchCache = new Map();
+const photoFailureCache = new Set();
 const renderedCanvasRegistry = new Set();
 let whiteCanvas = null;
 let whiteCanvasContext = null;
+
+const cacheLimit = (cache, limit, onEvict) => {
+    while (cache.size > limit) {
+        const oldestKey = cache.keys().next().value;
+        const oldestValue = cache.get(oldestKey);
+
+        cache.delete(oldestKey);
+
+        if (typeof onEvict === "function") {
+            onEvict(oldestValue, oldestKey);
+        }
+    }
+};
+
+const revokeObjectUrl = (url) => {
+    if (typeof url === "string" && url.startsWith("blob:")) {
+        URL.revokeObjectURL(url);
+    }
+};
 
 const normalizeOrientation = (orientation) => (
     orientation === "vertical" ? "vertical" : "horizontal"
@@ -116,13 +139,29 @@ const buildStudentCardFileName = (murid) => {
     return `${sanitized}.pdf`;
 };
 
-const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
+const blobToBytes = async (blob) => {
+    if (!blob) return null;
 
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Unable to convert blob to data URL."));
-    reader.readAsDataURL(blob);
-});
+    if (typeof blob.arrayBuffer === "function") {
+        return new Uint8Array(await blob.arrayBuffer());
+    }
+
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(new Uint8Array(reader.result));
+        reader.onerror = () => reject(new Error("Unable to convert blob to bytes."));
+        reader.readAsArrayBuffer(blob);
+    });
+};
+
+const createSvgObjectUrl = (svgString) => {
+    if (!svgString) return null;
+
+    return URL.createObjectURL(
+        new Blob([svgString], { type: "image/svg+xml" })
+    );
+};
 
 const canvasToBlob = (canvas, type, quality) => new Promise((resolve) => {
     if (typeof canvas.toBlob !== "function") {
@@ -163,19 +202,71 @@ const getImageSource = (url) => {
 // Warms the browser's HTTP cache for a student's photo ahead of time so that,
 // by the time renderTemplateCanvas() actually needs it, the image is already
 // downloaded and decoding can happen instantly instead of blocking on a
-// network round trip. crossOrigin must match what setImageSource() uses below
-// (anonymous) or the browser will treat it as a different cache entry and
-// fetch it twice.
+// network round trip.
 const prefetchPhoto = (murid) => {
     const src = getImageSource(murid?.image_path ?? null);
 
-    if (!src || src.startsWith("data:")) return;
+    if (!src || src.startsWith("data:") || photoFailureCache.has(src)) return;
 
-    const image = new Image();
+    const existingEntry = photoPrefetchCache.get(src);
 
-    image.decoding = "async";
-    image.crossOrigin = "anonymous";
-    image.src = src;
+    if (existingEntry?.promise) return existingEntry.promise;
+
+    const entry = {
+        objectUrl: null,
+        promise: null
+    };
+
+    entry.promise = (async () => {
+        const response = await fetch(src, {
+            cache: "force-cache",
+            mode: "cors"
+        });
+
+        if (!response.ok) {
+            throw new Error(`Unable to fetch image ${src}: ${response.status} ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+
+        if (typeof createImageBitmap === "function") {
+            const bitmap = await createImageBitmap(blob);
+
+            bitmap.close?.();
+        }
+
+        const objectUrl = URL.createObjectURL(blob);
+
+        if (photoPrefetchCache.get(src) !== entry) {
+            revokeObjectUrl(objectUrl);
+            return null;
+        }
+
+        entry.objectUrl = objectUrl;
+
+        return objectUrl;
+    })().catch(() => {
+        photoFailureCache.add(src);
+        if (entry.objectUrl) {
+            revokeObjectUrl(entry.objectUrl);
+            entry.objectUrl = null;
+        }
+
+        return null;
+    }).finally(() => {
+        if (photoPrefetchCache.get(src) === entry) {
+            cacheLimit(photoPrefetchCache, 8, (oldEntry) => {
+                revokeObjectUrl(oldEntry?.objectUrl);
+            });
+        }
+    });
+
+    photoPrefetchCache.set(src, entry);
+    cacheLimit(photoPrefetchCache, 8, (oldEntry) => {
+        revokeObjectUrl(oldEntry?.objectUrl);
+    });
+
+    return entry.promise;
 };
 
 const waitForFrameLoad = (frame) => new Promise((resolve) => {
@@ -183,22 +274,22 @@ const waitForFrameLoad = (frame) => new Promise((resolve) => {
 });
 
 const waitForImage = async (image) => {
-    if (!image) return;
+    if (!image) return false;
 
-    if (image.complete && image.naturalWidth > 0) return;
+    if (image.complete && image.naturalWidth > 0) return true;
 
     try {
         if (typeof image.decode === "function") {
             await image.decode();
-            return;
+            return image.naturalWidth > 0;
         }
     } catch {
         // Fall through to load/error events when decode is not reliable.
     }
 
-    await new Promise((resolve) => {
-        image.addEventListener("load", resolve, { once: true });
-        image.addEventListener("error", resolve, { once: true });
+    return await new Promise((resolve) => {
+        image.addEventListener("load", () => resolve(image.naturalWidth > 0), { once: true });
+        image.addEventListener("error", () => resolve(false), { once: true });
     });
 };
 
@@ -223,6 +314,14 @@ const yieldToBrowser = async () => {
         return;
     }
 
+    if (typeof window.requestIdleCallback === "function") {
+        await new Promise((resolve) => {
+            window.requestIdleCallback(() => resolve(), { timeout: 16 });
+        });
+
+        return;
+    }
+
     await new Promise((resolve) => {
         if (document.hidden || typeof requestAnimationFrame !== "function") {
             setTimeout(resolve, 0);
@@ -233,11 +332,16 @@ const yieldToBrowser = async () => {
     });
 };
 
+const shouldYieldAfterCard = ({ cardsSinceYield, lastYieldAt }) => {
+    const elapsedMs = performance.now() - lastYieldAt;
+
+    return cardsSinceYield >= 6 || elapsedMs >= 24;
+};
+
 const encodeSvgDataUrl = (svgString) => {
     if (!svgString) return "";
 
-    const encoded = btoa(unescape(encodeURIComponent(svgString)));
-    return `data:image/svg+xml;base64,${encoded}`;
+    return createSvgObjectUrl(svgString);
 };
 
 const getWhiteCanvas = (width, height) => {
@@ -262,37 +366,44 @@ const getWhiteCanvas = (width, height) => {
     };
 };
 
-const canvasToJpegDataUrl = async (canvas, quality = CONFIG.PDF.jpegQuality) => {
+const canvasToJpegBytes = async (canvas, quality = CONFIG.PDF.jpegQuality) => {
     if (!canvas) return null;
     if (jpegCache.has(canvas)) return jpegCache.get(canvas);
 
-    let dataUrl = null;
+    let bytes = null;
     const { canvas: flattenedCanvas, context } = getWhiteCanvas(canvas.width, canvas.height);
 
-    context.fillStyle = CONFIG.PDF.backgroundColor;
+    if (context.fillStyle !== CONFIG.PDF.backgroundColor) {
+        context.fillStyle = CONFIG.PDF.backgroundColor;
+    }
+
+    context.clearRect(0, 0, flattenedCanvas.width, flattenedCanvas.height);
     context.fillRect(0, 0, flattenedCanvas.width, flattenedCanvas.height);
     context.drawImage(canvas, 0, 0);
 
     const blob = await canvasToBlob(flattenedCanvas, "image/jpeg", quality);
 
     if (blob) {
-        dataUrl = await blobToDataUrl(blob);
+        bytes = await blobToBytes(blob);
     } else if (typeof flattenedCanvas.toDataURL === "function") {
-        dataUrl = flattenedCanvas.toDataURL("image/jpeg", quality);
+        const dataUrl = flattenedCanvas.toDataURL("image/jpeg", quality);
+        const response = await fetch(dataUrl);
+
+        bytes = new Uint8Array(await response.arrayBuffer());
     } else if (typeof flattenedCanvas.convertToBlob === "function") {
         const convertedBlob = await flattenedCanvas.convertToBlob({
             type: "image/jpeg",
             quality
         });
 
-        dataUrl = await blobToDataUrl(convertedBlob);
+        bytes = await blobToBytes(convertedBlob);
     } else {
-        throw new Error("Unable to convert canvas to JPEG data URL.");
+        throw new Error("Unable to convert canvas to JPEG bytes.");
     }
 
-    jpegCache.set(canvas, dataUrl);
+    jpegCache.set(canvas, bytes);
 
-    return dataUrl;
+    return bytes;
 };
 
 const createRenderCacheKey = ({ orientation, murid, qrSvg }) => JSON.stringify({
@@ -417,19 +528,12 @@ const addCardToPdf = async ({ pdf, canvas, orientation = "horizontal", position 
     if (!canvas) throw new Error("Canvas is required to add a card to PDF.");
 
     const size = getCardSize(orientation);
-    const dataUrl = await canvasToJpegDataUrl(canvas);
+    const jpegBytes = await canvasToJpegBytes(canvas);
 
-    if (!dataUrl) throw new Error("Unable to create PDF image from canvas.");
-
-    console.log(
-        position.x,
-        position.y,
-        size.width,
-        size.height,
-    )
+    if (!jpegBytes) throw new Error("Unable to create PDF image from canvas.");
 
     pdf.addImage(
-        dataUrl,
+        jpegBytes,
         CONFIG.PDF.imageFormat,
         position.x,
         position.y,
@@ -624,10 +728,13 @@ class TemplateLoader {
     async setImageSource(image, source) {
         if (!image) return;
 
-        const nextSource = source || CONFIG.TEMPLATE.transparentPixel;
+        const fallbackSource = CONFIG.TEMPLATE.transparentPixel;
+        const nextSource = photoFailureCache.has(source) ? fallbackSource : source || fallbackSource;
 
         if (image.getAttribute("src") !== nextSource) {
-            if (!nextSource.startsWith("data:")) {
+            if (nextSource.startsWith("blob:")) {
+                image.removeAttribute("crossorigin");
+            } else if (!nextSource.startsWith("data:")) {
                 image.crossOrigin = "anonymous";
             } else {
                 image.removeAttribute("crossorigin");
@@ -637,7 +744,17 @@ class TemplateLoader {
             image.setAttribute("src", nextSource);
         }
 
-        await waitForImage(image);
+        const loaded = await withTimeout(waitForImage(image), 600);
+
+        if (!loaded) {
+            if (nextSource !== fallbackSource) {
+                photoFailureCache.add(source);
+                image.removeAttribute("crossorigin");
+                image.decoding = "async";
+                image.setAttribute("src", fallbackSource);
+                await waitForImage(image);
+            }
+        }
     }
 
     setText(node, value) {
@@ -652,12 +769,33 @@ class TemplateLoader {
         return this.logoDataUrlPromise;
     }
 
+    async getPrefetchedPhotoSource(source) {
+        if (!source || source.startsWith("data:")) {
+            return source;
+        }
+
+        const entry = photoPrefetchCache.get(source);
+
+        if (!entry) {
+            return source;
+        }
+
+        if (entry.objectUrl) {
+            return entry.objectUrl;
+        }
+
+        const prefetched = await withTimeout(entry.promise, 400);
+
+        return prefetched || source;
+    }
+
     async applyData(session, { murid, qrSvg }) {
         const [photoSource, logoDataUrl] = await Promise.all([
-            Promise.resolve(getImageSource(murid?.image_path ?? null)),
+            this.getPrefetchedPhotoSource(getImageSource(murid?.image_path ?? null)),
             this.getLogoDataUrl()
         ]);
         const { refs } = session;
+        const qrSource = encodeSvgDataUrl(qrSvg);
 
         this.setText(refs.studentNameNode, truncateText(murid?.nama ?? "", CONFIG.TEXT.studentName).toUpperCase());
         this.setText(refs.classNameNode, truncateText(murid?.rombel?.nama_lengkap ?? "", CONFIG.TEXT.className));
@@ -667,12 +805,10 @@ class TemplateLoader {
         await Promise.all([
             this.setImageSource(refs.logoImage, logoDataUrl),
             this.setImageSource(refs.photoImage, photoSource),
-            this.setImageSource(refs.qrImage, encodeSvgDataUrl(qrSvg))
+            this.setImageSource(refs.qrImage, qrSource)
         ]);
 
-        if (session.doc?.fonts?.ready) {
-            await session.doc.fonts.ready;
-        }
+        return qrSource;
     }
 
     async renderCanvas({ orientation = "horizontal", murid, qrSvg }) {
@@ -686,34 +822,39 @@ class TemplateLoader {
         if (canvasCache.has(cacheKey)) return canvasCache.get(cacheKey);
 
         const session = await this.getSession(normalizedOrientation);
+        let qrSource = null;
 
-        await this.applyData(session, {
-            murid,
-            qrSvg
-        });
+        try {
+            qrSource = await this.applyData(session, {
+                murid,
+                qrSvg
+            });
 
-        // domToCanvas (modern-screenshot) serializes the card into an SVG
-        // <foreignObject> and lets the browser's native renderer draw it, then
-        // reads that back into a canvas. Unlike html2canvas — which re-parses
-        // CSS and re-implements layout/paint by hand in JS — this leans on
-        // rendering the browser already does, which is why it's noticeably
-        // faster and more faithful to the real on-screen appearance.
-        const canvas = await domToCanvas(session.card, {
-            backgroundColor: CONFIG.PDF.backgroundColor,
-            scale: CONFIG.TEMPLATE.scale,
-            width: session.card.offsetWidth,
-            height: session.card.offsetHeight,
-            fetch: {
-                // Reuse whatever the browser already has cached (including
-                // anything warmed up by prefetchPhoto()) instead of re-fetching.
-                requestInit: { mode: "cors", cache: "force-cache" },
-                placeholderImage: CONFIG.TEMPLATE.transparentPixel
-            }
-        });
+            // domToCanvas (modern-screenshot) serializes the card into an SVG
+            // <foreignObject> and lets the browser's native renderer draw it, then
+            // reads that back into a canvas. Unlike html2canvas — which re-parses
+            // CSS and re-implements layout/paint by hand in JS — this leans on
+            // rendering the browser already does, which is why it's noticeably
+            // faster and more faithful to the real on-screen appearance.
+            const canvas = await domToCanvas(session.card, {
+                backgroundColor: CONFIG.PDF.backgroundColor,
+                scale: CONFIG.TEMPLATE.scale,
+                width: session.card.offsetWidth,
+                height: session.card.offsetHeight,
+                fetch: {
+                    // Reuse whatever the browser already has cached (including
+                    // anything warmed up by prefetchPhoto()) instead of re-fetching.
+                    requestInit: { mode: "cors", cache: "force-cache" },
+                    placeholderImage: CONFIG.TEMPLATE.transparentPixel
+                }
+            });
 
-        cacheRenderedCanvas(cacheKey, canvas);
+            cacheRenderedCanvas(cacheKey, canvas);
 
-        return canvas;
+            return canvas;
+        } finally {
+            revokeObjectUrl(qrSource);
+        }
     }
 
     async preload(orientations = ["horizontal"]) {
@@ -862,7 +1003,34 @@ const getQrSvg = async (murid) => {
     if (!murid?.uuid) return "";
     if (typeof window.generateQRSVG !== "function") return "";
 
-    return window.generateQRSVG(murid.uuid);
+    const { uuid } = murid;
+
+    if (qrSvgCache.has(uuid)) {
+        return qrSvgCache.get(uuid);
+    }
+
+    if (qrSvgRequestCache.has(uuid)) {
+        return qrSvgRequestCache.get(uuid);
+    }
+
+    const request = Promise.resolve(window.generateQRSVG(uuid))
+        .then((svg) => {
+            const normalized = typeof svg === "string" ? svg : "";
+
+            if (normalized) {
+                qrSvgCache.set(uuid, normalized);
+                cacheLimit(qrSvgCache, 128);
+            }
+
+            return normalized;
+        })
+        .finally(() => {
+            qrSvgRequestCache.delete(uuid);
+        });
+
+    qrSvgRequestCache.set(uuid, request);
+
+    return request;
 };
 
 const renderStudentCanvas = async ({ murid, qrSvg, orientation = "horizontal" }) => renderTemplateCanvas({
@@ -964,10 +1132,14 @@ const generateStudentCardsBatch = async ({
 
     await templateLoader.preload([normalizedOrientation]);
 
+    let cardsSinceYield = 0;
+    let lastYieldAt = performance.now();
+
     for (let index = 0; index < students.length; index += 1) {
         const murid = students[index];
 
         prefetchPhoto(students[index + 1]);
+        prefetchPhoto(students[index + 2]);
 
         // eslint-disable-next-line no-await-in-loop -- batch must stay sequential; rendering is single-threaded main-thread work
         const qrSvg = await getQrSvg(murid);
@@ -987,8 +1159,14 @@ const generateStudentCardsBatch = async ({
 
         onProgress?.({ index, total: students.length, murid });
 
-        // eslint-disable-next-line no-await-in-loop
-        await yieldToBrowser();
+        cardsSinceYield += 1;
+
+        if (shouldYieldAfterCard({ cardsSinceYield, lastYieldAt })) {
+            // eslint-disable-next-line no-await-in-loop
+            await yieldToBrowser();
+            lastYieldAt = performance.now();
+            cardsSinceYield = 0;
+        }
     }
 
     return manager.exportAsync();
@@ -1099,6 +1277,13 @@ window.clearStudentCardMemory = () => {
     templateCache.clear();
     templateRequestCache.clear();
     canvasCache.clear();
+    qrSvgCache.clear();
+    qrSvgRequestCache.clear();
+    for (const entry of photoPrefetchCache.values()) {
+        revokeObjectUrl(entry?.objectUrl);
+    }
+    photoPrefetchCache.clear();
+    photoFailureCache.clear();
     renderedCanvasRegistry.clear();
     whiteCanvas = null;
     whiteCanvasContext = null;
