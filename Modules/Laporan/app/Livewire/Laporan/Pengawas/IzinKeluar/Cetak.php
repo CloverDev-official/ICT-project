@@ -118,7 +118,7 @@ class Cetak extends Component
 
         $this->reset(['tingkatId', 'jurusanId', 'indeksId', 'muridSearch', 'muridId', 'alasan', 'dariJam', 'sampaiJam']);
 
-        $url = route('surat-izin', [
+        $url = route('surat-izin-keluar', [
             'id' => $this->izinMuridId,
         ]);
 

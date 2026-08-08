@@ -168,7 +168,7 @@ Promise.all([
         URL.revokeObjectURL(url);
 
         window.print();
-        Livewire.navigate(`/admin/laporan-pengawas/izin`);
+        Livewire.navigate('{{ route('laporan-izin-keluar') }}');
     };
 
 });

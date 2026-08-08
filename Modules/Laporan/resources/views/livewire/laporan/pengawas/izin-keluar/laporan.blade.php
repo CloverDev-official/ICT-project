@@ -426,7 +426,7 @@
                             <div class="flex items-center justify-center gap-2">
                                 <!-- edit -->
                                 <a
-                                    href="{{ route('edit-izin', $izin->id) }}"
+                                    href="{{ route('edit-izin-keluar', $izin->id) }}"
                                     wire:navigate>
 
                                     <button
@@ -443,7 +443,7 @@
                                 </a>
 
                                 <!-- cetak ulang izin -->
-                                <a href="{{ route('surat-izin', $izin->id) }}" wire:navigate>
+                                <a href="{{ route('surat-izin-keluar', $izin->id) }}" wire:navigate>
                                     <button 
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
@@ -535,7 +535,7 @@
             {{ $dataIzin->links('livewire.components.pagination') }}
         </div>
 
-        <livewire:components.modal.pengawas.laporan.modal-hapus-izin />
+        <livewire:laporan.pengawas.izin-keluar.components.modal.hapus />
 
     </div>
 </div>
