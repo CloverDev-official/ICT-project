@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Murid\Absen;
+namespace Modules\Absensi\Livewire\Absen\Murid;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -203,7 +203,7 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.murid.absen.absensi-murid', [
+        return view('absensi::livewire.absen.murid.absensi', [
             'listAbsen' => $this->getAbsen(),
         ]);
     }

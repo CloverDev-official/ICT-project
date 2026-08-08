@@ -92,17 +92,6 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
 
     // profil
     Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
-
-    // absensi
-    Route::prefix('/absensi')->group(function () {
-
-        // absensi murid
-        Route::prefix('/murid')->middleware('access:absensi-murid')->group(function () {
-            Route::get('/', IndexAbsen::class)->name('absensi-murid');
-            Route::get('/edit/{absenId}', EditAbsen::class)->name('edit-absen-murid');
-        });
-        // Route::get('/guru', AbsensiGuru::class)->middleware('access:absensi-guru')->name('absensi-guru');
-    });
     
     // data  murid
     Route::prefix('/data-murid')->middleware('access:data-murid')->group(function () {

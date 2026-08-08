@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Murid\Absen;
+namespace Modules\Absensi\Livewire\Absen\Murid;
 
 use App\Helpers\ValidateMagic;
 use App\Helpers\ToastMagic;
@@ -55,6 +55,6 @@ class Edit extends Component
 
     public function render()
     {
-        return view("livewire.murid.absen.edit-absen-murid");
+        return view("abssensi::livewire.absen.murid.edit");
     }
 }

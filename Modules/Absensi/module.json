@@ -1,0 +1,11 @@
+{
+    "name": "Absensi",
+    "alias": "absensi",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Absensi\\Providers\\AbsensiServiceProvider"
+    ],
+    "files": []
+}
