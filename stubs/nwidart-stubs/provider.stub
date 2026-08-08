@@ -8,16 +8,6 @@ use App\Support\ModuleLivewireRegistrar;
 class $CLASS$ extends ServiceProvider
 {
     /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        parent::boot();
-        
-        ModuleLivewireRegistrar::register($this->name);
-    }
-
-    /**
      * Register the service provider.
      */
     public function register(): void {}

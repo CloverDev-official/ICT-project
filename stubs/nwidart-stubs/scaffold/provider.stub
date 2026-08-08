@@ -35,6 +35,16 @@ class $CLASS$ extends ModuleServiceProvider
     ];
 
     /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        parent::boot();
+        
+        ModuleLivewireRegistrar::register($this->name);
+    }
+
+    /**
      * Define module schedules.
      * 
      * @param $schedule
