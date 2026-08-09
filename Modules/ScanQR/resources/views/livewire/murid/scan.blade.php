@@ -266,14 +266,13 @@
     </div>
     @endif
 
-    @if($scanStatus === 'message' && $scanMessage)
+    @if($scanStatus === 'message' && $scanMessage && $scanTitle)
     <div id="error-modal" class="fixed inset-0 z-50">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
         <div class="relative flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                <div class="bg-green-600 px-6 py-4 text-white">
-                    <h2 class="text-lg font-bold">Izin Berhasil Diperbarui</h2>
-                    <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
+                <div class="bg-yellow-600 px-6 py-4 text-white">
+                    <h2 class="text-lg font-bold">{{ $scanTitle }}</h2>
                 </div>
                 <div class="p-6 text-sm text-gray-700">
                     <p class="font-semibold text-gray-900">{{ $scanMessage }}</p>
