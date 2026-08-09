@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Absensi;
+namespace Modules\ScanQR\Services;
 
 use App\Models\JadwalAbsen;
 use App\Models\Setting;
@@ -15,13 +15,12 @@ class JadwalAbsensiService
 
     public function forRombel(?int $rombelId, Carbon|string|null $date = null): array
     {
-        $date = $date instanceof Carbon
-            ? $date->copy()
-            : Carbon::parse($date ?: now()->toDateString());
+        $date = $this->resolveDate($date);
 
         $settings = $this->settings();
         $default = $this->defaultForDate($date, $settings);
 
+        // Tanpa rombel, jadwal default tanggal tersebut menjadi fallback utama.
         if (!$rombelId) {
             return $default;
         }
@@ -40,6 +39,7 @@ class JadwalAbsensiService
         $detailRombel = $jadwal->rombelJadwal->first();
 
         if ($detailRombel) {
+            // Detail rombel memiliki prioritas atas jadwal event dan jadwal default.
             $scanWindow = $this->scanWindowForRombel($detailRombel, $default);
 
             return $this->normalize([
@@ -58,13 +58,12 @@ class JadwalAbsensiService
             ]);
         }
 
-        // Kalau event sudah punya detail per rombel, berarti hanya rombel yang dipilih yang terdampak.
-        // Rombel lain tetap memakai jadwal default hari tersebut.
+        // Event dengan detail rombel hanya berlaku untuk rombel yang terdaftar.
         if ($jadwal->rombelJadwal()->exists()) {
             return $default;
         }
 
-        // Fallback untuk data lama yang masih menyimpan jadwal global tanpa detail kelas.
+        // Data lama tanpa detail rombel tetap diperlakukan sebagai jadwal global.
         return $this->normalize([
             'tanggal' => $date->toDateString(),
             'tipe' => $jadwal->tipe ?: $default['tipe'],
@@ -82,9 +81,7 @@ class JadwalAbsensiService
 
     public function forRombels(iterable $rombelIds, Carbon|string|null $date = null): array
     {
-        $date = $date instanceof Carbon
-            ? $date->copy()
-            : Carbon::parse($date ?: now()->toDateString());
+        $date = $this->resolveDate($date);
 
         $rombelIds = collect($rombelIds)
             ->filter()
@@ -114,6 +111,7 @@ class JadwalAbsensiService
             return $jadwalRombel;
         }
 
+        // Terapkan detail event hanya kepada rombel yang memang memilikinya.
         foreach ($jadwal->rombelJadwal as $detailRombel) {
             $scanWindow = $this->scanWindowForRombel($detailRombel, $default);
 
@@ -137,6 +135,7 @@ class JadwalAbsensiService
             return $jadwalRombel;
         }
 
+        // Tanpa detail rombel, satu jadwal global berlaku untuk semua rombel yang diminta.
         $global = $this->normalize([
             'tanggal' => $date->toDateString(),
             'tipe' => $jadwal->tipe ?: $default['tipe'],
@@ -210,6 +209,7 @@ class JadwalAbsensiService
             $date->isFriday() ? $jamPulangJumat : $jamPulangNormal,
         );
 
+        // Akhir pekan selalu memakai jadwal libur default.
         if ($date->isSaturday() || $date->isSunday()) {
             return $this->normalize([
                 'tanggal' => $date->toDateString(),
@@ -243,6 +243,7 @@ class JadwalAbsensiService
 
     private function scanWindow(array $settings, ?string $jamMasuk, ?string $jamPulang): array
     {
+        // Jam masuk/pulang menentukan patokan waktu; window menentukan kapan QR diterima.
         return [
             'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? $jamMasuk,
             'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? $jamMasuk,
@@ -253,6 +254,7 @@ class JadwalAbsensiService
 
     private function scanWindowForRombel(object $detailRombel, array $default): array
     {
+        // Gunakan window default bila skema atau pilihan window rombel belum tersedia.
         if (!$this->supportsRombelScanWindow() || !($detailRombel->gunakan_window_scan ?? false)) {
             return [
                 'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
@@ -325,5 +327,12 @@ class JadwalAbsensiService
         $jadwal['label'] = $this->labelTipe($tipe);
 
         return $jadwal;
+    }
+
+    private function resolveDate(Carbon|string|null $date): Carbon
+    {
+        return $date instanceof Carbon
+            ? $date->copy()
+            : Carbon::parse($date ?: now()->toDateString());
     }
 }
