@@ -1,0 +1,11 @@
+{
+    "name": "DataMaster",
+    "alias": "datamaster",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DataMaster\\Providers\\DataMasterServiceProvider"
+    ],
+    "files": []
+}

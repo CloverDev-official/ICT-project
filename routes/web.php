@@ -93,38 +93,6 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
     // profil
     Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
     
-    // data  murid
-    Route::prefix('/data-murid')->middleware('access:data-murid')->group(function () {
-        Route::get('/', IndexMurid::class)->name('data-murid');
-        Route::get('/create', CreateMurid::class)->name('tambah-murid');
-        Route::get('/edit/{muriduuid}', EditMurid::class)->name('edit-murid');
-        Route::get('/template', function () {
-            return Excel::download(new MuridTemplateExport(), 'template-import-murid.xlsx');
-        })->name('template-import-murid');
-    });
-
-    // data guru
-    Route::prefix('/data-guru')->middleware('access:data-guru')->group(function () {
-        Route::get('/', IndexGuru::class)->name('data-guru');
-        Route::get('/create', CreateGuru::class)->name('tambah-guru');
-        Route::get('/edit/{id}', EditGuru::class)->name('edit-guru');
-        Route::get('/template', function () {
-            return Excel::download(new GuruTemplateExport(), 'template-import-guru.xlsx');
-        })->name('template-import-guru');
-    });
-
-    Route::prefix('/data-kelas')->middleware('access:data-kelas')->group(function () {
-        Route::get('/', IndexKelas::class)->name('data-kelas');
-        Route::get('/create', CreateKelas::class)->name('tambah-kelas');
-        Route::get('/edit/{rombelId}', EditKelasRombel::class)->name('edit-kelas');
-    });
-
-    Route::prefix('/data-jurusan')->middleware('access:data-jurusan')->group( function () {
-        Route::get('/', IndexJurusan::class)->name('data-jurusan');
-        Route::get('/create', CreateJurusan::class)->name('tambah-jurusan');
-        Route::get('/edit/{jurusanId}', EditJurusanRombel::class)->name('edit-jurusan');
-    });
-
     // manajemen group
     Route::prefix('/manajemen')->group( function () {
         // manajemen waktu
