@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace Modules\General\Livewire\Pengaturan;
 
 use App\Helpers\ToastMagic;
 use App\Helpers\UploadFileNamer;
@@ -10,7 +10,7 @@ use Livewire\WithFileUploads;
 use Livewire\Component;
 use Throwable;
 
-class Pengaturan extends Component
+class Index extends Component
 {
     use WithFileUploads;
 
@@ -148,7 +148,7 @@ class Pengaturan extends Component
 
     public function render()
     {
-        return view('livewire.pengaturan', [
+        return view('general::livewire.pengaturan.index', [
             'logoSource' => $this->previewUrl($this->logo, $this->logoPreview),
             'loginImageSource' => $this->previewUrl($this->loginImage, $this->loginImagePreview),
         ]);

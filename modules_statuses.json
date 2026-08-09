@@ -3,5 +3,6 @@
     "Absensi": true,
     "DataMaster": true,
     "Manajemen": true,
-    "ScanQR": true
+    "ScanQR": true,
+    "General": true
 }

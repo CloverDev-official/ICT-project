@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace Modules\General\Livewire\Dashboard;
 
 use App\Models\Admin;
 use App\Models\Guru\AbsenGuru;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
-class Dashboard extends Component
+class Index extends Component
 {
     private const STATUS_OPTIONS = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alpa'];
 
@@ -46,18 +46,6 @@ class Dashboard extends Component
         $this->applyWaliKelasContext();
         $this->loadRombelList();
         $this->refreshDashboardData();
-    }
-
-    public function render()
-    {
-        return view('livewire.dashboard', [
-            'dateNow' => now()->translatedFormat('d F Y'),
-            'statCards' => $this->getStatCards(),
-            'dashboardData' => $this->dashboardData,
-            'isWaliKelas' => $this->isWaliKelas,
-            'waliRombelList' => $this->waliRombelList,
-            'selectedRombelId' => $this->selectedRombelId,
-        ]);
     }
 
     public function setRombelFilter(?int $rombelId): void
@@ -336,5 +324,17 @@ class Dashboard extends Component
             ->all();
 
         return [true, $rombelIds, $guru->id];
+    }
+
+    public function render()
+    {
+        return view('general::livewire.dashboard.Index', [
+            'dateNow' => now()->translatedFormat('d F Y'),
+            'statCards' => $this->getStatCards(),
+            'dashboardData' => $this->dashboardData,
+            'isWaliKelas' => $this->isWaliKelas,
+            'waliRombelList' => $this->waliRombelList,
+            'selectedRombelId' => $this->selectedRombelId,
+        ]);
     }
 }
