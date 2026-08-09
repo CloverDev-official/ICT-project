@@ -59,8 +59,7 @@
     </div>
 
     <!-- FILTER -->
-    <div
-        class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
 
         <!-- top -->
         <div
@@ -102,18 +101,27 @@
 
         </div>
 
-        <!-- filter grid -->
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <!-- dropdown -->
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-4">
 
             <!-- tingkat -->
             <div
                 x-data="{
                     open: false,
-                    selected: '',
+                    query: '',
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
 
                     select(id, label) {
-                        this.selected = label
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.query = label
                         this.open = false
+
                         $wire.set('filterTingkat', id)
                     }
                 }"
@@ -123,40 +131,53 @@
                     Tingkat
                 </label>
 
-                <div
-                    @click="open = !open"
-                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
-
-                    <span
-                        x-text="selected ? selected : 'Semua tingkat'"
-                        class="text-sm text-gray-700">
-                    </span>
+                <div class="relative">
+                    <input
+                        x-model="query"
+                        @focus="open = true; query = ''"
+                        @input="open = true"
+                        @keydown.escape="open = false"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Cari tingkat..."
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 pr-11 text-sm text-gray-700 transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100">
 
                     <iconify-icon
-                        icon="lineicons:chevron-up"
+                        icon="mdi:magnify"
                         width="20"
                         height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                     </iconify-icon>
-
                 </div>
 
                 <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
 
-                    <div @click="select(null, 'Semua Tingkat')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
-                        Semua Tingkat
+                    <div
+                        @click.prevent="select(null, 'Semua tingkat')"
+                        x-show="!query || 'semua tingkat'.includes(query.toLowerCase())"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua tingkat</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
                     @foreach ($listRombel->pluck('tingkat')->filter()->sortBy('nama')->unique('id') as $tingkat)
-                    <div @click="select({{ $tingkat->id }}, '{{ $tingkat->nama }}')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
-                        {{ $tingkat->nama }}
+                    <div
+                        @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
+                        x-show="!query || @js(strtolower($tingkat->nama)).includes(query.toLowerCase())"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $tingkat->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $tingkat->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
                     @endforeach
+
+                    <p
+                        x-show="query && !(@js($listRombel->pluck('tingkat')->filter()->sortBy('nama')->unique('id')->pluck('nama')->prepend('Semua tingkat')->values())).some((item) => item.toLowerCase().includes(query.toLowerCase()))"
+                        class="px-4 py-3 text-sm text-gray-500">
+                        Tingkat tidak ditemukan.
+                    </p>
+
                 </div>
 
             </div>
@@ -165,11 +186,20 @@
             <div
                 x-data="{
                     open: false,
-                    selected: '',
+                    query: '',
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
 
                     select(id, label) {
-                        this.selected = label
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.query = label
                         this.open = false
+
                         $wire.set('filterJurusan', id)
                     }
                 }"
@@ -178,56 +208,75 @@
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
                     Jurusan
                 </label>
-                
-                <!-- toggle -->
-                <div
-                    @click="open = !open"
-                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
 
-                    <span
-                        x-text="selected ? selected : 'Semua jurusan'"
-                        class="line-clamp-1 text-sm text-gray-700">
-                    </span>
+                <div class="relative">
+                    <input
+                        x-model="query"
+                        @focus="open = true; query = ''"
+                        @input="open = true"
+                        @keydown.escape="open = false"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Cari jurusan..."
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 pr-11 text-sm text-gray-700 transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100">
 
                     <iconify-icon
-                        icon="lineicons:chevron-up"
+                        icon="mdi:magnify"
                         width="20"
                         height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                     </iconify-icon>
-
                 </div>
 
                 <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
 
-                    <div @click="select(null, 'Semua jurusan')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
-                        Semua jurusan
+                    <div
+                        @click.prevent="select(null, 'Semua jurusan')"
+                        x-show="!query || 'semua jurusan'.includes(query.toLowerCase())"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua jurusan</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
-                    @foreach ($filteredJurusan as $jurusan)
-                        <div @click="select({{ $jurusan->id }}, '{{ $jurusan->nama }}')"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
-                            {{ $jurusan->nama }}
-                        </div>
+                    @foreach ($this->filteredJurusan as $jurusan)
+                    <div
+                        @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
+                        x-show="!query || @js(strtolower($jurusan->nama)).includes(query.toLowerCase())"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $jurusan->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $jurusan->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
                     @endforeach
 
-                </div>
+                    <p
+                        x-show="query && !(@js($this->filteredJurusan->pluck('nama')->prepend('Semua jurusan')->values())).some((item) => item.toLowerCase().includes(query.toLowerCase()))"
+                        class="px-4 py-3 text-sm text-gray-500">
+                        Jurusan tidak ditemukan.
+                    </p>
 
+                </div>
             </div>
 
             <!-- kelas -->
             <div
                 x-data="{
                     open: false,
-                    selected: '',
+                    query: '',
+                    selectedId: null,
+                    selectedLabel: null,
+
+                    toggle() {
+                        this.open = !this.open
+                    },
 
                     select(id, label) {
-                        this.selected = label
+                        this.selectedId = id
+                        this.selectedLabel = label
+                        this.query = label
                         this.open = false
+
                         $wire.set('filterIndeks', id)
                     }
                 }"
@@ -237,59 +286,69 @@
                     Kelas
                 </label>
 
-                <!-- toggle -->
-                <div
-                    @click="open = !open"
-                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition hover:border-blue-main hover:bg-white">
-
-                    <span
-                        x-text="selected ? selected : 'Semua kelas'"
-                        class="text-sm text-gray-700">
-                    </span>
+                <div class="relative">
+                    <input
+                        x-model="query"
+                        @focus="open = true; query = ''"
+                        @input="open = true"
+                        @keydown.escape="open = false"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Cari kelas..."
+                        class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 pr-11 text-sm text-gray-700 transition hover:border-blue-main hover:bg-white focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100">
 
                     <iconify-icon
-                        icon="lineicons:chevron-up"
+                        icon="mdi:magnify"
                         width="20"
                         height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                     </iconify-icon>
-
                 </div>
 
                 <!-- dropdown -->
-                <div x-show="open" @click.outside="open = false" x-transition style="display: none;"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
+                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
+                    class="absolute mt-2 w-full max-h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
 
-                    <div @click="select(null, 'Semua kelas')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
-                        Semua kelas
+                    <div
+                        @click.prevent="select(null, 'Semua Kelas')"
+                        x-show="!query || 'semua kelas'.includes(query.toLowerCase())"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>Semua Kelas</span>
+                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
                     </div>
 
                     @foreach ($filteredIndeks as $indeks)
-                        <div @click="select({{ $indeks->id }}, '{{ $indeks->nama }}')"
-                            class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition">
-                            {{ $indeks->nama }}
-                        </div>
+                    <div
+                        @click.prevent="select({{ (int) $indeks->id }}, @js($indeks->nama))"
+                        x-show="!query || @js(strtolower($indeks->nama)).includes(query.toLowerCase())"
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
+                        <span>{{ $indeks->nama }}</span>
+                        <iconify-icon x-show="selectedId == {{ (int) $indeks->id }}" icon="lineicons:check" width="24" height="24"></iconify-icon>
+                    </div>
                     @endforeach
 
+                    <p
+                        x-show="query && !(@js($filteredIndeks->pluck('nama')->prepend('Semua kelas')->values())).some((item) => item.toLowerCase().includes(query.toLowerCase()))"
+                        class="px-4 py-3 text-sm text-gray-500">
+                        Kelas tidak ditemukan.
+                    </p>
+
                 </div>
+
+
             </div>
-
-            <!-- tanggal -->
+            
+            <!-- tanggal absen -->
             <div>
-
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
                     Tanggal Absen
                 </label>
-
+        
                 <input
                     type="date"
                     wire:model.live="filterTanggal"
                     class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
-
             </div>
-
         </div>
 
     </div>
