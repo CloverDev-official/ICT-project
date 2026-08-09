@@ -4,6 +4,7 @@
     $siteLogo = \App\Models\Setting::resolveAssetUrl($siteSettings['logo'] ?? null, asset('assets/img/logo_smkn_2.png'));
     $siteName = $siteSettings['nama_website'] ?? config('app.name');
 @endphp
+
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -25,16 +26,21 @@
 
         @livewireStyles
     </head>
+
     <body class="cursor-auto bg-blue-50 overflow-hidden" x-data="{ openside: false }">
         <main class="h-screen flex justify-start" >
-            <livewire:components.sidebar/>
+            <livewire:components.sidebar :key="'layout-sidebar'" />
             <div class="flex-1 flex flex-col min-h-0 overflow-y-auto" >
                 <div class="p-4">
-                    <livewire:components.header/>
+                    <livewire:components.header :key="'layout-header'" />
                     {{ $slot }}
                 </div>
             </div>
         </main>
+        @if (app()->environment('local'))
+            <livewire:components.test-time :key="'layout-test-time-app'" />
+        @endif
+
         @livewireScripts
 
         {!! ToastMagic::scripts() !!}

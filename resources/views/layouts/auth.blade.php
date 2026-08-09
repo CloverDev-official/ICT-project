@@ -25,8 +25,13 @@
 
         @livewireStyles
     </head>
+
     <body class="cursor-auto overflow-hidden scroll-hidden" >
         {{ $slot }}
+
+        @if (app()->environment('local'))
+            <livewire:components.test-time :key="'layout-test-time-auth'" />
+        @endif
 
         @livewireScripts
 
