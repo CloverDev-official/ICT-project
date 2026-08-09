@@ -328,7 +328,7 @@ class Index extends Component
 
     public function render()
     {
-        return view('general::livewire.dashboard.Index', [
+        return view('general::livewire.dashboard.index', [
             'dateNow' => now()->translatedFormat('d F Y'),
             'statCards' => $this->getStatCards(),
             'dashboardData' => $this->dashboardData,
