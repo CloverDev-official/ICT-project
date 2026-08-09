@@ -2,10 +2,9 @@
 
 namespace Modules\DataMaster\Livewire\DataKelas;
 
-use App\Models\Murid\Rombel\Indeks;
-use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
 use App\Models\Murid\Rombel\Tingkat;
+use App\Services\Rombel\RombelFilterService;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -22,104 +21,106 @@ class Index extends Component
 
     public ?int $filterTingkat = null;
     public ?int $filterJurusan = null;
-    public int|string|null $filterIndeks = null;
+    public ?int $filterIndeks = null;
 
     public function mount(): void
     {
         $this->listTingkat = Tingkat::query()
             ->orderBy('nama')
             ->orderBy('id')
-            ->get(['id', 'nama']);
+            ->get([
+                'id',
+                'nama',
+            ]);
 
         $this->refreshFilterOptions();
     }
 
-    private function applyRombelFilter($q): void
+    private function rombelFilterService(): RombelFilterService
     {
-        $q->when($this->filterTingkat, fn ($q) => $q->where('tingkat_id', $this->filterTingkat))
-            ->when($this->filterJurusan, fn ($q) => $q->where('jurusan_id', $this->filterJurusan))
-            ->when($this->filterIndeks, fn ($q) => $q->where('indeks_id', $this->filterIndeks));
+        return app(RombelFilterService::class);
     }
 
-    private function rombelBaseQuery()
-    {
-        return Rombel::query()
-            ->tap(fn ($q) => $this->applyRombelFilter($q));
-    }
-
+    /**
+     * Ambil daftar Rombel berdasarkan filter aktif.
+     */
     private function getRombel()
     {
-        return $this->rombelBaseQuery()
-            ->with(['tingkat:id,nama', 'jurusan:id,nama', 'indeks:id,nama'])
+        return Rombel::query()
+            ->with([
+                'tingkat:id,nama',
+                'jurusan:id,nama',
+                'indeks:id,nama',
+            ])
+            ->when(
+                $this->filterTingkat !== null,
+                fn ($q) => $q->where(
+                    'tingkat_id',
+                    $this->filterTingkat
+                )
+            )
+            ->when(
+                $this->filterJurusan !== null,
+                fn ($q) => $q->where(
+                    'jurusan_id',
+                    $this->filterJurusan
+                )
+            )
+            ->when(
+                $this->filterIndeks !== null,
+                fn ($q) => $q->where(
+                    'indeks_id',
+                    $this->filterIndeks
+                )
+            )
             ->orderBy('tingkat_id')
             ->orderBy('jurusan_id')
             ->orderBy('indeks_id')
+            ->orderBy('id')
             ->fastPaginate($this->perPage);
     }
 
-    private function getAvailableJurusan()
-    {
-        return Jurusan::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')
-                    ->select('jurusan_id');
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterIndeks) {
-                    $q->where('indeks_id', $this->filterIndeks);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
-    }
-
-    private function getAvailableIndeks()
-    {
-        $indeks = Indeks::query()
-            ->whereIn('id', function ($q) {
-                $q->from('rombel')
-                    ->select('indeks_id');
-                if ($this->filterTingkat) {
-                    $q->where('tingkat_id', $this->filterTingkat);
-                }
-                if ($this->filterJurusan) {
-                    $q->where('jurusan_id', $this->filterJurusan);
-                }
-            })
-            ->orderBy('nama')
-            ->orderBy('id')
-            ->get(['id', 'nama']);
-
-        if ($indeks->isNotEmpty()) {
-            return $indeks;
-        }
-
-        return Indeks::options();
-    }
-
+    /**
+     * Refresh option Jurusan dan Indeks
+     * berdasarkan filter yang sedang aktif.
+     */
     private function refreshFilterOptions(): void
     {
-        $this->filteredJurusan = $this->getAvailableJurusan();
-        $this->filteredIndeks = $this->getAvailableIndeks();
+        $service = $this->rombelFilterService();
+
+        $this->filteredJurusan = $service->getAvailableJurusan(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            null,
+        );
+
+        $this->filteredIndeks = $service->getAvailableIndeks(
+            $this->filterTingkat,
+            $this->filterJurusan,
+            $this->filterIndeks,
+            null,
+        );
     }
 
     public function updatedFilterTingkat(): void
     {
         $this->resetPage();
+
         $this->refreshFilterOptions();
     }
 
     public function updatedFilterJurusan(): void
     {
         $this->resetPage();
+
         $this->refreshFilterOptions();
     }
 
     public function updatedFilterIndeks(): void
     {
         $this->resetPage();
+
         $this->refreshFilterOptions();
     }
 
@@ -132,6 +133,7 @@ class Index extends Component
     public function refreshData(): void
     {
         $this->resetPage();
+
         $this->refreshFilterOptions();
     }
 
