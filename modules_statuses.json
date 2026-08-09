@@ -4,5 +4,6 @@
     "DataMaster": true,
     "Manajemen": true,
     "ScanQR": true,
-    "General": true
+    "General": true,
+    "Profil": true
 }

@@ -75,9 +75,5 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
             ]);
-            })->name('card-template');
-    
-    // profil
-    Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
-    
+            })->name('card-template');    
 });

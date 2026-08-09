@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace Modules\Profil\Livewire\Staff;
 
 use App\Helpers\ToastMagic;
 use App\Helpers\UploadFileNamer;
@@ -170,6 +170,6 @@ class Profil extends Component
 
     public function render()
     {
-        return view('livewire.profil');
+        return view('profil::livewire.staff.profil');
     }
 }
