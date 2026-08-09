@@ -93,41 +93,4 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
     // profil
     Route::get('/profil', Profil::class)->middleware('access:profil')->name('profil');
     
-    // manajemen group
-    Route::prefix('/manajemen')->group( function () {
-        // manajemen waktu
-        Route::prefix('/waktu')->middleware('access:manajemen-waktu')->group( function () {
-            Route::get('/', ManajemenWaktu::class)->name('manajemen-waktu');
-            Route::get('/create', TambahEvent::class)->name('tambah-event');
-        });
-
-        // manajemen murid
-        Route::prefix('/murid')->middleware('access:manajemen-murid')->group( function () {
-            Route::get('/', ManajemenMurid::class)->name('manajemen-murid');
-            Route::get('/create', TambahFoto::class)->name('tambah-foto');
-            Route::get('/edit',  EditFoto::class)->name('edit-foto');
-        });
-        
-        // generate
-        Route::get('/generate-qr', GenerateQR::class)->middleware('access:generate-qr')->name('generate-QR');
-        
-        // role akses
-        Route::get('/role', IndexRole::class)->middleware('access:manajemen-role')->name('manajemen-role');
-
-        Route::middleware('access:manajemen-lainnya')->group( function () {
-
-            // tahun ajaran
-            Route::get('/tahun-ajaran', TahunAjaran::class)->name('manajemen-tahun-ajaran');
-
-            // manajemen user group
-            Route::prefix('/user')->group( function () {
-                Route::get('/', IndexUser::class)->name('manajemen-user');
-                Route::get('/create', CreateUser::class)->name('tambah-user');
-                Route::get('/edit/{userId}', EditUser::class)->name('edit-user');
-                
-            });
-        });
-    });
-
-
 });

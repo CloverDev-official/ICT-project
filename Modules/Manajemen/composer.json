@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/manajemen",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Manajemen\\": "app/",
+            "Modules\\Manajemen\\Database\\Factories\\": "database/factories/",
+            "Modules\\Manajemen\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Manajemen\\Tests\\": "tests/"
+        }
+    }
+}

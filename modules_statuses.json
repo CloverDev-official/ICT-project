@@ -1,5 +1,6 @@
 {
     "Laporan": true,
     "Absensi": true,
-    "DataMaster": true
+    "DataMaster": true,
+    "Manajemen": true
 }

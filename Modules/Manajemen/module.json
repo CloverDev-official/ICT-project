@@ -1,0 +1,11 @@
+{
+    "name": "Manajemen",
+    "alias": "manajemen",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Manajemen\\Providers\\ManajemenServiceProvider"
+    ],
+    "files": []
+}
