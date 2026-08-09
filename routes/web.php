@@ -60,7 +60,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login-page');
 });
 
-
 Route::prefix('mpanel')->middleware('auth')->group(function () {
 
     Route::get('/card-template/{orientation}', function (string $orientation) {
@@ -77,9 +76,6 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
             ]);
             })->name('card-template');
-
-    //  scan qr code
-    Route::get('/scan-qrcode', ScanQRCode::class)->middleware('access:scan-qrcode')->name('scan-qrcode');
     
     // dashboard
     Route::get('/dashboard', Dashboard::class)->middleware('access:dashboard')->name('dashboard');
