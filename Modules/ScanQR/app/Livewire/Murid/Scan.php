@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Murid\Absen;
+namespace Modules\ScanQR\Livewire\Murid;
 
 use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\IzinMurid;
@@ -12,7 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class ScanQRCode extends Component
+class Scan extends Component
 {
     public ?Murid $murid = null;
     public bool $tersimpan = false;
@@ -338,7 +338,7 @@ class ScanQRCode extends Component
         Carbon::setLocale('id');
         $dateNow = Carbon::now()->translatedFormat('d F Y, l');
 
-        return view('livewire.murid.absen.scan-qrcode', [
+        return view('scanqr::livewire.murid.scan', [
             'dateNow' => $dateNow,
         ]);
     }

@@ -2,5 +2,6 @@
     "Laporan": true,
     "Absensi": true,
     "DataMaster": true,
-    "Manajemen": true
+    "Manajemen": true,
+    "ScanQR": true
 }
