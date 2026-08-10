@@ -3,13 +3,13 @@
     x-init="init(); loadInitialState()"
     x-cloak
     wire:ignore
-    class="space-y-6"
+    class="space-y-5 bg-slate-50/70 p-3 sm:p-5"
 >
     <style>
         [x-cloak] { display: none !important; }
     </style>
 
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-main to-blue-deep p-5 shadow-lg sm:p-6">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep p-5 sm:p-7">
         <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10"></div>
         <div class="absolute bottom-0 left-0 h-36 w-36 rounded-full bg-white/5"></div>
 
@@ -21,7 +21,7 @@
                 <div>
                     <h1 class="text-2xl font-bold text-white sm:text-3xl">Manajemen Kalender Absensi</h1>
                     <p class="mt-1 max-w-2xl text-sm text-blue-100">
-                        Atur jadwal per tanggal dan per kelas: pulang cepat, PJJ, libur, atau hari spesial. Klik tanggal terasa instan karena form diproses di browser dulu.
+                        Pilih tanggal, atur event, lalu tentukan kelas dan jendela scan-nya.
                     </p>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                 type="button"
                 @click="goToday()"
                 :disabled="loading || !isReady"
-                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-main shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-wait disabled:opacity-60"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-blue-main transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white/70 disabled:cursor-wait disabled:opacity-60"
             >
                 <iconify-icon icon="solar:calendar-mark-bold" width="20" height="20"></iconify-icon>
                 Hari Ini
@@ -41,10 +41,10 @@
     <div
         x-show="!isReady"
         x-transition.opacity
-        class="grid grid-cols-1 gap-6 xl:grid-cols-12"
+        class="grid grid-cols-1 gap-5 lg:grid-cols-12"
     >
-        <section class="space-y-6 xl:col-span-8">
-            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+        <section class="space-y-5 lg:col-span-8">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
                 <div class="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <div class="h-7 w-48 animate-pulse rounded-xl bg-gray-200"></div>
@@ -71,10 +71,11 @@
                     <div class="h-12 animate-pulse rounded-2xl bg-gray-100"></div>
                 </div>
             </div>
+
         </section>
 
-        <aside class="space-y-6 xl:col-span-4">
-            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+        <aside class="space-y-5 lg:col-span-4">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
                 <div class="h-5 w-28 animate-pulse rounded-xl bg-blue-100"></div>
                 <div class="mt-3 h-8 w-44 animate-pulse rounded-xl bg-gray-200"></div>
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
@@ -93,15 +94,15 @@
     <div
         x-show="isReady"
         x-transition.opacity
-        class="grid grid-cols-1 gap-6 xl:grid-cols-12"
+        class="grid grid-cols-1 gap-6 lg:grid-cols-12"
     >
-        <section class="space-y-6 xl:col-span-8">
+        <section class="space-y-6 lg:col-span-8">
             <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h2 class="text-xl font-bold text-gray-800" x-text="state.monthLabel"></h2>
-                        <p class="mt-1 text-sm text-gray-500">
-                            Jumat memakai default khusus. Sabtu dan Minggu libur default, tapi tetap bisa dioverride.
+                        <p class="mt-1 text-sm text-slate-500">
+                            Pilih tanggal untuk melihat statusnya dan mulai mengatur event.
                         </p>
                     </div>
 
@@ -110,7 +111,7 @@
                             type="button"
                             @click="previousMonth()"
                             :disabled="loading || !isReady"
-                            class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:border-blue-main hover:text-blue-main disabled:cursor-wait disabled:opacity-50"
+                            class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-blue-main hover:text-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/20 disabled:cursor-wait disabled:opacity-50"
                             aria-label="Bulan sebelumnya"
                         >
                             <iconify-icon icon="lineicons:chevron-left" width="19" height="19"></iconify-icon>
@@ -119,7 +120,7 @@
                             type="button"
                             @click="nextMonth()"
                             :disabled="loading || !isReady"
-                            class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:border-blue-main hover:text-blue-main disabled:cursor-wait disabled:opacity-50"
+                            class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-blue-main hover:text-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/20 disabled:cursor-wait disabled:opacity-50"
                             aria-label="Bulan berikutnya"
                         >
                             <iconify-icon icon="lineicons:chevron-right" width="19" height="19"></iconify-icon>
@@ -148,7 +149,7 @@
                                 <button
                                     type="button"
                                     @click="selectDate(day.date)"
-                                    class="group flex min-h-16 w-full flex-col rounded-2xl border p-2 text-left transition sm:min-h-24 sm:p-3"
+                                    class="group flex min-h-16 w-full flex-col rounded-xl border p-2 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-main/30 sm:min-h-24 sm:p-3"
                                     :class="calendarClass(day)"
                                 >
                                     <div class="flex items-start justify-between gap-1">
@@ -180,13 +181,13 @@
                 </div>
             </div>
 
-            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
                 <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-gray-800">Event Bulan Ini</h3>
                         <p class="text-sm text-gray-500">Ringkasan tanggal yang punya jadwal khusus per kelas.</p>
                     </div>
-                    <div class="rounded-2xl bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-600">
+                    <div class="rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-main">
                         <span x-text="monthEvents().length"></span> event
                     </div>
                 </div>
@@ -237,22 +238,51 @@
                     </table>
                 </div>
             </div>
+
+            <div class="rounded-2xl border border-blue-100 bg-white p-4 sm:p-6">
+                <div class="mb-5 flex items-center gap-3">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-main text-white"><iconify-icon icon="solar:clock-circle-bold" width="18" height="18"></iconify-icon></span>
+                    <div>
+                        <h3 class="font-semibold text-slate-800">Jendela Scan Default</h3>
+                        <p class="text-xs text-slate-500">Digunakan pada hari tanpa event.</p>
+                    </div>
+                </div>
+                <form @submit.prevent="saveDefault" class="grid gap-5 lg:grid-cols-2">
+                    <div class="border-t border-slate-200 pt-4">
+                        <div class="mb-3"><p class="font-bold text-gray-800">Senin–Kamis</p><p class="text-xs text-gray-500">Jendela scan masuk dan pulang reguler.</p></div>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Mulai</label><input type="time" x-model="defaultForm.scan_masuk_mulai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Sampai</label><input type="time" x-model="defaultForm.scan_masuk_sampai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Mulai</label><input type="time" x-model="defaultForm.scan_keluar_mulai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Sampai</label><input type="time" x-model="defaultForm.scan_keluar_sampai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                        </div>
+                    </div>
+                    <div class="border-t border-amber-200 pt-4">
+                        <div class="mb-3"><p class="font-bold text-gray-800">Khusus Jumat</p><p class="text-xs text-gray-500">Scan masuk mengikuti hari reguler.</p></div>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Mulai</label><input type="time" x-model="defaultForm.scan_keluar_jumat_mulai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Sampai</label><input type="time" x-model="defaultForm.scan_keluar_jumat_sampai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                        </div>
+                    </div>
+                    <button type="submit" :disabled="savingDefault || !isReady" class="lg:col-span-2 justify-self-end rounded-xl bg-blue-main px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-deep focus:outline-none focus:ring-2 focus:ring-blue-main/30 disabled:cursor-wait disabled:opacity-60"><span x-show="!savingDefault">Simpan Waktu Scan</span><span x-show="savingDefault">Menyimpan...</span></button>
+                </form>
+            </div>
         </section>
 
-        <aside class="space-y-6 xl:col-span-4 xl:sticky xl:top-6 self-start">
-            <div id="form-event-waktu" class="relative rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <aside class="flex flex-col gap-5 lg:col-span-4 lg:sticky lg:top-5 lg:max-h-[calc(100vh-2.5rem)] lg:overflow-y-auto lg:pr-2 self-start">
+            <div class="relative rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+                <div class="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
                     <div class="min-w-0">
-                        <p class="text-sm font-semibold text-blue-main">Tanggal Dipilih</p>
-                        <h3 class="text-xl font-bold text-gray-800" x-text="formatDate(selectedDate)"></h3>
+                        <p class="text-xs font-semibold text-blue-main">Tanggal Dipilih</p>
+                        <h3 class="text-lg font-bold text-gray-800" x-text="formatDate(selectedDate)"></h3>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="rounded-full px-3 py-1 text-xs font-bold" :class="selectedEvent() ? 'bg-orange-50 text-orange-600' : typePillClass(selectedDefault().tipe)" x-text="selectedEvent() ? 'Ada Event' : selectedDefault().label"></span>
+                    <div class="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                        <span class="rounded-full px-2.5 py-1 text-[11px] font-bold" :class="selectedEvent() ? 'bg-orange-50 text-orange-600' : typePillClass(selectedDefault().tipe)" x-text="selectedEvent() ? 'Ada Event' : selectedDefault().label"></span>
                         <button
                             type="button"
                             x-show="selectedEvent()"
                             @click="resetToDefault"
-                            class="rounded-full border border-gray-200 px-3 py-1 text-xs font-bold text-gray-600 transition hover:border-blue-main hover:text-blue-main"
+                            class="rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-bold text-gray-600 transition hover:border-blue-main hover:text-blue-main"
                         >
                             Reset ke Default
                         </button>
@@ -273,29 +303,27 @@
                     </div>
                 </div>
 
-                <div class="mb-5 grid gap-3 sm:grid-cols-2">
-                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+                <div class="mb-4 grid gap-2 sm:grid-cols-2">
+                    <div class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-xs text-gray-600">
                         <template x-if="selectedEvent()">
                             <div>
                                 <p class="font-bold text-gray-800" x-text="selectedEvent().nama_acara"></p>
                                 <p class="mt-1" x-text="selectedEvent().summary"></p>
-                                <p class="mt-2 text-xs text-gray-400">Detail jadwal per kelas ada di bawah.</p>
+                                <p class="mt-1 text-[11px] text-gray-400">Detail kelas ada di bawah.</p>
                             </div>
                         </template>
                         <template x-if="!selectedEvent()">
                             <div>
                                 <p class="font-bold text-gray-800" x-text="selectedDefault().label"></p>
                                 <p class="mt-1" x-text="selectedDefault().keterangan"></p>
-                                <p class="mt-2 text-xs text-gray-400" x-show="selectedDefault().jam_masuk">
-                                    <span x-text="selectedDefault().jam_masuk"></span> - <span x-text="selectedDefault().jam_pulang"></span>
-                                </p>
+                                <p class="mt-1 text-[11px] text-gray-400">Mengikuti jendela scan aktif.</p>
                             </div>
                         </template>
                     </div>
 
-                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
-                        <p class="text-xs font-bold uppercase text-gray-400">Jendela Scan</p>
-                        <div class="mt-2 space-y-1">
+                    <div class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-xs text-gray-600">
+                        <p class="text-[11px] font-bold uppercase text-gray-400">Jendela Scan</p>
+                        <div class="mt-1.5 space-y-1">
                             <div class="flex items-center justify-between gap-2">
                                 <span>Masuk</span>
                                 <span class="font-semibold text-gray-800" x-text="scanMasukLabel()"></span>
@@ -308,7 +336,18 @@
                     </div>
                 </div>
 
-                <form @submit.prevent="saveEvent" class="space-y-4">
+            </div>
+
+            <div id="form-event-waktu" class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+                <form @submit.prevent="saveEvent" class="space-y-5">
+                    <section class="border-b border-slate-200 pb-5">
+                        <div class="mb-4 flex items-start gap-3">
+                            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-main text-xs font-bold text-white">1</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Tanggal & Event</h4>
+                                <p class="text-xs text-slate-500">Tentukan rentang tanggal dan informasi event.</p>
+                            </div>
+                        </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Dari Tanggal</label>
@@ -329,14 +368,18 @@
                         <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Keterangan Umum</label>
                         <textarea x-model="eventForm.keterangan" rows="2" placeholder="Opsional" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none"></textarea>
                     </div>
+                    </section>
 
-                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                    <section class="border-b border-slate-200 pb-5">
                         <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <p class="font-bold text-gray-800">Preset untuk Kelas Baru</p>
-                                <p class="text-xs text-gray-500">Preset ini diterapkan ke kelas yang dipilih setelahnya, termasuk window scan jika diaktifkan.</p>
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-main text-xs font-bold text-white">2</span>
+                                    <p class="font-semibold text-slate-800">Preset Kelas</p>
+                                </div>
+                                <p class="text-xs text-gray-500">Pilih tipe lalu isi jendela scan. Preset ini langsung dipakai saat kelas dipilih.</p>
                             </div>
-                            <button type="button" @click="applyPresetToAll" class="rounded-xl bg-white px-3 py-2 text-xs font-bold text-blue-main shadow-sm transition hover:bg-blue-50">
+                            <button type="button" @click="applyPresetToAll" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-main transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-main/20">
                                 Terapkan ke Terpilih
                             </button>
                         </div>
@@ -348,22 +391,15 @@
                                         <option :value="key" x-text="label"></option>
                                     </template>
                                 </select>
-                                <input type="time" x-model="preset.jam_masuk" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                <input type="time" x-model="preset.jam_pulang" :disabled="preset.tipe === 'libur'" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                <input type="text" x-model="preset.keterangan" placeholder="Keterangan kelas" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none">
+                                <input type="text" x-model="preset.keterangan" placeholder="Keterangan kelas" class="rounded-2xl border border-gray-200 px-3 py-3 text-sm focus:border-blue-main focus:outline-none sm:col-span-3">
                             </div>
 
-                            <div class="rounded-2xl border border-blue-100 bg-white p-3 shadow-sm">
-                                <label class="flex cursor-pointer items-start justify-between gap-3">
-                                    <div>
-                                        <p class="text-sm font-bold text-gray-800">Atur jam bisa scan masuk dan scan pulang</p>
-                                        <p class="mt-1 text-xs text-gray-500">Aktifkan jika kelas baru perlu window scan khusus. Jika nonaktif, kelas memakai window default.</p>
-                                    </div>
-                                    <input type="checkbox" x-model="preset.gunakan_window_scan" :disabled="preset.tipe === 'libur'" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-main focus:ring-blue-main disabled:cursor-not-allowed disabled:opacity-50">
-                                </label>
-
+                            <div class="border-l-2 border-blue-main/30 pl-3" x-show="preset.tipe !== 'libur'">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">Scan Kelas</p>
+                                    <p class="mt-1 text-xs text-gray-500">Langsung isi waktu scan untuk kelas yang dipilih.</p>
+                                </div>
                                 <div
-                                    x-show="preset.gunakan_window_scan && preset.tipe !== 'libur'"
                                     x-transition:enter="transition ease-out duration-200"
                                     x-transition:enter-start="opacity-0 -translate-y-1"
                                     x-transition:enter-end="opacity-100 translate-y-0"
@@ -391,20 +427,18 @@
                                     </div>
                                 </div>
 
-                                <p class="mt-3 text-xs text-blue-700" x-show="preset.gunakan_window_scan && preset.tipe !== 'libur'">
-                                    Window scan preset akan disalin ke kelas yang dipilih berikutnya.
-                                </p>
-                                <p class="mt-3 text-xs text-gray-500" x-show="!preset.gunakan_window_scan || preset.tipe === 'libur'">
-                                    Preset kelas baru memakai window scan default/global.
-                                </p>
+                                <p class="mt-3 text-xs text-blue-700">Jendela ini akan disalin ke kelas yang dipilih.</p>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="rounded-2xl border border-gray-200 p-4">
+                    <section class="border-b border-slate-200 pb-5">
                         <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <p class="font-bold text-gray-800">Atur Event Kelas</p>
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-main text-xs font-bold text-white">3</span>
+                                    <p class="font-semibold text-slate-800">Kelas Terdampak</p>
+                                </div>
                                 <p class="text-xs text-gray-500">
                                     <span x-text="eventForm.selected_rombel_ids.length"></span> kelas dipilih.
                                 </p>
@@ -415,15 +449,15 @@
                             </div>
                         </div>
 
-                        <input type="search" x-model.debounce.150ms="rombelSearch" placeholder="Cari kelas..." class="mb-3 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
+                        <input type="search" x-model.debounce.150ms="rombelSearch" placeholder="Cari kelas berdasarkan nama, tingkat, atau jurusan..." class="mb-3 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10">
 
-                        <div class="max-h-52 space-y-2 overflow-y-auto pr-1">
+                        <div class="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-slate-100 p-1.5">
                             <template x-for="rombel in filteredRombel()" :key="rombel.id">
                                 <button
                                     type="button"
                                     @click="toggleRombel(rombel.id)"
-                                    class="flex w-full items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left transition"
-                                    :class="isRombelSelected(rombel.id) ? 'border-blue-main bg-blue-50' : 'border-gray-100 hover:border-blue-main/40 hover:bg-gray-50'"
+                                    class="flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-main/20"
+                                    :class="isRombelSelected(rombel.id) ? 'border-blue-main bg-blue-50' : 'border-transparent hover:border-slate-200 hover:bg-slate-50'"
                                 >
                                     <div>
                                         <p class="text-sm font-bold text-gray-800" x-text="rombel.nama"></p>
@@ -435,24 +469,27 @@
                                 </button>
                             </template>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="space-y-3" x-show="eventForm.selected_rombel_ids.length > 0">
+                    <section class="space-y-3" x-show="eventForm.selected_rombel_ids.length > 0">
                         <div class="flex items-center justify-between gap-3">
-                            <p class="font-bold text-gray-800">Detail Per Kelas</p>
-                            <p class="text-xs text-gray-400">Bisa beda antar kelas.</p>
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-main text-xs font-bold text-white">4</span>
+                                <p class="font-semibold text-slate-800">Detail Per Kelas</p>
+                            </div>
+                            <p class="text-xs text-slate-400">Bisa berbeda.</p>
                         </div>
 
-                        <div class="max-h-[520px] space-y-3 overflow-y-auto pr-1">
-                            <div class="grid grid-cols-1 gap-3">
+                        <div class="max-h-[560px] space-y-2 overflow-y-auto pr-1">
+                            <div class="grid grid-cols-1 gap-2">
 	                                <template x-for="rombel in visibleSelectedRombel()" :key="rombel.id">
-                                    <div class="rounded-2xl border border-gray-200 p-3">
-                                    <div class="mb-3 flex items-center justify-between gap-3">
+                                    <div class="rounded-xl border border-slate-200 bg-white p-3">
+                                    <div class="mb-3 flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
                                         <div class="min-w-0">
                                             <p class="font-bold text-gray-800" x-text="rombel.nama"></p>
                                             <p class="text-xs text-gray-400" x-text="detailLabel(rombel.id)"></p>
                                         </div>
-                                        <button type="button" @click="toggleRombel(rombel.id)" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100">Hapus</button>
+                                        <button type="button" @click="toggleRombel(rombel.id)" class="rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">Hapus</button>
                                     </div>
 
                                     <div class="space-y-3">
@@ -462,22 +499,15 @@
                                                     <option :value="key" x-text="label"></option>
                                                 </template>
                                             </select>
-                                            <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_masuk" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
-                                            <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].jam_pulang" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none disabled:bg-gray-100">
                                             <textarea x-model="eventForm.detail_kelas[String(rombel.id)].keterangan" rows="2" placeholder="Keterangan khusus kelas ini" class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none sm:col-span-2"></textarea>
                                         </div>
 
-                                        <div class="rounded-2xl border border-blue-100 bg-blue-50/40 p-3">
-                                            <label class="flex cursor-pointer items-start justify-between gap-3">
-                                                <div>
-                                                    <p class="text-sm font-bold text-gray-800">Window scan khusus kelas</p>
-                                                    <p class="mt-1 text-xs text-gray-500">Aktifkan jika kelas ini punya jam scan masuk/pulang sendiri.</p>
-                                                </div>
-                                                <input type="checkbox" x-model="eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan" @change="fillDetailScanFromDefault(eventForm.detail_kelas[String(rombel.id)])" :disabled="eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-main focus:ring-blue-main disabled:cursor-not-allowed disabled:opacity-50">
-                                            </label>
-
+                                        <div class="border-l-2 border-blue-main/30 pl-3" x-show="eventForm.detail_kelas[String(rombel.id)].tipe !== 'libur'">
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-800">Scan Kelas</p>
+                                                <p class="mt-1 text-xs text-gray-500">Perubahan di sini langsung menjadi jadwal scan kelas ini.</p>
+                                            </div>
                                             <div
-                                                x-show="eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan && eventForm.detail_kelas[String(rombel.id)].tipe !== 'libur'"
                                                 x-transition:enter="transition ease-out duration-200"
                                                 x-transition:enter-start="opacity-0 -translate-y-1"
                                                 x-transition:enter-end="opacity-100 translate-y-0"
@@ -505,12 +535,7 @@
                                                 </div>
                                             </div>
 
-                                            <p class="mt-3 text-xs text-blue-700" x-show="eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan && eventForm.detail_kelas[String(rombel.id)].tipe !== 'libur'">
-                                                Scanner akan mendahulukan window scan kelas ini.
-                                            </p>
-                                            <p class="mt-3 text-xs text-gray-500" x-show="!eventForm.detail_kelas[String(rombel.id)].gunakan_window_scan || eventForm.detail_kelas[String(rombel.id)].tipe === 'libur'">
-                                                Kelas ini memakai window scan default/global.
-                                            </p>
+	                                            <p class="mt-3 text-xs text-blue-700">Scanner akan menggunakan Scan Kelas ini.</p>
 	                            </div>
                                 <div class="pt-3" x-show="selectedRombel().length > selectedDetailLimit">
                                     <button
@@ -526,17 +551,17 @@
                                 </template>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
                     <template x-if="formError">
                         <div class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600" x-text="formError"></div>
                     </template>
 
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div class="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
                         <button
                             type="submit"
                             :disabled="saving || dateLoading || !isReady"
-                            class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-main px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-deep disabled:cursor-wait disabled:opacity-60"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-main px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-deep focus:outline-none focus:ring-2 focus:ring-blue-main/30 disabled:cursor-wait disabled:opacity-60"
                         >
                             <span x-show="!saving">Simpan Event</span>
                             <span x-show="saving">Menyimpan...</span>
@@ -545,7 +570,7 @@
                             type="button"
                             @click="resetFormFromDate(selectedDate)"
                             :disabled="dateLoading"
-                            class="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:border-blue-main hover:text-blue-main"
+                            class="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-blue-main hover:text-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/20"
                         >
                             Reset Form
                         </button>
@@ -556,69 +581,13 @@
                         x-show="selectedEvent()"
                         @click="deleteSelectedDate"
                         :disabled="saving || dateLoading || !isReady"
-                        class="w-full rounded-2xl bg-red-50 px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+                        class="w-full rounded-xl border border-red-100 px-5 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 disabled:cursor-wait disabled:opacity-60"
                     >
                         Hapus Semua Event di Tanggal Ini
                     </button>
                 </form>
             </div>
 
-            <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold text-gray-800">Default Jam Absensi</h3>
-                    <p class="text-sm text-gray-500">Dipakai untuk hari tanpa event kelas.</p>
-                </div>
-
-                <form @submit.prevent="saveDefault" class="space-y-4">
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <div>
-                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Masuk</label>
-                            <input type="time" x-model="defaultForm.jam_masuk" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Normal</label>
-                            <input type="time" x-model="defaultForm.jam_pulang_normal" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Jam Pulang Jumat</label>
-                            <input type="time" x-model="defaultForm.jam_pulang_jumat" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                        </div>
-                    </div>
-
-                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                        <div class="mb-3">
-                            <p class="font-bold text-gray-800">Jendela Scan</p>
-                            <p class="text-xs text-gray-500">Atur jam bisa scan masuk dan scan pulang.</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div>
-                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Mulai</label>
-                                <input type="time" x-model="defaultForm.scan_masuk_mulai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Sampai</label>
-                                <input type="time" x-model="defaultForm.scan_masuk_sampai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Mulai</label>
-                                <input type="time" x-model="defaultForm.scan_keluar_mulai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Sampai</label>
-                                <input type="time" x-model="defaultForm.scan_keluar_sampai" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none">
-                            </div>
-                        </div>
-                    </div>
-                    <button
-                        type="submit"
-                        :disabled="savingDefault || !isReady"
-                        class="w-full rounded-2xl bg-gray-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-gray-800 disabled:cursor-wait disabled:opacity-60"
-                    >
-                        <span x-show="!savingDefault">Simpan Default</span>
-                        <span x-show="savingDefault">Menyimpan...</span>
-                    </button>
-                </form>
-            </div>
         </aside>
     </div>
 
@@ -820,8 +789,6 @@
                         return day ? day.default : {
                             tipe: 'normal',
                             label: 'Normal',
-                            jam_masuk: this.state.settings.jam_masuk,
-                            jam_pulang: this.state.settings.jam_pulang_normal,
                             scan_masuk_mulai: this.state.settings.scan_masuk_mulai,
                             scan_masuk_sampai: this.state.settings.scan_masuk_sampai,
                             scan_keluar_mulai: this.state.settings.scan_keluar_mulai,
@@ -839,9 +806,7 @@
 
                         this.preset = {
                             tipe: defaultType,
-                            jam_masuk: defaultType === 'libur' ? '' : (defaults.jam_masuk || this.state.settings.jam_masuk),
-                            jam_pulang: defaultType === 'libur' ? '' : (defaults.jam_pulang || this.state.settings.jam_pulang_normal),
-                            gunakan_window_scan: false,
+                            gunakan_window_scan: defaultType !== 'libur',
                             scan_masuk_mulai: defaultType === 'libur' ? '' : (defaults.scan_masuk_mulai || this.state.settings.scan_masuk_mulai),
                             scan_masuk_sampai: defaultType === 'libur' ? '' : (defaults.scan_masuk_sampai || this.state.settings.scan_masuk_sampai),
                             scan_keluar_mulai: defaultType === 'libur' ? '' : (defaults.scan_keluar_mulai || this.state.settings.scan_keluar_mulai),
@@ -862,13 +827,11 @@
                             event.details.forEach((item) => {
                                 this.eventForm.detail_kelas[String(item.rombel_id)] = {
                                     tipe: item.tipe,
-                                    jam_masuk: item.jam_masuk || '',
-                                    jam_pulang: item.jam_pulang || '',
-                                    gunakan_window_scan: Boolean(item.gunakan_window_scan),
-                                    scan_masuk_mulai: item.scan_masuk_mulai || this.state.settings.scan_masuk_mulai || '',
-                                    scan_masuk_sampai: item.scan_masuk_sampai || this.state.settings.scan_masuk_sampai || '',
-                                    scan_keluar_mulai: item.scan_keluar_mulai || this.state.settings.scan_keluar_mulai || '',
-                                    scan_keluar_sampai: item.scan_keluar_sampai || this.state.settings.scan_keluar_sampai || '',
+                                    gunakan_window_scan: item.tipe !== 'libur',
+                                    scan_masuk_mulai: item.scan_masuk_mulai || defaults.scan_masuk_mulai || '',
+                                    scan_masuk_sampai: item.scan_masuk_sampai || defaults.scan_masuk_sampai || '',
+                                    scan_keluar_mulai: item.scan_keluar_mulai || defaults.scan_keluar_mulai || '',
+                                    scan_keluar_sampai: item.scan_keluar_sampai || defaults.scan_keluar_sampai || '',
                                     keterangan: item.keterangan || '',
                                 };
                             });
@@ -877,8 +840,6 @@
 
                     syncPresetTime() {
                         if (this.preset.tipe === 'libur') {
-                            this.preset.jam_masuk = '';
-                            this.preset.jam_pulang = '';
                             this.preset.gunakan_window_scan = false;
                             this.preset.scan_masuk_mulai = '';
                             this.preset.scan_masuk_sampai = '';
@@ -887,46 +848,37 @@
                             return;
                         }
 
-                        if (!this.preset.jam_masuk) {
-                            this.preset.jam_masuk = this.state.settings.jam_masuk;
-                        }
-
-                        if (!this.preset.jam_pulang) {
-                            this.preset.jam_pulang = this.preset.tipe === 'khusus'
-                                ? this.state.settings.jam_pulang_jumat
-                                : this.state.settings.jam_pulang_normal;
-                        }
-
+                        this.preset.gunakan_window_scan = true;
                         this.fillPresetScanFromDefault();
                     },
 
                     fillPresetScanFromDefault() {
+                        const defaults = this.selectedDefault();
+
                         if (!this.preset.scan_masuk_mulai) {
-                            this.preset.scan_masuk_mulai = this.state.settings.scan_masuk_mulai;
+                            this.preset.scan_masuk_mulai = defaults.scan_masuk_mulai;
                         }
 
                         if (!this.preset.scan_masuk_sampai) {
-                            this.preset.scan_masuk_sampai = this.state.settings.scan_masuk_sampai;
+                            this.preset.scan_masuk_sampai = defaults.scan_masuk_sampai;
                         }
 
                         if (!this.preset.scan_keluar_mulai) {
-                            this.preset.scan_keluar_mulai = this.state.settings.scan_keluar_mulai;
+                            this.preset.scan_keluar_mulai = defaults.scan_keluar_mulai;
                         }
 
                         if (!this.preset.scan_keluar_sampai) {
-                            this.preset.scan_keluar_sampai = this.state.settings.scan_keluar_sampai;
+                            this.preset.scan_keluar_sampai = defaults.scan_keluar_sampai;
                         }
                     },
 
                     detailFromPreset() {
                         this.syncPresetTime();
 
-                        const gunakanWindowScan = this.preset.tipe !== 'libur' && Boolean(this.preset.gunakan_window_scan);
+                        const gunakanWindowScan = this.preset.tipe !== 'libur';
 
                         return {
                             tipe: this.preset.tipe,
-                            jam_masuk: this.preset.tipe === 'libur' ? '' : this.preset.jam_masuk,
-                            jam_pulang: this.preset.tipe === 'libur' ? '' : this.preset.jam_pulang,
                             gunakan_window_scan: gunakanWindowScan,
                             scan_masuk_mulai: gunakanWindowScan ? this.preset.scan_masuk_mulai : '',
                             scan_masuk_sampai: gunakanWindowScan ? this.preset.scan_masuk_sampai : '',
@@ -983,8 +935,6 @@
                         }
 
                         if (detail.tipe === 'libur') {
-                            detail.jam_masuk = '';
-                            detail.jam_pulang = '';
                             detail.gunakan_window_scan = false;
                             detail.scan_masuk_mulai = '';
                             detail.scan_masuk_sampai = '';
@@ -993,36 +943,27 @@
                             return;
                         }
 
-                        if (!detail.jam_masuk) {
-                            detail.jam_masuk = this.state.settings.jam_masuk;
-                        }
-
-                        if (!detail.jam_pulang) {
-                            detail.jam_pulang = detail.tipe === 'khusus'
-                                ? this.state.settings.jam_pulang_jumat
-                                : this.state.settings.jam_pulang_normal;
-                        }
-
-                        if (detail.gunakan_window_scan) {
-                            this.fillDetailScanFromDefault(detail);
-                        }
+                        detail.gunakan_window_scan = true;
+                        this.fillDetailScanFromDefault(detail);
                     },
 
                     fillDetailScanFromDefault(detail) {
+                        const defaults = this.selectedDefault();
+
                         if (!detail.scan_masuk_mulai) {
-                            detail.scan_masuk_mulai = this.state.settings.scan_masuk_mulai;
+                            detail.scan_masuk_mulai = defaults.scan_masuk_mulai;
                         }
 
                         if (!detail.scan_masuk_sampai) {
-                            detail.scan_masuk_sampai = this.state.settings.scan_masuk_sampai;
+                            detail.scan_masuk_sampai = defaults.scan_masuk_sampai;
                         }
 
                         if (!detail.scan_keluar_mulai) {
-                            detail.scan_keluar_mulai = this.state.settings.scan_keluar_mulai;
+                            detail.scan_keluar_mulai = defaults.scan_keluar_mulai;
                         }
 
                         if (!detail.scan_keluar_sampai) {
-                            detail.scan_keluar_sampai = this.state.settings.scan_keluar_sampai;
+                            detail.scan_keluar_sampai = defaults.scan_keluar_sampai;
                         }
                     },
 
@@ -1064,11 +1005,9 @@
                             return label;
                         }
 
-                        const scanLabel = detail.gunakan_window_scan
-                            ? ` • Scan ${this.formatRange(detail.scan_masuk_mulai, detail.scan_masuk_sampai)} / ${this.formatRange(detail.scan_keluar_mulai, detail.scan_keluar_sampai)}`
-                            : ' • Scan default';
+                        const scanLabel = ` • Scan ${this.formatRange(detail.scan_masuk_mulai, detail.scan_masuk_sampai)} / ${this.formatRange(detail.scan_keluar_mulai, detail.scan_keluar_sampai)}`;
 
-                        return `${label} • ${detail.jam_masuk || '--:--'} - ${detail.jam_pulang || '--:--'}${scanLabel}`;
+                        return `${label}${scanLabel}`;
                     },
 
                     monthEvents() {
@@ -1155,9 +1094,7 @@
                             const detail = this.eventForm.detail_kelas[key] || {};
                             payload.detail_kelas[key] = {
                                 tipe: detail.tipe || 'libur',
-                                jam_masuk: detail.tipe === 'libur' ? '' : (detail.jam_masuk || ''),
-                                jam_pulang: detail.tipe === 'libur' ? '' : (detail.jam_pulang || ''),
-                                gunakan_window_scan: detail.tipe !== 'libur' && Boolean(detail.gunakan_window_scan),
+                                gunakan_window_scan: detail.tipe !== 'libur',
                                 scan_masuk_mulai: detail.scan_masuk_mulai || '',
                                 scan_masuk_sampai: detail.scan_masuk_sampai || '',
                                 scan_keluar_mulai: detail.scan_keluar_mulai || '',
@@ -1192,13 +1129,12 @@
                     saveDefault() {
                         const payload = JSON.parse(JSON.stringify(this.defaultForm || {}));
                         const requiredTimes = {
-                            jam_masuk: 'Jam masuk default wajib diisi.',
-                            jam_pulang_normal: 'Jam pulang normal wajib diisi.',
-                            jam_pulang_jumat: 'Jam pulang Jumat wajib diisi.',
                             scan_masuk_mulai: 'Jam mulai scan masuk wajib diisi.',
                             scan_masuk_sampai: 'Jam akhir scan masuk wajib diisi.',
                             scan_keluar_mulai: 'Jam mulai scan pulang wajib diisi.',
                             scan_keluar_sampai: 'Jam akhir scan pulang wajib diisi.',
+                            scan_keluar_jumat_mulai: 'Jam mulai scan pulang Jumat wajib diisi.',
+                            scan_keluar_jumat_sampai: 'Jam akhir scan pulang Jumat wajib diisi.',
                         };
 
                         for (const [field, message] of Object.entries(requiredTimes)) {
@@ -1296,11 +1232,13 @@
                     },
 
                     scanMasukLabel() {
-                        return this.formatRange(this.state.settings.scan_masuk_mulai, this.state.settings.scan_masuk_sampai);
+                        const defaults = this.selectedDefault();
+                        return this.formatRange(defaults.scan_masuk_mulai, defaults.scan_masuk_sampai);
                     },
 
                     scanKeluarLabel() {
-                        return this.formatRange(this.state.settings.scan_keluar_mulai, this.state.settings.scan_keluar_sampai);
+                        const defaults = this.selectedDefault();
+                        return this.formatRange(defaults.scan_keluar_mulai, defaults.scan_keluar_sampai);
                     },
 
                     calendarClass(day) {

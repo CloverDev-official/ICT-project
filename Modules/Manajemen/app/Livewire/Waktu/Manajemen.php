@@ -14,9 +14,12 @@ use Livewire\Component;
 
 class Manajemen extends Component
 {
-    private const DEFAULT_MASUK = '07:30';
-    private const DEFAULT_PULANG_NORMAL = '16:30';
-    private const DEFAULT_PULANG_JUMAT = '11:30';
+    private const DEFAULT_SCAN_MASUK_MULAI = '06:30';
+    private const DEFAULT_SCAN_MASUK_SAMPAI = '07:30';
+    private const DEFAULT_SCAN_PULANG_MULAI = '15:30';
+    private const DEFAULT_SCAN_PULANG_SAMPAI = '16:30';
+    private const DEFAULT_SCAN_PULANG_JUMAT_MULAI = '11:30';
+    private const DEFAULT_SCAN_PULANG_JUMAT_SAMPAI = '13:00';
 
     private const TIPE_OPTIONS = [
         'normal' => 'Masuk Normal',
@@ -78,48 +81,44 @@ class Manajemen extends Component
     public function saveDefault(array $payload): array
     {
         $payload = $this->normalizeTimeFields($payload, [
-            'jam_masuk',
-            'jam_pulang_normal',
-            'jam_pulang_jumat',
             'scan_masuk_mulai',
             'scan_masuk_sampai',
             'scan_keluar_mulai',
             'scan_keluar_sampai',
+            'scan_keluar_jumat_mulai',
+            'scan_keluar_jumat_sampai',
         ]);
 
         $validated = validator($payload, [
-            'jam_masuk' => ['required', 'date_format:H:i'],
-            'jam_pulang_normal' => ['required', 'date_format:H:i'],
-            'jam_pulang_jumat' => ['required', 'date_format:H:i'],
             'scan_masuk_mulai' => ['required', 'date_format:H:i'],
             'scan_masuk_sampai' => ['required', 'date_format:H:i'],
             'scan_keluar_mulai' => ['required', 'date_format:H:i'],
             'scan_keluar_sampai' => ['required', 'date_format:H:i'],
+            'scan_keluar_jumat_mulai' => ['required', 'date_format:H:i'],
+            'scan_keluar_jumat_sampai' => ['required', 'date_format:H:i'],
         ], [
-            'jam_masuk.required' => 'Jam masuk default wajib diisi.',
-            'jam_pulang_normal.required' => 'Jam pulang normal wajib diisi.',
-            'jam_pulang_jumat.required' => 'Jam pulang Jumat wajib diisi.',
             'scan_masuk_mulai.required' => 'Jam mulai scan masuk wajib diisi.',
             'scan_masuk_sampai.required' => 'Jam akhir scan masuk wajib diisi.',
             'scan_keluar_mulai.required' => 'Jam mulai scan pulang wajib diisi.',
             'scan_keluar_sampai.required' => 'Jam akhir scan pulang wajib diisi.',
+            'scan_keluar_jumat_mulai.required' => 'Jam mulai scan pulang Jumat wajib diisi.',
+            'scan_keluar_jumat_sampai.required' => 'Jam akhir scan pulang Jumat wajib diisi.',
         ])->validate();
 
         $now = now();
         Setting::upsert([
-            ['key' => 'jadwal.default_masuk', 'value' => $validated['jam_masuk'], 'created_at' => $now, 'updated_at' => $now],
-            ['key' => 'jadwal.default_pulang_normal', 'value' => $validated['jam_pulang_normal'], 'created_at' => $now, 'updated_at' => $now],
-            ['key' => 'jadwal.default_pulang_jumat', 'value' => $validated['jam_pulang_jumat'], 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_masuk_mulai', 'value' => $validated['scan_masuk_mulai'], 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_masuk_sampai', 'value' => $validated['scan_masuk_sampai'], 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_keluar_mulai', 'value' => $validated['scan_keluar_mulai'], 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_keluar_sampai', 'value' => $validated['scan_keluar_sampai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_keluar_jumat_mulai', 'value' => $validated['scan_keluar_jumat_mulai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_keluar_jumat_sampai', 'value' => $validated['scan_keluar_jumat_sampai'], 'created_at' => $now, 'updated_at' => $now],
         ], ['key'], ['value', 'updated_at']);
 
         $this->refreshState($this->state['selectedDate'] ?? now()->format('Y-m-d'));
         $this->dispatch('waktu-state-updated', state: $this->state);
 
-        ToastMagic::success('Default Jadwal Disimpan', 'Jam default masuk, pulang normal, dan Jumat berhasil diperbarui.');
+        ToastMagic::success('Jendela Scan Disimpan', 'Jendela scan masuk dan pulang berhasil diperbarui.');
 
         return $this->state;
     }
@@ -128,8 +127,6 @@ class Manajemen extends Component
     {
         foreach (($payload['detail_kelas'] ?? []) as $rombelId => $row) {
             $payload['detail_kelas'][$rombelId] = $this->normalizeTimeFields($row, [
-                'jam_masuk',
-                'jam_pulang',
                 'scan_masuk_mulai',
                 'scan_masuk_sampai',
                 'scan_keluar_mulai',
@@ -146,8 +143,6 @@ class Manajemen extends Component
             'selected_rombel_ids.*' => ['integer', 'exists:rombel,id'],
             'detail_kelas' => ['required', 'array'],
             'detail_kelas.*.tipe' => ['required', 'in:normal,pulang_cepat,pjj,libur,khusus'],
-            'detail_kelas.*.jam_masuk' => ['nullable', 'date_format:H:i'],
-            'detail_kelas.*.jam_pulang' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.gunakan_window_scan' => ['nullable', 'boolean'],
             'detail_kelas.*.scan_masuk_mulai' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.scan_masuk_sampai' => ['nullable', 'date_format:H:i'],
@@ -245,8 +240,8 @@ class Manajemen extends Component
                         'jadwal_absen_id' => $jadwalId,
                         'rombel_id' => $rombelId,
                         'tipe' => $tipe,
-                        'jam_masuk' => $tipe === 'libur' ? null : ($row['jam_masuk'] ?? null),
-                        'jam_pulang' => $tipe === 'libur' ? null : ($row['jam_pulang'] ?? null),
+                        'jam_masuk' => null,
+                        'jam_pulang' => null,
                         'keterangan' => $row['keterangan'] ?? null,
                         'created_at' => $now,
                         'updated_at' => $now,
@@ -384,39 +379,33 @@ class Manajemen extends Component
     private function fallbackSettings(): array
     {
         return [
-            'jam_masuk' => self::DEFAULT_MASUK,
-            'jam_pulang_normal' => self::DEFAULT_PULANG_NORMAL,
-            'jam_pulang_jumat' => self::DEFAULT_PULANG_JUMAT,
-            'scan_masuk_mulai' => self::DEFAULT_MASUK,
-            'scan_masuk_sampai' => self::DEFAULT_MASUK,
-            'scan_keluar_mulai' => self::DEFAULT_PULANG_NORMAL,
-            'scan_keluar_sampai' => self::DEFAULT_PULANG_NORMAL,
+            'scan_masuk_mulai' => self::DEFAULT_SCAN_MASUK_MULAI,
+            'scan_masuk_sampai' => self::DEFAULT_SCAN_MASUK_SAMPAI,
+            'scan_keluar_mulai' => self::DEFAULT_SCAN_PULANG_MULAI,
+            'scan_keluar_sampai' => self::DEFAULT_SCAN_PULANG_SAMPAI,
+            'scan_keluar_jumat_mulai' => self::DEFAULT_SCAN_PULANG_JUMAT_MULAI,
+            'scan_keluar_jumat_sampai' => self::DEFAULT_SCAN_PULANG_JUMAT_SAMPAI,
         ];
     }
 
     private function defaultSettings(): array
     {
         $settings = Setting::whereIn('key', [
-            'jadwal.default_masuk',
-            'jadwal.default_pulang_normal',
-            'jadwal.default_pulang_jumat',
             'jadwal.scan_masuk_mulai',
             'jadwal.scan_masuk_sampai',
             'jadwal.scan_keluar_mulai',
             'jadwal.scan_keluar_sampai',
+            'jadwal.scan_keluar_jumat_mulai',
+            'jadwal.scan_keluar_jumat_sampai',
         ])->pluck('value', 'key');
 
-        $jamMasuk = $settings['jadwal.default_masuk'] ?? self::DEFAULT_MASUK;
-        $jamPulangNormal = $settings['jadwal.default_pulang_normal'] ?? self::DEFAULT_PULANG_NORMAL;
-
         return [
-            'jam_masuk' => $this->formatTime($jamMasuk),
-            'jam_pulang_normal' => $this->formatTime($jamPulangNormal),
-            'jam_pulang_jumat' => $this->formatTime($settings['jadwal.default_pulang_jumat'] ?? self::DEFAULT_PULANG_JUMAT),
-            'scan_masuk_mulai' => $this->formatTime($settings['jadwal.scan_masuk_mulai'] ?? $jamMasuk),
-            'scan_masuk_sampai' => $this->formatTime($settings['jadwal.scan_masuk_sampai'] ?? $jamMasuk),
-            'scan_keluar_mulai' => $this->formatTime($settings['jadwal.scan_keluar_mulai'] ?? $jamPulangNormal),
-            'scan_keluar_sampai' => $this->formatTime($settings['jadwal.scan_keluar_sampai'] ?? $jamPulangNormal),
+            'scan_masuk_mulai' => $this->formatTime($settings['jadwal.scan_masuk_mulai'] ?? self::DEFAULT_SCAN_MASUK_MULAI),
+            'scan_masuk_sampai' => $this->formatTime($settings['jadwal.scan_masuk_sampai'] ?? self::DEFAULT_SCAN_MASUK_SAMPAI),
+            'scan_keluar_mulai' => $this->formatTime($settings['jadwal.scan_keluar_mulai'] ?? self::DEFAULT_SCAN_PULANG_MULAI),
+            'scan_keluar_sampai' => $this->formatTime($settings['jadwal.scan_keluar_sampai'] ?? self::DEFAULT_SCAN_PULANG_SAMPAI),
+            'scan_keluar_jumat_mulai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_mulai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_MULAI),
+            'scan_keluar_jumat_sampai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_sampai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_SAMPAI),
         ];
     }
 
@@ -541,12 +530,12 @@ class Manajemen extends Component
             return [
                 'tipe' => 'khusus',
                 'label' => 'Default Jumat',
-                'jam_masuk' => $settings['jam_masuk'],
-                'jam_pulang' => $settings['jam_pulang_jumat'],
+                'jam_masuk' => null,
+                'jam_pulang' => null,
                 'scan_masuk_mulai' => $settings['scan_masuk_mulai'],
                 'scan_masuk_sampai' => $settings['scan_masuk_sampai'],
-                'scan_keluar_mulai' => $settings['scan_keluar_mulai'],
-                'scan_keluar_sampai' => $settings['scan_keluar_sampai'],
+                'scan_keluar_mulai' => $settings['scan_keluar_jumat_mulai'],
+                'scan_keluar_sampai' => $settings['scan_keluar_jumat_sampai'],
                 'keterangan' => 'Jadwal Jumat otomatis.',
             ];
         }
@@ -568,8 +557,8 @@ class Manajemen extends Component
         return [
             'tipe' => 'normal',
             'label' => 'Normal',
-            'jam_masuk' => $settings['jam_masuk'],
-            'jam_pulang' => $settings['jam_pulang_normal'],
+            'jam_masuk' => null,
+            'jam_pulang' => null,
             'scan_masuk_mulai' => $settings['scan_masuk_mulai'],
             'scan_masuk_sampai' => $settings['scan_masuk_sampai'],
             'scan_keluar_mulai' => $settings['scan_keluar_mulai'],
