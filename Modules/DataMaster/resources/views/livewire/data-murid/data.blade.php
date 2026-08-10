@@ -136,6 +136,7 @@
         <!-- dropdown -->
         <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
 
+            <!-- tingkat -->
             <livewire:components.searchable-select
                 wire:model.live="filterTingkat"
                 label="Tingkat"
@@ -159,7 +160,8 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-
+            
+            <!-- jurusan -->
             <livewire:components.searchable-select
                 wire:model.live="filterJurusan"
                 label="Jurusan"
@@ -183,7 +185,8 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-
+                
+            <!-- kelas / indexs -->
             <livewire:components.searchable-select
                 wire:model.live="filterIndeks"
                 label="Kelas"

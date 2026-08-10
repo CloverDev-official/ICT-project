@@ -1,0 +1,1 @@
+@include('errors.error', ['status' => 400, 'title' => 'Permintaan tidak valid', 'message' => 'Permintaan yang dikirim tidak dapat dipahami oleh server. Periksa kembali data atau tautan yang digunakan.'])
