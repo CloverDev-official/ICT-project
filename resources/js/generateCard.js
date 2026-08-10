@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { domToCanvas } from "modern-screenshot";
+import { createContext, destroyContext, domToCanvas } from "modern-screenshot";
 
 const CONFIG = {
     CARD: {
@@ -13,7 +13,9 @@ const CONFIG = {
         unit: "mm",
         orientation: "portrait",
         imageFormat: "JPEG",
-        jpegQuality: 0.9,
+        // 0.75 scale still gives roughly 200 DPI on an ID-card-sized PDF,
+        // while reducing raster pixels and JPEG work substantially.
+        jpegQuality: 0.82,
         backgroundColor: "#ffffff",
         compression: "FAST",
         margin: {
@@ -29,27 +31,12 @@ const CONFIG = {
         canvasLimit: 2
     },
     FONT: {
-        stylesheets: [
-            "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        ],
-        families: [
-            "Arial",
-            "Poppins",
-            "Inter"
-        ],
-        weights: [
-            400,
-            600,
-            700,
-            800,
-            900
-        ],
         timeoutMs: 3000
     },
     TEMPLATE: {
         route: (orientation) => `/mpanel/card-template/${orientation}`,
         selector: ".student-card",
-        scale: 1,
+        scale: 0.75,
         logoUrl: "/assets/img/logo_smkn_2.png",
         frameWidth: 1000,
         frameHeight: 1000,
@@ -229,12 +216,6 @@ const prefetchPhoto = (murid) => {
 
         const blob = await response.blob();
 
-        if (typeof createImageBitmap === "function") {
-            const bitmap = await createImageBitmap(blob);
-
-            bitmap.close?.();
-        }
-
         const objectUrl = URL.createObjectURL(blob);
 
         if (photoPrefetchCache.get(src) !== entry) {
@@ -371,27 +352,20 @@ const canvasToJpegBytes = async (canvas, quality = CONFIG.PDF.jpegQuality) => {
     if (jpegCache.has(canvas)) return jpegCache.get(canvas);
 
     let bytes = null;
-    const { canvas: flattenedCanvas, context } = getWhiteCanvas(canvas.width, canvas.height);
-
-    if (context.fillStyle !== CONFIG.PDF.backgroundColor) {
-        context.fillStyle = CONFIG.PDF.backgroundColor;
-    }
-
-    context.clearRect(0, 0, flattenedCanvas.width, flattenedCanvas.height);
-    context.fillRect(0, 0, flattenedCanvas.width, flattenedCanvas.height);
-    context.drawImage(canvas, 0, 0);
-
-    const blob = await canvasToBlob(flattenedCanvas, "image/jpeg", quality);
+    // domToCanvas() already renders with a solid white background. Encoding
+    // the result directly avoids an additional full-size canvas allocation and
+    // drawImage() pass for every card.
+    const blob = await canvasToBlob(canvas, "image/jpeg", quality);
 
     if (blob) {
         bytes = await blobToBytes(blob);
-    } else if (typeof flattenedCanvas.toDataURL === "function") {
-        const dataUrl = flattenedCanvas.toDataURL("image/jpeg", quality);
+    } else if (typeof canvas.toDataURL === "function") {
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
         const response = await fetch(dataUrl);
 
         bytes = new Uint8Array(await response.arrayBuffer());
-    } else if (typeof flattenedCanvas.convertToBlob === "function") {
-        const convertedBlob = await flattenedCanvas.convertToBlob({
+    } else if (typeof canvas.convertToBlob === "function") {
+        const convertedBlob = await canvas.convertToBlob({
             type: "image/jpeg",
             quality
         });
@@ -567,7 +541,7 @@ class TemplateLoader {
         }
 
         const request = fetchText(CONFIG.TEMPLATE.route(normalizedOrientation), {
-            cache: "no-store"
+            cache: "force-cache"
         });
 
         templateRequestCache.set(normalizedOrientation, request);
@@ -584,6 +558,8 @@ class TemplateLoader {
     }
 
     createFontMarkup() {
+        return "";
+        /*
         const stylesheetLinks = CONFIG.FONT.stylesheets.map((href) => (
             `<link rel="stylesheet" href="${href}">`
         )).join("");
@@ -593,6 +569,7 @@ class TemplateLoader {
             '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
             stylesheetLinks
         ].join("");
+        */
     }
 
     createInitialTemplateHtml(template) {
@@ -667,6 +644,8 @@ class TemplateLoader {
     }
 
     async waitForFonts(doc) {
+        return undefined;
+        /*
         // Previously this walked every element in the card with getComputedStyle()
         // to "discover" font families. That forces a synchronous style
         // recalculation over the whole subtree on every session creation, which
@@ -683,6 +662,7 @@ class TemplateLoader {
 
         await withTimeout(Promise.allSettled(loads), CONFIG.FONT.timeoutMs);
         await withTimeout(fontSet.ready, CONFIG.FONT.timeoutMs);
+        */
     }
 
     async createSession(orientation) {
@@ -836,18 +816,23 @@ class TemplateLoader {
             // CSS and re-implements layout/paint by hand in JS — this leans on
             // rendering the browser already does, which is why it's noticeably
             // faster and more faithful to the real on-screen appearance.
-            const canvas = await domToCanvas(session.card, {
+            // Keep modern-screenshot's context alive for the whole session.
+            // It caches stylesheet/default-style analysis; recreating it for
+            // every student is avoidable overhead in large batches.
+            session.renderContext ??= await createContext(session.card, {
+                autoDestruct: false,
+                font: false,
                 backgroundColor: CONFIG.PDF.backgroundColor,
                 scale: CONFIG.TEMPLATE.scale,
                 width: session.card.offsetWidth,
                 height: session.card.offsetHeight,
                 fetch: {
-                    // Reuse whatever the browser already has cached (including
-                    // anything warmed up by prefetchPhoto()) instead of re-fetching.
                     requestInit: { mode: "cors", cache: "force-cache" },
                     placeholderImage: CONFIG.TEMPLATE.transparentPixel
                 }
             });
+
+            const canvas = await domToCanvas(session.renderContext);
 
             cacheRenderedCanvas(cacheKey, canvas);
 
@@ -868,6 +853,10 @@ class TemplateLoader {
 
     clear() {
         for (const session of this.sessions.values()) {
+            if (session.renderContext) {
+                destroyContext(session.renderContext);
+                session.renderContext = null;
+            }
             session.frame?.remove();
         }
 

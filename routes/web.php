@@ -21,7 +21,8 @@ Route::prefix('mpanel')->middleware('auth')->group(function () {
 
         return response(Storage::disk('local')->get($fileName), 200, [
             'Content-Type' => 'text/html; charset=utf-8',
-            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            // The card markup is static; caching avoids a request on every run.
+            'Cache-Control' => 'private, max-age=86400, stale-while-revalidate=604800',
             ]);
             })->name('card-template');    
 });

@@ -14,6 +14,12 @@ const writerOptions = {
     // invert: false,           // invert colors
 };
 
+// QR values are immutable per student. Reusing both completed and in-flight
+// generations prevents duplicate WASM work when the same card is requested by
+// a table action and by the batch exporter.
+const svgCache = new Map();
+const svgRequests = new Map();
+
 window.generateQRPNG = async (text) => {
     const writeOutput = await writeBarcode(text, writerOptions);
     
@@ -23,9 +29,21 @@ window.generateQRPNG = async (text) => {
 }
 
 window.generateQRSVG = async (text) => {
-    const writeOutput = await writeBarcode(text, writerOptions);
-    
-    return writeOutput.svg;
+    const key = String(text ?? '');
+    if (!key) return '';
+    if (svgCache.has(key)) return svgCache.get(key);
+    if (svgRequests.has(key)) return svgRequests.get(key);
+
+    const request = writeBarcode(key, writerOptions)
+        .then((writeOutput) => {
+            const svg = writeOutput.svg || '';
+            svgCache.set(key, svg);
+            return svg;
+        })
+        .finally(() => svgRequests.delete(key));
+
+    svgRequests.set(key, request);
+    return request;
 }
 
 window.addEventListener('generateQRPNGDownload', async (event) => {
