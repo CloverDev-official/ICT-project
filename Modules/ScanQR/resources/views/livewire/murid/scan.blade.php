@@ -398,19 +398,21 @@
 
 @script
 <script>
-    function updateClock() {
-        const now = new Date();
+    let currentTime = @json(now()->timestamp);
 
-        const formatted = now.toLocaleString('id-ID', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
+    function updateClock() {
+        const now = new Date(currentTime * 1000);
+
+        const formatted = now.toLocaleTimeString('id-ID', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
+            hour12: false,
         });
 
         document.getElementById('clock').textContent = formatted;
+
+        currentTime++;
     }
 
     updateClock();
