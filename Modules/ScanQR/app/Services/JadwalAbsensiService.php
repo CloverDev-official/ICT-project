@@ -9,9 +9,12 @@ use Illuminate\Support\Facades\Schema;
 
 class JadwalAbsensiService
 {
-    private const DEFAULT_MASUK = '06:30';
-    private const DEFAULT_PULANG_NORMAL = '16:30';
-    private const DEFAULT_PULANG_JUMAT = '11:30';
+    private const DEFAULT_SCAN_MASUK_MULAI = '06:30';
+    private const DEFAULT_SCAN_MASUK_SAMPAI = '07:30';
+    private const DEFAULT_SCAN_PULANG_MULAI = '15:30';
+    private const DEFAULT_SCAN_PULANG_SAMPAI = '16:30';
+    private const DEFAULT_SCAN_PULANG_JUMAT_MULAI = '10:30';
+    private const DEFAULT_SCAN_PULANG_JUMAT_SAMPAI = '11:30';
 
     public function forRombel(?int $rombelId, Carbon|string|null $date = null): array
     {
@@ -45,8 +48,8 @@ class JadwalAbsensiService
             return $this->normalize([
                 'tanggal' => $date->toDateString(),
                 'tipe' => $detailRombel->tipe ?: $jadwal->tipe ?: $default['tipe'],
-                'jam_masuk' => $detailRombel->jam_masuk ?: $jadwal->jam_masuk ?: $default['jam_masuk'],
-                'jam_pulang' => $detailRombel->jam_pulang ?: $jadwal->jam_pulang ?: $default['jam_pulang'],
+                'jam_masuk' => null,
+                'jam_pulang' => null,
                 'scan_masuk_mulai' => $scanWindow['scan_masuk_mulai'],
                 'scan_masuk_sampai' => $scanWindow['scan_masuk_sampai'],
                 'scan_keluar_mulai' => $scanWindow['scan_keluar_mulai'],
@@ -67,8 +70,8 @@ class JadwalAbsensiService
         return $this->normalize([
             'tanggal' => $date->toDateString(),
             'tipe' => $jadwal->tipe ?: $default['tipe'],
-            'jam_masuk' => $jadwal->jam_masuk ?: $default['jam_masuk'],
-            'jam_pulang' => $jadwal->jam_pulang ?: $default['jam_pulang'],
+            'jam_masuk' => null,
+            'jam_pulang' => null,
             'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
             'scan_masuk_sampai' => $default['scan_masuk_sampai'] ?? null,
             'scan_keluar_mulai' => $default['scan_keluar_mulai'] ?? null,
@@ -118,8 +121,8 @@ class JadwalAbsensiService
             $jadwalRombel[$detailRombel->rombel_id] = $this->normalize([
                 'tanggal' => $date->toDateString(),
                 'tipe' => $detailRombel->tipe ?: $jadwal->tipe ?: $default['tipe'],
-                'jam_masuk' => $detailRombel->jam_masuk ?: $jadwal->jam_masuk ?: $default['jam_masuk'],
-                'jam_pulang' => $detailRombel->jam_pulang ?: $jadwal->jam_pulang ?: $default['jam_pulang'],
+                'jam_masuk' => null,
+                'jam_pulang' => null,
                 'scan_masuk_mulai' => $scanWindow['scan_masuk_mulai'],
                 'scan_masuk_sampai' => $scanWindow['scan_masuk_sampai'],
                 'scan_keluar_mulai' => $scanWindow['scan_keluar_mulai'],
@@ -139,8 +142,8 @@ class JadwalAbsensiService
         $global = $this->normalize([
             'tanggal' => $date->toDateString(),
             'tipe' => $jadwal->tipe ?: $default['tipe'],
-            'jam_masuk' => $jadwal->jam_masuk ?: $default['jam_masuk'],
-            'jam_pulang' => $jadwal->jam_pulang ?: $default['jam_pulang'],
+            'jam_masuk' => null,
+            'jam_pulang' => null,
             'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
             'scan_masuk_sampai' => $default['scan_masuk_sampai'] ?? null,
             'scan_keluar_mulai' => $default['scan_keluar_mulai'] ?? null,
@@ -176,15 +179,12 @@ class JadwalAbsensiService
     {
         return Setting::query()
             ->whereIn('key', [
-                'jadwal.default_masuk',
-                'jadwal.default_pulang_normal',
-                'jadwal.default_pulang_jumat',
                 'jadwal.scan_masuk_mulai',
                 'jadwal.scan_masuk_sampai',
                 'jadwal.scan_keluar_mulai',
                 'jadwal.scan_keluar_sampai',
-                'waktu_masuk',
-                'waktu_keluar',
+                'jadwal.scan_keluar_jumat_mulai',
+                'jadwal.scan_keluar_jumat_sampai',
             ])
             ->pluck('value', 'key')
             ->all();
@@ -192,22 +192,7 @@ class JadwalAbsensiService
 
     private function defaultForDate(Carbon $date, array $settings): array
     {
-        $jamMasuk = $settings['jadwal.default_masuk']
-            ?? $settings['waktu_masuk']
-            ?? self::DEFAULT_MASUK;
-
-        $jamPulangNormal = $settings['jadwal.default_pulang_normal']
-            ?? $settings['waktu_keluar']
-            ?? self::DEFAULT_PULANG_NORMAL;
-
-        $jamPulangJumat = $settings['jadwal.default_pulang_jumat']
-            ?? self::DEFAULT_PULANG_JUMAT;
-
-        $scanWindow = $this->scanWindow(
-            $settings,
-            $jamMasuk,
-            $date->isFriday() ? $jamPulangJumat : $jamPulangNormal,
-        );
+        $scanWindow = $this->scanWindow($settings, $date->isFriday());
 
         // Akhir pekan selalu memakai jadwal libur default.
         if ($date->isSaturday() || $date->isSunday()) {
@@ -229,8 +214,8 @@ class JadwalAbsensiService
         return $this->normalize([
             'tanggal' => $date->toDateString(),
             'tipe' => 'normal',
-            'jam_masuk' => $jamMasuk,
-            'jam_pulang' => $date->isFriday() ? $jamPulangJumat : $jamPulangNormal,
+            'jam_masuk' => null,
+            'jam_pulang' => null,
             'scan_masuk_mulai' => $scanWindow['scan_masuk_mulai'],
             'scan_masuk_sampai' => $scanWindow['scan_masuk_sampai'],
             'scan_keluar_mulai' => $scanWindow['scan_keluar_mulai'],
@@ -241,14 +226,17 @@ class JadwalAbsensiService
         ]);
     }
 
-    private function scanWindow(array $settings, ?string $jamMasuk, ?string $jamPulang): array
+    private function scanWindow(array $settings, bool $isFriday): array
     {
-        // Jam masuk/pulang menentukan patokan waktu; window menentukan kapan QR diterima.
         return [
-            'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? $jamMasuk,
-            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? $jamMasuk,
-            'scan_keluar_mulai' => $settings['jadwal.scan_keluar_mulai'] ?? $jamPulang,
-            'scan_keluar_sampai' => $settings['jadwal.scan_keluar_sampai'] ?? $jamPulang,
+            'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? self::DEFAULT_SCAN_MASUK_MULAI,
+            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? self::DEFAULT_SCAN_MASUK_SAMPAI,
+            'scan_keluar_mulai' => $isFriday
+                ? ($settings['jadwal.scan_keluar_jumat_mulai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_MULAI)
+                : ($settings['jadwal.scan_keluar_mulai'] ?? self::DEFAULT_SCAN_PULANG_MULAI),
+            'scan_keluar_sampai' => $isFriday
+                ? ($settings['jadwal.scan_keluar_jumat_sampai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_SAMPAI)
+                : ($settings['jadwal.scan_keluar_sampai'] ?? self::DEFAULT_SCAN_PULANG_SAMPAI),
         ];
     }
 

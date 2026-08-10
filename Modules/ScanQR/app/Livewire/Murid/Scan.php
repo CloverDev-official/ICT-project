@@ -211,35 +211,24 @@ class Scan extends Component
 
     private function processAbsensiLanjutan(AbsenMurid $absen, string $currentTime, array $jadwal): void
     {
-        // Murid yang belum masuk dianggap terlambat setelah window masuk berakhir,
-        // selama belum memasuki window scan pulang.
-        if (!$absen->waktu_masuk && !$this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
-            $beradaSetelahScanMasuk = $currentTime >= $jadwal['scan_masuk_sampai'];
-            $belumScanKeluar = $currentTime < $jadwal['scan_keluar_mulai'];
+        // Jendela scan adalah satu-satunya patokan absensi: setelah jendela masuk
+        // berakhir, siswa yang belum masuk ditandai terlambat hingga jendela pulang dibuka.
+        if (!$absen->waktu_masuk && !$this->dalamJendelaPulang($currentTime, $jadwal)) {
+            $beradaSetelahScanMasuk = $currentTime > $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
+            $belumScanKeluar = !$this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
             if ($beradaSetelahScanMasuk && $belumScanKeluar) {
                 $this->lateScan('Murid sudah terlambat absen masuk.');
                 return;
             }
         }
 
-        // Murid tidak dapat absen pulang jika belum memiliki absensi masuk saat jam pulang tiba.
-        if (!$absen->waktu_masuk && $this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
+        // Murid tidak dapat absen pulang jika belum memiliki absensi masuk saat jendela pulang terbuka.
+        if (!$absen->waktu_masuk && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $this->rejectScan('Maaf kamu tidak bisa absen pulang karena belum absen masuk');
             return;
         }
 
-        // Jam pulang menentukan kapan boleh pulang, sedangkan window menentukan kapan QR diterima.
-        if (!$absen->waktu_keluar && $this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'])) {
-            // Jika belum waktunya pulang, maka absensi pulang tidak dapat disimpan.
-            if (!$this->withinWindow($currentTime, $jadwal['scan_keluar_mulai'] ?? null, $jadwal['scan_keluar_sampai'] ?? null)) {
-                $this->rejectScan(sprintf(
-                    'Scan pulang dibuka pukul %s - %s.',
-                    $jadwal['scan_keluar_mulai'] ?? '--:--',
-                    $jadwal['scan_keluar_sampai'] ?? '--:--',
-                ));
-                return;
-            }
-
+        if (!$absen->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $absen->update([
                 'waktu_keluar' => $currentTime,
                 'status' => 'Hadir',
@@ -255,28 +244,20 @@ class Scan extends Component
             return;
         }
 
-        $this->acceptMessage('Absensi masuk sudah tercatat', 'Absensi masuk sudah tercatat. Absensi pulang baru bisa dilakukan sesuai jam pulang.');
+        $this->acceptMessage('Absensi masuk sudah tercatat', sprintf(
+            'Absensi pulang dibuka pukul %s - %s.',
+            $jadwal['scan_keluar_mulai'] ?? '--:--',
+            $jadwal['scan_keluar_sampai'] ?? '--:--',
+        ));
     }
 
     private function bisaLangsungPulang(string $currentTime, array $jadwal): bool
     {
-        if (!$this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'] ?? null)) {
-            return false;
-        }
-
-        return $this->withinWindow(
-            $currentTime,
-            $jadwal['scan_keluar_mulai'] ?? null,
-            $jadwal['scan_keluar_sampai'] ?? null,
-        );
+        return $this->dalamJendelaPulang($currentTime, $jadwal);
     }
 
-    private function pulangJumat(string $currentTime, array $jadwal): bool
+    private function dalamJendelaPulang(string $currentTime, array $jadwal): bool
     {
-        if (!$this->bolehAbsenKeluar($currentTime, $jadwal['jam_pulang'] ?? null)) {
-            return false;
-        }
-
         return $this->withinWindow(
             $currentTime,
             $jadwal['scan_keluar_mulai'] ?? null,
@@ -303,13 +284,9 @@ class Scan extends Component
         return $current >= $startTime || $current <= $endTime;
     }
 
-    private function bolehAbsenKeluar(string $currentTime, ?string $jamPulang): bool
+    private function isWindowStarted(string $currentTime, ?string $start): bool
     {
-        if (!$jamPulang) {
-            return false;
-        }
-
-        return $currentTime >= $this->normalizeTime($jamPulang);
+        return $start && $this->normalizeTime($currentTime) >= $this->normalizeTime($start);
     }
 
     private function normalizeTime(?string $time): ?string
