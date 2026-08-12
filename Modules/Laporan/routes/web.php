@@ -17,14 +17,14 @@ use Modules\Laporan\Livewire\Laporan\RiwayatAbsen\Murid\Detail as DetailMurid;
 Route::prefix('/laporan-pengawas')->middleware('access:laporan-pengawas')->group(function () {
     // izin keluar
     Route::prefix('/izin-keluar')->middleware('access:izin-keluar')->group(function () {
-        Route::get('/izin', LaporanIzin::class)->middleware('access:laporan-izin-keluar')->name('laporan-izin-keluar');
-        Route::get('/edit-izin/{id}', EditIzin::class)->middleware('access:edit-izin-keluar')->name('edit-izin-keluar');
-        Route::get('/cetak-izin', CetakIzin::class)->middleware('access:cetak-izin-keluar')->name('cetak-izin-keluar');
-        Route::get('/surat-izin/{id}', SuratIzin::class)->middleware('access:surat-izin-keluar')->name('surat-izin-keluar');
+        Route::get('/izin', LaporanIzin::class)->name('laporan-izin-keluar');
+        Route::get('/edit-izin/{id}', EditIzin::class)->name('edit-izin-keluar');
+        Route::get('/cetak-izin', CetakIzin::class)->name('cetak-izin-keluar');
+        Route::get('/surat-izin/{id}', SuratIzin::class)->name('surat-izin-keluar');
     });
     // izin telat
     Route::prefix('/izin-telat')->middleware('access:izin-telat')->group(function (){
-        Route::get('/cetak-izin', CetakIzinTelat::class)->middleware('access:cetak-izin-telat')->name('cetak-izin-telat');
+        Route::get('/cetak-izin', CetakIzinTelat::class)->name('cetak-izin-telat');
     });
 });
 
