@@ -55,6 +55,6 @@ class Edit extends Component
 
     public function render()
     {
-        return view("abssensi::livewire.absen.murid.edit");
+        return view("absensi::livewire.absen.murid.edit");
     }
 }
