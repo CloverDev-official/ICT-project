@@ -379,12 +379,12 @@ class Manajemen extends Component
     private function fallbackSettings(): array
     {
         return [
-            'scan_masuk_mulai' => self::DEFAULT_SCAN_MASUK_MULAI,
-            'scan_masuk_sampai' => self::DEFAULT_SCAN_MASUK_SAMPAI,
-            'scan_keluar_mulai' => self::DEFAULT_SCAN_PULANG_MULAI,
-            'scan_keluar_sampai' => self::DEFAULT_SCAN_PULANG_SAMPAI,
-            'scan_keluar_jumat_mulai' => self::DEFAULT_SCAN_PULANG_JUMAT_MULAI,
-            'scan_keluar_jumat_sampai' => self::DEFAULT_SCAN_PULANG_JUMAT_SAMPAI,
+            'scan_masuk_mulai' => config('waktu-absensi.scan.masuk.mulai'),
+            'scan_masuk_sampai' => config('waktu-absensi.scan.masuk.sampai'),
+            'scan_keluar_mulai' => config('waktu-absensi.scan.pulang.mulai'),
+            'scan_keluar_sampai' => config('waktu-absensi.scan.pulang.sampai'),
+            'scan_keluar_jumat_mulai' => config('waktu-absensi.scan.jumat.pulang.mulai'),
+            'scan_keluar_jumat_sampai' => config('waktu-absensi.scan.jumat.pulang.sampai'),
         ];
     }
 
@@ -400,12 +400,12 @@ class Manajemen extends Component
         ])->pluck('value', 'key');
 
         return [
-            'scan_masuk_mulai' => $this->formatTime($settings['jadwal.scan_masuk_mulai'] ?? self::DEFAULT_SCAN_MASUK_MULAI),
-            'scan_masuk_sampai' => $this->formatTime($settings['jadwal.scan_masuk_sampai'] ?? self::DEFAULT_SCAN_MASUK_SAMPAI),
-            'scan_keluar_mulai' => $this->formatTime($settings['jadwal.scan_keluar_mulai'] ?? self::DEFAULT_SCAN_PULANG_MULAI),
-            'scan_keluar_sampai' => $this->formatTime($settings['jadwal.scan_keluar_sampai'] ?? self::DEFAULT_SCAN_PULANG_SAMPAI),
-            'scan_keluar_jumat_mulai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_mulai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_MULAI),
-            'scan_keluar_jumat_sampai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_sampai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_SAMPAI),
+            'scan_masuk_mulai' => $this->formatTime($settings['jadwal.scan_masuk_mulai'] ?? config('waktu-absensi.scan.masuk.mulai')),
+            'scan_masuk_sampai' => $this->formatTime($settings['jadwal.scan_masuk_sampai'] ?? config('waktu-absensi.scan.masuk.sampai')),
+            'scan_keluar_mulai' => $this->formatTime($settings['jadwal.scan_keluar_mulai'] ?? config('waktu-absensi.scan.pulang.mulai')),
+            'scan_keluar_sampai' => $this->formatTime($settings['jadwal.scan_keluar_sampai'] ?? config('waktu-absensi.scan.pulang.sampai')),
+            'scan_keluar_jumat_mulai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_mulai'] ?? config('waktu-absensi.scan.jumat.pulang.mulai')),
+            'scan_keluar_jumat_sampai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_sampai'] ?? config('waktu-absensi.scan.jumat.pulang.sampai')),
         ];
     }
 

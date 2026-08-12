@@ -9,13 +9,6 @@ use Illuminate\Support\Facades\Schema;
 
 class JadwalAbsensiService
 {
-    private const DEFAULT_SCAN_MASUK_MULAI = '06:00';
-    private const DEFAULT_SCAN_MASUK_SAMPAI = '07:30';
-    private const DEFAULT_SCAN_PULANG_MULAI = '16:30';
-    private const DEFAULT_SCAN_PULANG_SAMPAI = '18:00';
-    private const DEFAULT_SCAN_PULANG_JUMAT_MULAI = '11:30';
-    private const DEFAULT_SCAN_PULANG_JUMAT_SAMPAI = '14:00';
-
     public function forRombel(?int $rombelId, Carbon|string|null $date = null): array
     {
         $date = $this->resolveDate($date);
@@ -229,14 +222,14 @@ class JadwalAbsensiService
     private function scanWindow(array $settings, bool $isFriday): array
     {
         return [
-            'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? self::DEFAULT_SCAN_MASUK_MULAI,
-            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? self::DEFAULT_SCAN_MASUK_SAMPAI,
+            'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? config('waktu-absensi.scan.masuk.mulai'),
+            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? config('waktu-absensi.scan.masuk.sampai'),
             'scan_keluar_mulai' => $isFriday
-                ? ($settings['jadwal.scan_keluar_jumat_mulai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_MULAI)
-                : ($settings['jadwal.scan_keluar_mulai'] ?? self::DEFAULT_SCAN_PULANG_MULAI),
+                ? ($settings['jadwal.scan_keluar_jumat_mulai'] ?? config('waktu-absensi.scan.jumat.pulang.mulai'))
+                : ($settings['jadwal.scan_keluar_mulai'] ?? config('waktu-absensi.scan.pulang.mulai')),
             'scan_keluar_sampai' => $isFriday
-                ? ($settings['jadwal.scan_keluar_jumat_sampai'] ?? self::DEFAULT_SCAN_PULANG_JUMAT_SAMPAI)
-                : ($settings['jadwal.scan_keluar_sampai'] ?? self::DEFAULT_SCAN_PULANG_SAMPAI),
+                ? ($settings['jadwal.scan_keluar_jumat_sampai'] ?? config('waktu-absensi.scan.jumat.pulang.sampai'))
+                : ($settings['jadwal.scan_keluar_sampai'] ?? config('waktu-absensi.scan.pulang.sampai')),
         ];
     }
 
