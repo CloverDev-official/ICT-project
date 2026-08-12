@@ -138,6 +138,8 @@
                 ? 'Izin'
                 : this.selected === 'alpa'
                 ? 'Alpa'
+                : this.selected === 'terlambat'
+                ? 'Terlambat'
                 : 'Pilih kehadiran'
         },
 
@@ -150,7 +152,10 @@
                 ? 'bg-blue-100 text-blue-600'
                 : this.selected === 'alpa'
                 ? 'bg-rose-100 text-rose-600'
+                : this.selected === 'terlambat'
+                ? 'bg-orange-100 text-orange-600'
                 : 'bg-gray-100 text-gray-500'
+                
         },
 
         statusIcon() {
@@ -162,6 +167,8 @@
                 ? 'solar:document-text-bold'
                 : this.selected === 'alpa'
                 ? 'solar:close-circle-bold'
+                : this.selected === 'terlambat'
+                ? 'solar:clock-circle-bold'
                 : 'solar:calendar-mark-bold'
         },
 
@@ -226,7 +233,7 @@
                         x-transition
                         @click.outside="open = false"
                         style="display:none"
-                        class="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
+                        class="absolute z-50 mt-2 w-full overflow-y-scroll scroll-thin max-h-48 rounded-2xl border border-gray-200 bg-white shadow-xl">
 
                         @foreach ([
                         [
@@ -256,6 +263,13 @@
                         'desc' => 'Murid tidak hadir tanpa keterangan',
                         'icon' => 'solar:close-circle-bold',
                         'class' => 'bg-rose-100 text-rose-600',
+                        ],
+                        [
+                        'value' => 'terlambat',
+                        'label' => 'Terlambat',
+                        'desc' => 'Murid hadir tapi terlambat',
+                        'icon' => 'solar:clock-circle-bold',
+                        'class' => 'bg-orange-100 text-orange-600',
                         ],
                         ] as $item)
 
