@@ -460,8 +460,8 @@
 
                     @if($user?->canAccess('manajemen-murid'))
                     <li>
-                        <x-nav-link href="{{ route('manajemen-murid') }}" icon="manajemenMurid">
-                            murid
+                        <x-nav-link href="{{ route('manajemen-foto-murid') }}" icon="manajemenMurid">
+                            Foto Murid
                         </x-nav-link>
                     </li>
                     @endif

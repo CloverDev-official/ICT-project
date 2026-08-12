@@ -26,7 +26,7 @@ Route::prefix('/manajemen')->group( function () {
 
     // manajemen murid
     Route::prefix('/murid')->middleware('access:manajemen-murid')->group( function () {
-        Route::get('/', ManajemenFoto::class)->name('manajemen-murid');
+        Route::get('/', ManajemenFoto::class)->name('manajemen-foto-murid');
         Route::get('/create', TambahFoto::class)->name('tambah-foto');
         Route::get('/edit',  EditFoto::class)->name('edit-foto');
     });

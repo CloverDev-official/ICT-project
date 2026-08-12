@@ -27,7 +27,7 @@
 
                 <div>
                     <h1 class="text-3xl font-bold text-white">
-                        Manajemen Murid
+                        Manajemen Foto Murid
                     </h1>
 
                     <p class="mt-1 text-sm text-blue-100">
