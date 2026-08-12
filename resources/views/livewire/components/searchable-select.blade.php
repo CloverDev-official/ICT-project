@@ -1,14 +1,27 @@
 @php
     $selectOptions = collect($options)
-        ->map(fn ($option) => [
-            'value' => data_get($option, $valueKey),
-            'label' => (string) data_get($option, $labelKey, ''),
-        ])
+        ->map(function ($option, $key) use ($valueKey, $labelKey) {
+            // Array/object dengan value + label dari key tertentu
+            if (is_array($option) || is_object($option)) {
+                return [
+                    'value' => data_get($option, $valueKey),
+                    'label' => (string) data_get($option, $labelKey, ''),
+                ];
+            }
+
+            // Array sederhana: ['Hadir', 'Izin', 'Sakit']
+            return [
+                'value' => $key,
+                'label' => (string) $option,
+            ];
+        })
         ->filter(fn (array $option) => $option['label'] !== '')
         ->values();
 
     $selectedOption = $selectOptions->first(
-        fn (array $option) => $value !== null && (string) $option['value'] === (string) $value
+        fn (array $option) =>
+            $value !== null &&
+            (string) $option['value'] === (string) $value
     );
 @endphp
 
