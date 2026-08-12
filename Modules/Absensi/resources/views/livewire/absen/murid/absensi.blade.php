@@ -217,9 +217,9 @@
             <!-- filter kehadiran -->
             <div>
                 <livewire:components.searchable-select
-                    wire:model.live="filterIndeks"
+                    wire:model.live="status"
                     placeholder="Cari status kehadiran..."
-                    :options="$filteredIndeks"
+                    :options="self::STATUS"
                     value-key="id"
                     label-key="nama"
                     all-label="Semua status"

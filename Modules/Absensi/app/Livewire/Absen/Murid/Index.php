@@ -19,6 +19,7 @@ class Index extends Component
     public $listRombel;
     public $filteredJurusan;
     public $filteredIndeks;
+    public $status;
 
     public ?string $search = null;
     public ?int $filterTingkat = null;
@@ -31,6 +32,14 @@ class Index extends Component
     private ?int $lockedTingkatId = null;
     private ?int $lockedJurusanId = null;
     private ?int $lockedIndeksId = null;
+
+    public const STATUS = [
+        'Hadir',
+        'Izin',
+        'Sakit',
+        'Alpa',
+        'Terlambat',
+    ];
 
     public function mount(): void
     {
@@ -125,6 +134,9 @@ class Index extends Component
             ->when($this->filterTanggal, fn ($q) =>
                 $q->whereDate('tanggal', $this->filterTanggal)
             )
+            ->when($this->status, fn ($q) =>
+                $q->where('status', $this->status)
+            )
             ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
                 'murid.rombel',
@@ -192,6 +204,11 @@ class Index extends Component
     }
 
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatus(): void
     {
         $this->resetPage();
     }
