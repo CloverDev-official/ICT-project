@@ -174,7 +174,7 @@ class Scan extends Component
             }
         }
 
-        if (!$absen) {
+        if (!$absen && !$absen?->waktu_keluar) {
             // Record pertama hari ini dapat berupa masuk atau langsung pulang.
             $this->processAbsensiPertama($murid, $today, $currentTime, $jadwal);
             return;
@@ -185,20 +185,6 @@ class Scan extends Component
 
     private function processAbsensiPertama(Murid $murid, string $today, string $currentTime, array $jadwal): void
     {
-        // Jika sudah waktunya pulang dan masih dalam window pulang, murid dapat langsung absen pulang.
-        if ($this->bisaLangsungPulang($currentTime, $jadwal)) {
-            AbsenMurid::create([
-                'murid_id' => $murid->id,
-                'tanggal' => $today,
-                'waktu_keluar' => $currentTime,
-                'status' => 'Hadir',
-                'keterangan' => $this->keteranganAbsensi($jadwal),
-            ]);
-
-            $this->acceptScan('Absensi pulang berhasil disimpan.');
-            return;
-        }
-
         // Scan masuk hanya boleh disimpan di dalam window scan masuk.
         if (!$this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
             $this->rejectScan(sprintf(
@@ -228,7 +214,9 @@ class Scan extends Component
             return;
         }
 
+        // Murid dapat absen pulang jika belum memiliki absensi pulang dan berada di dalam jendela pulang.
         if (!$absen->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
+            // Status pulang mengikuti status masuk, jika masuk terlambat maka pulang juga terlambat.
             $status = $absen?->status === 'Terlambat' ? 'Terlambat' : 'Hadir';
             $absen->update([
                 'waktu_keluar' => $currentTime,
