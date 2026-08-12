@@ -14,13 +14,6 @@ use Livewire\Component;
 
 class Manajemen extends Component
 {
-    private const DEFAULT_SCAN_MASUK_MULAI = '06:30';
-    private const DEFAULT_SCAN_MASUK_SAMPAI = '07:30';
-    private const DEFAULT_SCAN_PULANG_MULAI = '15:30';
-    private const DEFAULT_SCAN_PULANG_SAMPAI = '16:30';
-    private const DEFAULT_SCAN_PULANG_JUMAT_MULAI = '11:30';
-    private const DEFAULT_SCAN_PULANG_JUMAT_SAMPAI = '13:00';
-
     private const TIPE_OPTIONS = [
         'normal' => 'Masuk Normal',
         'pulang_cepat' => 'Pulang Cepat',
