@@ -77,17 +77,17 @@ class Scan extends Component
         $today = $now->toDateString();
         $currentTime = $now->format('H:i:s');
 
-        $absen = AbsenMurid::updateOrCreate(
-        [
-            'murid_id' => $this->murid->id,
-            'tanggal' => $today,
-        ],
-        [
-            'waktu_masuk' => $currentTime,
-            'status' => 'Terlambat',
-            'keterangan' => $this->keterangan,
-        ]
-    );
+        AbsenMurid::updateOrCreate(
+            [
+                'murid_id' => $this->murid->id,
+                'tanggal' => $today,
+            ],
+            [
+                'waktu_masuk' => $currentTime,
+                'status' => 'Terlambat',
+                'keterangan' => $this->keterangan,
+            ]
+        );
 
         $this->acceptScan('Alasan terlambat tersimpan.');
         $this->dispatch('lateConfirm');
@@ -206,16 +206,16 @@ class Scan extends Component
         $this->acceptScan('Absensi masuk berhasil disimpan.');
     }
 
-    private function processAbsensiLanjutan(AbsenMurid $absen, string $currentTime, array $jadwal): void
+    private function processAbsensiLanjutan(?AbsenMurid $absen, string $currentTime, array $jadwal): void
     {
         // Murid tidak dapat absen pulang jika belum memiliki absensi masuk saat jendela pulang terbuka.
-        if (!$absen->waktu_masuk && $this->dalamJendelaPulang($currentTime, $jadwal)) {
+        if (!$absen?->waktu_masuk && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $this->rejectScan('Maaf kamu tidak bisa absen pulang karena belum absen masuk');
             return;
         }
 
         // Murid dapat absen pulang jika belum memiliki absensi pulang dan berada di dalam jendela pulang.
-        if (!$absen->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
+        if (!$absen?->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             // Status pulang mengikuti status masuk, jika masuk terlambat maka pulang juga terlambat.
             $status = $absen?->status === 'Terlambat' ? 'Terlambat' : 'Hadir';
             $absen->update([
@@ -228,7 +228,7 @@ class Scan extends Component
         }
 
         // Waktu keluar yang sudah tersimpan mencegah absensi pulang kedua.
-        if ($absen->waktu_keluar) {
+        if ($absen?->waktu_keluar) {
             $this->acceptMessage('Murid sudah pulang', 'Murid ini sudah absen masuk dan pulang hari ini.');
             return;
         }
