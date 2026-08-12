@@ -5,6 +5,9 @@
         $siteLogo = \App\Models\Setting::resolveAssetUrl($siteSettings['logo'] ?? null, asset('assets/img/logo_smkn_2.png'));
         $siteName = $siteSettings['nama_website'] ?? 'ICT Absensi';
         $siteCopyright = $siteSettings['copyright'] ?? 'SMKN 2 Banjarmasin © 2026';
+        $canAccessRoute = fn (string $routeName) => \App\Support\PermissionRegistry::canAccessRoute($user, $routeName);
+        $canAccessGroup = fn (string $groupName) => \App\Support\PermissionRegistry::canAccessGroup($user, $groupName);
+        $canAccessPrefix = fn (string $prefix) => \App\Support\PermissionRegistry::canAccessUriPrefix($user, $prefix);
     @endphp
     <aside
         class="fixed md:static top-0 right-0 z-50 flex h-screen w-64 md:w-80 flex-col p-1 rounded-tl-4xl md:rounded-tl-none md:rounded-tr-4xl border-r border-white/10 bg-gradient-to-b from-blue-deep to-[#03152d] shadow-[8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300"
@@ -29,7 +32,7 @@
 
         <!-- menu -->
         <ul class="mt-5 md:pb-20 pb-40 flex-1 overflow-y-auto pr-0 md:pr-2 scroll-thin space-y-2">
-            @if($user?->canAccess('dashboard'))
+            @if($canAccessRoute('dashboard'))
             <!-- dashboard -->
             <li>
                 <x-nav-link href="{{ route('dashboard') }}" icon="dashboard">
@@ -38,7 +41,7 @@
             </li>
             @endif
 
-            @if($user?->canAccess('pilih-absen'))
+            @if($canAccessRoute('pilih-absen'))
             <!-- pilih absen -->
             <li>
                 <x-nav-link href="{{ route('pilih-absen') }}" icon="pilihAbsen">
@@ -48,7 +51,7 @@
             @endif
 
             <!-- laporan -->
-            @if($user?->canAccess('laporan'))
+            @if($canAccessGroup('Laporan'))
             <li x-data="{open: {{ request()->routeIs(['rekap-*', 'laporan-*', 'riwayat-absen-*', 'cetak-izin-*']) ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
@@ -80,7 +83,7 @@
                 style="display: none;"
                 >   
                     <!-- laporan pengawas -->
-                    @if($user?->canAccess('laporan-pengawas'))
+                    @if($canAccessPrefix('/laporan-pengawas'))
                     <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}">
                         
                         <button
@@ -142,7 +145,7 @@
                                     style="display: none;"
                                 >   
                                     {{-- menu laporam izin keluar --}}
-                                    @if($user?->canAccess('laporan-izin-keluar'))
+                                    @if($canAccessRoute('laporan-izin-keluar'))
                                         <li>
                                             <x-nav-link href="{{ route('laporan-izin-keluar') }}" icon="rekapAbsenMurid">
                                                 laporan izin keluar
@@ -150,7 +153,7 @@
                                         </li>
                                     @endif
                                     {{-- menu cetak izin keluar --}}
-                                    @if($user?->canAccess('cetak-izin-keluar'))
+                                    @if($canAccessRoute('cetak-izin-keluar'))
                                         <li>
                                             <x-nav-link href="{{ route('cetak-izin-keluar') }}" icon="cetak-izin">
                                                 cetak izin keluar
@@ -190,7 +193,7 @@
                                     style="display: none;"
                                 >   
                                     {{-- menu cetak izin tekat --}}
-                                    @if($user?->canAccess('cetak-izin-telat'))
+                                    @if($canAccessRoute('cetak-izin-telat'))
                                         <li>
                                             <x-nav-link href="{{ route('cetak-izin-telat') }}" icon="rekapAbsenMurid">
                                                 cetak izin telat
@@ -204,7 +207,7 @@
                     @endif
 
                     <!-- rekap absen -->
-                    @if($user?->canAccess('rekap-absen'))
+                    @if($canAccessPrefix('/rekap'))
                     <li x-data="{open: {{ request()->routeIs('rekap-absen-*') ? 'true' : 'false' }}}">
                         <button
                             @click="open = !open"
@@ -235,7 +238,7 @@
                             class="ml-4 mt-2 flex flex-col gap-2"
                             style="display: none;"
                         >
-                            @if($user?->canAccess('rekap-absen-murid'))
+                            @if($canAccessRoute('rekap-absen-murid'))
                             <li>
                                 <x-nav-link href="{{ route('rekap-absen-murid') }}" icon="rekapAbsenMurid">
                                     absen murid
@@ -255,7 +258,7 @@
                     @endif
 
                     <!-- riwayat -->
-                    @if($user?->canAccess('riwayat'))
+                    @if($canAccessPrefix('/riwayat'))
                     <li x-data="{open: {{ request()->routeIs('riwayat-absen-*') ? 'true' : 'false' }}}">
                         <button
                             @click="open = !open"
@@ -286,7 +289,7 @@
                             class="ml-4 mt-2 flex flex-col gap-2"
                             style="display: none;"
                         >
-                            @if($user?->canAccess('riwayat-murid'))
+                            @if($canAccessRoute('riwayat-absen-murid'))
                             <li>
                                 <x-nav-link href="{{ route('riwayat-absen-murid') }}" icon="riwayatAbsenMurid">
                                     absen murid
@@ -301,7 +304,7 @@
             @endif
 
             <!-- absensi -->
-            @if($user?->canAccess('absensi'))
+            @if($canAccessGroup('Absensi'))
             <li x-data="{open: {{ request()->routeIs('absensi-*') ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
@@ -332,7 +335,7 @@
                     class="ml-4 mt-2 flex flex-col gap-2"
                     style="display: none;"
                 >
-                    @if($user?->canAccess('absensi-murid'))
+                    @if($canAccessRoute('absensi-murid'))
                     <li>
                         <x-nav-link href="{{ route('absensi-murid') }}" icon="absenMurid">
                             absensi murid
@@ -352,7 +355,7 @@
             @endif
 
             <!-- data -->
-            @if($user?->canAccess('data-master'))
+            @if($canAccessGroup('Data Master'))
             <li x-data="{open: {{ request()->routeIs('data-*') ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
@@ -383,7 +386,7 @@
                     class="ml-4 mt-2 flex flex-col gap-2"
                     style="display: none;"
                 >
-                    @if($user?->canAccess('data-murid'))
+                    @if($canAccessRoute('data-murid'))
                     <li>
                         <x-nav-link href="{{ route('data-murid') }}" icon="dataMurid">
                             data murid
@@ -391,7 +394,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('data-guru'))
+                    @if($canAccessRoute('data-guru'))
                     <li>
                         <x-nav-link href="{{ route('data-guru') }}" icon="dataGuru">
                             data guru
@@ -399,7 +402,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('data-kelas'))
+                    @if($canAccessRoute('data-kelas'))
                     <li>
                         <x-nav-link href="{{ route('data-kelas') }}" icon="dataKelas">
                             data kelas
@@ -407,7 +410,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('data-jurusan'))
+                    @if($canAccessRoute('data-jurusan'))
                     <li>
                         <x-nav-link href="{{ route('data-jurusan') }}" icon="dataJurusan">
                             data jurusan
@@ -419,7 +422,7 @@
             @endif
 
             <!-- manajemen -->
-            @if($user?->canAccess('manajemen'))
+            @if($canAccessGroup('Manajemen'))
             <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-foto-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran', 'manajemen-role']) ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
@@ -450,7 +453,7 @@
                     class="ml-4 mt-2 flex flex-col gap-2"
                     style="display: none;"
                 >
-                    @if($user?->canAccess('manajemen-waktu'))
+                    @if($canAccessRoute('manajemen-waktu'))
                     <li>
                         <x-nav-link href="{{ route('manajemen-waktu') }}" icon="manajemenWaktu">
                             waktu
@@ -458,7 +461,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('manajemen-murid'))
+                    @if($canAccessRoute('manajemen-foto-murid'))
                     <li>
                         <x-nav-link href="{{ route('manajemen-foto-murid') }}" icon="manajemenMurid">
                             Foto Murid
@@ -466,7 +469,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('generate-qr'))
+                    @if($canAccessRoute('generate-QR'))
                     <li>
                         <x-nav-link href="{{ route('generate-QR') }}" icon="manajemenQR">
                             generate QR
@@ -474,7 +477,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('manajemen-role'))
+                    @if($canAccessRoute('manajemen-role'))
                     <li>
                         <x-nav-link href="{{ route('manajemen-role') }}" icon="manajemenRole">
                             role akses
@@ -482,7 +485,7 @@
                     </li>
                     @endif
 
-                    @if($user?->canAccess('manajemen-lainnya'))
+                    @if($canAccessPrefix('/manajemen/tahun-ajaran') || $canAccessPrefix('/manajemen/user'))
                     <li>
                         <x-nav-link href="{{ route('manajemen-tahun-ajaran') }}" icon="manajemenTahunAjaran">
                             tahun ajaran
@@ -499,7 +502,7 @@
             </li>
             @endif
 
-            @if($user?->canAccess('pengaturan'))
+            @if($canAccessRoute('pengaturan'))
                 <!-- pengaturan -->
                 <li>
                     <x-nav-link href="{{ route('pengaturan') }}" icon="pengaturan">

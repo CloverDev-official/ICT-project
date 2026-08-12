@@ -5,6 +5,7 @@ namespace Modules\Manajemen\Livewire\Role;
 use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
 use App\Models\Role;
+use App\Support\PermissionRegistry;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -19,59 +20,14 @@ class Manajemen extends Component
 
     public string $search = '';
 
-    private array $permissionGroups = [
-        'Umum' => [
-            'dashboard',
-            'pilih-absen',
-            'profil',
-        ],
-        'Laporan' => [
-            'laporan',
-            'rekap-absen',
-            'rekap-absen-murid',
-            'rekap-absen-guru',
-            'riwayat',
-            'riwayat-murid',
-        ],
-        'Data Master' => [
-            'data-master',
-            'data-murid',
-            'data-guru',
-            'data-kelas',
-            'data-jurusan',
-        ],
-        'Absensi' => [
-            'absensi',
-            'absensi-murid',
-            'absensi-guru',
-        ],
-        'Manajemen' => [
-            'manajemen',
-            'generate-qr',
-            'manajemen-waktu',
-            'manajemen-murid',
-            'manajemen-lainnya',
-            'manajemen-role',
-            'manajemen-tahun-ajaran',
-        ],
-        'Pengaturan' => [
-            'pengaturan',
-        ],
-    ];
-
     public function getPermissionGroupsProperty(): array
     {
-        return $this->permissionGroups;
+        return PermissionRegistry::groups();
     }
 
     public function getAvailablePermissionsProperty(): array
     {
-        return collect($this->permissionGroups)
-            ->flatten()
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
+        return PermissionRegistry::all();
     }
 
     public function getRolesProperty()
@@ -183,8 +139,8 @@ class Manajemen extends Component
     {
         return view('manajemen::livewire.role.manajemen', [
             'roles' => $this->roles,
-            'permissionGroups' => $this->permissionGroups,
-            'availablePermissions' => $this->availablePermissions,
+            'permissionGroups' => PermissionRegistry::groups(),
+            'availablePermissions' => PermissionRegistry::all(),
         ]);
     }
 }
