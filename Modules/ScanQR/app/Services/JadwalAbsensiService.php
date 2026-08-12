@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Schema;
 
 class JadwalAbsensiService
 {
-    private const DEFAULT_SCAN_MASUK_MULAI = '06:30';
+    private const DEFAULT_SCAN_MASUK_MULAI = '06:00';
     private const DEFAULT_SCAN_MASUK_SAMPAI = '07:30';
-    private const DEFAULT_SCAN_PULANG_MULAI = '15:30';
-    private const DEFAULT_SCAN_PULANG_SAMPAI = '16:30';
-    private const DEFAULT_SCAN_PULANG_JUMAT_MULAI = '10:30';
-    private const DEFAULT_SCAN_PULANG_JUMAT_SAMPAI = '11:30';
+    private const DEFAULT_SCAN_PULANG_MULAI = '16:30';
+    private const DEFAULT_SCAN_PULANG_SAMPAI = '18:00';
+    private const DEFAULT_SCAN_PULANG_JUMAT_MULAI = '11:30';
+    private const DEFAULT_SCAN_PULANG_JUMAT_SAMPAI = '14:00';
 
     public function forRombel(?int $rombelId, Carbon|string|null $date = null): array
     {
