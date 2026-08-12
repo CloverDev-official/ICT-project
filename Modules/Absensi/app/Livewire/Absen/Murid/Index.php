@@ -35,10 +35,11 @@ class Index extends Component
 
     public const STATUS = [
         1 => 'Hadir',
-        2 => 'Izin',
-        3 => 'Sakit',
-        4 => 'Alpa',
-        5 => 'Terlambat',
+        2 => 'Masuk',
+        3 => 'Izin',
+        4 => 'Sakit',
+        5 => 'Alpa',
+        6 => 'Terlambat',
     ];
 
     public function mount(): void
