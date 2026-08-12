@@ -34,11 +34,11 @@ class Index extends Component
     private ?int $lockedIndeksId = null;
 
     public const STATUS = [
-        'Hadir',
-        'Izin',
-        'Sakit',
-        'Alpa',
-        'Terlambat',
+        1 => 'Hadir',
+        2 => 'Izin',
+        3 => 'Sakit',
+        4 => 'Alpa',
+        5 => 'Terlambat',
     ];
 
     public function mount(): void
@@ -135,7 +135,7 @@ class Index extends Component
                 $q->whereDate('tanggal', $this->filterTanggal)
             )
             ->when($this->status, fn ($q) =>
-                $q->where('status', $this->status)
+                $q->where('status', self::STATUS[$this->status] ?? null)
             )
             ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
