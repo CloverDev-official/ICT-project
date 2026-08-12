@@ -77,16 +77,17 @@ class Scan extends Component
         $today = $now->toDateString();
         $currentTime = $now->format('H:i:s');
 
-        $absen = AbsenMurid::query()
-            ->where('murid_id', $this->murid->id)
-            ->whereDate('tanggal', $today)
-            ->first();
-
-        $absen->update([
+        $absen = AbsenMurid::updateOrCreate(
+        [
+            'murid_id' => $this->murid->id,
+            'tanggal' => $today,
+        ],
+        [
             'waktu_masuk' => $currentTime,
             'status' => 'Terlambat',
             'keterangan' => $this->keterangan,
-        ]);
+        ]
+    );
 
         $this->acceptScan('Alasan terlambat tersimpan.');
         $this->dispatch('lateConfirm');
@@ -163,6 +164,16 @@ class Scan extends Component
             ->whereDate('tanggal', $today)
             ->first();
 
+        // Cek apakah murid tidak absen masuk dan sudah melewati jendela scan masuk, tetapi belum waktunya pulang.
+        if (!$absen?->waktu_masuk && $absen?->status != 'Terlambat' && !$this->dalamJendelaPulang($currentTime, $jadwal)) {
+            $beradaSetelahScanMasuk = $currentTime > $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
+            $belumScanKeluar = !$this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
+            if ($beradaSetelahScanMasuk && $belumScanKeluar) {
+                $this->lateScan('Murid sudah terlambat absen masuk.');
+                return;
+            }
+        }
+
         if (!$absen) {
             // Record pertama hari ini dapat berupa masuk atau langsung pulang.
             $this->processAbsensiPertama($murid, $today, $currentTime, $jadwal);
@@ -211,17 +222,6 @@ class Scan extends Component
 
     private function processAbsensiLanjutan(AbsenMurid $absen, string $currentTime, array $jadwal): void
     {
-        // Jendela scan adalah satu-satunya patokan absensi: setelah jendela masuk
-        // berakhir, siswa yang belum masuk ditandai terlambat hingga jendela pulang dibuka.
-        if (!$absen->waktu_masuk && !$this->dalamJendelaPulang($currentTime, $jadwal)) {
-            $beradaSetelahScanMasuk = $currentTime > $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
-            $belumScanKeluar = !$this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
-            if ($beradaSetelahScanMasuk && $belumScanKeluar) {
-                $this->lateScan('Murid sudah terlambat absen masuk.');
-                return;
-            }
-        }
-
         // Murid tidak dapat absen pulang jika belum memiliki absensi masuk saat jendela pulang terbuka.
         if (!$absen->waktu_masuk && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $this->rejectScan('Maaf kamu tidak bisa absen pulang karena belum absen masuk');
@@ -229,9 +229,10 @@ class Scan extends Component
         }
 
         if (!$absen->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
+            $status = $absen?->status === 'Terlambat' ? 'Terlambat' : 'Hadir';
             $absen->update([
                 'waktu_keluar' => $currentTime,
-                'status' => 'Hadir',
+                'status' => $status,
             ]);
 
             $this->acceptScan('Absensi pulang berhasil disimpan.');
