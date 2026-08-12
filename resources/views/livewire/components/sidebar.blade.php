@@ -112,7 +112,7 @@
                             style="display: none;"
                         >   
                             {{-- izin keluar --}}
-                            <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}" >
+                            <li x-data="{open: {{ request()->routeIs(['laporan-izin-keluar', 'cetak-izin-keluar']) ? 'true' : 'false' }}}" >
                                 <button
                                     @click="open = !open"
                                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -160,7 +160,7 @@
                                 </ul>
                             </li>
                             {{-- izin telat --}}
-                            <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}" >
+                            <li x-data="{open: {{ request()->routeIs('cetak-izin-telat') ? 'true' : 'false' }}}" >
                                 <button
                                     @click="open = !open"
                                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -420,7 +420,7 @@
 
             <!-- manajemen -->
             @if($user?->canAccess('manajemen'))
-            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran', 'manajemen-role']) ? 'true' : 'false' }}}">
+            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-foto-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran', 'manajemen-role']) ? 'true' : 'false' }}}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
