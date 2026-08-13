@@ -270,7 +270,7 @@
 
                         <!-- keperluan -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->alasan }}
+                            {{ $terlambat->keterangan }}
                         </td>
 
                         <!--tanggal -->
@@ -280,7 +280,7 @@
 
                         <!-- waktu -->
                         <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->dari_jam }}{{ $terlambat->sampai_jam ? ' - ' . $terlambat->sampai_jam : '' }}
+                            {{ $terlambat->waktu_masuk ?? '-' }}
                         </td>
 
                         <!-- status -->
