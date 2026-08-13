@@ -28,6 +28,7 @@ class Laporan extends Component
     public ?int $filterIndeks = null;
     public ?int $filterTingkat = null;
     public ?int $filterJurusan = null;
+    public ?string $filterTanggal = null;
 
     public bool $isWaliKelas = false;
     public ?array $waliRombelIds = null;
@@ -39,6 +40,7 @@ class Laporan extends Component
     {
         $this->applyWaliKelasLock();
         $this->listRombel = $this->getRombel();
+        $this->filterTanggal = now()->format('Y-m-d');
         $this->refreshFilterOptions();
     }
 
@@ -144,6 +146,9 @@ class Laporan extends Component
                         $muridQuery->where('nama', 'like', '%' . $search . '%')
                             ->orWhere('nipd', 'like', '%' . $search . '%');
                     });
+            })
+            ->when($this->filterTanggal, function ($query) {
+                $query->whereDate('tanggal', $this->filterTanggal);
             })
             ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
