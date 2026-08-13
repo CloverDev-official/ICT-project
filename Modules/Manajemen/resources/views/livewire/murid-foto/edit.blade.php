@@ -7,7 +7,7 @@
 
     <!-- BACK -->
     <div>
-        <a href="{{ route('manajemen-murid') }}" wire:navigate>
+        <a href="{{ route('manajemen-foto-murid') }}" wire:navigate>
             <button
                 class="group flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-main hover:text-blue-main hover:shadow-md">
 
@@ -405,7 +405,7 @@
             <div
                 class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
 
-                <a href="{{ route('manajemen-murid') }}" wire:navigate>
+                <a href="{{ route('manajemen-foto-murid') }}" wire:navigate>
                     <button
                         type="button"
                         class="w-full rounded-2xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 sm:w-auto">
