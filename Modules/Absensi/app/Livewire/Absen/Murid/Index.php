@@ -46,6 +46,7 @@ class Index extends Component
     {
         $this->applyWaliKelasLock();
         $this->listRombel = $this->getRombel();
+        $this->filterTanggal = now()->format('Y-m-d');
         $this->refreshFilterOptions();
     }
 
