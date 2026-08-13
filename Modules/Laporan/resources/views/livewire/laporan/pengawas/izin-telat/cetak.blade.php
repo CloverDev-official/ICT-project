@@ -86,7 +86,7 @@
         </div>
 
         <!-- dropdown -->
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-4">
 
             <!-- tingkat -->
             <livewire:components.searchable-select
@@ -161,7 +161,19 @@
                 option-class="font-medium"
                 check-icon="mdi:check"
                 check-icon-size="20"
-                check-icon-class="text-black-500" />            
+                check-icon-class="text-black-500" />      
+                
+            <!-- tanggal absen -->
+            <div>
+                <label class="mb-2 block text-sm font-semibold text-gray-700">
+                    Tanggal Absen
+                </label>
+
+                <input
+                    type="date"
+                    wire:model.live="filterTanggal"
+                    class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main focus:border-blue-main focus:outline-none focus:ring-4 focus:ring-blue-100" />
+            </div>
         </div>
 
     </div>

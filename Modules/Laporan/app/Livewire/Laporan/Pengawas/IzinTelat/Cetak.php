@@ -29,6 +29,7 @@ class Cetak extends Component
     public ?int $filterIndeks = null;
     public ?int $filterTingkat = null;
     public ?int $filterJurusan = null;
+    public ?string $filterTanggal = null;
 
     public bool $isWaliKelas = false;
     public ?array $waliRombelIds = null;
@@ -40,6 +41,7 @@ class Cetak extends Component
     {
         $this->applyWaliKelasLock();
         $this->listRombel = $this->getRombel();
+        $this->filterTanggal = now()->format('Y-m-d');
         $this->refreshFilterOptions();
     }
 
@@ -153,6 +155,9 @@ class Cetak extends Component
                         });
                 });
             })
+            ->when($this->filterTanggal, fn ($q) =>
+                $q->whereDate('tanggal', $this->filterTanggal)
+            )
             ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
                 'murid.rombel',
