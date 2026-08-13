@@ -52,7 +52,7 @@
 
             <!-- laporan -->
             @if($canAccessGroup('Laporan'))
-            <li x-data="{open: {{ request()->routeIs(['rekap-*', 'laporan-*', 'riwayat-absen-*', 'cetak-izin-*']) ? 'true' : 'false' }}}">
+            <li x-data="{open: $persist({{ request()->routeIs(['rekap-*', 'laporan-*', 'riwayat-absen-*', 'cetak-izin-*']) ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-laporan')}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -84,7 +84,7 @@
                 >   
                     <!-- laporan pengawas -->
                     @if($canAccessPrefix('/laporan-pengawas'))
-                    <li x-data="{open: {{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}}">
+                    <li x-data="{open: $persist({{ request()->routeIs(['laporan-*', 'cetak-izin-*']) ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-pengawas')}">
                         
                         <button
                             @click="open = !open"
@@ -115,7 +115,7 @@
                             style="display: none;"
                         >   
                             {{-- izin keluar --}}
-                            <li x-data="{open: {{ request()->routeIs(['laporan-izin-keluar', 'cetak-izin-keluar']) ? 'true' : 'false' }}}" >
+                            <li x-data="{open: $persist({{ request()->routeIs(['laporan-izin-keluar', 'cetak-izin-keluar']) ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-izin-keluar')}" >
                                 <button
                                     @click="open = !open"
                                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -163,7 +163,7 @@
                                 </ul>
                             </li>
                             {{-- izin telat --}}
-                            <li x-data="{open: {{ request()->routeIs('cetak-izin-telat') ? 'true' : 'false' }}}" >
+                            <li x-data="{open: $persist({{ request()->routeIs('cetak-izin-telat') ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-izin-telat')}" >
                                 <button
                                     @click="open = !open"
                                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -208,7 +208,7 @@
 
                     <!-- rekap absen -->
                     @if($canAccessPrefix('/rekap'))
-                    <li x-data="{open: {{ request()->routeIs('rekap-absen-*') ? 'true' : 'false' }}}">
+                    <li x-data="{open: $persist({{ request()->routeIs('rekap-absen-*') ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-rekap-absen')}">
                         <button
                             @click="open = !open"
                             class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -259,7 +259,7 @@
 
                     <!-- riwayat -->
                     @if($canAccessPrefix('/riwayat'))
-                    <li x-data="{open: {{ request()->routeIs('riwayat-absen-*') ? 'true' : 'false' }}}">
+                    <li x-data="{open: $persist({{ request()->routeIs('riwayat-absen-*') ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-riwayat-absen')}">
                         <button
                             @click="open = !open"
                             class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -305,7 +305,7 @@
 
             <!-- absensi -->
             @if($canAccessGroup('Absensi'))
-            <li x-data="{open: {{ request()->routeIs('absensi-*') ? 'true' : 'false' }}}">
+            <li x-data="{open: $persist({{ request()->routeIs('absensi-*') ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-absensi')}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -356,7 +356,7 @@
 
             <!-- data -->
             @if($canAccessGroup('Data Master'))
-            <li x-data="{open: {{ request()->routeIs('data-*') ? 'true' : 'false' }}}">
+            <li x-data="{open: $persist({{ request()->routeIs('data-*') ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-data-master')}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
@@ -423,7 +423,7 @@
 
             <!-- manajemen -->
             @if($canAccessGroup('Manajemen'))
-            <li x-data="{open: {{ request()->routeIs(['manajemen-waktu', 'manajemen-foto-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran', 'manajemen-role']) ? 'true' : 'false' }}}">
+            <li x-data="{open: $persist({{ request()->routeIs(['manajemen-waktu', 'manajemen-foto-murid', 'generate-QR', 'manajemen-user', 'manajemen-tahun-ajaran', 'manajemen-role']) ? 'true' : 'false' }}).using(sessionStorage).as('sidebar-manajemen')}">
                 <button
                     @click="open = !open"
                     class="flex w-full items-center justify-between rounded-lg px-4 py-2 text-white hover:bg-blue-deep-solid"
