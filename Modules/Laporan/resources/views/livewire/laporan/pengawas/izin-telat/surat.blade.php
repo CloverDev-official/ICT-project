@@ -104,22 +104,22 @@
 
                 <div class="text-[8px]">
                     <p class="font-semibold">Nama :</p>
-                    <p>{{ $izin->murid->nama }}</p>
+                    <p>{{ $absen->murid->nama }}</p>
                 </div>
 
                 <div class="text-[8px]">
                     <p class="font-semibold">Kelas :</p>
-                    <p>{{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}</p>
+                    <p>{{ $absen->murid->rombel->nama_lengkap ?? 'N/A' }}</p>
                 </div>
 
                 <div class="text-[8px]">
                     <p class="font-semibold">NIPD :</p>
-                    <p>{{ $izin->murid->nipd }}</p>
+                    <p>{{ $absen->murid->nipd }}</p>
                 </div>
 
                 <div class="text-[8px]">
                     <p class="font-semibold">Keperluan :</p>
-                    <p>{{ $izin->alasan }}</p>
+                    <p>{{ $absen->alasan }}</p>
                 </div>
 
             </div>
@@ -135,7 +135,7 @@
                     <div class="h-14"></div>
 
                     <div class="border-t border-black pt-1">
-                        {{ $izin->pengawas->nama ?? auth()->user()->name }}
+                        {{ auth()->user()->name }}
                     </div>
                 </div>
             </div>
@@ -145,3 +145,10 @@
     </div>
 
 </div>
+
+@script
+<script>
+    window.print();
+    Livewire.navigate('{{ route('cetak-izin-telat') }}');
+</script>
+@endscript

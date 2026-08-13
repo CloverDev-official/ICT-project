@@ -293,7 +293,7 @@
                             <div class="flex items-center justify-center gap-2">
                                 
                                 <!-- cetak ulang izin -->
-                                <a href="{{ route('surat-izin-keluar', $terlambat->id) }}" wire:navigate>
+                                <a href="{{ route('surat-izin-telat', $terlambat->id) }}" wire:navigate>
                                     <button 
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 

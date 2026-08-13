@@ -7,6 +7,7 @@ use Modules\Laporan\Livewire\Laporan\Pengawas\IzinKeluar\Cetak as CetakIzin;
 use Modules\Laporan\Livewire\Laporan\Pengawas\IzinKeluar\Surat as SuratIzin;
 
 use Modules\Laporan\Livewire\Laporan\Pengawas\IzinTelat\Cetak as CetakIzinTelat;
+use Modules\Laporan\Livewire\Laporan\Pengawas\IzinTelat\Surat as SuratIzinTelat;
 
 use Modules\Laporan\Livewire\Laporan\RekapAbsen\Murid\Rekap as RekapMurid;
 
@@ -25,6 +26,7 @@ Route::prefix('/laporan-pengawas')->middleware('access:laporan-pengawas')->group
     // izin telat
     Route::prefix('/izin-telat')->middleware('access:izin-telat')->group(function (){
         Route::get('/cetak-izin', CetakIzinTelat::class)->name('cetak-izin-telat');
+        Route::get('/surat-izin/{id}', SuratIzinTelat::class)->name('surat-izin-telat');
     });
 });
 
