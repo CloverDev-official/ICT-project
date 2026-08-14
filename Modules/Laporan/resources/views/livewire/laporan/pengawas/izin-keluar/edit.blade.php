@@ -90,7 +90,6 @@
                         </iconify-icon>
 
                         <select wire:model.defer="status" class="{{ $inputClass }} pl-12">
-                            <option value="">Semua Status</option>
                             <option value="selesai">Selesai</option>
                             <option value="izin">Izin</option>
                         </select>

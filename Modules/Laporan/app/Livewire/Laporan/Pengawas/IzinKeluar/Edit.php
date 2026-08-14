@@ -60,7 +60,7 @@ class Edit extends Component
             'alasan' => $validated['alasan'],
             'dari_jam' => $validated['dariJam'],
             'sampai_jam' => $validated['sampaiJam'] ?? null,
-            'status'=> $validated['status'] ?? 'Izin',
+            'status'=> Str::title($validated['status']) ?? 'Izin',
         ]);
 
         ToastMagic::success('Data izin berhasil diperbarui.');
