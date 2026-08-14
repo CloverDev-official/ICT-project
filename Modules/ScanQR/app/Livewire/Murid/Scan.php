@@ -148,7 +148,7 @@ class Scan extends Component
             return true;
         }
 
-        if ($izin && $izin?->status === 'Selesai') {
+        if ($izin && $this->isContainsIzin && $izin?->status === 'Selesai') {
             // Izin selesai tidak dapat digunakan kembali untuk proses absensi.
             $this->rejectScan('Murid sudah selesai izin, absensi tidak dapat disimpan. Silakan scan QR absensi.');
             return true;
