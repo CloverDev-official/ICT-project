@@ -10,7 +10,7 @@ use Livewire\Component;
 
 class Login extends Component
 {
-    public $email, $password;
+    public $email, $password, $remember = false;
 
     public function login()
     {
@@ -30,7 +30,7 @@ class Login extends Component
             return;
         }
 
-        if(Auth::attempt($validated)) {
+        if(Auth::attempt($validated, $this->remember)) {
             ToastMagic::success('Login berhasil!', 'Selamat datang kembali.');
         } else {
             ToastMagic::error('Login gagal!', 'Pastikan email dan password benar.');

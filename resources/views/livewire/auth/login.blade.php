@@ -127,6 +127,36 @@
 
                         </div>
 
+                        <!-- remember me -->
+                        <div class="flex items-center justify-end">
+
+                            <label class="group flex cursor-pointer items-center gap-3 select-none">
+
+                                <span
+                                    class="text-sm font-medium text-gray-600 transition-colors group-hover:text-gray-800">
+                                    Ingat saya
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    wire:model="remember"
+                                    class="peer sr-only">
+
+                                <span
+                                    class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-gray-300 bg-white text-transparent transition-all duration-200 group-hover:border-blue-main peer-checked:border-blue-main peer-checked:bg-blue-main peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-blue-100">
+
+                                    <iconify-icon
+                                        icon="solar:check-read-bold"
+                                        width="14"
+                                        height="14">
+                                    </iconify-icon>
+
+                                </span>
+
+                            </label>
+
+                        </div>
+                        
                         <!-- submit -->
                         <button
                             type="submit"
@@ -151,11 +181,15 @@
                                 height="20">
                             </iconify-icon>
 
-                            <span wire:loading.remove wire:target="login">
+                            <span
+                                wire:loading.remove
+                                wire:target="login">
                                 Masuk
                             </span>
 
-                            <span wire:loading wire:target="login">
+                            <span
+                                wire:loading
+                                wire:target="login">
                                 Memproses...
                             </span>
 
