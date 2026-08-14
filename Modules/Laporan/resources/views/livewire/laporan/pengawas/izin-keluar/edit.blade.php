@@ -8,7 +8,7 @@
 
     <!-- BACK -->
     <div>
-        <a href="{{ route('laporan-izin') }}" wire:navigate>
+        <a href="{{ route('laporan-izin-keluar') }}" wire:navigate>
             <button
                 class="group flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-main hover:text-blue-main hover:shadow-md">
 
