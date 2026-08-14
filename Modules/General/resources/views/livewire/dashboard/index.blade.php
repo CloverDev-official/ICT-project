@@ -301,18 +301,18 @@
 
 @script
     <script>
-        import('{{ Vite::asset('resources/js/chart.js') }}')
-        .then(() => {
+        import('{{ Vite::asset('Modules/General/resources/assets/js/dashboard-charts.js') }}')
+        .then(({ initDashboardCharts }) => {
             window.dashboardData = @js($dashboardData);
 
             document.addEventListener('livewire:init', () => {
                 Livewire.on('dashboard-data-updated', ({ dashboardData }) => {
                     window.dashboardData = dashboardData;
-                    initCharts();
+                    initDashboardCharts();
                 });
             });
 
-            initCharts();
+            initDashboardCharts();
         });
     </script>
 @endscript
