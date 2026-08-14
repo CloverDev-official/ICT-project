@@ -98,8 +98,7 @@ function renderAttendance(dom, data, fallback, yAxisName, color) {
     });
 }
 
-export function initDashboardCharts() {
-    const data = window.dashboardData || {};
+export function initDashboardCharts(data = {}) {
 
     renderDonut(document.getElementById("main-murid"), data.murid, fallbackMurid, "Absensi Murid");
     renderDonut(document.getElementById("main-guru"), data.guru, fallbackGuru, "Absensi Guru");
@@ -107,12 +106,9 @@ export function initDashboardCharts() {
     renderAttendance(document.getElementById("chart-tingkat-kehadiran-guru"), data.guru7, [20, 19, 20, 18, 17, 15, 12], "Jumlah Guru", "#105192");
 }
 
-if (!window.dashboardChartsResizeBound) {
-    window.dashboardChartsResizeBound = true;
-    window.addEventListener("resize", () => {
-        ["main-murid", "main-guru", "chart-tingkat-kehadiran-murid", "chart-tingkat-kehadiran-guru"]
-            .map((id) => document.getElementById(id))
-            .filter(Boolean)
-            .forEach((dom) => echarts.getInstanceByDom(dom)?.resize());
-    });
-}
+addEventListener("resize", () => {
+    ["main-murid", "main-guru", "chart-tingkat-kehadiran-murid", "chart-tingkat-kehadiran-guru"]
+        .map((id) => document.getElementById(id))
+        .filter(Boolean)
+        .forEach((dom) => echarts.getInstanceByDom(dom)?.resize());
+});

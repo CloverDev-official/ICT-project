@@ -303,16 +303,15 @@
     <script>
         import('{{ Vite::asset('Modules/General/resources/assets/js/dashboard-charts.js') }}')
         .then(({ initDashboardCharts }) => {
-            window.dashboardData = @js($dashboardData);
+            const dashboardData = @js($dashboardData);
 
             document.addEventListener('livewire:init', () => {
-                Livewire.on('dashboard-data-updated', ({ dashboardData }) => {
-                    window.dashboardData = dashboardData;
-                    initDashboardCharts();
+                Livewire.on('dashboard-data-updated', ({ dashboardData: updatedDashboardData }) => {
+                    initDashboardCharts(updatedDashboardData);
                 });
             });
 
-            initDashboardCharts();
+            initDashboardCharts(dashboardData);
         });
     </script>
 @endscript

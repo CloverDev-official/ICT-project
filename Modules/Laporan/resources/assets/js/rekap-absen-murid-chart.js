@@ -49,8 +49,8 @@ export function initRekapAbsenMuridChart(initialData) {
 
     if (dom.dataset.chartEventsBound) return;
     dom.dataset.chartEventsBound = "true";
-    window.addEventListener("chart-rekap-updated", (event) => {
+    addEventListener("chart-rekap-updated", (event) => {
         if (event.detail?.chart) apply(event.detail.chart);
     });
-    window.addEventListener("resize", () => chart.resize());
+    addEventListener("resize", () => chart.resize());
 }
