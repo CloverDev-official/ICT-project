@@ -17,7 +17,8 @@ export default defineConfig({
             buildDirectory: 'build-laporan',
             input: [
                 __dirname + '/resources/assets/sass/app.scss',
-                __dirname + '/resources/assets/js/app.js'
+                __dirname + '/resources/assets/js/app.js',
+                __dirname + '/resources/assets/js/rekap-absen-murid-chart.js'
             ],
             refresh: true,
         }),

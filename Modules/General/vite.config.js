@@ -17,7 +17,8 @@ export default defineConfig({
             buildDirectory: 'build-general',
             input: [
                 __dirname + '/resources/assets/sass/app.scss',
-                __dirname + '/resources/assets/js/app.js'
+                __dirname + '/resources/assets/js/app.js',
+                __dirname + '/resources/assets/js/dashboard-charts.js'
             ],
             refresh: true,
         }),
