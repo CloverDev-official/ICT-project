@@ -9,41 +9,44 @@
 
         html,
         body {
-            margin: 0;
-            padding: 0;
-            width: 58mm;
-            background: #fff;
+            width: 58mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
         }
 
         body {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            display: block !important;
         }
 
+        /* Sembunyikan seluruh halaman */
         body * {
             visibility: hidden;
         }
 
+        /* Tampilkan hanya receipt */
         #printArea,
         #printArea * {
             visibility: visible;
         }
 
         #printArea {
-            position: static;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
 
-            width: 58mm;
-            min-height: auto;
-            margin: 0;
-            padding: 3mm;
-            box-sizing: border-box;
+            width: 58mm !important;
+            min-width: 58mm !important;
+            max-width: 58mm !important;
 
-            box-sizing: border-box;
+            margin: 0 !important;
+            padding: 3mm !important;
 
-            background: #fff;
-            border: none;
-            box-shadow: none;
+            box-sizing: border-box !important;
+
+            background: #fff !important;
+            border: none !important;
+            box-shadow: none !important;
 
             font-size: 10px;
             line-height: 1.2;
@@ -68,15 +71,15 @@
         #qrcode {
             width: 26mm !important;
             height: 26mm !important;
-            display: block;
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
             object-fit: contain;
-            flex-shrink: 0;
         }
 
         button {
             display: none !important;
         }
-
     }
 </style>
 @endassets
@@ -92,7 +95,7 @@
 
     <div
         id="printArea"
-        class="mx-auto w-full max-w-[58mm] rounded bg-white p-3 shadow">
+        class="w-[58mm] rounded bg-white p-3 shadow">
 
         <div class="w-full">
 
@@ -126,17 +129,19 @@
 
             <div class="my-4 border border-dotted"></div>
 
-            <!-- Tanda Tangan -->
             <div class="flex justify-end">
                 <div class="w-28 text-center text-[8px]">
-                    <p class="font-semibold">Pengawas</p>
 
-                    <!-- Area tanda tangan -->
+                    <p class="font-semibold">
+                        Pengawas
+                    </p>
+
                     <div class="h-14"></div>
 
                     <div class="border-t border-black pt-1">
                         {{ auth()->user()->name }}
                     </div>
+
                 </div>
             </div>
 
