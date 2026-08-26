@@ -17,18 +17,19 @@ class JadwalAbsensiService
         $default = $this->defaultForDate($date, $settings);
 
         // Tanpa rombel, jadwal default tanggal tersebut menjadi fallback utama.
-        if (!$rombelId) {
+        if (! $rombelId) {
             return $default;
         }
 
         $jadwal = JadwalAbsen::query()
+            ->withCount('rombelJadwal')
             ->with(['rombelJadwal' => function ($query) use ($rombelId) {
                 $query->where('rombel_id', $rombelId);
             }])
             ->whereDate('tanggal', $date->toDateString())
             ->first();
 
-        if (!$jadwal) {
+        if (! $jadwal) {
             return $default;
         }
 
@@ -55,7 +56,7 @@ class JadwalAbsensiService
         }
 
         // Event dengan detail rombel hanya berlaku untuk rombel yang terdaftar.
-        if ($jadwal->rombelJadwal()->exists()) {
+        if ($jadwal->rombel_jadwal_count > 0) {
             return $default;
         }
 
@@ -103,7 +104,7 @@ class JadwalAbsensiService
             ->whereDate('tanggal', $date->toDateString())
             ->first();
 
-        if (!$jadwal) {
+        if (! $jadwal) {
             return $jadwalRombel;
         }
 
@@ -153,7 +154,7 @@ class JadwalAbsensiService
 
     public function bolehScan(array $jadwal): bool
     {
-        return !in_array($jadwal['tipe'], ['libur', 'pjj'], true);
+        return ! in_array($jadwal['tipe'], ['libur', 'pjj'], true);
     }
 
     public function labelTipe(?string $tipe): string
@@ -236,7 +237,7 @@ class JadwalAbsensiService
     private function scanWindowForRombel(object $detailRombel, array $default): array
     {
         // Gunakan window default bila skema atau pilihan window rombel belum tersedia.
-        if (!$this->supportsRombelScanWindow() || !($detailRombel->gunakan_window_scan ?? false)) {
+        if (! $this->supportsRombelScanWindow() || ! ($detailRombel->gunakan_window_scan ?? false)) {
             return [
                 'scan_masuk_mulai' => $default['scan_masuk_mulai'] ?? null,
                 'scan_masuk_sampai' => $default['scan_masuk_sampai'] ?? null,
@@ -263,7 +264,7 @@ class JadwalAbsensiService
             return $supported;
         }
 
-        if (!Schema::hasTable('jadwal_absen_rombel')) {
+        if (! Schema::hasTable('jadwal_absen_rombel')) {
             return $supported = false;
         }
 
@@ -274,7 +275,7 @@ class JadwalAbsensiService
             'scan_keluar_mulai',
             'scan_keluar_sampai',
         ] as $column) {
-            if (!Schema::hasColumn('jadwal_absen_rombel', $column)) {
+            if (! Schema::hasColumn('jadwal_absen_rombel', $column)) {
                 return $supported = false;
             }
         }
@@ -284,7 +285,7 @@ class JadwalAbsensiService
 
     private function formatTime($time): ?string
     {
-        if (!$time) {
+        if (! $time) {
             return null;
         }
 
