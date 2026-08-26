@@ -409,6 +409,7 @@
             let processed = 0;
             let totalData = 0;
             let currentRunId = null;
+            let cardsSinceYield = 0;
 
             let zip = null;
             let zipChunks = [];
@@ -416,6 +417,7 @@
             function resetProgress() {
                 processed = 0;
                 totalData = 0;
+                cardsSinceYield = 0;
                 zipChunks = [];
 
                 progressTextMurid.textContent = '0/0';
@@ -496,6 +498,21 @@
                 });
             };
 
+            const yieldAfterCard = async () => {
+                cardsSinceYield++;
+
+                const elapsedMs = performance.now() - lastYieldAt;
+                const shouldYield = cardsSinceYield >= 4
+                    || (cardsSinceYield >= 2 && elapsedMs >= 100);
+
+                if (!shouldYield) {
+                    return;
+                }
+
+                cardsSinceYield = 0;
+                await yieldToBrowser(true);
+            };
+
             const releaseCanvas = (canvas) => {
                 if (!canvas) {
                     return;
@@ -565,7 +582,6 @@
                         queueAssets(index + lookAhead);
                         const svgString = await qrTasks.get(index);
                         qrTasks.delete(index);
-                        await yieldToBrowser();
 
                         const renderer = event.orientation === 'horizontal'
                             ? window.renderStudentCardCanvas
@@ -597,7 +613,7 @@
                         progressPercentMurid.textContent = `${percent}%`;
                         progressBarMurid.style.width = `${percent}%`;
 
-                        await yieldToBrowser();
+                        await yieldAfterCard();
                     }
 
                     if (processed >= totalData) {

@@ -268,6 +268,11 @@ const waitForImage = async (image) => {
         // Fall through to load/error events when decode is not reliable.
     }
 
+    // The image may finish loading between the initial check and decode()
+    // rejecting. Re-check it before subscribing to events that have already
+    // fired; otherwise callers needlessly wait for the 600 ms timeout.
+    if (image.complete) return image.naturalWidth > 0;
+
     return await new Promise((resolve) => {
         image.addEventListener("load", () => resolve(image.naturalWidth > 0), { once: true });
         image.addEventListener("error", () => resolve(false), { once: true });
@@ -316,7 +321,12 @@ const yieldToBrowser = async () => {
 const shouldYieldAfterCard = ({ cardsSinceYield, lastYieldAt }) => {
     const elapsedMs = performance.now() - lastYieldAt;
 
-    return cardsSinceYield >= 6 || elapsedMs >= 24;
+    // Rendering a card normally takes longer than 24 ms, so the previous
+    // condition yielded after virtually every card. Keep the interface
+    // responsive while amortizing the scheduler/frame cost across a small
+    // batch of cards.
+    return cardsSinceYield >= 4
+        || (cardsSinceYield >= 2 && elapsedMs >= 100);
 };
 
 const encodeSvgDataUrl = (svgString) => {
@@ -526,6 +536,7 @@ class TemplateLoader {
     } = {}) {
         this.templateCache = templateCacheStore;
         this.sessions = new Map();
+        this.sessionRequests = new Map();
         this.logoDataUrlPromise = null;
     }
 
@@ -702,7 +713,20 @@ class TemplateLoader {
 
         if (session?.frame?.isConnected) return session;
 
-        return this.createSession(normalizedOrientation);
+        if (this.sessionRequests.has(normalizedOrientation)) {
+            return this.sessionRequests.get(normalizedOrientation);
+        }
+
+        const request = this.createSession(normalizedOrientation)
+            .finally(() => {
+                if (this.sessionRequests.get(normalizedOrientation) === request) {
+                    this.sessionRequests.delete(normalizedOrientation);
+                }
+            });
+
+        this.sessionRequests.set(normalizedOrientation, request);
+
+        return request;
     }
 
     async setImageSource(image, source) {
@@ -740,7 +764,11 @@ class TemplateLoader {
     setText(node, value) {
         if (!node) return;
 
-        node.nodeValue = value ?? "";
+        const nextValue = value ?? "";
+
+        if (node.nodeValue !== nextValue) {
+            node.nodeValue = nextValue;
+        }
     }
 
     getLogoDataUrl() {
@@ -861,6 +889,7 @@ class TemplateLoader {
         }
 
         this.sessions.clear();
+        this.sessionRequests.clear();
         this.logoDataUrlPromise = null;
     }
 }
@@ -936,7 +965,10 @@ class PdfManager {
         const results = [];
 
         for (const [className, entry] of this.entries.entries()) {
-            await yieldToBrowser();
+            if (results.length > 0) {
+                await yieldToBrowser();
+            }
+
             results.push({
                 className,
                 pdfBytes: new Uint8Array(entry.pdf.output("arraybuffer"))
@@ -1096,10 +1128,9 @@ const groupKeyFor = (murid) => murid?.rombel?.nama_lengkap ?? "Kelas";
  * faster by itself — what it does instead is:
  *  1. Prefetch the *next* student's photo while the *current* card is being
  *     rendered/encoded, overlapping network latency with CPU work.
- *  2. Yield back to the browser after every card (rAF/scheduler.yield) so the
- *     page can repaint and handle input, which is what actually removes the
- *     "lag"/freeze feeling during a big batch — total time is similar, but
- *     the tab stays responsive throughout.
+ *  2. Yield back to the browser after a small group of cards so the page can
+ *     repaint and handle input without paying a scheduler/frame delay for
+ *     every individual card.
  *
  * @param {Object} options
  * @param {Object[]} options.students
@@ -1119,6 +1150,7 @@ const generateStudentCardsBatch = async ({
     const normalizedOrientation = normalizeOrientation(orientation);
     const manager = new PdfManager();
 
+    students.slice(0, 3).forEach(prefetchPhoto);
     await templateLoader.preload([normalizedOrientation]);
 
     let cardsSinceYield = 0;
