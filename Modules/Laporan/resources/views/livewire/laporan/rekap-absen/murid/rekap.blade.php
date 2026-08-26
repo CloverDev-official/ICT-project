@@ -825,8 +825,13 @@
 @script
 <script type="module">
     import('{{ Vite::asset('Modules/Laporan/resources/assets/js/rekap-absen-murid-chart.js') }}')
-    .then(({ initRekapAbsenMuridChart }) => {
-        console.log(@js($chartRekap));
+    .then(() => {
+        const { initRekapAbsenMuridChart } = window;
+
+        if (typeof initRekapAbsenMuridChart !== 'function') {
+            throw new Error('Rekap absensi chart initializer gagal dimuat.');
+        }
+
         initRekapAbsenMuridChart(@js($chartRekap));
     });
 </script>

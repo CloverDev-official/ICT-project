@@ -106,6 +106,8 @@ export function initDashboardCharts(data = {}) {
     renderAttendance(document.getElementById("chart-tingkat-kehadiran-guru"), data.guru7, [20, 19, 20, 18, 17, 15, 12], "Jumlah Guru", "#105192");
 }
 
+window.initDashboardCharts = initDashboardCharts;
+
 addEventListener("resize", () => {
     ["main-murid", "main-guru", "chart-tingkat-kehadiran-murid", "chart-tingkat-kehadiran-guru"]
         .map((id) => document.getElementById(id))

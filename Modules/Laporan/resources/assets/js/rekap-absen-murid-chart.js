@@ -54,3 +54,5 @@ export function initRekapAbsenMuridChart(initialData) {
     });
     addEventListener("resize", () => chart.resize());
 }
+
+window.initRekapAbsenMuridChart = initRekapAbsenMuridChart;

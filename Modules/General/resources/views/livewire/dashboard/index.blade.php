@@ -302,7 +302,13 @@
 @script
     <script type="module">
         import('{{ Vite::asset('Modules/General/resources/assets/js/dashboard-charts.js') }}')
-        .then(({ initDashboardCharts }) => {
+        .then(() => {
+            const { initDashboardCharts } = window;
+
+            if (typeof initDashboardCharts !== 'function') {
+                throw new Error('Dashboard chart initializer gagal dimuat.');
+            }
+
             const dashboardData = @js($dashboardData);
 
             document.addEventListener('livewire:init', () => {
