@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
+import collectModuleAssetsPaths from './vite-module-loader.js';
+
+const moduleAssets = await collectModuleAssetsPaths([], 'Modules');
 
 export default defineConfig({
     plugins: [
@@ -11,12 +14,16 @@ export default defineConfig({
                 'resources/js/generateCard.js',
                 'resources/js/generateQR.js',
                 'resources/js/scanner.js',
+                ...moduleAssets,
             ],
             refresh: true,
         }),
         tailwindcss(),
     ],
     server: {
+        hmr: {
+            host: 'localhost',
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

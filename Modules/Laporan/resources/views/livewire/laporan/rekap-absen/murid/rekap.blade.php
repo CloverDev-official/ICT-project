@@ -824,7 +824,7 @@
 
 @script
 <script type="module">
-    import('{{ Vite::asset('resources/js/rekap-absen-murid-chart.js') }}')
+    import('{{ Vite::asset('Modules/Laporan/resources/assets/js/rekap-absen-murid-chart.js') }}')
     .then(({ initRekapAbsenMuridChart }) => {
         console.log(@js($chartRekap));
         initRekapAbsenMuridChart(@js($chartRekap));

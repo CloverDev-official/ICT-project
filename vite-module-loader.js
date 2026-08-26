@@ -1,51 +1,66 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 
-async function collectModuleAssetsPaths(paths, modulesPath) {
-  modulesPath = path.join(__dirname, modulesPath);
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
-  const moduleStatusesPath = path.join(__dirname, 'modules_statuses.json');
+async function collectJavaScriptFiles(directory) {
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    const files = await Promise.all(entries.map(async (entry) => {
+        const entryPath = path.join(directory, entry.name);
 
-  try {
-    // Read module_statuses.json
-    const moduleStatusesContent = await fs.readFile(moduleStatusesPath, 'utf-8');
-    const moduleStatuses = JSON.parse(moduleStatusesContent);
-
-    // Read module directories
-    const moduleDirectories = await fs.readdir(modulesPath);
-
-    for (const moduleDir of moduleDirectories) {
-      if (moduleDir === '.DS_Store') {
-        // Skip .DS_Store directory
-        continue;
-      }
-
-      // Check if the module is enabled (status is true)
-      if (moduleStatuses[moduleDir] === true) {
-        const viteConfigPath = path.join(modulesPath, moduleDir, 'vite.config.js');
-
-        try {
-          await fs.access(viteConfigPath);
-          // Convert to a file URL for Windows compatibility
-          const moduleConfigURL = pathToFileURL(viteConfigPath);
-
-          // Import the module-specific Vite configuration
-          const moduleConfig = await import(moduleConfigURL.href);
-
-          if (moduleConfig.paths && Array.isArray(moduleConfig.paths)) {
-            paths.push(...moduleConfig.paths);
-          }
-        } catch (error) {
-          // vite.config.js does not exist, skip this module
+        if (entry.isDirectory()) {
+            return collectJavaScriptFiles(entryPath);
         }
-      }
-    }
-  } catch (error) {
-    console.error(`Error reading module statuses or module configurations: ${error}`);
-  }
 
-  return paths;
+        return entry.isFile() && entry.name.endsWith('.js') ? [entryPath] : [];
+    }));
+
+    return files.flat();
 }
 
-export default collectModuleAssetsPaths;
+/**
+ * Return JS entry points from enabled Laravel modules for the application's
+ * single Vite build. This avoids separate module manifests that Laravel's
+ * default Vite facade cannot resolve.
+ */
+export default async function collectModuleAssetsPaths(paths, modulesPath) {
+    const modulesDirectory = path.resolve(projectRoot, modulesPath);
+    const statusesPath = path.join(projectRoot, 'modules_statuses.json');
+    const entries = new Set(paths);
+
+    try {
+        const statuses = JSON.parse(await fs.readFile(statusesPath, 'utf8'));
+        const modules = await fs.readdir(modulesDirectory, { withFileTypes: true });
+
+        for (const module of modules) {
+            if (! module.isDirectory() || statuses[module.name] !== true) {
+                continue;
+            }
+
+            const assetsDirectory = path.join(
+                modulesDirectory,
+                module.name,
+                'resources',
+                'assets',
+                'js',
+            );
+
+            try {
+                const files = await collectJavaScriptFiles(assetsDirectory);
+
+                files.forEach((file) => {
+                    entries.add(path.relative(projectRoot, file).split(path.sep).join('/'));
+                });
+            } catch (error) {
+                if (error.code !== 'ENOENT') {
+                    throw error;
+                }
+            }
+        }
+    } catch (error) {
+        console.error(`Unable to collect Laravel module Vite assets: ${error.message}`);
+    }
+
+    return [...entries];
+}

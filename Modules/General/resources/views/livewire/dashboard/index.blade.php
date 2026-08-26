@@ -301,7 +301,7 @@
 
 @script
     <script type="module">
-        import('{{ Vite::asset('resources/js/dashboard-charts.js') }}')
+        import('{{ Vite::asset('Modules/General/resources/assets/js/dashboard-charts.js') }}')
         .then(({ initDashboardCharts }) => {
             const dashboardData = @js($dashboardData);
 
