@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             TestTime::class,
         ]);
         $middleware->redirectGuestsTo(fn () => route('login-page'));
+        $middleware->redirectUsersTo(fn () => route('home'));
         $middleware->alias([
             'access' => AccessMiddleware::class,
         ]);

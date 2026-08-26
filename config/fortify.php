@@ -73,7 +73,9 @@ return [
     |
     */
 
-    'home' => '/admin/dashboard',
+    // All users are sent through this authenticated gateway so their role's
+    // first permitted page determines the final destination.
+    'home' => '/mpanel',
 
     /*
     |--------------------------------------------------------------------------
@@ -144,8 +146,8 @@ return [
     */
 
     'features' => [
-        Features::registration(),
-        Features::resetPasswords(),
+        // User accounts are created by an administrator in the management module.
+        // Public registration and reset forms are intentionally not exposed.
         // Features::emailVerification(),
         Features::updateProfileInformation(),
         Features::updatePasswords(),

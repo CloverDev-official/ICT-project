@@ -57,7 +57,7 @@
                         <div>
 
                             <label class="mb-2 block text-sm font-semibold text-gray-700">
-                                Nama atau Email
+                                Email
                             </label>
 
                             <div class="relative">
@@ -65,7 +65,7 @@
                                 <input
                                     type="text"
                                     wire:model="email"
-                                    placeholder="Masukkan nama atau email"
+                                    placeholder="Masukkan email"
                                     class="w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 pr-12 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100">
 
                                 <div
