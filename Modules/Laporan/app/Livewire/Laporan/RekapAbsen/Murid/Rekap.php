@@ -2,14 +2,13 @@
 
 namespace Modules\Laporan\Livewire\Laporan\RekapAbsen\Murid;
 
-use App\Models\Murid\AbsenMurid;
+use App\Enums\AttendanceStatus;
+use App\Exports\Murid\RekapKehadiranExport;
 use App\Models\Guru\Guru;
+use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\Murid;
-use App\Models\Murid\Rombel\Indeks;
-use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
 use App\Services\Rombel\RombelFilterService;
-use App\Exports\Murid\RekapKehadiranExport;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,30 +23,46 @@ class Rekap extends Component
     public int $perPage = 20;
 
     public $listRombel;
+
     public $filteredJurusan;
+
     public $filteredIndeks;
 
-    public array $statusOptions = ['sakit', 'izin', 'alpa', 'selesai'];
+    public array $statusOptions = [];
 
     public ?string $search = null;
+
     public ?int $filterTingkat = null;
+
     public ?int $filterJurusan = null;
+
     public ?int $filterIndeks = null;
+
     public ?string $filterStatus = null;
+
     public ?string $filterTanggalDari = null;
+
     public ?string $filterTanggalSampai = null;
+
     public ?string $exportTanggalDari = null;
+
     public ?string $exportTanggalSampai = null;
+
     public ?int $exportRombelId = null;
 
     public bool $isWaliKelas = false;
+
     public ?array $waliRombelIds = null;
+
     private ?int $lockedTingkatId = null;
+
     private ?int $lockedJurusanId = null;
+
     private ?int $lockedIndeksId = null;
 
     public function mount(): void
     {
+        $this->statusOptions = AttendanceStatus::rekapLowercase();
         $this->applyWaliKelasLock();
         $this->filterTanggalDari = now()->startOfMonth()->toDateString();
         $this->filterTanggalSampai = now()->toDateString();
@@ -60,20 +75,21 @@ class Rekap extends Component
     private function applyWaliKelasLock(): void
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $roleSlug = Str::slug($user->role?->name ?? '');
         $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
 
-        if (!$this->isWaliKelas) {
+        if (! $this->isWaliKelas) {
             return;
         }
 
         $guru = Guru::query()->where('user_id', $user->id)->first();
-        if (!$guru) {
+        if (! $guru) {
             $this->waliRombelIds = [];
+
             return;
         }
 
@@ -98,7 +114,7 @@ class Rekap extends Component
 
     private function applyLockedFilters(): void
     {
-        if (!$this->isWaliKelas) {
+        if (! $this->isWaliKelas) {
             return;
         }
 
@@ -119,7 +135,7 @@ class Rekap extends Component
 
     private function rombelBaseQuery()
     {
-        return Rombel::query()->tap(fn($q) => $this->rombelFilterService()->applyRombelFilters($q, $this->filterTingkat, $this->filterJurusan, $this->filterIndeks, $this->isWaliKelas ? $this->waliRombelIds : null));
+        return Rombel::query()->tap(fn ($q) => $this->rombelFilterService()->applyRombelFilters($q, $this->filterTingkat, $this->filterJurusan, $this->filterIndeks, $this->isWaliKelas ? $this->waliRombelIds : null));
     }
 
     private function getRombel()
@@ -193,7 +209,7 @@ class Rekap extends Component
     private function absenFilterBaseQuery()
     {
         return AbsenMurid::query()
-            ->tap(fn($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+            ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
                 'murid.rombel',
                 $this->filterTingkat,
@@ -247,7 +263,7 @@ class Rekap extends Component
     {
         $totalMurid = Murid::query()
             ->aktif()
-            ->tap(fn($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
+            ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
                 'rombel',
                 $this->filterTingkat,
@@ -257,7 +273,7 @@ class Rekap extends Component
             ))
             ->when(
                 $this->isWaliKelas && $this->waliRombelIds !== null,
-                fn($q) => $q->whereIn('rombel_id', $this->waliRombelIds),
+                fn ($q) => $q->whereIn('rombel_id', $this->waliRombelIds),
             )
             ->count();
 
@@ -287,7 +303,6 @@ class Rekap extends Component
             'persentase' => $persentase,
         ];
     }
-    
 
     private function getTidakHadir()
     {
@@ -326,6 +341,7 @@ class Rekap extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -338,6 +354,7 @@ class Rekap extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -350,6 +367,7 @@ class Rekap extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -388,7 +406,7 @@ class Rekap extends Component
     public function exportExcel()
     {
         if ($this->isWaliKelas && $this->waliRombelIds !== null) {
-            if (!$this->exportRombelId || !in_array($this->exportRombelId, $this->waliRombelIds, true)) {
+            if (! $this->exportRombelId || ! in_array($this->exportRombelId, $this->waliRombelIds, true)) {
                 $this->exportRombelId = $this->waliRombelIds[0] ?? null;
             }
         }

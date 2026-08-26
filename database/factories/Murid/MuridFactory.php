@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Murid;
 
+use App\Enums\StudentStatus;
 use App\Models\Murid\Murid;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -11,16 +12,19 @@ class MuridFactory extends Factory
     protected $model = Murid::class;
 
     protected static $images = null;
+
     protected static $total = 0;
+
     protected static $index = 0;
+
     protected static $counter = 1;
 
     protected function loadImages()
     {
         $path = storage_path('app/public/animeFaces/images');
 
-        if (!is_dir($path)) {
-            throw new \Exception("Folder tidak ditemukan: " . $path);
+        if (! is_dir($path)) {
+            throw new \Exception('Folder tidak ditemukan: '.$path);
         }
         $files = array_diff(scandir($path), ['.', '..']);
 
@@ -29,7 +33,7 @@ class MuridFactory extends Factory
         });
 
         self::$images = array_values(array_map(
-            fn ($f) => 'storage/animeFaces/images/' . $f,
+            fn ($f) => 'storage/animeFaces/images/'.$f,
             $files
         ));
 
@@ -62,11 +66,11 @@ class MuridFactory extends Factory
         $jk = fake()->randomElement(['L', 'P']);
 
         self::$counter++;
+
         return [
             'uuid' => (string) Str::uuid(),
 
-            'nama' =>
-                $jk === 'L' ? fake()->name('male') : fake()->name('female'),
+            'nama' => $jk === 'L' ? fake()->name('male') : fake()->name('female'),
 
             'jk' => $jk,
             'nipd' => str_pad(self::$counter, 10, '0', STR_PAD_LEFT),
@@ -106,7 +110,7 @@ class MuridFactory extends Factory
             'image_path' => $this->getFastImage(),
 
             'rombel_id' => null,
-            'status' => 'aktif',
+            'status' => StudentStatus::Aktif->value,
         ];
     }
 }

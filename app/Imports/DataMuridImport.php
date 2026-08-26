@@ -2,37 +2,47 @@
 
 namespace App\Imports;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithStartRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Events\AfterImport;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use App\Enums\StudentStatus;
 use App\Models\Murid\Murid;
+use App\Models\Murid\Rombel\Indeks;
+use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Rombel;
 use App\Models\Murid\Rombel\Tingkat;
-use App\Models\Murid\Rombel\Jurusan;
-use App\Models\Murid\Rombel\Indeks;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Events\AfterImport;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadingRow, WithStartRow, WithChunkReading, WithEvents, ShouldQueue
+class DataMuridImport implements ShouldQueue, ToCollection, WithCalculatedFormulas, WithChunkReading, WithEvents, WithHeadingRow, WithStartRow
 {
     private array $tingkatCache = [];
+
     private array $jurusanCache = [];
+
     private array $indeksCache = [];
+
     private array $rombelCache = [];
+
     private int $importedCount = 0;
+
     private int $skippedCount = 0;
+
     private ?string $progressKey = null;
+
     private ?string $resultKey = null;
+
     private int $totalRows = 0;
+
     private ?int $tahunMasuk = null;
 
     public function __construct(?string $progressKey = null, ?string $resultKey = null, int $totalRows = 0, ?int $tahunMasuk = null)
@@ -47,10 +57,12 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     {
         return 6;
     }
+
     public function headingRow(): int
     {
         return 5;
     }
+
     public function chunkSize(): int
     {
         return 1000;
@@ -83,9 +95,10 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
                 $this->getValueExact($row, ['nisn'])
             );
 
-            if (!$nama || !$nipd || !$nisn || !$jk) {
+            if (! $nama || ! $nipd || ! $nisn || ! $jk) {
                 $this->skippedCount++;
                 $skippedThisChunk++;
+
                 continue;
             }
 
@@ -94,9 +107,10 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
                 $this->getValueExact($row, ['tanggal lahir', 'tgl_lahir', 'tgl'])
             );
 
-            if (!$tempatLahir || !$tanggalLahir) {
+            if (! $tempatLahir || ! $tanggalLahir) {
                 $this->skippedCount++;
                 $skippedThisChunk++;
+
                 continue;
             }
 
@@ -120,7 +134,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
                 'hp' => $this->normalizeNumberString(
                     $this->getValueExact($row, ['telepon', 'hp', 'no_hp', 'no_telp', 'no_telpon'])
                 ),
-                'email' => $this->getValueExact($row, ['e-mail','email', 'e_mail']),
+                'email' => $this->getValueExact($row, ['e-mail', 'email', 'e_mail']),
                 'nama_ayah' => $this->getValueExact($row, ['nama ayah', 'ayah', 'nama_ayah_kandung']),
                 'nama_ibu' => $this->getValueExact($row, ['nama ibu', 'ibu', 'nama_ibu_kandung']),
                 'nama_wali' => $this->getValueExact($row, ['nama wali', 'wali']),
@@ -131,14 +145,15 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             ];
 
             if (Schema::hasColumn('murid', 'status')) {
-                $payload['status'] = 'aktif';
+                $payload['status'] = StudentStatus::Aktif->value;
             }
 
             $rows[] = $payload;
         }
 
-        if (!$rows) {
+        if (! $rows) {
             $this->updateProgressCache($processedThisChunk, 0, $skippedThisChunk);
+
             return;
         }
 
@@ -192,33 +207,34 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     {
         return [
             AfterImport::class => function () {
-                if (!$this->progressKey) {
+                if (! $this->progressKey) {
                     return;
                 }
 
-                Cache::put($this->progressKey . ':done', true, now()->addHour());
+                Cache::put($this->progressKey.':done', true, now()->addHour());
             },
         ];
     }
 
     private function updateProgressCache(int $processed, int $imported, int $skipped): void
     {
-        if (!$this->progressKey) {
+        if (! $this->progressKey) {
             return;
         }
 
-        Cache::increment($this->progressKey . ':processed', $processed);
-        Cache::put($this->progressKey . ':total', $this->totalRows, now()->addHour());
+        Cache::increment($this->progressKey.':processed', $processed);
+        Cache::put($this->progressKey.':total', $this->totalRows, now()->addHour());
 
         if ($this->resultKey) {
-            Cache::increment($this->resultKey . ':imported', $imported);
-            Cache::increment($this->resultKey . ':skipped', $skipped);
+            Cache::increment($this->resultKey.':imported', $imported);
+            Cache::increment($this->resultKey.':skipped', $skipped);
         }
     }
 
     private function normalizeRow($row): array
     {
         $array = $row instanceof Collection ? $row->toArray() : (array) $row;
+
         return array_change_key_case($array, CASE_LOWER);
     }
 
@@ -278,6 +294,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
         }
 
         $value = trim((string) $value);
+
         return $value === '' ? null : $value;
     }
 
@@ -292,13 +309,14 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
         }
 
         $value = trim((string) $value);
+
         return $value === '' ? null : $value;
     }
 
     private function normalizeJenisKelamin($value): ?string
     {
         $value = $this->normalizeString($value);
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -336,12 +354,12 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
             'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
         ], [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December',
             'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
         ], $value);
 
         $formats = [
@@ -402,6 +420,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
             return null;
         }
     }
+
     private function resolveRombelId(array $row): ?int
     {
         $tingkat = $this->getValueExact($row, [
@@ -423,7 +442,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
         ]);
 
         // Jika tingkat atau jurusan belum ada, coba parse dari nama kelas
-        if (!$tingkat || !$jurusan) {
+        if (! $tingkat || ! $jurusan) {
             $kelasRaw = $this->getValueExact($row, [
                 'Rombel Saat Ini',
                 'kelas',
@@ -439,7 +458,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
                 $jurusan = $jurusan ?: $parsedJurusan;
 
                 // Indeks hanya diisi jika berhasil diparse
-                if (!$indeks) {
+                if (! $indeks) {
                     $indeks = $parsedIndeks;
                 }
             }
@@ -452,7 +471,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
         $tahunMasuk = $this->resolveTahunMasukForTingkat($tingkat);
 
         // Tingkat dan jurusan wajib ada
-        if (!$tingkatId || !$jurusanId) {
+        if (! $tingkatId || ! $jurusanId) {
             return null;
         }
 
@@ -497,7 +516,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
 
     private function resolveTahunMasukForTingkat(?string $tingkat): ?int
     {
-        if (!$this->tahunMasuk || !$tingkat) {
+        if (! $this->tahunMasuk || ! $tingkat) {
             return $this->tahunMasuk;
         }
 
@@ -543,7 +562,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     private function getOrCreateTingkatId(?string $nama): ?int
     {
         $nama = $this->normalizeString($nama);
-        if (!$nama) {
+        if (! $nama) {
             return null;
         }
 
@@ -561,7 +580,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     private function getOrCreateJurusanId(?string $nama): ?int
     {
         $nama = $this->normalizeString($nama);
-        if (!$nama) {
+        if (! $nama) {
             return null;
         }
 
@@ -579,7 +598,7 @@ class DataMuridImport implements ToCollection, WithCalculatedFormulas, WithHeadi
     private function getOrCreateIndeksId(?string $nama): ?int
     {
         $nama = $this->normalizeString($nama);
-        if (!$nama) {
+        if (! $nama) {
             return null;
         }
 

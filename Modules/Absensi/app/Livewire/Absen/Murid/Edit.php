@@ -2,15 +2,19 @@
 
 namespace Modules\Absensi\Livewire\Absen\Murid;
 
-use App\Helpers\ValidateMagic;
+use App\Enums\AttendanceStatus;
 use App\Helpers\ToastMagic;
+use App\Helpers\ValidateMagic;
 use App\Models\Murid\AbsenMurid;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Edit extends Component
 {
     public AbsenMurid $absen;
+
     public ?string $status = null;
+
     public ?string $keterangan = null;
 
     public function mount(int $absenId): void
@@ -29,7 +33,10 @@ class Edit extends Component
     {
         $validate = ValidateMagic::run(
             [
-                'status' => 'required|in:hadir,sakit,izin,alpa',
+                'status' => ['required', Rule::in(array_map(
+                    static fn (AttendanceStatus $status): string => $status->lowercase(),
+                    AttendanceStatus::editable(),
+                ))],
                 'keterangan' => 'nullable|string|max:255',
             ],
             [
@@ -39,7 +46,7 @@ class Edit extends Component
             ],
         );
 
-        if (!$validate) {
+        if (! $validate) {
             return;
         }
 
@@ -55,6 +62,6 @@ class Edit extends Component
 
     public function render()
     {
-        return view("absensi::livewire.absen.murid.edit");
+        return view('absensi::livewire.absen.murid.edit');
     }
 }

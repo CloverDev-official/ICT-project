@@ -2,6 +2,8 @@
 
 namespace Modules\ScanQR\Services;
 
+use App\Enums\AttendanceStatus;
+use App\Enums\StudentStatus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -23,7 +25,7 @@ class AutoAlpaMuridService
         $jadwalService = app(JadwalAbsensiService::class);
 
         foreach ($jadwalService->forRombels($rombelIds, $date) as $rombelId => $jadwal) {
-            if (!$jadwalService->bolehScan($jadwal)) {
+            if (! $jadwalService->bolehScan($jadwal)) {
                 continue;
             }
 
@@ -43,7 +45,7 @@ class AutoAlpaMuridService
         $now ??= now();
         $jamMasuk = $this->normalizeTime($jadwal['jam_masuk'] ?? null);
 
-        if (!$jamMasuk) {
+        if (! $jamMasuk) {
             return 0;
         }
 
@@ -76,7 +78,7 @@ class AutoAlpaMuridService
             ],
             $query->selectRaw(
                 'murid.id, ? as tanggal, ? as status, null as waktu_masuk, null as waktu_keluar, ? as keterangan, ? as created_at, ? as updated_at',
-                [$tanggal, 'Alpa', $keterangan, $timestamp, $timestamp],
+                [$tanggal, AttendanceStatus::Alpa->value, $keterangan, $timestamp, $timestamp],
             ),
         );
 
@@ -96,7 +98,7 @@ class AutoAlpaMuridService
             ->whereNull('absen_murid.id');
 
         if ($this->muridHasStatusColumn()) {
-            return $query->where('murid.status', 'aktif');
+            return $query->where('murid.status', StudentStatus::Aktif->value);
         }
 
         return $query->whereNotNull('murid.rombel_id');
@@ -123,10 +125,10 @@ class AutoAlpaMuridService
 
     private function normalizeTime(?string $time): ?string
     {
-        if (!$time) {
+        if (! $time) {
             return null;
         }
 
-        return strlen($time) === 5 ? $time . ':00' : substr($time, 0, 8);
+        return strlen($time) === 5 ? $time.':00' : substr($time, 0, 8);
     }
 }

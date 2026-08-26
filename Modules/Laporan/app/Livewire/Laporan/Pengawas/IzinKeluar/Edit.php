@@ -2,6 +2,7 @@
 
 namespace Modules\Laporan\Livewire\Laporan\Pengawas\IzinKeluar;
 
+use App\Enums\AttendanceStatus;
 use App\Helpers\ToastMagic;
 use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
@@ -12,16 +13,21 @@ use Str;
 class Edit extends Component
 {
     public IzinMurid $izin;
+
     public ?Murid $murid = null;
 
     public string $nama = '';
+
     public string $nipd = '';
 
     public ?string $status = '';
-    
+
     public ?string $tanggal = null;
+
     public ?string $alasan = null;
+
     public ?string $dariJam = null;
+
     public ?string $sampaiJam = null;
 
     public function mount($id): void
@@ -52,7 +58,7 @@ class Edit extends Component
             'tanggal.required' => 'Tanggal wajib diisi.',
             'alasan.required' => 'Alasan izin wajib diisi.',
             'dariJam.required' => 'Jam mulai wajib diisi.',
-            'status.required'=> 'Status wajib diisi',
+            'status.required' => 'Status wajib diisi',
         ]);
 
         $this->izin->update([
@@ -60,7 +66,7 @@ class Edit extends Component
             'alasan' => $validated['alasan'],
             'dari_jam' => $validated['dariJam'],
             'sampai_jam' => $validated['sampaiJam'] ?? null,
-            'status'=> Str::title($validated['status']) ?? 'Izin',
+            'status' => Str::title($validated['status']) ?? AttendanceStatus::Izin->value,
         ]);
 
         ToastMagic::success('Data izin berhasil diperbarui.');

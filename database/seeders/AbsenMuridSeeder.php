@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AttendanceStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -11,7 +12,10 @@ class AbsenMuridSeeder extends Seeder
     {
         DB::disableQueryLog();
 
-        $statuses = ['Hadir', 'Sakit', 'Izin', 'Alpa'];
+        $statuses = array_map(
+            static fn (AttendanceStatus $status): string => $status->value,
+            AttendanceStatus::editable(),
+        );
         $totalHari = 7;
         $insertChunk = 100;
         $now = now()->toDateTimeString();
@@ -45,7 +49,7 @@ class AbsenMuridSeeder extends Seeder
                         $waktuKeluar = null;
                         $keterangan = null;
 
-                        if ($status === 'Hadir') {
+                        if ($status === AttendanceStatus::Hadir->value) {
                             $waktuMasuk = sprintf(
                                 '%02d:%02d:%02d',
                                 rand(7, 8),
@@ -90,7 +94,7 @@ class AbsenMuridSeeder extends Seeder
                     }
                 }
 
-                if (!empty($batch)) {
+                if (! empty($batch)) {
                     DB::table('absen_murid')->insert($batch);
 
                     $percent = number_format(

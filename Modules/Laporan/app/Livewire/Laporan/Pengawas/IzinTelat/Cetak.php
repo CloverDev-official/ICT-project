@@ -2,9 +2,9 @@
 
 namespace Modules\Laporan\Livewire\Laporan\Pengawas\IzinTelat;
 
+use App\Enums\AttendanceStatus;
 use App\Models\Guru\Guru;
 use App\Models\Murid\AbsenMurid;
-use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Rombel;
 use App\Services\Rombel\RombelFilterService;
@@ -14,7 +14,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 class Cetak extends Component
-{   
+{
     use WithPagination;
 
     public int $perPage = 20;
@@ -22,19 +22,29 @@ class Cetak extends Component
     public bool $showDelete = false;
 
     public $listRombel;
+
     public $filteredJurusan;
+
     public $filteredIndeks;
 
     public ?string $search = null;
+
     public ?int $filterIndeks = null;
+
     public ?int $filterTingkat = null;
+
     public ?int $filterJurusan = null;
+
     public ?string $filterTanggal = null;
 
     public bool $isWaliKelas = false;
+
     public ?array $waliRombelIds = null;
+
     private ?int $lockedTingkatId = null;
+
     private ?int $lockedJurusanId = null;
+
     private ?int $lockedIndeksId = null;
 
     public function mount(): void
@@ -48,20 +58,21 @@ class Cetak extends Component
     private function applyWaliKelasLock(): void
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $roleSlug = Str::slug($user->role?->name ?? '');
         $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
 
-        if (!$this->isWaliKelas) {
+        if (! $this->isWaliKelas) {
             return;
         }
 
         $guru = Guru::query()->where('user_id', $user->id)->first();
-        if (!$guru) {
+        if (! $guru) {
             $this->waliRombelIds = [];
+
             return;
         }
 
@@ -85,7 +96,7 @@ class Cetak extends Component
 
     private function applyLockedFilters(): void
     {
-        if (!$this->isWaliKelas) {
+        if (! $this->isWaliKelas) {
             return;
         }
 
@@ -107,7 +118,7 @@ class Cetak extends Component
             ->where('uuid', $muridData['uuid'] ?? null)
             ->first();
 
-        if (!$murid) {
+        if (! $murid) {
             return;
         }
 
@@ -117,7 +128,7 @@ class Cetak extends Component
         $filename = preg_replace('/\s+/', '-', $filename);
         $filename = preg_replace('/-+/', '-', $filename);
         $filename = trim($filename, '-.');
-        $filename = $filename . '.pdf';
+        $filename = $filename.'.pdf';
 
         $this->dispatch('generateStudentCardPdf', murid: $murid->toArray(), filename: $filename);
     }
@@ -135,7 +146,7 @@ class Cetak extends Component
     private function getTerlambatMurid()
     {
         return AbsenMurid::query()
-            ->where('status', 'Terlambat')
+            ->where('status', AttendanceStatus::Terlambat->value)
             ->with([
                 'murid:id,nama,nipd,nisn,rombel_id',
                 'murid.rombel:id,tingkat_id,jurusan_id,indeks_id',
@@ -147,16 +158,15 @@ class Cetak extends Component
                 $search = trim($this->search);
 
                 $query->where(function ($q) use ($search) {
-                    $q->where('alasan', 'like', '%' . $search . '%')
+                    $q->where('alasan', 'like', '%'.$search.'%')
                         ->orWhereHas('murid', function ($muridQuery) use ($search) {
-                            $muridQuery->where('nama', 'like', '%' . $search . '%')
-                                ->orWhere('nipd', 'like', '%' . $search . '%')
-                                ->orWhere('nisn', 'like', '%' . $search . '%');
+                            $muridQuery->where('nama', 'like', '%'.$search.'%')
+                                ->orWhere('nipd', 'like', '%'.$search.'%')
+                                ->orWhere('nisn', 'like', '%'.$search.'%');
                         });
                 });
             })
-            ->when($this->filterTanggal, fn ($q) =>
-                $q->whereDate('tanggal', $this->filterTanggal)
+            ->when($this->filterTanggal, fn ($q) => $q->whereDate('tanggal', $this->filterTanggal)
             )
             ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
@@ -191,6 +201,7 @@ class Cetak extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -202,6 +213,7 @@ class Cetak extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -213,6 +225,7 @@ class Cetak extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -236,11 +249,11 @@ class Cetak extends Component
         $this->resetPage();
         $this->refreshFilterOptions();
     }
-    
+
     public function render()
     {
         return view('laporan::livewire.laporan.pengawas.izin-telat.cetak', [
-                'listMuridTerlambat' => $this->getTerlambatMurid(),
+            'listMuridTerlambat' => $this->getTerlambatMurid(),
         ]);
     }
 }

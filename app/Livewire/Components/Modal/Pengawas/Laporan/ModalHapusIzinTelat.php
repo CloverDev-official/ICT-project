@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Components\Modal\Pengawas\Laporan;
 
+use App\Enums\AttendanceStatus;
 use App\Helpers\ToastMagic;
 use App\Models\Murid\AbsenMurid;
 use Livewire\Component;
@@ -12,13 +13,14 @@ class ModalHapusIzinTelat extends Component
 
     public function loadMuridTerlambat($id): void
     {
-        $this->listMuridTerlambat = AbsenMurid::query()->where('status', 'Terlambat')->with('murid')->findOrFail($id);
+        $this->listMuridTerlambat = AbsenMurid::query()->where('status', AttendanceStatus::Terlambat->value)->with('murid')->findOrFail($id);
     }
 
     public function destroy(): void
     {
-        if (!$this->listMuridTerlambat) {
+        if (! $this->listMuridTerlambat) {
             ToastMagic::error('Data izin tidak ditemukan.');
+
             return;
         }
 

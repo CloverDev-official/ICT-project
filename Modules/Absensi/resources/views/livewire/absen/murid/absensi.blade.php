@@ -219,7 +219,7 @@
                 <livewire:components.searchable-select
                     wire:model.live="status"
                     placeholder="Cari status kehadiran..."
-                    :options="self::STATUS"
+                    :options="self::statusOptions()"
                     value-key="id"
                     label-key="nama"
                     all-label="Semua status"

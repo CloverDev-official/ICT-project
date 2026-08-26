@@ -2,6 +2,7 @@
 
 namespace Modules\General\Livewire\Dashboard;
 
+use App\Enums\AttendanceStatus;
 use App\Models\Admin;
 use App\Models\Guru\AbsenGuru;
 use App\Models\Guru\Guru;
@@ -17,16 +18,6 @@ use Livewire\Component;
 
 class Index extends Component
 {
-    private const STATUS_OPTIONS = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alpa'];
-
-    private const STATUS_COLORS = [
-        'Hadir' => '#22c55e',
-        'Terlambat' => '#f97316',
-        'Izin' => '#eab308',
-        'Sakit' => '#3b82f6',
-        'Alpa' => '#ef4444',
-    ];
-
     public bool $isWaliKelas = false;
 
     public array $waliRombelIds = [];
@@ -232,8 +223,8 @@ class Index extends Component
 
         $counts = [];
 
-        foreach (self::STATUS_OPTIONS as $status) {
-            $counts[$status] = (int) ($rows[$status] ?? 0);
+        foreach (AttendanceStatus::dashboard() as $status) {
+            $counts[$status->value] = (int) ($rows[$status->value] ?? 0);
         }
 
         return $counts;
@@ -249,7 +240,7 @@ class Index extends Component
                 ->map(fn (int $value, string $status) => [
                     'name' => $status,
                     'value' => $value,
-                    'color' => self::STATUS_COLORS[$status] ?? '#94a3b8',
+                    'color' => AttendanceStatus::tryFrom($status)?->color() ?? '#94a3b8',
                 ])
                 ->values()
                 ->all(),
@@ -268,7 +259,7 @@ class Index extends Component
                 $start->toDateString(),
                 $end->toDateString(),
             ])
-            ->where('status', 'Hadir')
+            ->where('status', AttendanceStatus::Hadir->value)
             ->groupBy(DB::raw($dateExpr))
             ->pluck('total', 'tanggal');
 

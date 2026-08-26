@@ -2,13 +2,14 @@
 
 namespace Modules\Absensi\Livewire\Absen\Murid;
 
+use App\Enums\AttendanceStatus;
+use App\Models\Guru\Guru;
+use App\Models\Murid\AbsenMurid;
+use App\Models\Murid\Rombel\Rombel;
+use App\Services\Rombel\RombelFilterService;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Murid\AbsenMurid;
-use App\Models\Guru\Guru;
-use App\Models\Murid\Rombel\Rombel;
-use Illuminate\Support\Str;
-use App\Services\Rombel\RombelFilterService;
 
 class Index extends Component
 {
@@ -17,30 +18,50 @@ class Index extends Component
     public int $perPage = 20;
 
     public $listRombel;
+
     public $filteredJurusan;
+
     public $filteredIndeks;
+
     public $status;
 
     public ?string $search = null;
+
     public ?int $filterTingkat = null;
+
     public ?int $filterJurusan = null;
+
     public ?int $filterIndeks = null;
+
     public ?string $filterTanggal = null;
 
     public bool $isWaliKelas = false;
+
     public ?array $waliRombelIds = null;
+
     private ?int $lockedTingkatId = null;
+
     private ?int $lockedJurusanId = null;
+
     private ?int $lockedIndeksId = null;
 
-    public const STATUS = [
-        1 => 'Hadir',
-        2 => 'Masuk',
-        3 => 'Izin',
-        4 => 'Sakit',
-        5 => 'Alpa',
-        6 => 'Terlambat',
-    ];
+    public static function statusOptions(): array
+    {
+        return array_combine(
+            range(1, 6),
+            array_map(
+                static fn (AttendanceStatus $status): string => $status->value,
+                [
+                    AttendanceStatus::Hadir,
+                    AttendanceStatus::Masuk,
+                    AttendanceStatus::Izin,
+                    AttendanceStatus::Sakit,
+                    AttendanceStatus::Alpa,
+                    AttendanceStatus::Terlambat,
+                ],
+            ),
+        );
+    }
 
     public function mount(): void
     {
@@ -53,20 +74,21 @@ class Index extends Component
     private function applyWaliKelasLock(): void
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $roleSlug = Str::slug($user->role?->name ?? '');
         $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
 
-        if (!$this->isWaliKelas) {
+        if (! $this->isWaliKelas) {
             return;
         }
 
         $guru = Guru::query()->where('user_id', $user->id)->first();
-        if (!$guru) {
+        if (! $guru) {
             $this->waliRombelIds = [];
+
             return;
         }
 
@@ -90,7 +112,7 @@ class Index extends Component
 
     private function applyLockedFilters(): void
     {
-        if (!$this->isWaliKelas) {
+        if (! $this->isWaliKelas) {
             return;
         }
 
@@ -129,15 +151,13 @@ class Index extends Component
 
                 $q->whereHas('murid', function ($q) use ($search) {
                     $q->where('nama', 'like', "%{$search}%")
-                      ->orWhere('nipd', $search)
-                      ->orWhere('nisn', $search);
+                        ->orWhere('nipd', $search)
+                        ->orWhere('nisn', $search);
                 });
             })
-            ->when($this->filterTanggal, fn ($q) =>
-                $q->whereDate('tanggal', $this->filterTanggal)
+            ->when($this->filterTanggal, fn ($q) => $q->whereDate('tanggal', $this->filterTanggal)
             )
-            ->when($this->status, fn ($q) =>
-                $q->where('status', self::STATUS[$this->status] ?? null)
+            ->when($this->status, fn ($q) => $q->where('status', self::statusOptions()[$this->status] ?? null)
             )
             ->tap(fn ($q) => $this->rombelFilterService()->applyRombelFiltersToRelation(
                 $q,
@@ -171,6 +191,7 @@ class Index extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -182,6 +203,7 @@ class Index extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 
@@ -193,6 +215,7 @@ class Index extends Component
     {
         if ($this->isWaliKelas) {
             $this->applyLockedFilters();
+
             return;
         }
 

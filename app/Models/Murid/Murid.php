@@ -2,6 +2,7 @@
 
 namespace App\Models\Murid;
 
+use App\Enums\StudentStatus;
 use App\Models\Murid\Rombel\Rombel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,8 +12,8 @@ use Illuminate\Support\Str;
 
 class Murid extends Model
 {
-
     use HasFactory, SoftDeletes;
+
     protected $table = 'murid';
 
     protected $fillable = [
@@ -47,12 +48,12 @@ class Murid extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            if (!$model->uuid) {
+            if (! $model->uuid) {
                 $model->uuid = (string) Str::uuid();
             }
 
-            if (Schema::hasColumn($model->getTable(), 'status') && !$model->status) {
-                $model->status = 'aktif';
+            if (Schema::hasColumn($model->getTable(), 'status') && ! $model->status) {
+                $model->status = StudentStatus::Aktif->value;
             }
         });
     }
@@ -64,7 +65,7 @@ class Murid extends Model
         $hasStatusColumn ??= Schema::hasColumn($this->getTable(), 'status');
 
         if ($hasStatusColumn) {
-            return $query->where('status', 'aktif');
+            return $query->where('status', StudentStatus::Aktif->value);
         }
 
         return $query->whereNotNull('rombel_id');

@@ -2,6 +2,7 @@
 
 namespace App\Exports\Murid\Rekap;
 
+use App\Enums\AttendanceStatus;
 use App\Models\Setting;
 use App\Services\Murid\Rekap\AbsenRekapQuery;
 use Carbon\Carbon;
@@ -19,11 +20,14 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
-class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, WithTitle, WithChunkReading, WithCustomStartCell, WithEvents, WithColumnWidths
+class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWidths, WithCustomStartCell, WithEvents, WithHeadings, WithMapping, WithTitle
 {
     private AbsenRekapQuery $rekapQuery;
+
     private ?string $tanggalDari;
+
     private ?string $tanggalSampai;
 
     public function __construct(?string $tanggalDari, ?string $tanggalSampai)
@@ -48,9 +52,9 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
         return [
             'No',
             'Kelas',
-            'Hadir',
-            'Izin',
-            'Alpa',
+            AttendanceStatus::Hadir->value,
+            AttendanceStatus::Izin->value,
+            AttendanceStatus::Alpa->value,
             'Tidak absen pulang',
             'Persentase Kehadiran',
         ];
@@ -75,10 +79,14 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
             })
             ->select('rombel.id')
             ->selectRaw("{$rombelNamaExpr} as kelas")
-            ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Hadir' THEN 1 ELSE 0 END) as hadir")
-                ->selectRaw("SUM(CASE WHEN absen_murid.status IN ('Izin', 'Sakit', 'Selesai') THEN 1 ELSE 0 END) as izin")
-            ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Alpa' THEN 1 ELSE 0 END) as alpa")
-                ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) IN ('masuk','terlambat') THEN 1 ELSE 0 END) as tidak_absen_pulang")
+            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as hadir', [AttendanceStatus::Hadir->value])
+            ->selectRaw('SUM(CASE WHEN absen_murid.status IN (?, ?, ?) THEN 1 ELSE 0 END) as izin', [
+                AttendanceStatus::Izin->value,
+                AttendanceStatus::Sakit->value,
+                AttendanceStatus::Selesai->value,
+            ])
+            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as alpa', [AttendanceStatus::Alpa->value])
+            ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) IN ('masuk','terlambat') THEN 1 ELSE 0 END) as tidak_absen_pulang")
             ->selectRaw('COUNT(absen_murid.id) as total')
             ->groupBy('rombel.id', DB::raw($rombelNamaExpr))
             ->orderBy(DB::raw($rombelNamaExpr));
@@ -89,7 +97,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
         $hadir = (int) $row->hadir;
         $izin = (int) $row->izin;
         $alpa = (int) $row->alpa;
-            $tidakAbsenPulang = (int) ($row->tidak_absen_pulang ?? 0);
+        $tidakAbsenPulang = (int) ($row->tidak_absen_pulang ?? 0);
         $total = (int) $row->total;
 
         return [
@@ -126,9 +134,9 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                 $sheet->setCellValue('B4', ': Semua Kelas');
                 $sheet->mergeCells('B4:C4');
                 $sheet->setCellValue('D4', 'Periode');
-                $sheet->setCellValue('E4', ': ' . $this->periodeLabel());
+                $sheet->setCellValue('E4', ': '.$this->periodeLabel());
                 $sheet->setCellValue('A5', 'Tanggal Cetak');
-                $sheet->setCellValue('B5', ': ' . now()->format('d/m/Y'));
+                $sheet->setCellValue('B5', ': '.now()->format('d/m/Y'));
                 $sheet->mergeCells('B5:C5');
 
                 $sheet->getStyle("A1:{$lastColumn}2")->applyFromArray([
@@ -158,7 +166,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                 $rekapRow = $totalRow + 1;
                 $sheet->setCellValue(
                     "A{$rekapRow}",
-                    'Rekap: Hadir ' . $summary['persen_hadir'] . ' | Izin ' . $summary['persen_izin'] . ' | Alpa ' . $summary['persen_alpa']
+                    'Rekap: Hadir '.$summary['persen_hadir'].' | Izin '.$summary['persen_izin'].' | Alpa '.$summary['persen_alpa']
                 );
                 $sheet->mergeCells("A{$rekapRow}:{$lastColumn}{$rekapRow}");
 
@@ -212,8 +220,8 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
 
                 $sheet->freezePane('A9');
 
-                $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
-                $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+                $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_PORTRAIT);
+                $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_A4);
                 $sheet->getPageSetup()->setFitToWidth(1);
                 $sheet->getPageSetup()->setFitToHeight(0);
                 $sheet->getPageMargins()->setTop(0.35);
@@ -254,9 +262,12 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
                     $join->whereBetween('absen_murid.tanggal', [$startDate, $endDate]);
                 }
             })
-            ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Hadir' THEN 1 ELSE 0 END) as hadir")
-            ->selectRaw("SUM(CASE WHEN absen_murid.status IN ('Izin', 'Sakit') THEN 1 ELSE 0 END) as izin")
-            ->selectRaw("SUM(CASE WHEN absen_murid.status = 'Alpa' THEN 1 ELSE 0 END) as alpa")
+            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as hadir', [AttendanceStatus::Hadir->value])
+            ->selectRaw('SUM(CASE WHEN absen_murid.status IN (?, ?) THEN 1 ELSE 0 END) as izin', [
+                AttendanceStatus::Izin->value,
+                AttendanceStatus::Sakit->value,
+            ])
+            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as alpa', [AttendanceStatus::Alpa->value])
             ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) IN ('masuk','terlambat') THEN 1 ELSE 0 END) as tidak_absen_pulang")
             ->selectRaw('COUNT(absen_murid.id) as total')
             ->first();
@@ -266,6 +277,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
         $alpa = (int) ($row->alpa ?? 0);
         $tidakAbsenPulang = (int) ($row->tidak_absen_pulang ?? 0);
         $total = (int) ($row->total ?? 0);
+
         return [
             'hadir' => $hadir,
             'izin' => $izin,
@@ -288,7 +300,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
             return '0%';
         }
 
-        return number_format((($hadir) / $meetings) * 100, 2) . '%';
+        return number_format((($hadir) / $meetings) * 100, 2).'%';
     }
 
     private function formatPresenceCompositionOrDash(int $hadir, int $izin, int $alpa, int $total): string
@@ -297,9 +309,9 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
             return '-';
         }
 
-        return 'Hadir ' . $this->formatPercent($hadir, $total)
-            . ' | Izin ' . $this->formatPercent($izin, $total)
-            . ' | Alpa ' . $this->formatPercent($alpa, $total);
+        return 'Hadir '.$this->formatPercent($hadir, $total)
+            .' | Izin '.$this->formatPercent($izin, $total)
+            .' | Alpa '.$this->formatPercent($alpa, $total);
     }
 
     private function formatPercent(int $value, int $total): string
@@ -308,7 +320,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
             return '0%';
         }
 
-        return number_format(($value / $total) * 100, 2) . '%';
+        return number_format(($value / $total) * 100, 2).'%';
     }
 
     private function formatPercentOrDash(int $value, int $total): string
@@ -339,14 +351,14 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
 
     private function periodeLabel(): string
     {
-        if (!$this->tanggalDari && !$this->tanggalSampai) {
+        if (! $this->tanggalDari && ! $this->tanggalSampai) {
             return '-';
         }
 
         $start = $this->tanggalDari ?: $this->tanggalSampai;
         $end = $this->tanggalSampai ?: $this->tanggalDari;
 
-        if (!$start || !$end) {
+        if (! $start || ! $end) {
             return '-';
         }
 
@@ -354,8 +366,8 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
             return Carbon::parse($start)->format('d M Y');
         }
 
-        return Carbon::parse($start)->format('d M Y') .
-            ' s/d ' .
+        return Carbon::parse($start)->format('d M Y').
+            ' s/d '.
             Carbon::parse($end)->format('d M Y');
     }
 
@@ -366,7 +378,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithHeadings, WithMapping, With
 
     private function dateRange(): array
     {
-        if (!$this->tanggalDari && !$this->tanggalSampai) {
+        if (! $this->tanggalDari && ! $this->tanggalSampai) {
             return [null, null];
         }
 

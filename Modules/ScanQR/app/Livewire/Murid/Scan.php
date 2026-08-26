@@ -2,26 +2,35 @@
 
 namespace Modules\ScanQR\Livewire\Murid;
 
+use App\Enums\AttendanceStatus;
 use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
-use Modules\ScanQR\Services\AutoAlpaMuridService;
-use Modules\ScanQR\Services\JadwalAbsensiService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Modules\ScanQR\Services\AutoAlpaMuridService;
+use Modules\ScanQR\Services\JadwalAbsensiService;
 
 class Scan extends Component
 {
     public ?Murid $murid = null;
+
     public bool $tersimpan = false;
+
     public ?string $scanTitle = null;
+
     public ?string $scanStatus = null;
+
     public ?string $scanMessage = null;
+
     public ?string $keterangan = '';
+
     public ?string $izinUuid = null;
+
     public bool $isContainsIzin = false;
+
     public array $jadwalHariIni = [];
 
     #[On('verifiedQRCode')]
@@ -34,8 +43,9 @@ class Scan extends Component
         $murid = $this->findMurid($muridUuid);
 
         // QR hanya dapat diproses untuk murid aktif yang ditemukan di database.
-        if (!$murid) {
+        if (! $murid) {
             $this->rejectScan('QR Code tidak valid atau murid tidak ditemukan.');
+
             return;
         }
 
@@ -45,9 +55,10 @@ class Scan extends Component
         }
 
         // Absensi membutuhkan rombel untuk menentukan jadwal yang berlaku.
-        if (!$murid->rombel_id) {
+        if (! $murid->rombel_id) {
             $this->murid = $murid;
             $this->rejectScan('Murid belum memiliki kelas/rombel, absensi tidak dapat disimpan.');
+
             return;
         }
 
@@ -61,8 +72,9 @@ class Scan extends Component
         $this->jadwalHariIni = $jadwal;
 
         // Hari libur dan PJJ tetap ditolak oleh aturan jadwal yang sama.
-        if (!$jadwalService->bolehScan($jadwal)) {
+        if (! $jadwalService->bolehScan($jadwal)) {
             $this->rejectScan('Absensi Tidak Disimpan. Sistem mengecek jadwal kelas dari Manajemen Waktu.');
+
             return;
         }
 
@@ -84,14 +96,14 @@ class Scan extends Component
             ],
             [
                 'waktu_masuk' => $currentTime,
-                'status' => 'Terlambat',
+                'status' => AttendanceStatus::Terlambat->value,
                 'keterangan' => $this->keterangan,
             ]
         );
 
         $this->acceptScan('Alasan terlambat tersimpan.');
         $this->dispatch('lateConfirm');
-        return;
+
     }
 
     private function parseMuridUuid($muridUuid)
@@ -132,25 +144,28 @@ class Scan extends Component
             });
 
         // Jika QR izin cocok dengan izin yang sedang berlangsung, maka izin akan diperbarui menjadi selesai.
-        if ($izin && $this->isContainsIzin && $izin?->uuid === $this->izinUuid && $izin?->status === 'Izin') {
+        if ($izin && $this->isContainsIzin && $izin?->uuid === $this->izinUuid && $izin?->status === AttendanceStatus::Izin->value) {
             // QR izin yang cocok menandai izin selesai tanpa membuat absensi baru.
             $izin->update([
-                'status' => 'Selesai',
+                'status' => AttendanceStatus::Selesai->value,
             ]);
 
             $this->acceptMessage('Izin Berhasil Diperbarui', 'Izin berhasil diproses.');
+
             return true;
         }
 
-        if ($izin && $izin?->status === 'Izin') {
+        if ($izin && $izin?->status === AttendanceStatus::Izin->value) {
             // Murid yang masih izin harus menyelesaikan QR izin terlebih dahulu.
             $this->rejectScan('Murid sedang dalam izin, absensi tidak dapat disimpan. Silakan scan QR izin terlebih dahulu.');
+
             return true;
         }
 
-        if ($izin && $this->isContainsIzin && $izin?->status === 'Selesai') {
+        if ($izin && $this->isContainsIzin && $izin?->status === AttendanceStatus::Selesai->value) {
             // Izin selesai tidak dapat digunakan kembali untuk proses absensi.
             $this->rejectScan('Murid sudah selesai izin, absensi tidak dapat disimpan. Silakan scan QR absensi.');
+
             return true;
         }
 
@@ -165,18 +180,20 @@ class Scan extends Component
             ->first();
 
         // Cek apakah murid tidak absen masuk dan sudah melewati jendela scan masuk, tetapi belum waktunya pulang.
-        if (!$absen?->waktu_masuk && $absen?->status != 'Terlambat' && !$this->dalamJendelaPulang($currentTime, $jadwal)) {
+        if (! $absen?->waktu_masuk && $absen?->status != AttendanceStatus::Terlambat->value && ! $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $beradaSetelahScanMasuk = $currentTime > $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
-            $belumScanKeluar = !$this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
+            $belumScanKeluar = ! $this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
             if ($beradaSetelahScanMasuk && $belumScanKeluar) {
                 $this->lateScan('Murid sudah terlambat absen masuk.');
+
                 return;
             }
         }
 
-        if (!$absen && !$absen?->waktu_keluar) {
+        if (! $absen && ! $absen?->waktu_keluar) {
             // Record pertama hari ini dapat berupa masuk atau langsung pulang.
             $this->processAbsensiPertama($murid, $today, $currentTime, $jadwal);
+
             return;
         }
 
@@ -186,12 +203,13 @@ class Scan extends Component
     private function processAbsensiPertama(Murid $murid, string $today, string $currentTime, array $jadwal): void
     {
         // Scan masuk hanya boleh disimpan di dalam window scan masuk.
-        if (!$this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
+        if (! $this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
             $this->rejectScan(sprintf(
                 'Scan masuk dibuka pukul %s - %s.',
                 $jadwal['scan_masuk_mulai'] ?? '--:--',
                 $jadwal['scan_masuk_sampai'] ?? '--:--',
             ));
+
             return;
         }
 
@@ -199,7 +217,7 @@ class Scan extends Component
             'murid_id' => $murid->id,
             'tanggal' => $today,
             'waktu_masuk' => $currentTime,
-            'status' => 'Masuk',
+            'status' => AttendanceStatus::Masuk->value,
             'keterangan' => $this->keteranganAbsensi($jadwal),
         ]);
 
@@ -209,27 +227,32 @@ class Scan extends Component
     private function processAbsensiLanjutan(?AbsenMurid $absen, string $currentTime, array $jadwal): void
     {
         // Murid tidak dapat absen pulang jika belum memiliki absensi masuk saat jendela pulang terbuka.
-        if (!$absen?->waktu_masuk && $this->dalamJendelaPulang($currentTime, $jadwal)) {
+        if (! $absen?->waktu_masuk && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $this->rejectScan('Maaf kamu tidak bisa absen pulang karena belum absen masuk');
+
             return;
         }
 
         // Murid dapat absen pulang jika belum memiliki absensi pulang dan berada di dalam jendela pulang.
-        if (!$absen?->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
+        if (! $absen?->waktu_keluar && $this->dalamJendelaPulang($currentTime, $jadwal)) {
             // Status pulang mengikuti status masuk, jika masuk terlambat maka pulang juga terlambat.
-            $status = $absen?->status === 'Terlambat' ? 'Terlambat' : 'Hadir';
+            $status = $absen?->status === AttendanceStatus::Terlambat->value
+                ? AttendanceStatus::Terlambat->value
+                : AttendanceStatus::Hadir->value;
             $absen->update([
                 'waktu_keluar' => $currentTime,
                 'status' => $status,
             ]);
 
             $this->acceptScan('Absensi pulang berhasil disimpan.');
+
             return;
         }
 
         // Waktu keluar yang sudah tersimpan mencegah absensi pulang kedua.
         if ($absen?->waktu_keluar) {
             $this->acceptMessage('Murid sudah pulang', 'Murid ini sudah absen masuk dan pulang hari ini.');
+
             return;
         }
 
@@ -256,7 +279,7 @@ class Scan extends Component
 
     private function withinWindow(string $currentTime, ?string $start, ?string $end): bool
     {
-        if (!$start || !$end) {
+        if (! $start || ! $end) {
             return true;
         }
 
@@ -280,11 +303,11 @@ class Scan extends Component
 
     private function normalizeTime(?string $time): ?string
     {
-        if (!$time) {
+        if (! $time) {
             return null;
         }
 
-        return strlen($time) === 5 ? $time . ':00' : $time;
+        return strlen($time) === 5 ? $time.':00' : $time;
     }
 
     private function keteranganAbsensi(array $jadwal): ?string
@@ -346,7 +369,7 @@ class Scan extends Component
         $this->jadwalHariIni = [];
     }
 
-    #[Layout("layouts.auth")]
+    #[Layout('layouts.auth')]
     public function render()
     {
         Carbon::setLocale('id');

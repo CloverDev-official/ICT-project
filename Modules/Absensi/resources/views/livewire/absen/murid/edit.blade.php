@@ -128,48 +128,22 @@
                     x-data="{
         open: false,
         selected: @js($status ?? null),
+        options: @js(\App\Enums\AttendanceStatus::editFormOptions()),
+
+        selectedOption() {
+            return this.options.find((option) => option.value === this.selected)
+        },
 
         statusLabel() {
-            return this.selected === 'hadir'
-                ? 'Hadir'
-                : this.selected === 'sakit'
-                ? 'Sakit'
-                : this.selected === 'izin'
-                ? 'Izin'
-                : this.selected === 'alpa'
-                ? 'Alpa'
-                : this.selected === 'terlambat'
-                ? 'Terlambat'
-                : 'Pilih kehadiran'
+            return this.selectedOption()?.label ?? 'Pilih kehadiran'
         },
 
         statusClass() {
-            return this.selected === 'hadir'
-                ? 'bg-emerald-100 text-emerald-600'
-                : this.selected === 'sakit'
-                ? 'bg-amber-100 text-amber-600'
-                : this.selected === 'izin'
-                ? 'bg-blue-100 text-blue-600'
-                : this.selected === 'alpa'
-                ? 'bg-rose-100 text-rose-600'
-                : this.selected === 'terlambat'
-                ? 'bg-orange-100 text-orange-600'
-                : 'bg-gray-100 text-gray-500'
-                
+            return this.selectedOption()?.class ?? 'bg-gray-100 text-gray-500'
         },
 
         statusIcon() {
-            return this.selected === 'hadir'
-                ? 'solar:check-circle-bold'
-                : this.selected === 'sakit'
-                ? 'solar:health-bold'
-                : this.selected === 'izin'
-                ? 'solar:document-text-bold'
-                : this.selected === 'alpa'
-                ? 'solar:close-circle-bold'
-                : this.selected === 'terlambat'
-                ? 'solar:clock-circle-bold'
-                : 'solar:calendar-mark-bold'
+            return this.selectedOption()?.icon ?? 'solar:calendar-mark-bold'
         },
 
         select(value) {
@@ -235,43 +209,7 @@
                         style="display:none"
                         class="absolute z-50 mt-2 w-full overflow-y-scroll scroll-thin max-h-48 rounded-2xl border border-gray-200 bg-white shadow-xl">
 
-                        @foreach ([
-                        [
-                        'value' => 'hadir',
-                        'label' => 'Hadir',
-                        'desc' => 'Murid hadir mengikuti kegiatan',
-                        'icon' => 'solar:check-circle-bold',
-                        'class' => 'bg-emerald-100 text-emerald-600',
-                        ],
-                        [
-                        'value' => 'sakit',
-                        'label' => 'Sakit',
-                        'desc' => 'Murid tidak hadir karena sakit',
-                        'icon' => 'solar:health-bold',
-                        'class' => 'bg-amber-100 text-amber-600',
-                        ],
-                        [
-                        'value' => 'izin',
-                        'label' => 'Izin',
-                        'desc' => 'Murid tidak hadir dengan izin',
-                        'icon' => 'solar:document-text-bold',
-                        'class' => 'bg-blue-100 text-blue-600',
-                        ],
-                        [
-                        'value' => 'alpa',
-                        'label' => 'Alpa',
-                        'desc' => 'Murid tidak hadir tanpa keterangan',
-                        'icon' => 'solar:close-circle-bold',
-                        'class' => 'bg-rose-100 text-rose-600',
-                        ],
-                        [
-                        'value' => 'terlambat',
-                        'label' => 'Terlambat',
-                        'desc' => 'Murid hadir tapi terlambat',
-                        'icon' => 'solar:clock-circle-bold',
-                        'class' => 'bg-orange-100 text-orange-600',
-                        ],
-                        ] as $item)
+                        @foreach (\App\Enums\AttendanceStatus::editFormOptions() as $item)
 
                         <div
                             @click.prevent="select('{{ $item['value'] }}')"
