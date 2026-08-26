@@ -17,8 +17,9 @@
 
         <!-- Fonts loaded via app.css @import -->
 
-        <!-- Iconify -->
-        <script defer src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+        <!-- Register Iconify before the sidebar is parsed to prevent late icon pop-in. -->
+        <link rel="preconnect" href="https://code.iconify.design" crossorigin>
+        <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
         
         {!! ToastMagic::styles() !!}
 
