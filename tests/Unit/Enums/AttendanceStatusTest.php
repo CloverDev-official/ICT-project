@@ -40,4 +40,15 @@ class AttendanceStatusTest extends TestCase
             array_column($options, 'label'),
         );
     }
+
+    public function test_api_codes_and_case_insensitive_lookup_use_all_enum_cases(): void
+    {
+        $this->assertSame(
+            ['hadir', 'masuk', 'izin', 'sakit', 'alpa', 'terlambat', 'selesai'],
+            AttendanceStatus::codes(),
+        );
+        $this->assertSame(AttendanceStatus::Hadir, AttendanceStatus::fromCode(' HADIR '));
+        $this->assertSame(AttendanceStatus::Terlambat, AttendanceStatus::fromCode('terlambat'));
+        $this->assertNull(AttendanceStatus::fromCode('tidak-valid'));
+    }
 }

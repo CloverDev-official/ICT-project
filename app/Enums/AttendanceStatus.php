@@ -12,6 +12,28 @@ enum AttendanceStatus: string
     case Terlambat = 'Terlambat';
     case Selesai = 'Selesai';
 
+    /** @return array<int, string> */
+    public static function codes(): array
+    {
+        return array_map(
+            static fn (self $status): string => $status->lowercase(),
+            self::cases(),
+        );
+    }
+
+    public static function fromCode(string $code): ?self
+    {
+        $normalizedCode = mb_strtolower(trim($code));
+
+        foreach (self::cases() as $status) {
+            if ($status->lowercase() === $normalizedCode) {
+                return $status;
+            }
+        }
+
+        return null;
+    }
+
     /** @return array<int, self> */
     public static function dashboard(): array
     {

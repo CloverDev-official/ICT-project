@@ -1,0 +1,257 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API Riwayat Absensi Murid",
+    "version": "1.0.0",
+    "description": "API read-only untuk daftar dan ringkasan riwayat absensi murid. Semua endpoint membutuhkan session login aplikasi dan page access `riwayat-murid`. Loginlah melalui halaman web pada origin yang sama sebelum menggunakan Try It di Scalar. Pencarian bersifat partial pada nama, NIPD, dan NISN; seluruh murid yang sama atau mirip dikembalikan. Semua filter dapat dikombinasikan."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Origin aplikasi saat ini"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Riwayat Absensi Murid",
+      "description": "Membutuhkan permission/page access `riwayat-murid`. Wali kelas dibatasi ke rombel yang diasuhnya."
+    }
+  ],
+  "paths": {
+    "/api/riwayat-absensi-murid": {
+      "get": {
+        "tags": ["Riwayat Absensi Murid"],
+        "summary": "Daftar riwayat absensi murid",
+        "description": "Mengembalikan riwayat terpaginasikan. Default sorting adalah tanggal terbaru lalu primary key terbaru. Pencarian menormalisasi whitespace, bersifat case-insensitive, dan memperlakukan `%` serta `_` sebagai karakter literal.",
+        "operationId": "listStudentAttendanceHistories",
+        "security": [{"sessionCookie": []}],
+        "x-required-permission": "riwayat-murid",
+        "parameters": [
+          {"$ref": "#/components/parameters/Page"},
+          {"$ref": "#/components/parameters/PerPage"},
+          {"$ref": "#/components/parameters/Search"},
+          {"$ref": "#/components/parameters/MuridId"},
+          {"$ref": "#/components/parameters/Jurusan"},
+          {"$ref": "#/components/parameters/Indeks"},
+          {"$ref": "#/components/parameters/Tingkat"},
+          {"$ref": "#/components/parameters/DateFrom"},
+          {"$ref": "#/components/parameters/DateTo"},
+          {"$ref": "#/components/parameters/SortBy"},
+          {"$ref": "#/components/parameters/SortDirection"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Riwayat berhasil diambil.",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/HistoryListResponse"},
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "message": "Riwayat absensi murid berhasil diambil.",
+                      "data": [
+                        {
+                          "id": 1001,
+                          "murid": {"id": 21, "uuid": "fa19f0b9-4471-4e23-93e8-a8dc4d568cc8", "nama": "Ahmad Fauzan", "nipd": "001234", "nisn": "0098765432"},
+                          "jurusan": {"id": 1, "nama": "Rekayasa Perangkat Lunak"},
+                          "tingkat": {"id": 3, "nama": "XII"},
+                          "indeks": {"id": 2, "nama": "B"},
+                          "status": {"code": "hadir", "label": "Hadir"},
+                          "tanggal": "2026-08-27"
+                        }
+                      ],
+                      "meta": {"current_page": 1, "per_page": 20, "total": 150, "last_page": 8},
+                      "links": {"first": "https://example.test/api/riwayat-absensi-murid?page=1", "last": "https://example.test/api/riwayat-absensi-murid?page=8", "previous": null, "next": "https://example.test/api/riwayat-absensi-murid?page=2"}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "422": {"$ref": "#/components/responses/ValidationError"}
+        }
+      }
+    },
+    "/api/riwayat-absensi-murid/summary": {
+      "get": {
+        "tags": ["Riwayat Absensi Murid"],
+        "summary": "Ringkasan riwayat berdasarkan status",
+        "description": "Menghitung data per rombel dengan satu query agregasi database dan scope yang sama dengan daftar. Setiap rombel yang cocok memiliki nama lengkap, rincian seluruh status termasuk nilai nol, dan subtotal. `grand_total` merupakan jumlah seluruh rombel yang ditampilkan.",
+        "operationId": "summarizeStudentAttendanceHistories",
+        "security": [{"sessionCookie": []}],
+        "x-required-permission": "riwayat-murid",
+        "parameters": [
+          {"$ref": "#/components/parameters/Search"},
+          {"$ref": "#/components/parameters/MuridId"},
+          {"$ref": "#/components/parameters/Jurusan"},
+          {"$ref": "#/components/parameters/Indeks"},
+          {"$ref": "#/components/parameters/Tingkat"},
+          {"$ref": "#/components/parameters/DateFrom"},
+          {"$ref": "#/components/parameters/DateTo"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Ringkasan berhasil dihitung.",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/SummaryResponse"},
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "message": "Ringkasan absensi murid berhasil diambil.",
+                      "data": {
+                        "rombels": [
+                          {
+                            "rombel": "XI PPLG A",
+                            "statuses": [
+                              {"code": "hadir", "label": "Hadir", "total": 120},
+                              {"code": "izin", "label": "Izin", "total": 15}
+                            ],
+                            "total": 135
+                          },
+                          {
+                            "rombel": "XI PPLG B",
+                            "statuses": [
+                              {"code": "hadir", "label": "Hadir", "total": 100},
+                              {"code": "izin", "label": "Izin", "total": 10}
+                            ],
+                            "total": 110
+                          }
+                        ],
+                        "grand_total": 245
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "422": {"$ref": "#/components/responses/ValidationError"}
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "laravel-session",
+        "description": "Cookie session HttpOnly dari guard `web`. Nama cookie dapat berubah melalui SESSION_COOKIE. Scalar pada origin yang sama mengirim cookie login browser secara otomatis; token bearer tidak digunakan."
+      }
+    },
+    "parameters": {
+      "Page": {"name": "page", "in": "query", "required": false, "description": "Nomor halaman.", "schema": {"type": "integer", "minimum": 1, "default": 1}},
+      "PerPage": {"name": "per_page", "in": "query", "required": false, "description": "Jumlah data per halaman.", "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20}},
+      "Search": {"name": "search", "in": "query", "required": false, "description": "Partial search case-insensitive pada nama, NIPD, atau NISN. Semua kecocokan sama/mirip dikembalikan.", "schema": {"type": "string", "maxLength": 150}, "example": "Ahmad"},
+      "MuridId": {"name": "murid_id", "in": "query", "required": false, "description": "Primary key murid yang harus berada dalam scope user.", "schema": {"type": "integer", "minimum": 1}},
+      "Jurusan": {"name": "jurusan", "in": "query", "required": false, "description": "Nama jurusan, dicocokkan penuh secara case-insensitive melalui rombel murid.", "schema": {"type": "string", "maxLength": 191}, "example": "PPLG"},
+      "Indeks": {"name": "indeks", "in": "query", "required": false, "description": "Nama indeks kelas, dicocokkan penuh secara case-insensitive.", "schema": {"type": "string", "maxLength": 191}, "example": "A"},
+      "Tingkat": {"name": "tingkat", "in": "query", "required": false, "description": "Nama tingkat, dicocokkan penuh secara case-insensitive.", "schema": {"type": "string", "maxLength": 191}, "example": "XI"},
+      "DateFrom": {"name": "date_from", "in": "query", "required": false, "description": "Tanggal absensi minimum, inklusif.", "schema": {"type": "string", "format": "date"}, "example": "2026-08-01"},
+      "DateTo": {"name": "date_to", "in": "query", "required": false, "description": "Tanggal absensi maksimum, inklusif dan tidak boleh sebelum date_from.", "schema": {"type": "string", "format": "date"}, "example": "2026-08-31"},
+      "SortBy": {"name": "sort_by", "in": "query", "required": false, "description": "Kolom sorting yang di-whitelist.", "schema": {"type": "string", "enum": ["tanggal", "nama", "status", "id"], "default": "tanggal"}},
+      "SortDirection": {"name": "sort_direction", "in": "query", "required": false, "description": "Arah sorting.", "schema": {"type": "string", "enum": ["asc", "desc"], "default": "desc"}}
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Session tidak tersedia atau tidak valid.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}, "example": {"message": "Unauthenticated."}}}
+      },
+      "Forbidden": {
+        "description": "User login tetapi tidak memiliki page access `riwayat-murid`.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}, "example": {"message": "This action is unauthorized."}}}
+      },
+      "ValidationError": {
+        "description": "Query parameter tidak valid.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidationErrorResponse"}, "example": {"message": "Per page maksimal bernilai 100.", "errors": {"per_page": ["Per page maksimal bernilai 100."]}}}}
+      }
+    },
+    "schemas": {
+      "NamedReference": {
+        "type": ["object", "null"],
+        "properties": {"id": {"type": "integer"}, "nama": {"type": "string"}},
+        "required": ["id", "nama"]
+      },
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "uuid": {"type": "string", "format": "uuid"},
+          "nama": {"type": "string"},
+          "nipd": {"type": "string"},
+          "nisn": {"type": "string"}
+        },
+        "required": ["id", "uuid", "nama", "nipd", "nisn"]
+      },
+      "Status": {
+        "type": "object",
+        "properties": {"code": {"type": "string"}, "label": {"type": "string"}},
+        "required": ["code", "label"]
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "murid": {"$ref": "#/components/schemas/Student"},
+          "jurusan": {"$ref": "#/components/schemas/NamedReference"},
+          "tingkat": {"$ref": "#/components/schemas/NamedReference"},
+          "indeks": {"$ref": "#/components/schemas/NamedReference"},
+          "status": {"$ref": "#/components/schemas/Status"},
+          "tanggal": {"type": "string", "format": "date"}
+        },
+        "required": ["id", "murid", "jurusan", "tingkat", "indeks", "status", "tanggal"]
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "current_page": {"type": "integer"}, "per_page": {"type": "integer"}, "total": {"type": "integer"}, "last_page": {"type": "integer"}
+        },
+        "required": ["current_page", "per_page", "total", "last_page"]
+      },
+      "PaginationLinks": {
+        "type": "object",
+        "properties": {
+          "first": {"type": "string"}, "last": {"type": "string"}, "previous": {"type": ["string", "null"]}, "next": {"type": ["string", "null"]}
+        },
+        "required": ["first", "last", "previous", "next"]
+      },
+      "HistoryListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"}, "message": {"type": "string"}, "data": {"type": "array", "items": {"$ref": "#/components/schemas/History"}}, "meta": {"$ref": "#/components/schemas/PaginationMeta"}, "links": {"$ref": "#/components/schemas/PaginationLinks"}
+        },
+        "required": ["success", "message", "data", "meta", "links"]
+      },
+      "SummaryItem": {
+        "type": "object",
+        "properties": {"code": {"type": "string"}, "label": {"type": "string"}, "total": {"type": "integer", "minimum": 0}},
+        "required": ["code", "label", "total"]
+      },
+      "RombelSummary": {
+        "type": "object",
+        "properties": {
+          "rombel": {"type": "string", "example": "XI PPLG A"},
+          "statuses": {"type": "array", "items": {"$ref": "#/components/schemas/SummaryItem"}},
+          "total": {"type": "integer", "minimum": 0}
+        },
+        "required": ["rombel", "statuses", "total"]
+      },
+      "SummaryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"}, "message": {"type": "string"}, "data": {"type": "object", "properties": {"rombels": {"type": "array", "items": {"$ref": "#/components/schemas/RombelSummary"}}, "grand_total": {"type": "integer", "minimum": 0}}, "required": ["rombels", "grand_total"]}
+        },
+        "required": ["success", "message", "data"]
+      },
+      "ErrorResponse": {"type": "object", "properties": {"message": {"type": "string"}}, "required": ["message"]},
+      "ValidationErrorResponse": {"type": "object", "properties": {"message": {"type": "string"}, "errors": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}}}, "required": ["message", "errors"]}
+    }
+  }
+}
