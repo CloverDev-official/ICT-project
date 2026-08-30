@@ -106,6 +106,15 @@ class Scan extends Component
 
     }
 
+    public function closeModal(): void
+    {
+        $this->resetScanState();
+        $this->murid = null;
+        $this->scanTitle = null;
+
+        $this->dispatch('scanModalClosed');
+    }
+
     private function parseMuridUuid($muridUuid)
     {
         // Scanner lama dapat mengirim payload serialisasi PHP.

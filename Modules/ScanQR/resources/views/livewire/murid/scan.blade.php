@@ -149,12 +149,12 @@
     @endif --}}
 
     @if($tersimpan)
-    <div id="success-modal" class="fixed inset-0 z-50">
+    <div id="success-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
         <!-- overlay -->
-        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
 
         <!-- container -->
-        <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div wire:click.self="closeModal" class="relative flex items-center justify-center min-h-screen p-4">
 
             <!-- CARD -->
             <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
@@ -267,9 +267,9 @@
     @endif
 
     @if($scanStatus === 'message' && $scanMessage && $scanTitle)
-    <div id="error-modal" class="fixed inset-0 z-50">
-        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-        <div class="relative flex min-h-screen items-center justify-center p-4">
+    <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
+        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+        <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
                 <div class="bg-yellow-600 px-6 py-4 text-white">
                     <h2 class="text-lg font-bold">{{ $scanTitle }}</h2>
@@ -283,9 +283,9 @@
     @endif
 
     @if ($scanStatus === 'terlambat')
-        <div id="error-modal" class="fixed inset-0 z-50">
-            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-            <div class="relative flex min-h-screen items-center justify-center p-4">
+        <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
+            <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+            <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
                 <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
                     <div class="bg-red-600 px-6 py-4 text-white">
                         <h2 class="text-lg font-bold">Terlambat</h2>
@@ -358,9 +358,9 @@
 
 
     @if($scanStatus === 'error' && $scanMessage)
-    <div id="error-modal" class="fixed inset-0 z-50">
-        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-        <div class="relative flex min-h-screen items-center justify-center p-4">
+    <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
+        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+        <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
                 <div class="bg-red-600 px-6 py-4 text-white">
                     <h2 class="text-lg font-bold">Absensi Tidak Disimpan</h2>
@@ -457,6 +457,11 @@
             $wire.set('scanStatus', null);
             $wire.set('scanMessage', null);
             $wire.set('murid', null);
+            window.scanned = false;
+            window.initScanner();
+        });
+
+        document.addEventListener('scanModalClosed', () => {
             window.scanned = false;
             window.initScanner();
         });
