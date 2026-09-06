@@ -11,33 +11,98 @@ use App\Models\Murid\Rombel\Rombel;
 use App\Models\Murid\Rombel\Tingkat;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 
 class Create extends Component
 {
-    public ?int $tingkat_id = null;
+    public int|string|null $tingkat_id = null;
+
     public ?int $jurusan_id = null;
+
     public int|string|null $indeks_id = null;
+
     public ?int $tahun_masuk = null;
+
     public ?int $guru_id = null;
 
+    public int $tingkatAdditionalOptions = 0;
+
+    public bool $hasMoreTingkat = false;
+
+    public int $indeksAdditionalOptions = 0;
+
+    public bool $hasMoreIndeks = false;
+
     public $listTingkat = [];
+
     public $listJurusan = [];
+
     public $listIndeks = [];
+
     public $listGuru = [];
 
     public function mount(): void
     {
-        $this->listTingkat = Tingkat::query()->orderBy('nama')->get(['id', 'nama']);
+        $this->refreshTingkatOptions();
         $this->listJurusan = Jurusan::query()->orderBy('nama')->get(['id', 'nama']);
-        $this->listIndeks = Indeks::options();
+        $this->refreshIndeksOptions();
         $this->listGuru = Guru::query()->orderBy('nama')->get(['id', 'nama', 'email', 'user_id']);
+    }
+
+    public function loadMoreTingkat(): void
+    {
+        $this->tingkatAdditionalOptions++;
+
+        $this->refreshTingkatOptions();
+    }
+
+    private function refreshTingkatOptions(): void
+    {
+        $this->listTingkat = Tingkat::options($this->tingkatAdditionalOptions);
+        $this->hasMoreTingkat = Tingkat::hasMoreOptions($this->tingkatAdditionalOptions);
+    }
+
+    public function loadMoreIndeks(): void
+    {
+        $this->indeksAdditionalOptions += 3;
+
+        $this->refreshIndeksOptions();
+    }
+
+    private function refreshIndeksOptions(): void
+    {
+        $this->listIndeks = Indeks::options($this->indeksAdditionalOptions);
+        $this->hasMoreIndeks = Indeks::hasMoreOptions($this->indeksAdditionalOptions);
+    }
+
+    public function clearIndeks(): void
+    {
+        $this->indeks_id = null;
     }
 
     public function store(): void
     {
+        $tingkatSelection = $this->tingkat_id;
+        $indeksSelection = $this->indeks_id;
+        $tingkat = Tingkat::resolveSelection($tingkatSelection);
+        $indeks = Indeks::resolveSelection($indeksSelection);
+
+        if ($tingkatSelection !== null && $tingkatSelection !== '' && ! $tingkat) {
+            ToastMagic::error('Tingkat yang dipilih tidak valid.');
+
+            return;
+        }
+
+        if ($indeksSelection !== null && $indeksSelection !== '' && ! $indeks) {
+            ToastMagic::error('Indeks yang dipilih tidak valid.');
+
+            return;
+        }
+
+        $this->tingkat_id = $tingkat?->id;
+        $this->indeks_id = $indeks?->id;
+
         $validate = ValidateMagic::run(
             [
                 'tingkat_id' => ['required', 'exists:tingkat,id'],
@@ -58,20 +123,11 @@ class Create extends Component
             ],
         );
 
-        if (!$validate) {
+        if (! $validate) {
             return;
         }
 
-        if ($this->guru_id && !$this->ensureWaliKelasUser($this->guru_id)) {
-            return;
-        }
-
-        $indeks = $this->indeks_id
-            ? Indeks::resolveSelection($this->indeks_id)
-            : null;
-
-        if ($this->indeks_id && !$indeks) {
-            ToastMagic::error('Kelas yang dipilih tidak valid.');
+        if ($this->guru_id && ! $this->ensureWaliKelasUser($this->guru_id)) {
             return;
         }
 
@@ -79,11 +135,11 @@ class Create extends Component
             ->where('tingkat_id', $this->tingkat_id)
             ->where('jurusan_id', $this->jurusan_id)
             ->where('indeks_id', $indeks?->id)
-            ->whereKeyNot($this->rombel->id)
             ->exists();
 
         if ($exists) {
             ToastMagic::error('Kelas tersebut sudah terdaftar.');
+
             return;
         }
 
@@ -106,20 +162,22 @@ class Create extends Component
     private function ensureWaliKelasUser(int $guruId): bool
     {
         $guru = Guru::find($guruId);
-        if (!$guru) {
+        if (! $guru) {
             ToastMagic::error('Wali kelas tidak ditemukan.');
+
             return false;
         }
 
         $roleId = Role::query()->where('name', 'Wali Kelas')->value('id');
-        if (!$roleId) {
+        if (! $roleId) {
             ToastMagic::error('Role wali kelas belum tersedia.');
+
             return false;
         }
 
         $user = $guru->user_id ? User::find($guru->user_id) : null;
 
-        if (!$user && $guru->email) {
+        if (! $user && $guru->email) {
             $user = User::query()->where('email', $guru->email)->first();
         }
 
@@ -129,18 +187,19 @@ class Create extends Component
                 'is_active' => true,
             ]);
 
-            if (!$guru->user_id) {
+            if (! $guru->user_id) {
                 $guru->update(['user_id' => $user->id]);
             }
 
             return true;
         }
 
-        if (!$guru->email) {
+        if (! $guru->email) {
             ToastMagic::warning(
                 'Email guru kosong',
                 'Isi email guru agar akun wali kelas bisa dibuat.'
             );
+
             return false;
         }
 

@@ -187,14 +187,14 @@
                     @foreach ($listTingkat as $tingkat)
 
                     <div
-                        @click.prevent="select({{ (int) $tingkat->id }}, @js($tingkat->nama))"
+                        @click.prevent="select(@js((string) $tingkat->id), @js($tingkat->nama))"
                         class="{{ $optionClass }}"
-                        :class="selectedId === '{{ (int) $tingkat->id }}' ? 'bg-blue-main text-white' : ''">
+                        :class="selectedId === @js((string) $tingkat->id) ? 'bg-blue-main text-white' : ''">
 
                         <span>{{ $tingkat->nama }}</span>
 
                         <iconify-icon
-                            x-show="selectedId === '{{ (int) $tingkat->id }}'"
+                            x-show="selectedId === @js((string) $tingkat->id)"
                             icon="lineicons:check"
                             width="18"
                             height="18">
@@ -203,6 +203,16 @@
                     </div>
 
                     @endforeach
+
+                    @if ($hasMoreTingkat)
+                    <button
+                        type="button"
+                        wire:click="loadMoreTingkat"
+                        wire:loading.attr="disabled"
+                        class="w-full px-4 py-2 text-left text-xs font-semibold text-blue-main hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60">
+                        Muat selanjutnya
+                    </button>
+                    @endif
 
                 </div>
 
@@ -314,8 +324,8 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: @js((string) $rombel->indeks_id),
-                    selectedLabel: @js($rombel->indeks?->nama ?? 'Pilih kelas'),
+                    selectedId: @js($rombel->indeks_id ? (string) $rombel->indeks_id : null),
+                    selectedLabel: @js($rombel->indeks?->nama ?? '-'),
 
                     toggle() {
                         this.open = !this.open
@@ -327,6 +337,14 @@
                         this.open = false
 
                         $wire.set('indeks_id', id)
+                    },
+
+                    selectNone() {
+                        this.selectedId = null
+                        this.selectedLabel = '-'
+                        this.open = false
+
+                        $wire.clearIndeks()
                     }
                 }"
                 class="relative">
@@ -376,6 +394,22 @@
                     style="display:none"
                     class="{{ $dropdownClass }}">
 
+                    <div
+                        @click.prevent="selectNone()"
+                        class="{{ $optionClass }}"
+                        :class="selectedId === null ? 'bg-blue-main text-white' : ''">
+
+                        <span>-</span>
+
+                        <iconify-icon
+                            x-show="selectedId === null"
+                            icon="lineicons:check"
+                            width="18"
+                            height="18">
+                        </iconify-icon>
+
+                    </div>
+
                     @foreach ($listIndeks as $indeks)
 
                     <div
@@ -395,6 +429,16 @@
                     </div>
 
                     @endforeach
+
+                    @if ($hasMoreIndeks)
+                    <button
+                        type="button"
+                        wire:click="loadMoreIndeks"
+                        wire:loading.attr="disabled"
+                        class="w-full px-4 py-2 text-left text-xs font-semibold text-blue-main hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60">
+                        Muat selanjutnya
+                    </button>
+                    @endif
 
                 </div>
 
