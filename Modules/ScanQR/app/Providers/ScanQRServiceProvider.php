@@ -2,9 +2,12 @@
 
 namespace Modules\ScanQR\Providers;
 
-use Nwidart\Modules\Support\ModuleServiceProvider;
-use Illuminate\Console\Scheduling\Schedule;
 use App\Support\ModuleLivewireRegistrar;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class ScanQRServiceProvider extends ModuleServiceProvider
 {
@@ -41,14 +44,23 @@ class ScanQRServiceProvider extends ModuleServiceProvider
     public function boot(): void
     {
         parent::boot();
-        
+
+        RateLimiter::for('scan-qrcode-ping', static function (Request $request) {
+            $nonce = (string) $request->query('nonce');
+
+            return [
+                Limit::perMinute(15)->by('nonce:'.hash('sha256', $nonce)),
+                Limit::perMinute(120)->by('ip:'.$request->ip()),
+            ];
+        });
+
         ModuleLivewireRegistrar::register($this->name);
     }
 
     /**
      * Define module schedules.
-     * 
-     * @param $schedule
+     *
+     * @param  $schedule
      */
     // protected function configureSchedules(Schedule $schedule): void
     // {

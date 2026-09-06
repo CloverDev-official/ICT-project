@@ -3,6 +3,12 @@
         $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
         $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
         $errorClass = 'mt-2 text-sm text-rose-500';
+        $serverPingUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'scan-qrcode.ping',
+            now()->addDay(),
+            ['nonce' => \Illuminate\Support\Str::random(32)],
+            false,
+        );
     @endphp
     <header
         class="sticky top-0 z-30 border-b border-white/10 bg-slate-950/80 px-4 py-4 shadow-2xl backdrop-blur-xl">
@@ -134,6 +140,10 @@
 
                     <p class="mt-1 text-xs text-slate-400">
                         Sistem akan memproses otomatis setelah QR terbaca.
+                    </p>
+
+                    <p id="server-status" class="mt-2 hidden text-xs font-semibold text-red-400">
+                        App tidak terhubung ke server
                     </p>
 
                 </div>
@@ -398,25 +408,130 @@
 
 @script
 <script>
-    let currentTime = @json(now()->timestamp);
+    const serverPingUrl = @json($serverPingUrl);
+    const connectionCheckInterval = 5000;
+    const connectionTimeout = 4000;
+    const serverTimeAtLoad = @json(now()->timestamp * 1000);
+    const clientTimeAtLoad = Date.now();
+    const clockFormatter = new Intl.DateTimeFormat('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    });
 
-    function updateClock() {
-        const now = new Date(currentTime * 1000);
+    let isServerConnected = true;
+    let connectionCheckTimer = null;
+    let connectionRequestController = null;
+    let clockTimer = null;
 
-        const formatted = now.toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-        });
+    function renderServerStatus() {
+        const statusElement = document.getElementById('server-status');
 
-        document.getElementById('clock').textContent = formatted;
+        if (!statusElement) {
+            return;
+        }
 
-        currentTime++;
+        if (isServerConnected) {
+            statusElement.classList.add('hidden');
+            return;
+        }
+
+        statusElement.classList.remove('hidden');
     }
 
-    updateClock();
-    setInterval(updateClock, 1000);
+    function updateClock() {
+        const clockElement = document.getElementById('clock');
+
+        if (clockElement) {
+            const elapsedTime = Date.now() - clientTimeAtLoad;
+            clockElement.textContent = clockFormatter.format(
+                new Date(serverTimeAtLoad + elapsedTime),
+            );
+        }
+    }
+
+    function startClock() {
+        clearInterval(clockTimer);
+        updateClock();
+        clockTimer = setInterval(updateClock, 1000);
+    }
+
+    function scheduleServerCheck(delay = connectionCheckInterval) {
+        clearTimeout(connectionCheckTimer);
+
+        if (document.hidden || connectionRequestController) {
+            return;
+        }
+
+        connectionCheckTimer = setTimeout(checkServerConnection, delay);
+    }
+
+    async function checkServerConnection() {
+        connectionCheckTimer = null;
+
+        if (document.hidden || connectionRequestController) {
+            return;
+        }
+
+        if (!navigator.onLine) {
+            isServerConnected = false;
+            renderServerStatus();
+            return;
+        }
+
+        const checkStartedAt = performance.now();
+        connectionRequestController = new AbortController();
+        const timeout = setTimeout(
+            () => connectionRequestController?.abort(),
+            connectionTimeout,
+        );
+
+        try {
+            const response = await fetch(serverPingUrl, {
+                method: 'HEAD',
+                cache: 'no-store',
+                credentials: 'omit',
+                signal: connectionRequestController.signal,
+            });
+
+            isServerConnected = response.ok;
+        } catch {
+            isServerConnected = false;
+        } finally {
+            clearTimeout(timeout);
+            connectionRequestController = null;
+            renderServerStatus();
+
+            const elapsedTime = performance.now() - checkStartedAt;
+            scheduleServerCheck(Math.max(0, connectionCheckInterval - elapsedTime));
+        }
+    }
+
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            clearInterval(clockTimer);
+            clearTimeout(connectionCheckTimer);
+            connectionRequestController?.abort();
+            return;
+        }
+
+        startClock();
+        scheduleServerCheck(0);
+    }
+
+    window.addEventListener('offline', () => {
+        clearTimeout(connectionCheckTimer);
+        connectionRequestController?.abort();
+        isServerConnected = false;
+        renderServerStatus();
+    });
+
+    window.addEventListener('online', () => scheduleServerCheck(0));
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    startClock();
+    scheduleServerCheck(0);
 
 
     import('{{ Vite::asset('resources/js/scanner.js') }}')
