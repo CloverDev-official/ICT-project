@@ -158,8 +158,8 @@
     <p>Kelas: {{ $murid->rombel->nama_lengkap }}</p>
     @endif --}}
 
-    @if($tersimpan)
-    <div id="success-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
+    @if($scanResult && $tersimpan)
+    <div data-scan-result='@json($scanResult)' id="success-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
         <!-- overlay -->
         <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
 
@@ -276,8 +276,8 @@
     </div>
     @endif
 
-    @if($scanStatus === 'message' && $scanMessage && $scanTitle)
-    <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
+    @if($scanResult && $scanStatus === 'message' && $scanMessage && $scanTitle)
+    <div data-scan-result='@json($scanResult)' id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
         <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
         <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
@@ -292,17 +292,17 @@
     </div>
     @endif
 
-    @if ($scanStatus === 'terlambat')
-        <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-            <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-            <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
+    @if ($scanResult && $scanStatus === 'terlambat')
+        <div id="error-modal" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+            <div  class="relative flex min-h-screen items-center justify-center p-4">
                 <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
                     <div class="bg-red-600 px-6 py-4 text-white">
                         <h2 class="text-lg font-bold">Terlambat</h2>
                         <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
                     </div>
                     <div class="p-6 text-sm text-gray-700">
-                        <form wire:submit.prevent class="space-y-4" >
+                        <form wire:submit="konfirmasiTerlambat" class="space-y-4" >
                             <!-- keterangan atau alasan terlambat -->
                             <div>
                                 <label class="{{ $labelClass }}">
@@ -325,14 +325,13 @@
                             <div>
                                 <button
                                     type="submit"
-                                    wire:click="konfirmasiTerlambat"
                                     wire:loading.attr="disabled"
-                                    wire:target="store"
+                                    wire:target="konfirmasiTerlambat"
                                     class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70">
         
                                     <iconify-icon
                                         wire:loading.remove
-                                        wire:target="store,image"
+                                        wire:target="konfirmasiTerlambat"
                                         icon="lineicons:save"
                                         width="20"
                                         height="20"
@@ -341,17 +340,17 @@
         
                                     <iconify-icon
                                         wire:loading
-                                        wire:target="store,image"
+                                        wire:target="konfirmasiTerlambat"
                                         icon="line-md:loading-twotone-loop"
                                         width="20"
                                         height="20">
                                     </iconify-icon>
         
-                                    <span wire:loading.remove wire:target="store,image">
+                                    <span wire:loading.remove wire:target="konfirmasiTerlambat">
                                         Kirim Alasan
                                     </span>
         
-                                    <span wire:loading wire:target="store,image">
+                                    <span wire:loading wire:target="konfirmasiTerlambat">
                                         Mengirim...
                                     </span>
         
@@ -367,8 +366,8 @@
     @endif
 
 
-    @if($scanStatus === 'error' && $scanMessage)
-    <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
+    @if($scanResult && $scanStatus === 'error' && $scanMessage)
+    <div data-scan-result='@json($scanResult)' id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
         <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
         <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
@@ -403,195 +402,289 @@
     </div>
     @endif
 
+    <div wire:ignore data-scan-transport-host></div>
+    <template data-scan-transport-template>
+        <div class="fixed inset-0 z-50">
+            <div data-close-scan class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+            <div class="relative flex min-h-screen items-center justify-center p-4 pointer-events-none">
+                <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl pointer-events-auto">
+                    <div class="bg-red-600 px-6 py-4 text-white"><h2 class="text-lg font-bold">Absensi Tidak Disimpan</h2></div>
+                    <div class="p-6 text-sm text-gray-700">Server tidak dapat memproses hasil scan. Silakan coba kembali.</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
 </div>
 
 
 @script
-<script>
-    const serverPingUrl = @json($serverPingUrl);
-    const connectionCheckInterval = 5000;
-    const connectionTimeout = 4000;
-    const serverTimeAtLoad = @json(now()->timestamp * 1000);
-    const clientTimeAtLoad = Date.now();
-    const clockFormatter = new Intl.DateTimeFormat('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-    });
+    <script>
+        const serverPingUrl = @json($serverPingUrl);
+        const connectionCheckInterval = 5000;
+        const connectionTimeout = 4000;
+        const serverTimeAtLoad = @json(now()->timestamp * 1000);
+        const clientTimeAtLoad = Date.now();
+        const clockFormatter = new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+        });
 
-    let isServerConnected = true;
-    let connectionCheckTimer = null;
-    let connectionRequestController = null;
-    let clockTimer = null;
-
-    function renderServerStatus() {
-        const statusElement = document.getElementById('server-status');
-
-        if (!statusElement) {
-            return;
-        }
-
-        if (isServerConnected) {
-            statusElement.classList.add('hidden');
-            return;
-        }
-
-        statusElement.classList.remove('hidden');
-    }
-
-    function updateClock() {
-        const clockElement = document.getElementById('clock');
-
-        if (clockElement) {
-            const elapsedTime = Date.now() - clientTimeAtLoad;
-            clockElement.textContent = clockFormatter.format(
-                new Date(serverTimeAtLoad + elapsedTime),
-            );
-        }
-    }
-
-    function startClock() {
-        clearInterval(clockTimer);
-        updateClock();
-        clockTimer = setInterval(updateClock, 1000);
-    }
-
-    function scheduleServerCheck(delay = connectionCheckInterval) {
-        clearTimeout(connectionCheckTimer);
-
-        if (document.hidden || connectionRequestController) {
-            return;
-        }
-
-        connectionCheckTimer = setTimeout(checkServerConnection, delay);
-    }
-
-    async function checkServerConnection() {
-        connectionCheckTimer = null;
-
-        if (document.hidden || connectionRequestController) {
-            return;
-        }
-
-        if (!navigator.onLine) {
-            isServerConnected = false;
-            renderServerStatus();
-            return;
-        }
-
-        const checkStartedAt = performance.now();
-        connectionRequestController = new AbortController();
-        const timeout = setTimeout(
-            () => connectionRequestController?.abort(),
-            connectionTimeout,
-        );
-
-        try {
-            const response = await fetch(serverPingUrl, {
-                method: 'HEAD',
-                cache: 'no-store',
-                credentials: 'omit',
-                signal: connectionRequestController.signal,
-            });
-
-            isServerConnected = response.ok;
-        } catch {
-            isServerConnected = false;
-        } finally {
-            clearTimeout(timeout);
-            connectionRequestController = null;
-            renderServerStatus();
-
-            const elapsedTime = performance.now() - checkStartedAt;
-            scheduleServerCheck(Math.max(0, connectionCheckInterval - elapsedTime));
-        }
-    }
-
-    function handleVisibilityChange() {
-        if (document.hidden) {
+        const lifecycle = new AbortController();
+        let disposed = false;
+        let scanAudio;
+        let scanResults;
+        let resultObserver;
+        const listen = (target, event, handler) => target.addEventListener(event, handler, {
+            signal: lifecycle.signal
+        });
+        $wire.__instance.addCleanup(() => {
+            disposed = true;
+            lifecycle.abort();
             clearInterval(clockTimer);
             clearTimeout(connectionCheckTimer);
             connectionRequestController?.abort();
-            return;
+            resultObserver?.disconnect();
+            scanResults?.dispose();
+            window.destroyScanner?.();
+            window.resetScannerQrLock?.();
+            window.scanned = false;
+        });
+        let isServerConnected = true;
+        let connectionCheckTimer = null;
+        let connectionRequestController = null;
+        let clockTimer = null;
+
+        function renderServerStatus() {
+            const statusElement = document.getElementById('server-status');
+
+            if (!statusElement) {
+                return;
+            }
+
+            if (isServerConnected) {
+                statusElement.classList.add('hidden');
+                return;
+            }
+
+            statusElement.classList.remove('hidden');
         }
+
+        function updateClock() {
+            const clockElement = document.getElementById('clock');
+
+            if (clockElement) {
+                const elapsedTime = Date.now() - clientTimeAtLoad;
+                clockElement.textContent = clockFormatter.format(
+                    new Date(serverTimeAtLoad + elapsedTime),
+                );
+            }
+        }
+
+        function startClock() {
+            clearInterval(clockTimer);
+            updateClock();
+            clockTimer = setInterval(updateClock, 1000);
+        }
+
+        function scheduleServerCheck(delay = connectionCheckInterval) {
+            clearTimeout(connectionCheckTimer);
+
+            if (disposed || document.hidden || connectionRequestController) {
+                return;
+            }
+
+            connectionCheckTimer = setTimeout(checkServerConnection, delay);
+        }
+
+        async function checkServerConnection() {
+            connectionCheckTimer = null;
+
+            if (disposed || document.hidden || connectionRequestController) {
+                return;
+            }
+
+            if (!navigator.onLine) {
+                isServerConnected = false;
+                renderServerStatus();
+                return;
+            }
+
+            const checkStartedAt = performance.now();
+            connectionRequestController = new AbortController();
+            const timeout = setTimeout(
+                () => connectionRequestController?.abort(),
+                connectionTimeout,
+            );
+
+            try {
+                const response = await fetch(serverPingUrl, {
+                    method: 'HEAD',
+                    cache: 'no-store',
+                    credentials: 'omit',
+                    signal: connectionRequestController.signal,
+                });
+
+                isServerConnected = response.ok;
+            } catch {
+                isServerConnected = false;
+            } finally {
+                clearTimeout(timeout);
+                connectionRequestController = null;
+                renderServerStatus();
+
+                const elapsedTime = performance.now() - checkStartedAt;
+                scheduleServerCheck(Math.max(0, connectionCheckInterval - elapsedTime));
+            }
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                clearInterval(clockTimer);
+                clearTimeout(connectionCheckTimer);
+                connectionRequestController?.abort();
+                return;
+            }
+
+            startClock();
+            scheduleServerCheck(0);
+        }
+
+        listen(window, 'offline', () => {
+            clearTimeout(connectionCheckTimer);
+            connectionRequestController?.abort();
+            isServerConnected = false;
+            renderServerStatus();
+        });
+
+        listen(window, 'online', () => scheduleServerCheck(0));
+        listen(document, 'visibilitychange', handleVisibilityChange);
 
         startClock();
         scheduleServerCheck(0);
-    }
-
-    window.addEventListener('offline', () => {
-        clearTimeout(connectionCheckTimer);
-        connectionRequestController?.abort();
-        isServerConnected = false;
-        renderServerStatus();
-    });
-
-    window.addEventListener('online', () => scheduleServerCheck(0));
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    startClock();
-    scheduleServerCheck(0);
 
 
-    import('{{ Vite::asset('resources/js/scanner.js') }}')
-    .then(() => {
-        window.initScanner()
-        document.addEventListener('scanSuccess', () => {
-            window.destroyScanner();
-
-            setTimeout(() => {
-                $wire.set('tersimpan', false);
-                $wire.set('murid', null);
-                window.scanned = false;
-                window.initScanner();
-            }, 2000);
-        });
-
-        document.addEventListener('scanNotFound', () => {
-            window.scanned = false;
-        });
-
-        document.addEventListener('scanRejected', () => {
-            window.destroyScanner();
-
-            setTimeout(() => {
-                $wire.set('scanStatus', null);
-                $wire.set('scanMessage', null);
-                $wire.set('murid', null);
-                window.scanned = false;
-                window.initScanner();
-            }, 2000);
-        });
-
-        document.addEventListener('lateMessage', () => {
-            window.destroyScanner();
-        });
-
-        document.addEventListener('lateConfirm', () => {
-            $wire.set('scanStatus', null);
-            $wire.set('scanMessage', null);
-            $wire.set('murid', null);
-            window.scanned = false;
-            window.initScanner();
-        });
-
-        document.addEventListener('scanModalClosed', () => {
-            window.scanned = false;
-            window.initScanner();
-        });
-
-        document.addEventListener('scanMessage', () => {
-            window.destroyScanner();
-
-            setTimeout(() => {
-                $wire.set('scanStatus', null);
-                $wire.set('scanMessage', null);
-                $wire.set('murid', null);
-                window.scanned = false;
-                window.initScanner();
-            }, 2000);
-        });
-    });
-</script>
+        import('{{ Vite::asset('resources/js/scanner.js') }}')
+            .then(({
+                createScanAudio,
+                createScanResultController
+            }) => {
+                if (disposed) return;
+                const root = $wire.$el;
+                scanAudio = createScanAudio();
+                const pause = () => {
+                    window.scanned = true;
+                    window.destroyScanner();
+                };
+                scanResults = createScanResultController({
+                    audio: scanAudio,
+                    pause,
+                    resume: () => {
+                        window.scanned = false;
+                        // Keep QR presence debounce; a different QR can scan immediately.
+                        window.initScanner();
+                    },
+                    closeBackend: async result => {
+                        if (result.transport) {
+                            root.querySelector('[data-scan-transport-host]').replaceChildren();
+                        } else {
+                            await $wire.closeModal(result.id);
+                        }
+                    },
+                });
+                let interacted = false;
+                const preload = () => {
+                    if (interacted) return;
+                    interacted = true;
+                    void scanAudio.preloadScanAudios();
+                };
+                listen(document, 'pointerdown', preload);
+                listen(document, 'keydown', preload);
+                const syncResult = () => {
+                    if (disposed) return;
+                    const element = root.querySelector('[data-scan-result]:not([hidden])');
+                    if (!element) {
+                        scanResults.syncVisibility();
+                        return;
+                    }
+                    const result = JSON.parse(element.dataset.scanResult || 'null');
+                    if (result) scanResults.openScanResultModal(result, element);
+                };
+                resultObserver = new MutationObserver(syncResult);
+                resultObserver.observe(root, {
+                    subtree: true,
+                    childList: true,
+                    attributes: true,
+                    attributeFilter: ['data-scan-result', 'hidden', 'style']
+                });
+                listen(root, 'scanResult', event => {
+                    // The result is a backend code, never inferred from modal text.
+                    const element = root.querySelector('[data-scan-result]:not([hidden])');
+                    if (element && JSON.parse(element.dataset.scanResult || 'null')?.id === event.detail.result
+                        ?.id) {
+                        scanResults.openScanResultModal(event.detail.result, element);
+                    }
+                });
+                const transportFailure = () => {
+                    if (disposed || root.querySelector('[data-scan-transport-host]').firstElementChild) return;
+                    const element = root.querySelector('[data-scan-transport-template]').content.firstElementChild
+                        .cloneNode(true);
+                    const result = {
+                        id: crypto.randomUUID(),
+                        status: 'failed',
+                        autoClose: true,
+                        transport: true
+                    };
+                    element.dataset.scanResult = JSON.stringify(result);
+                    root.querySelector('[data-scan-transport-host]').replaceChildren(element);
+                    scanResults.openScanResultModal(result, element);
+                };
+                for (const action of ['verifiedQRCode', 'konfirmasiTerlambat']) {
+                    const removeInterceptor = $wire.$interceptRequest(action, ({
+                        onError,
+                        onFailure
+                    }) => {
+                        onError(({
+                            preventDefault
+                        }) => {
+                            preventDefault();
+                            transportFailure();
+                        });
+                        onFailure(transportFailure);
+                    });
+                    $wire.__instance.addCleanup(removeInterceptor);
+                }
+                listen(root, 'scanStarted', event => {
+                    pause();
+                    Promise.resolve($wire.verifiedQRCode(event.detail.qr)).catch(transportFailure);
+                });
+                // Capture close actions before Livewire sends its own duplicate request.
+                root.addEventListener('click', event => {
+                    const closeTarget = event.composedPath().find(element => element?.getAttribute && (
+                        element.hasAttribute('data-close-scan') ||
+                        element.getAttribute('wire:click') === 'closeModal' ||
+                        (element.getAttribute('wire:click.self') === 'closeModal' && element === event
+                            .target)
+                    ));
+                    if (!closeTarget) return;
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    void scanResults.closeScanResultModal();
+                }, {
+                    capture: true,
+                    signal: lifecycle.signal
+                });
+                listen(document, 'keydown', event => {
+                    if (event.key === 'Escape' && scanResults.isOpen()) {
+                        event.preventDefault();
+                        void scanResults.closeScanResultModal();
+                    }
+                });
+                listen(document, 'livewire:navigating', () => scanResults.dispose());
+                syncResult();
+                if (!scanResults.isOpen()) window.initScanner();
+            });
+    </script>
 @endscript

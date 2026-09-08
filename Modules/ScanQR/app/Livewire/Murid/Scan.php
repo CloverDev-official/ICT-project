@@ -7,14 +7,21 @@ use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Modules\ScanQR\Services\AutoAlpaMuridService;
 use Modules\ScanQR\Services\JadwalAbsensiService;
+use Throwable;
 
 class Scan extends Component
 {
+    #[Locked]
+    public ?array $scanResult = null;
+
     public ?Murid $murid = null;
 
     public bool $tersimpan = false;
@@ -36,9 +43,33 @@ class Scan extends Component
     #[On('verifiedQRCode')]
     public function verifiedQRCode($muridUuid): void
     {
+        $this->executeScan(fn () => $this->processQRCode($muridUuid));
+    }
+
+    private function executeScan(callable $process): void
+    {
+        try {
+            DB::transaction($process);
+        } catch (Throwable $error) {
+            report($error);
+            $this->resetScanState();
+            $this->rejectScan('Proses absensi gagal. Silakan coba kembali.');
+        }
+
+        // Publish only the final outcome, after the transaction commits.
+        $this->dispatch('scanResult', result: $this->scanResult);
+    }
+
+    private function processQRCode($muridUuid): void
+    {
         // Bersihkan hasil scan sebelumnya agar respons QR baru tidak memakai state lama.
         $this->resetScanState();
 
+        if (! is_string($muridUuid) || $muridUuid === '') {
+            $this->rejectScan('QR Code tidak valid.');
+
+            return;
+        }
         $muridUuid = $this->parseMuridUuid($muridUuid);
         $murid = $this->findMurid($muridUuid);
 
@@ -83,13 +114,30 @@ class Scan extends Component
         $this->processAbsensi($murid, $today, $currentTime, $jadwal);
     }
 
-    public function konfirmasiTerlambat()
+    public function konfirmasiTerlambat(): void
     {
+        $this->executeScan(fn () => $this->saveLateAttendance());
+    }
+
+    private function saveLateAttendance(): void
+    {
+        if (! $this->murid || $this->scanStatus !== 'terlambat') {
+            $this->rejectScan('Konfirmasi terlambat tidak valid.');
+
+            return;
+        }
         $now = now();
         $today = $now->toDateString();
         $currentTime = $now->format('H:i:s');
 
-        AbsenMurid::updateOrCreate(
+        if (AbsenMurid::query()->where('murid_id', $this->murid->id)
+            ->whereDate('tanggal', $today)->whereNotNull('waktu_masuk')->exists()) {
+            $this->acceptMessage('Absensi masuk sudah tercatat', 'Absensi masuk hari ini sudah tersimpan.');
+
+            return;
+        }
+
+        $saved = AbsenMurid::updateOrCreate(
             [
                 'murid_id' => $this->murid->id,
                 'tanggal' => $today,
@@ -101,13 +149,22 @@ class Scan extends Component
             ]
         );
 
-        $this->acceptScan('Alasan terlambat tersimpan.');
-        $this->dispatch('lateConfirm');
+        if (! $saved->exists || (! $saved->wasRecentlyCreated && ! $saved->wasChanged())) {
+            $this->rejectScan('Absensi gagal disimpan.');
+
+            return;
+        }
+
+        $this->acceptScan('Alasan terlambat tersimpan.', 'late');
 
     }
 
-    public function closeModal(): void
+    public function closeModal(?string $resultId = null): void
     {
+        if ($resultId !== null && $this->scanResult && $this->scanResult['id'] !== $resultId) {
+            return;
+        }
+
         $this->resetScanState();
         $this->murid = null;
         $this->scanTitle = null;
@@ -119,8 +176,8 @@ class Scan extends Component
     {
         // Scanner lama dapat mengirim payload serialisasi PHP.
         if (str_starts_with($muridUuid, 's:')) {
-            $decoded = @unserialize($muridUuid);
-            if ($decoded !== false) {
+            $decoded = @unserialize($muridUuid, ['allowed_classes' => false]);
+            if (is_string($decoded)) {
                 $muridUuid = $decoded;
             }
         }
@@ -155,11 +212,15 @@ class Scan extends Component
         // Jika QR izin cocok dengan izin yang sedang berlangsung, maka izin akan diperbarui menjadi selesai.
         if ($izin && $this->isContainsIzin && $izin?->uuid === $this->izinUuid && $izin?->status === AttendanceStatus::Izin->value) {
             // QR izin yang cocok menandai izin selesai tanpa membuat absensi baru.
-            $izin->update([
+            if (! $izin->update([
                 'status' => AttendanceStatus::Selesai->value,
-            ]);
+            ])) {
+                $this->rejectScan('Izin gagal disimpan.');
 
-            $this->acceptMessage('Izin Berhasil Diperbarui', 'Izin berhasil diproses.');
+                return true;
+            }
+
+            $this->acceptMessage('Izin Berhasil Diperbarui', 'Izin berhasil diproses.', 'success');
 
             return true;
         }
@@ -211,6 +272,13 @@ class Scan extends Component
 
     private function processAbsensiPertama(Murid $murid, string $today, string $currentTime, array $jadwal): void
     {
+        if (! $this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)
+            && ! $this->isWindowStarted($currentTime, $jadwal['scan_masuk_mulai'] ?? null)) {
+            $this->rejectScan('Jadwal absensi masuk belum dibuka.', 'attendance_not_open');
+
+            return;
+        }
+
         // Scan masuk hanya boleh disimpan di dalam window scan masuk.
         if (! $this->withinWindow($currentTime, $jadwal['scan_masuk_mulai'] ?? null, $jadwal['scan_masuk_sampai'] ?? null)) {
             $this->rejectScan(sprintf(
@@ -222,13 +290,19 @@ class Scan extends Component
             return;
         }
 
-        AbsenMurid::create([
+        $saved = AbsenMurid::create([
             'murid_id' => $murid->id,
             'tanggal' => $today,
             'waktu_masuk' => $currentTime,
             'status' => AttendanceStatus::Masuk->value,
             'keterangan' => $this->keteranganAbsensi($jadwal),
         ]);
+
+        if (! $saved->exists) {
+            $this->rejectScan('Absensi gagal disimpan.');
+
+            return;
+        }
 
         $this->acceptScan('Absensi masuk berhasil disimpan.');
     }
@@ -248,10 +322,14 @@ class Scan extends Component
             $status = $absen?->status === AttendanceStatus::Terlambat->value
                 ? AttendanceStatus::Terlambat->value
                 : AttendanceStatus::Hadir->value;
-            $absen->update([
+            if (! $absen->update([
                 'waktu_keluar' => $currentTime,
                 'status' => $status,
-            ]);
+            ])) {
+                $this->rejectScan('Absensi gagal disimpan.');
+
+                return;
+            }
 
             $this->acceptScan('Absensi pulang berhasil disimpan.');
 
@@ -330,23 +408,23 @@ class Scan extends Component
         return $parts ? implode(' - ', $parts) : null;
     }
 
-    private function acceptScan(string $message): void
+    private function acceptScan(string $message, string $status = 'success'): void
     {
         $this->scanStatus = 'success';
         $this->scanMessage = $message;
         $this->tersimpan = true;
 
-        $this->dispatch('scanSuccess');
+        $this->setScanResult($status);
     }
 
-    private function acceptMessage(string $title, string $message): void
+    private function acceptMessage(string $title, string $message, string $status = 'already_recorded'): void
     {
         $this->scanTitle = $title;
         $this->scanStatus = 'message';
         $this->scanMessage = $message;
         $this->tersimpan = false;
 
-        $this->dispatch('scanMessage');
+        $this->setScanResult($status);
     }
 
     private function lateScan(string $message): void
@@ -355,20 +433,30 @@ class Scan extends Component
         $this->scanMessage = $message;
         $this->tersimpan = false;
 
-        $this->dispatch('lateMessage');
+        $this->setScanResult('late_pending', false);
     }
 
-    private function rejectScan(string $message): void
+    private function rejectScan(string $message, string $status = 'failed'): void
     {
         $this->scanStatus = 'error';
         $this->scanMessage = $message;
         $this->tersimpan = false;
 
-        $this->dispatch('scanRejected');
+        $this->setScanResult($status);
+    }
+
+    private function setScanResult(string $status, bool $autoClose = true): void
+    {
+        $this->scanResult = [
+            'id' => (string) Str::uuid(),
+            'status' => $status,
+            'autoClose' => $autoClose,
+        ];
     }
 
     private function resetScanState(): void
     {
+        $this->scanResult = null;
         $this->tersimpan = false;
         $this->scanStatus = null;
         $this->scanMessage = null;
