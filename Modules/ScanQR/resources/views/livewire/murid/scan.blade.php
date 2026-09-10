@@ -576,14 +576,14 @@
                 scanAudio = createScanAudio();
                 const pause = () => {
                     window.scanned = true;
-                    window.destroyScanner();
                 };
                 scanResults = createScanResultController({
                     audio: scanAudio,
                     pause,
                     resume: () => {
+                        // Allow the same stationary QR again after each modal closes.
+                        window.resetScannerQrLock();
                         window.scanned = false;
-                        // Keep QR presence debounce; a different QR can scan immediately.
                         window.initScanner();
                     },
                     closeBackend: async result => {
@@ -658,7 +658,10 @@
                 }
                 listen(root, 'scanStarted', event => {
                     pause();
-                    Promise.resolve($wire.verifiedQRCode(event.detail.qr)).catch(transportFailure);
+                    // Capture now, but serialize server state changes after modal close.
+                    scanResults.whenClosed().then(() => {
+                        if (!disposed) return $wire.verifiedQRCode(event.detail.qr);
+                    }).catch(transportFailure);
                 });
                 // Capture close actions before Livewire sends its own duplicate request.
                 root.addEventListener('click', event => {

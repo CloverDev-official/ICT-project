@@ -12,7 +12,6 @@ export function createScanResultController({
     let timer;
     let disposed = false;
     let closing = null;
-    let pendingCloses = 0;
 
     function stop() {
         cancel(timer);
@@ -53,16 +52,11 @@ export function createScanResultController({
         closedId = previous.result.id;
         active = null;
         previous.element.setAttribute('hidden', '');
-        // Camera stays locked until the backend has processed the close.
-        pendingCloses++;
-        closing = Promise.resolve()
+        // Resume capture immediately; callers await this before the next scan request.
+        closing = Promise.resolve(closing)
             .then(() => closeBackend(previous.result))
-            .catch(() => {})
-            .finally(() => {
-                pendingCloses--;
-                closing = null;
-                if (!disposed && !active && pendingCloses === 0) resume();
-            });
+            .catch(() => {});
+        resume();
         return closing;
     }
 
@@ -82,6 +76,7 @@ export function createScanResultController({
         closeScanResultModal,
         syncVisibility,
         isOpen: () => !!active,
+        whenClosed: () => closing || Promise.resolve(),
         dispose() {
             disposed = true;
             stop();

@@ -29,8 +29,10 @@ terstruktur dalam DOM Blade dengan controller setelah modal benar-benar
 terpasang. Event/DOM morph dengan ID sama tidak memutar ulang suara.
 
 Penutupan melalui tombol/backdrop/Escape/otomatis langsung menghentikan audio
-sebelum menunggu request Livewire. Modal disembunyikan dan kamera tetap terkunci
-sampai close selesai. ID close lama tidak menutup hasil backend yang lebih baru.
+sebelum menunggu request Livewire. Modal disembunyikan dan kamera langsung dapat
+menangkap QR berikutnya tanpa membuat ulang video/canvas. Request scan berikutnya
+menunggu close selesai agar perubahan state server tetap berurutan.
+ID close lama tidak menutup hasil backend yang lebih baru.
 Pergantian modal menghentikan suara lama dahulu. Penghapusan modal, penggantian
 node DOM, navigasi SPA dan cleanup komponen juga menghentikan audio. Listener,
 observer, timer, interceptor request dan AudioContext dibersihkan saat destroy.
@@ -40,8 +42,8 @@ menghentikan dan melepas source serta membatalkan playback yang masih menunggu
 preload. Source baru dimulai pada offset 0, setara pause/reset `currentTime=0`
 pada HTML Audio. Tidak ada object URL atau instance Audio per scan.
 
-QR sama yang masih terlihat tetap diblokir setelah modal tutup. QR berbeda bisa
-langsung dipindai; QR lama bisa dipindai kembali setelah hilang selama 1 detik.
+Pengunci QR direset setiap modal ditutup. QR yang sama dan tetap diam bisa
+langsung dipindai kembali, sehingga modal dapat berulang selama QR masih terlihat.
 Selama request scan atau modal terbuka, kamera tidak memproses QR berikutnya.
 
 ## Cache-first
