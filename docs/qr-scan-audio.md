@@ -56,8 +56,13 @@ Cache hit tidak menjalankan request, download, atau revalidation jaringan.
 Cache miss: fetch, validasi status HTTP, MIME `audio/mpeg`/`audio/ogg`, ukuran
 1 byte–5 MB, dekode browser, lalu cache.put. File gagal tidak disimpan. Cache
 rusak tidak diunduh ulang secara diam-diam. Kegagalan audio tidak menghentikan
-absensi. Cache Storage membutuhkan HTTPS/localhost; jika tidak tersedia audio
-nonaktif dengan aman. Naikkan versi cache ketika mengganti file; Vite juga
+absensi. Cache Storage membutuhkan HTTPS/localhost; jika tidak tersedia (HTTP/IP)
+atau akses cache gagal, audio di-fetch langsung dan buffer disimpan di memori
+selama controller halaman aktif. Preload tetap satu kali per status sehingga
+scan berulang tidak mengunduh ulang. Reload HTTP/IP mengunduh audio lagi.
+Kegagalan penulisan cache tidak menghalangi playback. Klik/tap atau interaksi
+keyboard tetap diperlukan untuk mengaktifkan audio.
+Naikkan versi cache ketika mengganti file; Vite juga
 menggunakan URL file dengan hash. Lima MP3 dibangun sebagai file terpisah.
 `prebuild`/`predev` memeriksa seluruh file, batas ukuran, dan header MPEG Layer III.
 Tidak ada upload audio admin baru.

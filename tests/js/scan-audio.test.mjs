@@ -85,6 +85,27 @@ test('corrupt cache is not refetched or revalidated over network', async () => {
     await assert.rejects(getCachedAudio('success'));
     assert.equal(f.requests(), 0);
 });
+for (const failure of ['missing', 'open', 'match', 'put']) {
+    test(`audio loads when Cache Storage fails at ${failure}`, async () => {
+        const f = fixture();
+        if (failure === 'missing') delete globalThis.caches;
+        else
+            globalThis.caches.open = async () => {
+                if (failure === 'open') throw Error('Storage denied');
+                return {
+                    match: async () => {
+                        if (failure === 'match') throw Error('Storage denied');
+                    },
+                    put: async () => {
+                        throw Error('Quota exceeded');
+                    },
+                };
+            };
+        const blob = await getCachedAudio('success');
+        assert.equal(await blob.text(), 'mp3');
+        assert.equal(f.requests(), 1);
+    });
+}
 test('network failure propagates to safe audio boundary', async () => {
     fixture();
     globalThis.fetch = async () => {
@@ -105,61 +126,68 @@ test('network failure propagates to safe audio boundary', async () => {
     await audio.playScanAudio();
     audio.dispose();
 });
-test('all statuses preload once; only one source active, stop resets and disposal prevents playback', async () => {
-    const f = fixture();
-    let plays = 0,
-        stops = 0,
-        closes = 0,
-        contexts = 0;
-    globalThis.window = {
-        AudioContext: class {
-            constructor() {
-                contexts++;
-                this.state = 'running';
-            }
-            resume() {
-                return Promise.resolve();
-            }
-            decodeAudioData() {
-                return Promise.resolve({});
-            }
-            createBufferSource() {
-                return {
-                    connect() {},
-                    disconnect() {},
-                    start(when, offset) {
-                        assert.equal(offset, 0);
-                        plays++;
-                    },
-                    stop() {
-                        stops++;
-                    },
-                };
-            }
-            close() {
-                closes++;
-                return Promise.resolve();
-            }
-        },
-    };
-    const audio = createScanAudio();
-    await Promise.all([audio.preloadScanAudios(), audio.preloadScanAudios()]);
-    assert.equal(f.requests(), 5);
-    assert.equal(plays, 0);
-    for (const status of Object.keys(scanAudioMap))
-        await audio.playScanAudio(status);
-    assert.equal(plays, 5);
-    assert.equal(stops, 4);
-    audio.stopCurrentScanAudio();
-    assert.equal(stops, 5);
-    await audio.playScanAudio('late_pending');
-    assert.equal(plays, 5);
-    assert.equal(contexts, 1);
-    audio.dispose();
-    await audio.playScanAudio('success');
-    assert.equal(plays, 5);
-    assert.equal(closes, 1);
-});
+for (const persistentCache of [true, false]) {
+    test(`all statuses preload once and playback lifecycle works with persistent cache=${persistentCache}`, async () => {
+        const f = fixture();
+        if (!persistentCache) delete globalThis.caches;
+        let plays = 0,
+            stops = 0,
+            closes = 0,
+            contexts = 0;
+        globalThis.window = {
+            AudioContext: class {
+                constructor() {
+                    contexts++;
+                    this.state = 'running';
+                }
+                resume() {
+                    return Promise.resolve();
+                }
+                decodeAudioData() {
+                    return Promise.resolve({});
+                }
+                createBufferSource() {
+                    return {
+                        connect() {},
+                        disconnect() {},
+                        start(when, offset) {
+                            assert.equal(offset, 0);
+                            plays++;
+                        },
+                        stop() {
+                            stops++;
+                        },
+                    };
+                }
+                close() {
+                    closes++;
+                    return Promise.resolve();
+                }
+            },
+        };
+        const audio = createScanAudio();
+        await Promise.all([
+            audio.preloadScanAudios(),
+            audio.preloadScanAudios(),
+        ]);
+        assert.equal(f.requests(), 5);
+        assert.equal(plays, 0);
+        for (const status of Object.keys(scanAudioMap))
+            await audio.playScanAudio(status);
+        assert.equal(plays, 5);
+        assert.equal(stops, 4);
+        assert.equal(f.requests(), 5);
+        audio.stopCurrentScanAudio();
+        assert.equal(stops, 5);
+        await audio.playScanAudio('late_pending');
+        assert.equal(plays, 5);
+        assert.equal(contexts, 1);
+        audio.dispose();
+        await audio.playScanAudio('success');
+        assert.equal(plays, 5);
+        assert.equal(closes, 1);
+    });
+}
 test('same QR stays locked across scanner restarts, different QR and removal rearm', () => {
     const lock = createScanLock();
     assert.equal(lock.observe('A', 0), true);

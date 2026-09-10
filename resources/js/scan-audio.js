@@ -31,8 +31,14 @@ export async function getCachedAudio(
 ) {
     const url = scanAudioMap[status];
     if (!url) throw new Error('Unknown scan audio status');
-    const cache = await caches.open(AUDIO_CACHE);
-    const cached = await cache.match(url);
+    let cache, cached;
+    try {
+        cache = await globalThis.caches?.open(AUDIO_CACHE);
+        cached = await cache?.match(url);
+    } catch {
+        // HTTP/IP and restricted browsers can lack usable Cache Storage.
+        cache = undefined;
+    }
     const response = cached || (await fetch(url, { cache: 'no-store' }));
     if (
         !response.ok ||
@@ -48,13 +54,18 @@ export async function getCachedAudio(
     if (!blob.size || blob.size > MAX_AUDIO_BYTES)
         throw new Error('Invalid scan audio size');
     await decode(await blob.arrayBuffer());
-    if (!cached)
-        await cache.put(
-            url,
-            new Response(blob, {
-                headers: { 'Content-Type': blob.type },
-            }),
-        );
+    if (!cached && cache) {
+        try {
+            await cache.put(
+                url,
+                new Response(blob, {
+                    headers: { 'Content-Type': blob.type },
+                }),
+            );
+        } catch {
+            // Decoded audio remains usable even if persistent storage is full.
+        }
+    }
     return blob;
 }
 
