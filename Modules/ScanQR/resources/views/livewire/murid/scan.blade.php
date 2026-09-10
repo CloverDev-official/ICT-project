@@ -5,8 +5,8 @@
         $errorClass = 'mt-2 text-sm text-rose-500';
         $serverPingUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
             'scan-qrcode.ping',
-            now()->addDay(),
-            ['nonce' => \Illuminate\Support\Str::random(32)],
+            now()->addMinutes(10),
+            [],
             false,
         );
     @endphp
@@ -491,9 +491,14 @@
             const response = await fetch(serverPingUrl, {
                 method: 'HEAD',
                 cache: 'no-store',
-                credentials: 'omit',
+                credentials: 'same-origin',
                 signal: connectionRequestController.signal,
             });
+
+            if (response.status === 403) {
+                window.location.reload();
+                return;
+            }
 
             isServerConnected = response.ok;
         } catch {
