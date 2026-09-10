@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createScanResultController } from '../../resources/js/scan-result.js';
-function fixture() {
+function fixture(closeBackend) {
     const calls = [];
     let timer;
     const controller = createScanResultController({
@@ -12,7 +12,7 @@ function fixture() {
         },
         pause: () => calls.push('pause'),
         resume: () => calls.push('resume'),
-        closeBackend: () => calls.push('close'),
+        closeBackend: closeBackend || (() => calls.push('close')),
         schedule: (callback) => {
             timer = callback;
             return 1;
@@ -45,7 +45,7 @@ test('one result opens once, rerender does not replay, repeated close is safe', 
         f.controller.closeScanResultModal(),
     ]);
     assert.equal(f.calls.filter((x) => x === 'close').length, 1);
-    assert.equal(f.calls.at(-1), 'resume');
+    assert.equal(f.calls.filter((x) => x === 'resume').length, 1);
     f.controller.openScanResultModal(result, el);
     assert.equal(f.controller.isOpen(), false);
 });
@@ -61,9 +61,39 @@ test('new modal stops old sound and auto-close stops current sound immediately',
     );
     assert.ok(f.calls.lastIndexOf('stop') > f.calls.indexOf('success'));
     f.timeout();
-    assert.equal(f.calls.at(-1), 'stop');
+    assert.deepEqual(f.calls.slice(-2), ['stop', 'resume']);
     assert.equal(f.controller.isOpen(), false);
     await Promise.resolve();
+});
+test('slow backend close resumes capture immediately but keeps next request waiting', async () => {
+    let finishClose;
+    const f = fixture(
+        () =>
+            new Promise((resolve) => {
+                finishClose = resolve;
+            }),
+    );
+    const el = f.element();
+    f.controller.openScanResultModal({ id: '1', status: 'success' }, el);
+    const closing = f.controller.closeScanResultModal();
+    assert.equal(el.hidden, true);
+    assert.equal(f.calls.at(-1), 'resume');
+    let nextRequest = false;
+    const next = f.controller.whenClosed().then(() => {
+        nextRequest = true;
+    });
+    await Promise.resolve();
+    assert.equal(nextRequest, false);
+    f.controller.openScanResultModal(
+        { id: '2', status: 'success' },
+        f.element(),
+    );
+    finishClose();
+    await closing;
+    await next;
+    assert.equal(nextRequest, true);
+    assert.equal(f.controller.isOpen(), true);
+    assert.equal(f.calls.filter((x) => x === 'resume').length, 1);
 });
 test('removed/hidden modal and SPA disposal stop sound', () => {
     for (const reason of ['removed', 'hidden', 'spa']) {

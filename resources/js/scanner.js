@@ -285,7 +285,7 @@ window.initScanner = async () => {
         animationFrame = requestAnimationFrame(scan);
 
         if (timestamp - lastScanTime < scanInterval) return;
-        if (!videoEl || videoEl.readyState < 4 || decoding) return;
+        if (window.scanned || !videoEl || videoEl.readyState < 4 || decoding) return;
 
         lastScanTime = timestamp;
 
@@ -312,7 +312,7 @@ window.initScanner = async () => {
         } finally {
             decoding = false;
         }
-        if (!isRunning || currentGeneration !== generation) return;
+        if (!isRunning || window.scanned || currentGeneration !== generation) return;
         const code = results?.[0];
 
         if (!code || !code.position) {
