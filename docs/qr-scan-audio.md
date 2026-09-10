@@ -73,7 +73,9 @@ Tidak ada upload audio admin baru.
   data duplikat, exception/cancelled save, close berulang/stale.
 - `npm run test:scanner`: cache, validasi respons/ukuran/dekode, playback,
   pembatalan saat preload, lock QR, lifecycle modal.
-- `npm run build`: validasi kelima MP3 dan build Vite.
+- `npm run build`: validasi kelima MP3, build Vite, dan pemeriksaan export scanner
+  pada bundle produksi. `preserveEntrySignatures: 'strict'` mempertahankan API
+  yang diimpor langsung dari Blade, di luar module graph Vite.
 - `QR_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tests/js/scan-audio.browser.mjs`
   (memerlukan Playwright + Chromium). Chromium DevTools Protocol Network sudah
   diuji: cache kosong **5 request**, reload dengan cache terisi **0 tambahan**,
