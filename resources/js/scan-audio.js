@@ -82,7 +82,7 @@ export function createScanAudio() {
             context ||= new (
                 window.AudioContext || window.webkitAudioContext
             )();
-            // Must run inside the first user gesture, before awaiting Cache Storage.
+            // Kiosk autoplay can resume immediately; gestures retry on regular browsers.
             void context.resume().catch(() => {});
             for (const status of Object.keys(scanAudioMap)) {
                 if (loading.has(status)) continue;

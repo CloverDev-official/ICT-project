@@ -50,8 +50,9 @@ Selama request scan atau modal terbuka, kamera tidak memproses QR berikutnya.
 
 `scan-audio.js`: `scanAudioMap`, `getCachedAudio(status)`,
 `preloadScanAudios()`, `playScanAudio(status)`, `stopCurrentScanAudio()`.
-Interaksi pointer/keyboard pertama mengaktifkan AudioContext dan memulai preload
-lima audio secara paralel tanpa menunggu kamera. Setiap preload memiliki promise
+Halaman langsung mencoba mengaktifkan AudioContext dan memulai preload
+lima audio secara paralel tanpa menunggu kamera. Interaksi pointer/keyboard
+mencoba aktivasi kembali jika browser membatasi autoplay. Setiap preload memiliki promise
 tunggal per status. Cache `attendance-scan-audio-v2` diperiksa sebelum fetch.
 Cache hit tidak menjalankan request, download, atau revalidation jaringan.
 
@@ -62,12 +63,37 @@ absensi. Cache Storage membutuhkan HTTPS/localhost; jika tidak tersedia (HTTP/IP
 atau akses cache gagal, audio di-fetch langsung dan buffer disimpan di memori
 selama controller halaman aktif. Preload tetap satu kali per status sehingga
 scan berulang tidak mengunduh ulang. Reload HTTP/IP mengunduh audio lagi.
-Kegagalan penulisan cache tidak menghalangi playback. Klik/tap atau interaksi
-keyboard tetap diperlukan untuk mengaktifkan audio.
+Kegagalan penulisan cache tidak menghalangi playback. Pada browser biasa yang
+memblokir autoplay, klik/tap atau interaksi keyboard tetap diperlukan.
 Naikkan versi cache ketika mengganti file; Vite juga
 menggunakan URL file dengan hash. Lima MP3 dibangun sebagai file terpisah.
 `prebuild`/`predev` memeriksa seluruh file, batas ukuran, dan header MPEG Layer III.
 Tidak ada upload audio admin baru.
+
+## Perangkat kiosk tanpa sentuhan
+
+Preload otomatis tidak melewati kebijakan autoplay browser. Untuk Chrome desktop
+di perangkat scanner, jalankan browser dengan parameter berikut (ganti URL dengan
+alamat scanner sebenarnya):
+
+```text
+chrome --kiosk --autoplay-policy=no-user-gesture-required "https://alamat-web/halaman-scanner"
+```
+
+Nama/path executable menyesuaikan sistem operasi. Tutup seluruh proses Chrome
+sebelum mencoba agar parameter diterapkan pada proses baru. Simpan parameter yang
+sama pada startup perangkat agar tetap berlaku setelah restart. Mode `--kiosk`
+sendiri tidak memberikan izin autoplay. Alternatif untuk browser terkelola adalah
+kebijakan Chrome `AutoplayAllowlist` untuk alamat web scanner.
+
+Rujukan: https://developer.chrome.com/blog/autoplay/ dan
+https://chromeenterprise.google/policies/autoplay-allowlist/.
+
+Uji tanpa menyentuh halaman: buka scanner melalui konfigurasi tersebut, scan QR,
+dan pastikan speaker berbunyi. Ulangi setelah reload dan restart perangkat.
+Pengaturan ini mengatasi izin autoplay; suara tetap bergantung pada volume,
+speaker, dan keberhasilan pemuatan audio. Konfigurasi perangkat harus diterapkan
+pada perangkat scanner, bukan hanya server Laravel.
 
 ## Pengujian
 

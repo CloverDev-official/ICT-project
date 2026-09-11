@@ -599,10 +599,9 @@
                         }
                     },
                 });
-                let interacted = false;
+                // Kiosk browsers with autoplay permission can start without a gesture.
+                void scanAudio.preloadScanAudios();
                 const preload = () => {
-                    if (interacted) return;
-                    interacted = true;
                     void scanAudio.preloadScanAudios();
                 };
                 listen(document, 'pointerdown', preload);
