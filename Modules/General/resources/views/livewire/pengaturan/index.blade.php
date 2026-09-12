@@ -54,8 +54,6 @@
         </div>
     </div>
 
-    @include('components.mobile-fullscreen')
-
     <!-- FORM CARD -->
     <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 

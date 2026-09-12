@@ -53,30 +53,13 @@
 
             </div>
 
-            <!-- back -->
-            <a href="{{ route('pilih-absen') }}">
-
-                <button
-                    class="group flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20 active:scale-95">
-
-                    <iconify-icon
-                        icon="lineicons:chevron-left"
-                        width="18"
-                        height="18"
-                        class="transition group-hover:-translate-x-1">
-                    </iconify-icon>
-
-                    Kembali
-
-                </button>
-
-            </a>
-
         </div>
 
     </header>
 
-    <main class="flex items-center justify-center p-4">
+    @include('components.scan-floating-actions')
+
+    <main class="flex items-center justify-center p-4 pb-40">
         <!-- SCANNER AREA -->
         <div class="w-full max-w-2xl">
 
