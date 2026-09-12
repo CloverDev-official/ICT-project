@@ -32,8 +32,6 @@ class Scan extends Component
 
     public ?string $scanMessage = null;
 
-    public ?string $keterangan = '';
-
     public ?string $izinUuid = null;
 
     public bool $isContainsIzin = false;
@@ -114,39 +112,14 @@ class Scan extends Component
         $this->processAbsensi($murid, $today, $currentTime, $jadwal);
     }
 
-    public function konfirmasiTerlambat(): void
+    private function saveLateAttendance(Murid $murid, string $today, string $currentTime): void
     {
-        $this->executeScan(fn () => $this->saveLateAttendance());
-    }
-
-    private function saveLateAttendance(): void
-    {
-        if (! $this->murid || $this->scanStatus !== 'terlambat') {
-            $this->rejectScan('Konfirmasi terlambat tidak valid.');
-
-            return;
-        }
-        $now = now();
-        $today = $now->toDateString();
-        $currentTime = $now->format('H:i:s');
-
-        if (AbsenMurid::query()->where('murid_id', $this->murid->id)
-            ->whereDate('tanggal', $today)->whereNotNull('waktu_masuk')->exists()) {
-            $this->acceptMessage('Absensi masuk sudah tercatat', 'Absensi masuk hari ini sudah tersimpan.');
-
-            return;
-        }
-
         $saved = AbsenMurid::updateOrCreate(
-            [
-                'murid_id' => $this->murid->id,
-                'tanggal' => $today,
-            ],
+            ['murid_id' => $murid->id, 'tanggal' => $today],
             [
                 'waktu_masuk' => $currentTime,
                 'status' => AttendanceStatus::Terlambat->value,
-                'keterangan' => $this->keterangan,
-            ]
+            ],
         );
 
         if (! $saved->exists || (! $saved->wasRecentlyCreated && ! $saved->wasChanged())) {
@@ -155,8 +128,7 @@ class Scan extends Component
             return;
         }
 
-        $this->acceptScan('Alasan terlambat tersimpan.', 'late');
-
+        $this->acceptScan('Absensi masuk berhasil disimpan.', 'late');
     }
 
     public function closeModal(?string $resultId = null): void
@@ -254,7 +226,7 @@ class Scan extends Component
             $beradaSetelahScanMasuk = $currentTime > $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
             $belumScanKeluar = ! $this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
             if ($beradaSetelahScanMasuk && $belumScanKeluar) {
-                $this->lateScan('Murid sudah terlambat absen masuk.');
+                $this->saveLateAttendance($murid, $today, $currentTime);
 
                 return;
             }
@@ -331,7 +303,7 @@ class Scan extends Component
                 return;
             }
 
-            $this->acceptScan('Absensi pulang berhasil disimpan.');
+            $this->acceptScan('Absensi pulang berhasil disimpan.', $status === AttendanceStatus::Terlambat->value ? 'late' : 'success');
 
             return;
         }
@@ -427,15 +399,6 @@ class Scan extends Component
         $this->setScanResult($status);
     }
 
-    private function lateScan(string $message): void
-    {
-        $this->scanStatus = 'terlambat';
-        $this->scanMessage = $message;
-        $this->tersimpan = false;
-
-        $this->setScanResult('late_pending', false);
-    }
-
     private function rejectScan(string $message, string $status = 'failed'): void
     {
         $this->scanStatus = 'error';
@@ -460,7 +423,6 @@ class Scan extends Component
         $this->tersimpan = false;
         $this->scanStatus = null;
         $this->scanMessage = null;
-        $this->keterangan = '';
         $this->izinUuid = null;
         $this->isContainsIzin = false;
         $this->jadwalHariIni = [];

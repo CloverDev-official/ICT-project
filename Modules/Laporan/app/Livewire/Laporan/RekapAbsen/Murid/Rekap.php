@@ -308,7 +308,7 @@ class Rekap extends Component
     {
         return $this->absenBaseQuery()
             ->with([
-                'murid:id,nama,rombel_id,nipd,nisn',
+                'murid:id,nama,rombel_id,nipd,nisn,image_path',
                 'murid.rombel:id,tingkat_id,jurusan_id,indeks_id',
                 'murid.rombel.tingkat:id,nama',
                 'murid.rombel.jurusan:id,nama',

@@ -189,95 +189,20 @@
                         @enderror
                     </div>
 
-                    <!-- Kelas -->
-                    <div
-                        x-data="{
-                            open: false,
-                            selectedId: @js((string) $murid->rombel_id),
-                            query: @js($murid->rombel?->nama_lengkap ?? ''),
-                            kelas: @js($rombel->map(fn ($r) => ['id' => (string) $r->id, 'label' => $r->nama_lengkap])->values()),
-
-                            get filteredKelas() {
-                                const keyword = this.query.trim().toLowerCase()
-
-                                return this.kelas.filter((item) => item.label.toLowerCase().includes(keyword))
-                            },
-
-                            search() {
-                                this.selectedId = null
-                                $wire.set('rombel_id', null)
-                            },
-
-                            select(id, label) {
-                                this.selectedId = String(id)
-                                this.query = label
-                                this.open = false
-
-                                $wire.set('rombel_id', id)
-                            }
-                        }"
-                        class="relative">
-
-                        <label class="{{ $labelClass }}">
-                            Kelas
-                        </label>
-
-                        <div class="relative">
-                            <iconify-icon
-                                icon="solar:buildings-2-bold"
-                                width="20"
-                                height="20"
-                                class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-blue-main">
-                            </iconify-icon>
-
-                            <input
-                                type="search"
-                                x-ref="search"
-                                x-model="query"
-                                @focus="open = true"
-                                @input="open = true; search()"
-                                @keydown.escape="open = false"
-                                placeholder="Cari kelas..."
-                                autocomplete="off"
-                                class="w-full rounded-2xl border border-gray-300 bg-gray-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100" />
-                        </div>
-
-                        <div
-                            x-show="open"
-                            x-transition
-                            @click.outside="open = false"
-                            style="display:none"
-                            class="absolute z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
-
-                            <template x-for="item in filteredKelas" :key="item.id">
-                            <button
-                                type="button"
-                                @mousedown.prevent="select(item.id, item.label)"
-                                class="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left transition hover:bg-blue-main hover:text-white"
-                                :class="selectedId === item.id ? 'bg-blue-main text-white' : ''">
-
-                                <span x-text="item.label"></span>
-
-                                <iconify-icon
-                                    x-show="selectedId === item.id"
-                                    icon="lineicons:check"
-                                    width="18"
-                                    height="18">
-                                </iconify-icon>
-
-                            </button>
-                            </template>
-
-                            <p x-show="filteredKelas.length === 0" class="px-4 py-3 text-sm text-gray-500">
-                                Kelas tidak ditemukan.
-                            </p>
-
-                        </div>
-
+                    <!-- kelas -->
+                    <div>
+                        <livewire:components.searchable-select
+                            wire:model.live="rombel_id"
+                            :options="$rombel"
+                            value-key="id"
+                            label-key="nama_lengkap"
+                            label="Kelas"
+                            placeholder="Cari kelas..."
+                            all-label="Pilih kelas"
+                            not-found-text="Kelas tidak ditemukan." />
                         @error('rombel_id')
-                        <p class="{{ $errorClass }}">{{ $message }}</p>
+                            <p class="{{ $errorClass }}">{{ $message }}</p>
                         @enderror
-
                     </div>
 
                     <!-- Jenis Kelamin -->

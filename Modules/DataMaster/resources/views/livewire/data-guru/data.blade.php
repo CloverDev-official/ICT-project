@@ -140,109 +140,22 @@
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
 
             <!-- status -->
-            <div
-                x-data="{
-                open: false,
-                selectedId: @js($filterStatus),
-                selectedLabel: @js(filled($filterStatus) ? ($statusOptions[$filterStatus] ?? $filterStatus) : null),
-
-                toggle() {
-                    this.open = !this.open
-                },
-
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-
-                    $wire.set('filterStatus', id)
-                }
-            }"
-                class="relative w-full">
-                <label class="text-sm text-gray-600 capitalize font-semibold">Status Kepegawaian</label>
-
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Semua status'" class="text-gray-700 text-sm"></span>
-                    <iconify-icon
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24">
-                    </iconify-icon>
-                </div>
-
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-
-                    <div
-                        @click.prevent="select(null, 'Semua status')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>Semua status</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
-                    </div>
-
-                    @foreach ($statusOptions as $index => $status)
-                    <div
-                        @click.prevent="select(@js($index), @js($status))"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>{{ $status }}</span>
-                        <iconify-icon x-show="selectedId === @js($index)" icon="lineicons:check" width="24" height="24"></iconify-icon>
-                    </div>
-                    @endforeach
-
-                </div>
-            </div>
+            <livewire:components.searchable-select
+                    wire:model.live="filterStatus"
+                    :options="$statusOptions"
+                    value-key="id" label-key="nama"
+                    label="Status Kepegawaian" placeholder="Cari status kepegawaian..."
+                    all-label="Semua status"
+                    not-found-text="Pilihan tidak ditemukan." />
 
             <!-- jenis -->
-            <div
-            x-data="{
-                open: false,
-                selectedId: @js($filterjenis),
-                selectedLabel: @js(filled($filterjenis) ? ($jenisOptions[$filterjenis] ?? $filterjenis) : null),
-
-                toggle() {
-                    this.open = !this.open
-                },
-
-                select(id, label) {
-                    this.selectedId = id
-                    this.selectedLabel = label
-                    this.open = false
-
-                    $wire.set('filterjenis', id)
-                }
-            }"
-            class="relative w-full">
-                <label class="text-sm text-gray-600 capitalize font-semibold">Jenis PTK</label>
-
-                <div @click="toggle()"
-                    class="text-sm mt-1 flex items-center justify-between px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition">
-                    <span x-text="selectedLabel ?? 'Semua jenis'" class="text-gray-700 text-sm"></span>
-                    <iconify-icon class="text-gray-400 transition-transform" :class="{ 'rotate-180': open }"
-                        icon="lineicons:chevron-up" width="25" height="24"></iconify-icon>
-                </div>
-
-                <div x-show="open" @click.outside="open = false" x-transition style="display:none"
-                    class="absolute mt-2 w-full h-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-y-auto scroll-thin z-50">
-
-                    <div
-                        @click.prevent="select(null, 'Semua jenis')"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>Semua jenis</span>
-                        <iconify-icon x-show="selectedId === null" icon="lineicons:check" width="24" height="24"></iconify-icon>
-                    </div>
-
-                    @foreach ($jenisOptions as $index => $jenis)
-                    <div
-                        @click.prevent="select(@js($index), @js($jenis))"
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-deep-solid hover:text-white transition flex justify-between items-center">
-                        <span>{{ $jenis }}</span>
-                        <iconify-icon x-show="selectedId === @js($index)" icon="lineicons:check" width="24" height="24"></iconify-icon>
-                    </div>
-                    @endforeach
-
-                </div>
-            </div>
+            <livewire:components.searchable-select
+                    wire:model.live="filterjenis"
+                    :options="$jenisOptions"
+                    value-key="id" label-key="nama"
+                    label="Jenis PTK" placeholder="Cari jenis ptk..."
+                    all-label="Semua jenis"
+                    not-found-text="Pilihan tidak ditemukan." />
 
         </div>
 

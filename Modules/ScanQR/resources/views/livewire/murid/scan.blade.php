@@ -1,8 +1,5 @@
 <div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans">
     @php
-        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
-        $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
-        $errorClass = 'mt-2 text-sm text-rose-500';
         $serverPingUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
             'scan-qrcode.ping',
             now()->addMinutes(10),
@@ -185,8 +182,7 @@
 
                     <!-- FOTO -->
                     <div class="flex-shrink-0">
-                        <img src="{{ $murid->image_path }}"
-                            class="w-32 h-40 object-cover rounded-xl border shadow">
+                        <x-murid-avatar :murid="$murid" class="h-40 w-32 rounded-xl border bg-blue-100 text-4xl font-bold text-blue-main shadow" />
                     </div>
 
                     <!-- DATA -->
@@ -274,80 +270,6 @@
         </div>
     </div>
     @endif
-
-    @if ($scanResult && $scanStatus === 'terlambat')
-        <div id="error-modal" class="fixed inset-0 z-50">
-            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-            <div  class="relative flex min-h-screen items-center justify-center p-4">
-                <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                    <div class="bg-red-600 px-6 py-4 text-white">
-                        <h2 class="text-lg font-bold">Terlambat</h2>
-                        <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
-                    </div>
-                    <div class="p-6 text-sm text-gray-700">
-                        <form wire:submit="konfirmasiTerlambat" class="space-y-4" >
-                            <!-- keterangan atau alasan terlambat -->
-                            <div>
-                                <label class="{{ $labelClass }}">
-                                    Alasan terlambat
-                                </label>
-                                
-                                {{-- input alasan --}}
-                                <input
-                                    type="text"
-                                    required
-                                    wire:model.defer="keterangan"
-                                    placeholder="Masukkan Alasan Anda Terlambat"
-                                    class="{{ $inputClass }}" />
-
-                                @error('keterangan')
-                                <p class="{{ $errorClass }}">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            
-                            <div>
-                                <button
-                                    type="submit"
-                                    wire:loading.attr="disabled"
-                                    wire:target="konfirmasiTerlambat"
-                                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70">
-        
-                                    <iconify-icon
-                                        wire:loading.remove
-                                        wire:target="konfirmasiTerlambat"
-                                        icon="lineicons:save"
-                                        width="20"
-                                        height="20"
-                                        class="transition group-hover:scale-110">
-                                    </iconify-icon>
-        
-                                    <iconify-icon
-                                        wire:loading
-                                        wire:target="konfirmasiTerlambat"
-                                        icon="line-md:loading-twotone-loop"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
-        
-                                    <span wire:loading.remove wire:target="konfirmasiTerlambat">
-                                        Kirim Alasan
-                                    </span>
-        
-                                    <span wire:loading wire:target="konfirmasiTerlambat">
-                                        Mengirim...
-                                    </span>
-        
-                                </button>
-                            </div>
-
-                            
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
 
     @if($scanResult && $scanStatus === 'error' && $scanMessage)
     <div data-scan-result='@json($scanResult)' id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
@@ -628,7 +550,7 @@
                     root.querySelector('[data-scan-transport-host]').replaceChildren(element);
                     scanResults.openScanResultModal(result, element);
                 };
-                for (const action of ['verifiedQRCode', 'konfirmasiTerlambat']) {
+                for (const action of ['verifiedQRCode']) {
                     const removeInterceptor = $wire.$interceptRequest(action, ({
                         onError,
                         onFailure

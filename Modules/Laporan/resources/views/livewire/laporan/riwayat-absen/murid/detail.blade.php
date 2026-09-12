@@ -30,10 +30,7 @@
             <!-- profile -->
             <div class="flex items-center gap-4">
 
-                <div
-                    class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold text-white backdrop-blur">
-                    {{ strtoupper(substr($murid->nama, 0, 1)) }}
-                </div>
+                <x-murid-avatar :murid="$murid" class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold text-white backdrop-blur" />
 
                 <div>
                     <h1 class="text-2xl font-semibold capitalize text-white">
@@ -114,29 +111,7 @@
                     Detail kehadiran selama tanggal yang dipilih
                 </p>
             </div>
-
-            <div class="flex items-center gap-2">
-
-                <div
-                    class="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-600">
-                    Hadir
-                </div>
-
-                <div
-                    class="rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-600">
-                    Izin
-                </div>
-
-                <div
-                    class="rounded-full bg-amber-100 px-4 py-1 text-xs font-semibold text-amber-600">
-                    Sakit
-                </div>
-                <div
-                    class="rounded-full bg-rose-100 px-4 py-1 text-xs font-semibold text-rose-600">
-                    Alpa
-                </div>
-
-            </div>
+            
         </div>
 
         <!-- table -->
@@ -171,10 +146,13 @@
                     $statusValue = strtolower((string) $item->status);
 
                     $statusClass = match ($statusValue) {
-                    'sakit' => 'text-amber-600 bg-amber-100',
-                    'izin' => 'text-blue-600 bg-blue-100',
-                    'alpa' => 'text-rose-600 bg-rose-100',
-                    default => 'text-green-600 bg-green-100',
+                    'sakit' => 'text-amber-700 bg-amber-100',
+                    'izin' => 'text-blue-700 bg-blue-100',
+                    'alpa' => 'text-rose-700 bg-rose-100',
+                    'masuk' => 'text-cyan-700 bg-cyan-100',
+                    'hadir' => 'text-emerald-700 bg-emerald-100',
+                    'terlambat' => 'text-orange-700 bg-orange-100',
+                    default => 'text-gray-700 bg-gray-100',
                     };
                     @endphp
 
@@ -186,10 +164,7 @@
 
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-sm font-semibold text-blue-main">
-                                    {{ strtoupper(substr($item['nama'], 0, 1)) }}
-                                </div>
+                                <x-murid-avatar :murid="$murid" class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-sm font-semibold text-blue-main" />
 
                                 <div>
                                     <p class="font-medium capitalize text-gray-800">

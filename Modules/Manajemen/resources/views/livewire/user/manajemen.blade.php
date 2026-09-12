@@ -74,91 +74,13 @@
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
 
                 <!-- ROLE -->
-                <div
-                    x-data="{
-                        open: false,
-                        selectedId: null,
-                        selectedLabel: 'Semua Role',
-
-                        select(id, label){
-                            this.selectedId = id
-                            this.selectedLabel = label
-                            this.open = false
-
-                            $wire.$set('roleId', id)
-                        },
-
-                        toggle(){
-                            this.open = !this.open
-                        }
-                    }"
-                    class="relative w-full">
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-                        Filter Role
-                    </label>
-
-                    <!-- trigger -->
-                    <div
-                        @click="toggle()"
-                        class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main">
-
-                        <span x-text="selectedLabel" class="text-gray-700"></span>
-
-                        <iconify-icon
-                            class="text-gray-400 transition-transform"
-                            :class="{ 'rotate-180': open }"
-                            icon="lineicons:chevron-up"
-                            width="20"
-                            height="20">
-                        </iconify-icon>
-
-                    </div>
-
-                    <!-- dropdown -->
-                    <div
-                        x-show="open"
-                        @click.outside="open = false"
-                        x-transition
-                        style="display: none;"
-                        class="absolute z-50 mt-2 w-full h-44 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
-
-                        <!-- semua -->
-                        <div
-                            @click.prevent="select(null, 'Semua Role')"
-                            class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
-
-                            <span>Semua Role</span>
-
-                            <iconify-icon
-                                x-show="selectedId === null"
-                                icon="lineicons:check"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-                        <!-- list -->
-                        @foreach ($roles as $role)
-                            <div
-                                @click.prevent="select('{{ $role->id }}', '{{ $role->name }}')"
-                                class="flex cursor-pointer items-center justify-between px-4 py-3 capitalize transition hover:bg-blue-main hover:text-white">
-
-                                <span>{{ $role->name }}</span>
-
-                                <iconify-icon
-                                    x-show="selectedId === '{{ $role->id }}'"
-                                    icon="lineicons:check"
-                                    width="20"
-                                    height="20">
-                                </iconify-icon>
-
-                            </div>
-
-                        @endforeach
-
-                    </div>
-                </div>
+                <livewire:components.searchable-select
+                    wire:model.live="roleId"
+                    :options="$roles"
+                    value-key="id" label-key="name"
+                    label="Role" placeholder="Cari role..."
+                    all-label="Semua role"
+                    not-found-text="Pilihan tidak ditemukan." />
 
                 <!-- search -->
                 <div class="lg:col-span-3">

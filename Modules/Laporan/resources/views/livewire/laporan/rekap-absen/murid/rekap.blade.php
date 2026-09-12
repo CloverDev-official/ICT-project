@@ -505,65 +505,13 @@
                 </div>
 
                 <!-- Kelas -->
-                <div x-data="{
-                    open: false,
-                    selectedId: null,
-                    selectedLabel: 'Semua kelas',
-                    select(id, label) {
-                        this.selectedId = id
-                        this.selectedLabel = label
-                        this.open = false
-                        $wire.set('exportRombelId', id)
-                    }
-                }" class="relative">
-
-                    <label class="block text-sm font-medium text-gray-600 mb-2">
-                        Pilih Kelas
-                    </label>
-
-                    <!-- Button -->
-                    <div @click="open = !open"
-                        class="flex items-center justify-between px-4 p-3 border border-gray-300 rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-white transition">
-
-                        <span x-text="selectedLabel" class="text-sm text-gray-700"></span>
-
-                        <iconify-icon icon="lineicons:chevron-down" width="18" class="text-gray-400 transition"
-                            :class="{ 'rotate-180': open }">
-                        </iconify-icon>
-
-                    </div>
-
-                    <!-- Dropdown -->
-                    <div x-show="open" x-transition @click.outside="open=false"
-                        class="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto z-50">
-
-                        <div @click="select(null, 'Semua kelas')"
-                            class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
-
-                            <span>Semua kelas</span>
-
-                            <iconify-icon x-show="selectedId === null" icon="lineicons:check"
-                                width="18">
-                            </iconify-icon>
-
-                        </div>
-
-                        @foreach ($listRombel as $rombel)
-                        <div @click="select({{ (int) $rombel->id }}, @js($rombel->nama_lengkap))"
-                            class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition">
-
-                            <span>{{ $rombel->nama_lengkap }}</span>
-
-                            <iconify-icon x-show="selectedId === {{ (int) $rombel->id }}" icon="lineicons:check"
-                                width="18">
-                            </iconify-icon>
-
-                        </div>
-                        @endforeach
-
-                    </div>
-
-                </div>
+                <livewire:components.searchable-select
+                    wire:model.live="exportRombelId"
+                    :options="$listRombel"
+                    value-key="id" label-key="nama_lengkap"
+                    label="Kelas" placeholder="Cari kelas..."
+                    all-label="Semua kelas"
+                    not-found-text="Pilihan tidak ditemukan." />
 
             </div>
 
@@ -707,12 +655,7 @@
                             <div class="flex items-center gap-4">
 
                                 <!-- avatar -->
-                                <div
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
-
-                                    {{ substr($item->murid->nama, 0, 1) }}
-
-                                </div>
+                                <x-murid-avatar :murid="$item->murid" class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main" />
 
                                 <div>
 

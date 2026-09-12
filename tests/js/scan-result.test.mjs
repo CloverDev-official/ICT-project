@@ -110,3 +110,17 @@ test('removed/hidden modal and SPA disposal stop sound', () => {
         assert.ok(f.calls.lastIndexOf('stop') > f.calls.indexOf('failed'));
     }
 });
+
+for (const status of ['success', 'late']) {
+    test(`${status} audio plays once per result and stops on manual close`, async () => {
+        const f = fixture();
+        const element = f.element();
+        const result = { id: status, status, autoClose: true };
+        f.controller.openScanResultModal(result, element);
+        f.controller.openScanResultModal(result, element);
+        assert.equal(f.calls.filter((call) => call === status).length, 1);
+        await f.controller.closeScanResultModal();
+        assert.ok(f.calls.lastIndexOf('stop') > f.calls.indexOf(status));
+        assert.equal(element.hidden, true);
+    });
+}

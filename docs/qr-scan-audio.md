@@ -8,17 +8,23 @@ status audio tidak ditentukan dari teks atau warna modal.
 | Status | Audio di resources/audio | Kondisi |
 | --- | --- | --- |
 | success | scan-success.mp3 | Masuk/pulang atau pembaruan izin berhasil disimpan |
-| late | scan-late.mp3 | Konfirmasi alasan terlambat berhasil disimpan |
+| late | scan-late.mp3 | Absensi berstatus terlambat berhasil disimpan |
 | failed | scan-failed.mp3 | QR invalid/tidak ditemukan, penolakan, save dibatalkan/exception, HTTP/jaringan gagal |
 | already_recorded | already-recorded.mp3 | Absensi masuk/pulang hari ini sudah tercatat |
 | attendance_not_open | attendance-not-open.mp3 | Scan masuk sebelum jadwal dibuka; tidak disimpan |
 
-`late_pending` mempertahankan formulir alasan terlambat tanpa audio karena data
-belum disimpan. Batas keterlambatan mengikuti `scan_masuk_sampai` dari jadwal
-kelas/default. Audio pulang tetap `success` meskipun status masuk sebelumnya
-terlambat; scan pulang tidak dinilai sebagai kedatangan terlambat baru. QR biasa
-sebelum jendela pulang, dengan masuk sudah tercatat, tetap `already_recorded`
-sesuai alur yang ada (QR tidak menyatakan jenis masuk/pulang).
+Scan terlambat langsung disimpan dengan status `Terlambat`, lalu menggunakan
+modal berhasil yang sama dengan scan normal. Batas keterlambatan mengikuti
+`scan_masuk_sampai` dari jadwal kelas/default. Audio mengikuti hasil backend:
+`late` untuk absensi berstatus terlambat, termasuk saat pulang; `success` untuk
+absensi normal. Scan ulang sebelum jendela pulang tetap `already_recorded`.
+
+Alasan tidak diminta saat scan. Tombol cetak surat membuka modal alasan wajib di halaman daftar izin telat
+(maximal 191 karakter sesuai kolom `absen_murid.keterangan`). Simpan & Cetak
+memvalidasi dan menyimpan alasan, lalu membuka halaman surat yang membaca ulang
+record dan membuka dialog cetak. Cetak ulang memuat alasan tersimpan untuk diedit.
+Halaman surat menolak record yang bukan berstatus `Terlambat` dan tidak merender
+area cetak sebelum alasan berhasil disimpan.
 
 ## Lifecycle modal
 
@@ -97,7 +103,7 @@ pada perangkat scanner, bukan hanya server Laravel.
 
 ## Pengujian
 
-- `php artisan test`: status hasil dengan database testing, konfirmasi terlambat,
+- `php artisan test`: status hasil dengan database testing, scan terlambat langsung, validasi/simpan/edit alasan surat,
   data duplikat, exception/cancelled save, close berulang/stale.
 - `npm run test:scanner`: cache, validasi respons/ukuran/dekode, playback,
   pembatalan saat preload, lock QR, lifecycle modal.

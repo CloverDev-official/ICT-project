@@ -119,551 +119,81 @@
             class="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
 
             <!-- TINGKAT -->
-            <div
-                x-data="{
-                    open: false,
-                    selectedId: @js((string) $rombel->tingkat_id),
-                    selectedLabel: @js($rombel->tingkat?->nama ?? 'Pilih tingkat'),
-
-                    toggle() {
-                        this.open = !this.open
-                    },
-
-                    select(id, label) {
-                        this.selectedId = String(id)
-                        this.selectedLabel = label
-                        this.open = false
-
-                        $wire.set('tingkat_id', id)
-                    }
-                }"
-                class="relative">
-
-                <label class="{{ $labelClass }}">
-                    Tingkat
-                </label>
-
-                <div
-                    @click="toggle()"
-                    class="{{ $triggerClass }}">
-
-                    <div class="flex items-center gap-3">
-
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
-
-                            <iconify-icon
-                                icon="solar:ranking-bold"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-
-                        <span
-                            x-text="selectedLabel"
-                            class="text-gray-700">
-                        </span>
-
-                    </div>
-
-                    <iconify-icon
-                        icon="lineicons:chevron-up"
-                        width="20"
-                        height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
-
-                </div>
-
-                <div
-                    x-show="open"
-                    x-transition
-                    @click.outside="open = false"
-                    style="display:none"
-                    class="{{ $dropdownClass }}">
-
-                    @foreach ($listTingkat as $tingkat)
-
-                    <div
-                        @click.prevent="select(@js((string) $tingkat->id), @js($tingkat->nama))"
-                        class="{{ $optionClass }}"
-                        :class="selectedId === @js((string) $tingkat->id) ? 'bg-blue-main text-white' : ''">
-
-                        <span>{{ $tingkat->nama }}</span>
-
-                        <iconify-icon
-                            x-show="selectedId === @js((string) $tingkat->id)"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-
-                    @endforeach
-
-                    @if ($hasMoreTingkat)
-                    <button
-                        type="button"
-                        wire:click="loadMoreTingkat"
-                        wire:loading.attr="disabled"
-                        class="w-full px-4 py-2 text-left text-xs font-semibold text-blue-main hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60">
-                        Muat selanjutnya
-                    </button>
-                    @endif
-
-                </div>
-
+            <div>
+                <livewire:components.searchable-select
+                    wire:model.live="tingkat_id"
+                    :options="$listTingkat"
+                    value-key="id" label-key="nama"
+                    label="Tingkat" placeholder="Cari tingkat..."
+                    all-label="Pilih tingkat"
+                    not-found-text="Pilihan tidak ditemukan." />
+                @if ($hasMoreTingkat)
+                    <button type="button" wire:click="loadMoreTingkat" wire:loading.attr="disabled"
+                        class="mt-2 text-xs font-semibold text-blue-main hover:underline disabled:opacity-50">Muat selanjutnya</button>
+                @endif
                 @error('tingkat_id')
-                <p class="{{ $errorClass }}">
-                    {{ $message }}
-                </p>
+                    <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
-
             </div>
 
             <!-- JURUSAN -->
-            <div
-                x-data="{
-                    open: false,
-                    selectedId: @js((string) $rombel->jurusan_id),
-                    selectedLabel: @js($rombel->jurusan?->nama ?? 'Pilih jurusan'),
-
-                    toggle() {
-                        this.open = !this.open
-                    },
-
-                    select(id, label) {
-                        this.selectedId = String(id)
-                        this.selectedLabel = label
-                        this.open = false
-
-                        $wire.set('jurusan_id', id)
-                    }
-                }"
-                class="relative">
-
-                <label class="{{ $labelClass }}">
-                    Jurusan
-                </label>
-
-                <div
-                    @click="toggle()"
-                    class="{{ $triggerClass }}">
-
-                    <div class="flex items-center gap-3">
-
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-
-                            <iconify-icon
-                                icon="solar:book-bold"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-
-                        <span
-                            x-text="selectedLabel"
-                            class="line-clamp-1 text-gray-700">
-                        </span>
-
-                    </div>
-
-                    <iconify-icon
-                        icon="lineicons:chevron-up"
-                        width="20"
-                        height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
-
-                </div>
-
-                <div
-                    x-show="open"
-                    x-transition
-                    @click.outside="open = false"
-                    style="display:none"
-                    class="{{ $dropdownClass }}">
-
-                    @foreach ($listJurusan as $jurusan)
-
-                    <div
-                        @click.prevent="select({{ (int) $jurusan->id }}, @js($jurusan->nama))"
-                        class="{{ $optionClass }}"
-                        :class="selectedId === '{{ (int) $jurusan->id }}' ? 'bg-blue-main text-white' : ''">
-
-                        <span>{{ $jurusan->nama }}</span>
-
-                        <iconify-icon
-                            x-show="selectedId === '{{ (int) $jurusan->id }}'"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-
-                    @endforeach
-
-                </div>
-
+            <div>
+                <livewire:components.searchable-select
+                    wire:model.live="jurusan_id"
+                    :options="$listJurusan"
+                    value-key="id" label-key="nama"
+                    label="Jurusan" placeholder="Cari jurusan..."
+                    all-label="Pilih jurusan"
+                    not-found-text="Pilihan tidak ditemukan." />
                 @error('jurusan_id')
-                <p class="{{ $errorClass }}">
-                    {{ $message }}
-                </p>
+                    <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
-
             </div>
 
             <!-- KELAS -->
-            <div
-                x-data="{
-                    open: false,
-                    selectedId: @js($rombel->indeks_id ? (string) $rombel->indeks_id : null),
-                    selectedLabel: @js($rombel->indeks?->nama ?? '-'),
-
-                    toggle() {
-                        this.open = !this.open
-                    },
-
-                    select(id, label) {
-                        this.selectedId = String(id)
-                        this.selectedLabel = label
-                        this.open = false
-
-                        $wire.set('indeks_id', id)
-                    },
-
-                    selectNone() {
-                        this.selectedId = null
-                        this.selectedLabel = '-'
-                        this.open = false
-
-                        $wire.clearIndeks()
-                    }
-                }"
-                class="relative">
-
-                <label class="{{ $labelClass }}">
-                    Indeks kelas (Opsional)
-                </label>
-
-                <div
-                    @click="toggle()"
-                    class="{{ $triggerClass }}">
-
-                    <div class="flex items-center gap-3">
-
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-
-                            <iconify-icon
-                                icon="solar:layers-bold"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-
-                        <span
-                            x-text="selectedLabel"
-                            class="text-gray-700">
-                        </span>
-
-                    </div>
-
-                    <iconify-icon
-                        icon="lineicons:chevron-up"
-                        width="20"
-                        height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
-
-                </div>
-
-                <div
-                    x-show="open"
-                    x-transition
-                    @click.outside="open = false"
-                    style="display:none"
-                    class="{{ $dropdownClass }}">
-
-                    <div
-                        @click.prevent="selectNone()"
-                        class="{{ $optionClass }}"
-                        :class="selectedId === null ? 'bg-blue-main text-white' : ''">
-
-                        <span>-</span>
-
-                        <iconify-icon
-                            x-show="selectedId === null"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-
-                    @foreach ($listIndeks as $indeks)
-
-                    <div
-                        @click.prevent="select(@js((string) $indeks->id), @js($indeks->nama))"
-                        class="{{ $optionClass }}"
-                        :class="selectedId === @js((string) $indeks->id) ? 'bg-blue-main text-white' : ''">
-
-                        <span>{{ $indeks->nama }}</span>
-
-                        <iconify-icon
-                            x-show="selectedId === @js((string) $indeks->id)"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-
-                    @endforeach
-
-                    @if ($hasMoreIndeks)
-                    <button
-                        type="button"
-                        wire:click="loadMoreIndeks"
-                        wire:loading.attr="disabled"
-                        class="w-full px-4 py-2 text-left text-xs font-semibold text-blue-main hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60">
-                        Muat selanjutnya
-                    </button>
-                    @endif
-
-                </div>
-
+            <div>
+                <livewire:components.searchable-select
+                    wire:model.live="indeks_id"
+                    :options="$listIndeks"
+                    value-key="id" label-key="nama"
+                    label="Indeks Kelas (Opsional)" placeholder="Cari indeks kelas (opsional)..."
+                    all-label="Tanpa indeks"
+                    not-found-text="Pilihan tidak ditemukan." />
+                @if ($hasMoreIndeks)
+                    <button type="button" wire:click="loadMoreIndeks" wire:loading.attr="disabled"
+                        class="mt-2 text-xs font-semibold text-blue-main hover:underline disabled:opacity-50">Muat selanjutnya</button>
+                @endif
                 @error('indeks_id')
-                <p class="{{ $errorClass }}">
-                    {{ $message }}
-                </p>
+                    <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
-
             </div>
 
             <!-- TAHUN MASUK -->
-            <div
-                x-data="{
-        open: false,
-        selectedId: @js((string) ($tahun_masuk ?? '')),
-        selectedLabel: @js($tahun_masuk ? (string) $tahun_masuk : 'Pilih tahun masuk'),
-        currentYear: {{ now()->year }},
-
-        toggle() {
-            this.open = !this.open
-        },
-
-        select(year) {
-            this.selectedId = year
-            this.selectedLabel = year
-            this.open = false
-
-            $wire.set('tahun_masuk', year)
-        }
-    }"
-                class="relative">
-
-                <label class="{{ $labelClass }}">
-                    Tahun Masuk
-                </label>
-
-                <div
-                    @click="toggle()"
-                    class="{{ $triggerClass }}">
-
-                    <div class="flex items-center gap-3">
-
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600">
-
-                            <iconify-icon
-                                icon="solar:calendar-bold"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-
-                        <span
-                            x-text="selectedLabel ?? 'Pilih tahun masuk'"
-                            class="text-gray-700">
-                        </span>
-
-                    </div>
-
-                    <iconify-icon
-                        icon="lineicons:chevron-up"
-                        width="20"
-                        height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
-
-                </div>
-
-                <div
-                    x-show="open"
-                    x-transition
-                    @click.outside="open = false"
-                    style="display:none"
-                    class="{{ $dropdownClass }}">
-
-                    @foreach (range(now()->year - 10, now()->year + 10) as $tahun)
-                    <div
-                        @click.prevent="select({{ $tahun }})"
-                        class="{{ $optionClass }}">
-
-                        <div class="flex items-center gap-2">
-                            <span>{{ $tahun }}</span>
-
-                            @if ($tahun === now()->year)
-                            <span
-                                class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold text-cyan-600">
-                                Tahun ini
-                            </span>
-                            @endif
-                        </div>
-
-                        <iconify-icon
-                            x-show="selectedId == {{ $tahun }}"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-                    @endforeach
-
-                </div>
-
+            <div>
+                <livewire:components.searchable-select
+                    wire:model.live="tahun_masuk"
+                    :options="collect(range(now()->year - 10, now()->year + 10))->map(fn ($year) => ['id' => $year, 'nama' => (string) $year])"
+                    value-key="id" label-key="nama"
+                    label="Angkatan / Tahun Masuk" placeholder="Cari angkatan / tahun masuk..."
+                    all-label="Pilih tahun masuk"
+                    not-found-text="Pilihan tidak ditemukan." />
                 @error('tahun_masuk')
-                <p class="{{ $errorClass }}">
-                    {{ $message }}
-                </p>
+                    <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
-
             </div>
 
             <!-- WALI KELAS -->
-            <div
-                x-data="{
-                    open: false,
-                    selectedId: @js((string) $rombel->wali_guru_id),
-                    selectedLabel: @js($rombel->waliGuru?->nama ?? 'Pilih wali kelas'),
-
-                    toggle() {
-                        this.open = !this.open
-                    },
-
-                    select(id, label) {
-                        this.selectedId = id
-                        this.selectedLabel = label
-                        this.open = false
-
-                        $wire.set('guru_id', id)
-                    }
-                }"
-                class="relative">
-
-                <label class="{{ $labelClass }}">
-                    Wali Kelas
-                    <span class="font-normal text-gray-400">
-                        (Opsional)
-                    </span>
-                </label>
-
-                <div
-                    @click="toggle()"
-                    class="{{ $triggerClass }}">
-
-                    <div class="flex items-center gap-3">
-
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
-
-                            <iconify-icon
-                                icon="solar:user-id-bold"
-                                width="20"
-                                height="20">
-                            </iconify-icon>
-
-                        </div>
-
-                        <span
-                            x-text="selectedLabel ?? 'Pilih wali kelas'"
-                            class="line-clamp-1 text-gray-700">
-                        </span>
-
-                    </div>
-
-                    <iconify-icon
-                        icon="lineicons:chevron-up"
-                        width="20"
-                        height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
-
-                </div>
-
-                <div
-                    x-show="open"
-                    x-transition
-                    @click.outside="open = false"
-                    style="display:none"
-                    class="{{ $dropdownClass }}">
-
-                    <div
-                        @click.prevent="select(null, 'Pilih wali kelas')"
-                        class="{{ $optionClass }}">
-
-                        <span>Pilih wali kelas</span>
-
-                        <iconify-icon
-                            x-show="selectedId === null"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-
-                    @forelse ($listGuru ?? [] as $guru)
-                    <div
-                        @click.prevent="select({{ (int) $guru->id }}, @js($guru->nama))"
-                        class="{{ $optionClass }}">
-
-                        <span>{{ $guru->nama }}</span>
-
-                        <iconify-icon
-                            x-show="selectedId == {{ (int) $guru->id }}"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-                    @empty
-                    <div class="px-4 py-3 text-sm text-gray-400">
-                        Data guru belum tersedia.
-                    </div>
-                    @endforelse
-
-                </div>
-
+            <div>
+                <livewire:components.searchable-select
+                    wire:model.live="guru_id"
+                    :options="$listGuru"
+                    value-key="id" label-key="nama"
+                    label="Wali Kelas (Opsional)" placeholder="Cari wali kelas (opsional)..."
+                    all-label="Tanpa wali kelas"
+                    not-found-text="Pilihan tidak ditemukan." />
                 @error('guru_id')
-                <p class="{{ $errorClass }}">{{ $message }}</p>
+                    <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
-
             </div>
 
             <!-- INFO BOX -->

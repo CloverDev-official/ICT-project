@@ -86,12 +86,8 @@
 
 <div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
 
-    <button
-        type="button"
-        onclick="window.print()"
-        class="mb-5 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-        Print
-    </button>
+    @if ($siapCetak)
+    <button type="button" onclick="window.print()" class="mb-5 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Cetak Ulang</button>
 
     <div
         id="printArea"
@@ -121,8 +117,23 @@
                 </div>
 
                 <div class="text-[8px]">
-                    <p class="font-semibold">Keperluan :</p>
-                    <p>{{ $absen->alasan }}</p>
+                    <p class="font-semibold">Tanggal :</p>
+                    <p>{{ $absen->tanggal->locale('id')->translatedFormat('d F Y') }}</p>
+                </div>
+
+                <div class="text-[8px]">
+                    <p class="font-semibold">Jam Kedatangan :</p>
+                    <p>{{ $absen->waktu_masuk }} WITA</p>
+                </div>
+
+                <div class="text-[8px]">
+                    <p class="font-semibold">Status :</p>
+                    <p>Terlambat</p>
+                </div>
+
+                <div class="text-[8px]">
+                    <p class="font-semibold">Alasan Terlambat :</p>
+                    <p class="whitespace-pre-line break-words">{{ $absen->keterangan }}</p>
                 </div>
 
             </div>
@@ -132,6 +143,9 @@
             <div class="flex justify-end">
                 <div class="w-28 text-center text-[8px]">
 
+                    <p class="font-semibold mb-1">
+                        {{ now()->locale('id')->translatedFormat('d F Y, H:i:s') }}
+                    </p>
                     <p class="font-semibold">
                         Pengawas
                     </p>
@@ -149,11 +163,16 @@
 
     </div>
 
+    @endif
 </div>
 
 @script
 <script>
-    window.print();
-    Livewire.navigate('{{ route('cetak-izin-telat') }}');
+    if (@js($siapCetak)) {
+        requestAnimationFrame(() => {
+            window.print();
+            Livewire.navigate(@js(route('cetak-izin-telat')));
+        });
+    }
 </script>
 @endscript
