@@ -41,29 +41,60 @@
     x-on:click.outside="open = false"
     x-on:keydown.escape.stop="open = false; $refs.trigger.focus()"
     aria-label="Kontrol halaman scan"
-    class="fixed bottom-5 right-5 z-40 flex max-w-[calc(100%-2.5rem)] flex-col items-end gap-3">
-    <p x-show="error" style="display: none;" x-text="error" role="alert" class="max-w-64 rounded-lg bg-white p-3 text-sm text-rose-600 shadow-lg"></p>
-    <div id="scan-floating-options" x-show="open" style="display: none;" class="w-40 max-w-full overflow-hidden rounded-full border border-gray-200 bg-white p-1 shadow-xl">
+    class="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-[calc(1.25rem+env(safe-area-inset-right,0px))] z-40 flex max-w-[calc(100vw-2.5rem-env(safe-area-inset-left,0px)-env(safe-area-inset-right,0px))] flex-col items-end gap-3">
+    <p
+        x-show="error"
+        style="display: none;"
+        x-text="error"
+        x-transition:enter="transition ease-out duration-200 motion-reduce:transition-none"
+        x-transition:enter-start="opacity-0 translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150 motion-reduce:transition-none"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-2"
+        role="alert"
+        aria-atomic="true"
+        class="max-w-72 rounded-2xl border border-rose-100 bg-white/90 px-4 py-3 text-sm leading-relaxed text-rose-600 shadow-lg backdrop-blur-xl dark:border-rose-400/20 dark:bg-gray-900/90 dark:text-rose-300"></p>
+
+    <div
+        id="scan-floating-options"
+        x-show="open"
+        style="display: none;"
+        x-transition:enter="transition ease-out duration-200 motion-reduce:transition-none"
+        x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transition ease-in duration-150 motion-reduce:transition-none"
+        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+        class="flex max-w-full origin-bottom-right flex-col items-end gap-2.5">
         <button
             type="button"
-            x-show="mobile"
+            x-show="mobile && open"
+            x-transition:enter="transition ease-out duration-200 delay-75 motion-reduce:transition-none"
+            x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-100 motion-reduce:transition-none"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 translate-y-2 scale-95"
             x-on:click="toggle(); open = false; $refs.trigger.focus()"
             x-bind:disabled="!supported"
             x-bind:aria-pressed="active"
-            x-bind:title="active ? 'Keluar fullscreen' : 'Aktifkan fullscreen'"
+            x-bind:title="!supported ? 'Browser ini tidak mendukung fullscreen' : (active ? 'Keluar fullscreen' : 'Aktifkan fullscreen')"
             x-bind:aria-label="!supported ? 'Browser ini tidak mendukung fullscreen' : (active ? 'Keluar Fullscreen' : 'Fullscreen')"
-            class="flex items-center justify-center gap-3 rounded-full px-4 py-2 text-left text-sm font-semibold text-gray-800 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50">
-            <iconify-icon x-bind:icon="active ? 'solar:quit-full-screen-linear' : 'solar:full-screen-linear'" width="24" height="24" aria-hidden="true"></iconify-icon>
-            <span x-text="!supported ? 'Fullscreen tidak tersedia' : (active ? 'Keluar Fullscreen' : 'Fullscreen Mode')"></span>
+            class="flex min-h-11 max-w-full items-center gap-2.5 rounded-full border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-medium text-gray-800 shadow-lg shadow-gray-900/10 backdrop-blur-xl transition duration-200 enabled:hover:bg-white/95 enabled:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none dark:border-white/10 dark:bg-gray-900/85 dark:text-gray-100 dark:enabled:hover:bg-gray-800/95 dark:focus-visible:ring-offset-gray-900">
+            <iconify-icon x-bind:icon="active ? 'solar:quit-full-screen-linear' : 'solar:full-screen-linear'" width="20" height="20" aria-hidden="true" class="shrink-0 text-blue-600 dark:text-blue-300"></iconify-icon>
+            <span x-text="active ? 'Keluar Fullscreen' : 'Fullscreen'"></span>
         </button>
+
         <a href="{{ route('pilih-absen') }}"
             aria-label="Kembali"
             title="Kembali"
-            class="flex items-center justify-center gap-3 rounded-full px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-blue-600">
-            <iconify-icon icon="solar:arrow-left-linear" width="24" height="24" aria-hidden="true"></iconify-icon>
+            class="flex min-h-11 max-w-full items-center gap-2.5 rounded-full border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-medium text-gray-800 shadow-lg shadow-gray-900/10 backdrop-blur-xl transition duration-200 hover:bg-white/95 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 motion-reduce:transition-none dark:border-white/10 dark:bg-gray-900/85 dark:text-gray-100 dark:hover:bg-gray-800/95 dark:focus-visible:ring-offset-gray-900">
+            <iconify-icon icon="solar:arrow-left-linear" width="20" height="20" aria-hidden="true" class="shrink-0 text-blue-600 dark:text-blue-300"></iconify-icon>
             <span>Kembali</span>
         </a>
     </div>
+
     <button
         x-ref="trigger"
         type="button"
@@ -72,7 +103,13 @@
         aria-controls="scan-floating-options"
         x-bind:aria-label="open ? 'Tutup opsi scan' : 'Buka opsi scan'"
         x-bind:title="open ? 'Tutup opsi scan' : 'Buka opsi scan'"
-        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-        <iconify-icon x-bind:icon="open ? 'solar:close-circle-linear' : 'solar:menu-dots-bold'" width="26" height="26" aria-hidden="true"></iconify-icon>
+        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/30 bg-blue-600/90 text-white shadow-lg shadow-blue-900/20 backdrop-blur-xl transition duration-200 hover:scale-105 hover:bg-blue-600 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 motion-reduce:transition-none dark:border-white/15 dark:focus-visible:ring-offset-gray-900">
+        <iconify-icon
+            x-bind:icon="open ? 'solar:close-circle-linear' : 'solar:menu-dots-bold'"
+            x-bind:class="open ? 'rotate-90' : 'rotate-0'"
+            width="24"
+            height="24"
+            aria-hidden="true"
+            class="transition-transform duration-200 motion-reduce:transition-none"></iconify-icon>
     </button>
 </section>
