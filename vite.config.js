@@ -19,7 +19,6 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/generateCard.js',
                 'resources/js/generateQR.js',
-                'resources/js/scanner.js',
                 ...moduleAssets,
             ],
             refresh: true,

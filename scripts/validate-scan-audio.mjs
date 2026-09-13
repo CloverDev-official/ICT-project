@@ -9,7 +9,10 @@ const files = [
 ];
 for (const name of files) {
     const bytes = readFileSync(
-        new URL(`../resources/audio/${name}.mp3`, import.meta.url),
+        new URL(
+            `../Modules/ScanQR/resources/assets/audio/${name}.mp3`,
+            import.meta.url,
+        ),
     );
     // This bundled asset is MP3 only. Reject oversized, empty or non-MPEG sources.
     if (!bytes.length || bytes.length > 5 * 1024 * 1024) {

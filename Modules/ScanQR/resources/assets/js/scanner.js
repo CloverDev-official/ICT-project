@@ -1,4 +1,4 @@
-// resources/js/scanner.js
+// Modules/ScanQR/resources/assets/js/scanner.js
 
 import { createScanAudio } from './scan-audio.js';
 import { createScanLock } from './scan-lock.js';

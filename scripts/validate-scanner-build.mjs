@@ -6,7 +6,7 @@ const buildRoot = new URL('../public/build/', import.meta.url);
 const manifest = JSON.parse(
     await readFile(new URL('manifest.json', buildRoot), 'utf8'),
 );
-const scanner = manifest['resources/js/scanner.js'];
+const scanner = manifest['Modules/ScanQR/resources/assets/js/scanner.js'];
 assert.ok(scanner?.isEntry, 'Scanner must be a production entry');
 const ast = parseAst(
     await readFile(new URL(scanner.file, buildRoot), 'utf8'),

@@ -133,11 +133,6 @@
         </div>
     </main>
 
-    {{-- @if ($tersimpan)
-        <p>murid: {{ $murid->nama }}</p>
-    <p>Kelas: {{ $murid->rombel->nama_lengkap }}</p>
-    @endif --}}
-
     @if($scanResult && $tersimpan)
     <div data-scan-result='@json($scanResult)' id="success-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
         <!-- overlay -->
@@ -476,7 +471,7 @@
         scheduleServerCheck(0);
 
 
-        import('{{ Vite::asset('resources/js/scanner.js') }}')
+        import('{{ Vite::asset('Modules/ScanQR/resources/assets/js/scanner.js') }}')
             .then(({
                 createScanAudio,
                 createScanResultController

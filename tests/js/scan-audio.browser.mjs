@@ -9,8 +9,8 @@ const server = createServer(async (req, res) => {
     const pathname = new URL(req.url, 'http://localhost').pathname;
     if (pathname === '/scanner-fixture.js') {
         res.setHeader('Content-Type', 'text/javascript');
-        res.end(`export {createScanAudio} from '/resources/js/scan-audio.js';
-        export {createScanResultController} from '/resources/js/scan-result.js';
+        res.end(`export {createScanAudio} from '/Modules/ScanQR/resources/assets/js/scan-audio.js';
+        export {createScanResultController} from '/Modules/ScanQR/resources/assets/js/scan-result.js';
         window.initScanner = () => {window.cameraStarts = (window.cameraStarts || 0) + 1};
         window.destroyScanner = () => {};
         window.resetScannerQrLock = () => {};`);
@@ -63,8 +63,8 @@ const server = createServer(async (req, res) => {
     if (pathname === '/') {
         res.setHeader('Content-Type', 'text/html');
         res.end(`<button id="start">Activate audio</button><main></main><script type="module">
-        import {createScanAudio} from '/resources/js/scan-audio.js';
-        import {createScanResultController} from '/resources/js/scan-result.js';
+        import {createScanAudio} from '/Modules/ScanQR/resources/assets/js/scan-audio.js';
+        import {createScanResultController} from '/Modules/ScanQR/resources/assets/js/scan-result.js';
         window.audio = createScanAudio();
         window.plays = 0; window.stops = 0; window.pauses = 0; window.resumes = 0;
         const start = AudioBufferSourceNode.prototype.start;
@@ -86,7 +86,7 @@ const server = createServer(async (req, res) => {
         return;
     }
     if (
-        !/^\/resources\/(js\/(scan-audio|scan-result)\.js|audio\/(scan-success|scan-late|scan-failed|already-recorded|attendance-not-open)\.mp3)$/.test(
+        !/^(\/Modules\/ScanQR\/resources\/assets\/js\/(scan-audio|scan-result)\.js|\/Modules\/ScanQR\/resources\/assets\/audio\/(scan-success|scan-late|scan-failed|already-recorded|attendance-not-open)\.mp3)$/.test(
             pathname,
         )
     ) {
@@ -172,10 +172,10 @@ try {
     await page.click('#start');
     await page.evaluate(() => ready);
     assert.equal(requests.length, 10);
-    await page.route('**/resources/js/scan-audio.js', async (route) => {
+    await page.route('**/Modules/ScanQR/resources/assets/js/scan-audio.js', async (route) => {
         const body = (
             await readFile(
-                new URL('../../resources/js/scan-audio.js', import.meta.url),
+                new URL('../../Modules/ScanQR/resources/assets/js/scan-audio.js', import.meta.url),
                 'utf8',
             )
         ).replace('attendance-scan-audio-v2', 'attendance-scan-audio-v3');
@@ -189,7 +189,7 @@ try {
         15,
         'New cache version fetches each file once',
     );
-    await page.unroute('**/resources/js/scan-audio.js');
+    await page.unroute('**/Modules/ScanQR/resources/assets/js/scan-audio.js');
 
     // Real browser rejects failed and oversized audio without caching them.
     await page.evaluate(() => caches.delete('attendance-scan-audio-v2'));

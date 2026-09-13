@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createScanResultController } from '../../resources/js/scan-result.js';
+import { createScanResultController } from '../../Modules/ScanQR/resources/assets/js/scan-result.js';
 function fixture(closeBackend) {
     const calls = [];
     let timer;

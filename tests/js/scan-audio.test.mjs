@@ -6,8 +6,8 @@ import {
     AUDIO_CACHE,
     scanAudioMap,
     MAX_AUDIO_BYTES,
-} from '../../resources/js/scan-audio.js';
-import { createScanLock } from '../../resources/js/scan-lock.js';
+} from '../../Modules/ScanQR/resources/assets/js/scan-audio.js';
+import { createScanLock } from '../../Modules/ScanQR/resources/assets/js/scan-lock.js';
 
 const originalFetch = globalThis.fetch;
 afterEach(() => {
