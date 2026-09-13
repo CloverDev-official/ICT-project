@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Modules\ScanQR\Services\AutoAlpaMuridService;
 use Modules\ScanQR\Services\JadwalAbsensiService;
@@ -22,23 +23,24 @@ class Scan extends Component
     #[Locked]
     public ?array $scanResult = null;
 
-    public ?Murid $murid = null;
+    protected ?Murid $murid = null;
 
     public bool $tersimpan = false;
 
-    public ?string $scanTitle = null;
+    protected ?string $scanTitle = null;
 
     public ?string $scanStatus = null;
 
-    public ?string $scanMessage = null;
+    protected ?string $scanMessage = null;
 
-    public ?string $izinUuid = null;
+    protected ?string $izinUuid = null;
 
-    public bool $isContainsIzin = false;
+    protected bool $isContainsIzin = false;
 
-    public array $jadwalHariIni = [];
+    protected array $jadwalHariIni = [];
 
     #[On('verifiedQRCode')]
+    #[Renderless]
     public function verifiedQRCode($muridUuid): void
     {
         $this->executeScan(fn () => $this->processQRCode($muridUuid));
@@ -78,6 +80,8 @@ class Scan extends Component
             return;
         }
 
+        $this->murid = $murid;
+
         // QR izin memiliki alur sendiri dan tidak boleh diteruskan ke absensi biasa.
         if ($this->processIzin($murid)) {
             return;
@@ -85,7 +89,6 @@ class Scan extends Component
 
         // Absensi membutuhkan rombel untuk menentukan jadwal yang berlaku.
         if (! $murid->rombel_id) {
-            $this->murid = $murid;
             $this->rejectScan('Murid belum memiliki kelas/rombel, absensi tidak dapat disimpan.');
 
             return;
@@ -97,7 +100,6 @@ class Scan extends Component
         $currentTime = $now->format('H:i:s');
         $jadwal = $jadwalService->forRombel($murid->rombel_id, $today);
 
-        $this->murid = $murid;
         $this->jadwalHariIni = $jadwal;
 
         // Hari libur dan PJJ tetap ditolak oleh aturan jadwal yang sama.
@@ -131,6 +133,7 @@ class Scan extends Component
         $this->acceptScan('Absensi masuk berhasil disimpan.', 'late');
     }
 
+    #[Renderless]
     public function closeModal(?string $resultId = null): void
     {
         if ($resultId !== null && $this->scanResult && $this->scanResult['id'] !== $resultId) {
@@ -138,8 +141,6 @@ class Scan extends Component
         }
 
         $this->resetScanState();
-        $this->murid = null;
-        $this->scanTitle = null;
 
         $this->dispatch('scanModalClosed');
     }
@@ -414,7 +415,60 @@ class Scan extends Component
             'id' => (string) Str::uuid(),
             'status' => $status,
             'autoClose' => $autoClose,
+            'modal' => $this->modalData(),
         ];
+    }
+
+    private function modalData(): array
+    {
+        $type = $this->tersimpan ? 'success' : $this->scanStatus;
+        $modal = [
+            'type' => $type,
+            'message' => $this->scanMessage,
+        ];
+
+        if ($type === 'message') {
+            $modal['title'] = $this->scanTitle;
+        }
+
+        if ($type === 'success' && $this->murid) {
+            $modal['murid'] = [
+                'uuid' => $this->murid->uuid,
+                'nama' => $this->murid->nama,
+                'rombel' => $this->murid->rombel?->nama_lengkap,
+                'nisn' => $this->murid->nisn,
+                'nipd' => $this->murid->nipd,
+                'tempatLahir' => $this->murid->tempat_lahir,
+                'tanggalLahir' => $this->murid->tanggal_lahir?->translatedFormat('d M Y'),
+                'jenisKelamin' => $this->murid->jk === 'L' ? 'Laki-laki' : 'Perempuan',
+                'agama' => $this->murid->agama,
+                'hp' => $this->murid->hp,
+                'alamat' => $this->murid->alamat,
+                'imagePath' => $this->murid->image_path,
+            ];
+            $modal['jadwal'] = array_filter([
+                'label' => $this->jadwalHariIni['label'] ?? null,
+                'jam_masuk' => $this->jadwalHariIni['jam_masuk'] ?? null,
+                'jam_pulang' => $this->jadwalHariIni['jam_pulang'] ?? null,
+            ]);
+        }
+
+        if ($type === 'error') {
+            if ($this->murid) {
+                $modal['murid'] = [
+                    'nama' => $this->murid->nama,
+                    'rombel' => $this->murid->rombel?->nama_lengkap,
+                ];
+            }
+
+            $modal['jadwal'] = array_filter([
+                'label' => $this->jadwalHariIni['label'] ?? null,
+                'nama_acara' => $this->jadwalHariIni['nama_acara'] ?? null,
+                'keterangan' => $this->jadwalHariIni['keterangan'] ?? null,
+            ]);
+        }
+
+        return $modal;
     }
 
     private function resetScanState(): void
@@ -423,6 +477,8 @@ class Scan extends Component
         $this->tersimpan = false;
         $this->scanStatus = null;
         $this->scanMessage = null;
+        $this->scanTitle = null;
+        $this->murid = null;
         $this->izinUuid = null;
         $this->isContainsIzin = false;
         $this->jadwalHariIni = [];

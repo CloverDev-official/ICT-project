@@ -133,187 +133,11 @@
         </div>
     </main>
 
-    @if($scanResult && $tersimpan)
-    <div data-scan-result='@json($scanResult)' id="success-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-        <!-- overlay -->
-        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-
-        <!-- container -->
-        <div wire:click.self="closeModal" class="relative flex items-center justify-center min-h-screen p-4">
-
-            <!-- CARD -->
-            <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
-
-                <!-- HEADER -->
-                <div class="bg-linear-to-r from-blue-deep to-blue-deep-solid text-white px-6 py-3 flex items-center justify-between">
-                    <div class="flex items-center justify-start gap-2">
-                        <img src="{{ asset('assets/img/logo_smkn_2.png') }}" class="w-10 h-10" alt="">
-                        <div>
-                            <h2 class="font-bold leading-tight">Absensi Murid</h2>
-                            <p class="text-xs opacity-80">SMKN 2 Banjarmasin</p>
-                        </div>
-                    </div>
-                    <div class="text-right text-xs opacity-80">
-                        <p>ID: {{ $murid->uuid }}</p>
-                    </div>
-                </div>
-
-                <!-- BODY -->
-                <div class="px-6 pt-5">
-                    <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-                        <p class="font-semibold">{{ $scanMessage ?? 'Absensi berhasil disimpan.' }}</p>
-                        @if(!empty($jadwalHariIni))
-                        <p class="mt-1 text-xs">
-                            Jadwal: {{ $jadwalHariIni['label'] ?? '-' }}
-                            @if(!empty($jadwalHariIni['jam_masuk']) || !empty($jadwalHariIni['jam_pulang']))
-                            · {{ $jadwalHariIni['jam_masuk'] ?? '-' }} - {{ $jadwalHariIni['jam_pulang'] ?? '-' }}
-                            @endif
-                        </p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="p-6 flex gap-6">
-
-                    <!-- FOTO -->
-                    <div class="flex-shrink-0">
-                        <x-murid-avatar :murid="$murid" class="h-40 w-32 rounded-xl border bg-blue-100 text-4xl font-bold text-blue-main shadow" />
-                    </div>
-
-                    <!-- DATA -->
-                    <div class="flex-1 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Nama</p>
-                            <p class="font-semibold text-gray-900">{{ $murid->nama }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Kelas</p>
-                            <p class="font-semibold text-gray-900">
-                                {{ $murid->rombel->nama_lengkap ?? '-' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">NISN</p>
-                            <p class="font-semibold">{{ $murid->nisn }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">NIPD</p>
-                            <p class="font-semibold">{{ $murid->nipd }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Tempat, Tanggal Lahir</p>
-                            <p class="font-semibold">
-                                {{ $murid->tempat_lahir }},
-                                {{ \Carbon\Carbon::parse($murid->tanggal_lahir)->format('d M Y') }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Jenis Kelamin</p>
-                            <p class="font-semibold">{{ $murid->jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Agama</p>
-                            <p class="font-semibold">{{ $murid->agama ?? '-' }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">No HP</p>
-                            <p class="font-semibold">{{ $murid->hp ?? '-' }}</p>
-                        </div>
-
-                        <!-- FULL WIDTH -->
-                        <div class="col-span-2">
-                            <p class="text-gray-500 text-xs">Alamat</p>
-                            <p class="font-semibold leading-snug">
-                                {{ $murid->alamat ?? '-' }}
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- FOOTER -->
-                <div class="bg-gray-100 px-6 py-2 flex justify-between text-xs text-gray-600">
-                    <p>Dicetak oleh sistem</p>
-                    <p>{{ now()->format('d M Y') }}</p>
-                </div>
-
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if($scanResult && $scanStatus === 'message' && $scanMessage && $scanTitle)
-    <div data-scan-result='@json($scanResult)' id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-        <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
-            <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                <div class="bg-yellow-600 px-6 py-4 text-white">
-                    <h2 class="text-lg font-bold">{{ $scanTitle }}</h2>
-                </div>
-                <div class="p-6 text-sm text-gray-700">
-                    <p class="font-semibold text-gray-900">{{ $scanMessage }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if($scanResult && $scanStatus === 'error' && $scanMessage)
-    <div data-scan-result='@json($scanResult)' id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-        <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
-            <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                <div class="bg-red-600 px-6 py-4 text-white">
-                    <h2 class="text-lg font-bold">Absensi Tidak Disimpan</h2>
-                    <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
-                </div>
-                <div class="p-6 text-sm text-gray-700">
-                    <p class="font-semibold text-gray-900">{{ $scanMessage }}</p>
-
-                    @if($murid)
-                    <div class="mt-4 rounded-2xl bg-gray-50 p-4">
-                        <p><span class="text-gray-500">Nama:</span> <span class="font-semibold">{{ $murid->nama }}</span></p>
-                        <p><span class="text-gray-500">Kelas:</span> <span class="font-semibold">{{ $murid->rombel->nama_lengkap ?? '-' }}</span></p>
-                    </div>
-                    @endif
-
-                    @if(!empty($jadwalHariIni))
-                    <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800">
-                        <p class="font-semibold">{{ $jadwalHariIni['label'] ?? '-' }}</p>
-                        @if(!empty($jadwalHariIni['nama_acara']))
-                        <p class="text-xs">{{ $jadwalHariIni['nama_acara'] }}</p>
-                        @endif
-                        @if(!empty($jadwalHariIni['keterangan']))
-                        <p class="text-xs">{{ $jadwalHariIni['keterangan'] }}</p>
-                        @endif
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
     <div wire:ignore data-scan-transport-host></div>
-    <template data-scan-transport-template>
-        <div class="fixed inset-0 z-50">
-            <div data-close-scan class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-            <div class="relative flex min-h-screen items-center justify-center p-4 pointer-events-none">
-                <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl pointer-events-auto">
-                    <div class="bg-red-600 px-6 py-4 text-white"><h2 class="text-lg font-bold">Absensi Tidak Disimpan</h2></div>
-                    <div class="p-6 text-sm text-gray-700">Server tidak dapat memproses hasil scan. Silakan coba kembali.</div>
-                </div>
-            </div>
-        </div>
-    </template>
+    @include('scanqr::components.modal.success')
+    @include('scanqr::components.modal.message')
+    @include('scanqr::components.modal.error')
+    @include('scanqr::components.modal.transport-error')
 
 </div>
 
@@ -336,7 +160,6 @@
         let disposed = false;
         let scanAudio;
         let scanResults;
-        let resultObserver;
         const listen = (target, event, handler) => target.addEventListener(event, handler, {
             signal: lifecycle.signal
         });
@@ -346,7 +169,6 @@
             clearInterval(clockTimer);
             clearTimeout(connectionCheckTimer);
             connectionRequestController?.abort();
-            resultObserver?.disconnect();
             scanResults?.dispose();
             window.destroyScanner?.();
             window.resetScannerQrLock?.();
@@ -495,7 +317,11 @@
                         if (result.transport) {
                             root.querySelector('[data-scan-transport-host]').replaceChildren();
                         } else {
-                            await $wire.closeModal(result.id);
+                            try {
+                                await $wire.closeModal(result.id);
+                            } finally {
+                                root.querySelector('[data-scan-transport-host]').replaceChildren();
+                            }
                         }
                     },
                 });
@@ -506,44 +332,81 @@
                 };
                 listen(document, 'pointerdown', preload);
                 listen(document, 'keydown', preload);
-                const syncResult = () => {
-                    if (disposed) return;
-                    const element = root.querySelector('[data-scan-result]:not([hidden])');
-                    if (!element) {
-                        scanResults.syncVisibility();
-                        return;
-                    }
-                    const result = JSON.parse(element.dataset.scanResult || 'null');
-                    if (result) scanResults.openScanResultModal(result, element);
+                const setField = (element, name, value) => {
+                    const field = element.querySelector(`[data-scan-field="${name}"]`);
+                    if (field) field.textContent = value || '-';
                 };
-                resultObserver = new MutationObserver(syncResult);
-                resultObserver.observe(root, {
-                    subtree: true,
-                    childList: true,
-                    attributes: true,
-                    attributeFilter: ['data-scan-result', 'hidden', 'style']
-                });
-                listen(root, 'scanResult', event => {
-                    // The result is a backend code, never inferred from modal text.
-                    const element = root.querySelector('[data-scan-result]:not([hidden])');
-                    if (element && JSON.parse(element.dataset.scanResult || 'null')?.id === event.detail.result
-                        ?.id) {
-                        scanResults.openScanResultModal(event.detail.result, element);
+                const renderScanModal = result => {
+                    const modal = result.modal || {};
+                    const template = root.querySelector(
+                        `[data-scan-modal-template="${modal.type || 'error'}"]`,
+                    );
+                    const element = template?.content.firstElementChild.cloneNode(true);
+
+                    if (!element) return null;
+
+                    const murid = modal.murid || {};
+                    const jadwal = modal.jadwal || {};
+                    element.dataset.scanResult = JSON.stringify(result);
+                    for (const [name, value] of Object.entries({
+                        message: modal.message,
+                        title: modal.title,
+                        ...murid,
+                        'jadwal-label': jadwal.label,
+                        'jadwal-nama-acara': jadwal.nama_acara,
+                        'jadwal-keterangan': jadwal.keterangan,
+                        lahir: [murid.tempatLahir, murid.tanggalLahir].filter(Boolean).join(', '),
+                    })) setField(element, name, value);
+
+                    const avatarInitial = element.querySelector('[data-scan-avatar-initial]');
+                    if (avatarInitial) avatarInitial.textContent = (murid.nama || '-').trim().charAt(0).toUpperCase();
+                    const avatarImage = element.querySelector('[data-scan-avatar-image]');
+                    if (avatarImage && murid.imagePath) {
+                        avatarImage.src = murid.imagePath;
+                        avatarImage.classList.remove('hidden');
                     }
+
+                    const schedule = element.querySelector('[data-scan-schedule]');
+                    if (schedule && Object.keys(jadwal).length) {
+                        schedule.classList.remove('hidden');
+                        const time = [jadwal.jam_masuk, jadwal.jam_pulang].filter(Boolean).join(' - ');
+                        if (time) element.querySelector('[data-scan-schedule-time]').textContent = ` · ${time}`;
+                    }
+                    const muridDetail = element.querySelector('[data-scan-murid]');
+                    if (muridDetail && modal.murid) muridDetail.classList.remove('hidden');
+                    const jadwalDetail = element.querySelector('[data-scan-jadwal]');
+                    if (jadwalDetail && Object.keys(jadwal).length) {
+                        jadwalDetail.classList.remove('hidden');
+                        for (const name of ['jadwal-nama-acara', 'jadwal-keterangan']) {
+                            if (jadwal[name.replace('jadwal-', '').replaceAll('-', '_')]) {
+                                element.querySelector(`[data-scan-field="${name}"]`).classList.remove('hidden');
+                            }
+                        }
+                    }
+                    const date = element.querySelector('[data-scan-date]');
+                    if (date) date.textContent = new Intl.DateTimeFormat('id-ID', {
+                        day: '2-digit', month: 'short', year: 'numeric',
+                    }).format(new Date());
+
+                    root.querySelector('[data-scan-transport-host]').replaceChildren(element);
+                    return element;
+                };
+                listen(root, 'scanResult', event => {
+                    const result = event.detail.result;
+                    const element = renderScanModal(result);
+                    if (element) scanResults.openScanResultModal(result, element);
                 });
                 const transportFailure = () => {
                     if (disposed || root.querySelector('[data-scan-transport-host]').firstElementChild) return;
-                    const element = root.querySelector('[data-scan-transport-template]').content.firstElementChild
-                        .cloneNode(true);
                     const result = {
                         id: crypto.randomUUID(),
                         status: 'failed',
                         autoClose: true,
-                        transport: true
+                        transport: true,
+                        modal: { type: 'transport' },
                     };
-                    element.dataset.scanResult = JSON.stringify(result);
-                    root.querySelector('[data-scan-transport-host]').replaceChildren(element);
-                    scanResults.openScanResultModal(result, element);
+                    const element = renderScanModal(result);
+                    if (element) scanResults.openScanResultModal(result, element);
                 };
                 for (const action of ['verifiedQRCode']) {
                     const removeInterceptor = $wire.$interceptRequest(action, ({
@@ -590,7 +453,6 @@
                     }
                 });
                 listen(document, 'livewire:navigating', () => scanResults.dispose());
-                syncResult();
                 if (!scanResults.isOpen()) window.initScanner();
             });
     </script>
