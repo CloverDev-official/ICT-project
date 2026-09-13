@@ -43,13 +43,14 @@ class AutoAlpaMuridService
     public function syncForRombel(int $rombelId, string $tanggal, array $jadwal, ?Carbon $now = null): int
     {
         $now ??= now();
-        $jamMasuk = $this->normalizeTime($jadwal['jam_masuk'] ?? null);
+        $scanMasukSampai = $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
 
-        if (! $jamMasuk) {
+        if (! $scanMasukSampai) {
             return 0;
         }
 
-        $autoAlpaStartsAt = Carbon::parse("{$tanggal} {$jamMasuk}")->addMinute();
+        // Murid baru ditandai alpa setelah jendela scan masuk berakhir.
+        $autoAlpaStartsAt = Carbon::parse("{$tanggal} {$scanMasukSampai}")->addMinute();
 
         if ($now->lt($autoAlpaStartsAt)) {
             return 0;
@@ -114,7 +115,7 @@ class AutoAlpaMuridService
     private function autoAlpaKeterangan(array $jadwal): string
     {
         $parts = array_filter([
-            'Otomatis alpa setelah melewati jam masuk',
+            'Otomatis alpa setelah batas scan masuk',
             $jadwal['label'] ?? null,
             $jadwal['nama_acara'] ?? null,
             $jadwal['keterangan'] ?? null,

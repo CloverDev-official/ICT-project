@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Murid\Rombel\Rombel;
-use App\Services\Absensi\AutoAlpaMuridService;
+use Modules\ScanQR\Services\AutoAlpaMuridService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -11,7 +11,7 @@ class AutoAlpaMurid extends Command
 {
     protected $signature = 'absensi:auto-alpa-murid {--date=} {--rombel_id=}';
 
-    protected $description = 'Tandai murid aktif yang belum scan masuk sebagai Alpa setelah jam masuk lewat.';
+    protected $description = 'Tandai murid aktif yang belum scan masuk sebagai Alpa setelah batas scan masuk lewat.';
 
     public function handle(
         AutoAlpaMuridService $autoAlpaService,
