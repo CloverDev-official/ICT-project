@@ -60,7 +60,10 @@ class DataMuridImport implements ShouldQueue, ToCollection, WithCalculatedFormul
 
     public function headingRow(): int
     {
-        return 5;
+        // Baris 4 berisi header utama. Kolom pertama dari setiap grup orang tua
+        // adalah "Data Ayah", "Data Ibu", dan "Data Wali"; sedangkan baris 5
+        // hanya mengulang sub-header "Nama" untuk ketiganya.
+        return 4;
     }
 
     public function chunkSize(): int
@@ -135,9 +138,9 @@ class DataMuridImport implements ShouldQueue, ToCollection, WithCalculatedFormul
                     $this->getValueExact($row, ['telepon', 'hp', 'no_hp', 'no_telp', 'no_telpon'])
                 ),
                 'email' => $this->getValueExact($row, ['e-mail', 'email', 'e_mail']),
-                'nama_ayah' => $this->getValueExact($row, ['nama ayah', 'ayah', 'nama_ayah_kandung']),
-                'nama_ibu' => $this->getValueExact($row, ['nama ibu', 'ibu', 'nama_ibu_kandung']),
-                'nama_wali' => $this->getValueExact($row, ['nama wali', 'wali']),
+                'nama_ayah' => $this->getValueExact($row, ['nama ayah', 'data ayah', 'ayah', 'nama_ayah_kandung']),
+                'nama_ibu' => $this->getValueExact($row, ['nama ibu', 'data ibu', 'ibu', 'nama_ibu_kandung']),
+                'nama_wali' => $this->getValueExact($row, ['nama wali', 'data wali', 'wali']),
                 'image_path' => null,
                 'rombel_id' => $rombelId,
                 'created_at' => $now,
