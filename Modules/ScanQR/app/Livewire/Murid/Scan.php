@@ -73,34 +73,20 @@ class Scan extends Component
         $muridUuid = $this->parseMuridUuid($muridUuid);
         $murid = $this->findMurid($muridUuid);
 
-        // QR hanya dapat diproses untuk murid aktif yang ditemukan di database.
-        if (! $murid) {
-            $this->rejectScan('QR Code tidak valid atau murid tidak ditemukan.');
-
-            return;
-        }
-
-        $this->murid = $murid;
-
-        // QR izin memiliki alur sendiri dan tidak boleh diteruskan ke absensi biasa.
-        if ($this->processIzin($murid)) {
-            return;
-        }
-
-        // Absensi membutuhkan rombel untuk menentukan jadwal yang berlaku.
-        if (! $murid->rombel_id) {
-            $this->rejectScan('Murid belum memiliki kelas/rombel, absensi tidak dapat disimpan.');
-
-            return;
-        }
-
+        if(!$this->checkMuridState($murid)) return;
+        
         $jadwalService = app(JadwalAbsensiService::class);
         $now = now();
         $today = $now->toDateString();
         $currentTime = $now->format('H:i:s');
         $jadwal = $jadwalService->forRombel($murid->rombel_id, $today);
-
+        
+        $this->murid = $murid;
         $this->jadwalHariIni = $jadwal;
+
+        if (!$this->processIzin($murid, $currentTime, $jadwal)) {
+            return;
+        }
 
         // Hari libur dan PJJ tetap ditolak oleh aturan jadwal yang sama.
         if (! $jadwalService->bolehScan($jadwal)) {
@@ -113,7 +99,29 @@ class Scan extends Component
 
         $this->processAbsensi($murid, $today, $currentTime, $jadwal);
     }
+    private function checkMuridState($murid): bool{
+        // QR hanya dapat diproses untuk murid aktif yang ditemukan di database.
+        if (!$murid) {
+            $this->rejectScan('QR Code tidak valid atau murid tidak ditemukan.');
+            return false;
+        }
 
+        // Murid yang tidak aktif tidak dapat melakukan absensi.
+        if($murid->status !== 'aktif') {
+            $this->rejectScan('Murid tidak aktif, absensi tidak dapat disimpan.');
+            return false;
+        }
+
+        // Absensi membutuhkan rombel untuk menentukan jadwal yang berlaku.
+        if (! $murid->rombel_id) {
+            $this->murid = $murid;
+            $this->rejectScan('Murid belum memiliki kelas/rombel, absensi tidak dapat disimpan.');
+
+            return false;
+        }
+
+        return true;
+    }
     private function saveLateAttendance(Murid $murid, string $today, string $currentTime): void
     {
         $saved = AbsenMurid::updateOrCreate(
@@ -174,45 +182,51 @@ class Scan extends Component
             ->first();
     }
 
-    private function processIzin(Murid $murid): bool
+    private function processIzin(Murid $murid, string $currentTime, array $jadwal): bool
     {
         $izin = IzinMurid::query()
             ->where('murid_id', $murid->id)
-            ->firstOr(function () {
-                return null;
-            });
+            ->latest('created_at')
+            ->first();
+
+        if ($izin && $izin?->status === AttendanceStatus::Izin->value && (!$this->isContainsIzin || $izin?->uuid !== $this->izinUuid)) {
+            // Murid yang masih izin harus menyelesaikan QR izin terlebih dahulu.
+            $this->rejectScan("Murid masih memiliki izin yang belum selesai. Silakan scan QR izin untuk menyelesaikan proses izin.");
+            return false;
+        }
 
         // Jika QR izin cocok dengan izin yang sedang berlangsung, maka izin akan diperbarui menjadi selesai.
         if ($izin && $this->isContainsIzin && $izin?->uuid === $this->izinUuid && $izin?->status === AttendanceStatus::Izin->value) {
-            // QR izin yang cocok menandai izin selesai tanpa membuat absensi baru.
-            if (! $izin->update([
+            // QR hanya menutup proses izin. Status absensi telah diubah saat
+            // pengawas membuat izin, bukan ketika QR dipindai.
+            if (!$izin->update([
                 'status' => AttendanceStatus::Selesai->value,
             ])) {
                 $this->rejectScan('Izin gagal disimpan.');
 
-                return true;
+                return false;
             }
 
-            $this->acceptMessage('Izin Berhasil Diperbarui', 'Izin berhasil diproses.', 'success');
+            $message = 'Izin telah diproses.';
+            if ($this->withinWindow(
+                $currentTime,
+                $jadwal['scan_masuk_mulai'] ?? null,
+                $jadwal['scan_masuk_sampai'] ?? null,
+            ) || $this->dalamJendelaPulang($currentTime, $jadwal)) {
+                $message .= ' Silakan gunakan QR code absensi untuk absensi.';
+            }
 
-            return true;
-        }
-
-        if ($izin && $izin?->status === AttendanceStatus::Izin->value) {
-            // Murid yang masih izin harus menyelesaikan QR izin terlebih dahulu.
-            $this->rejectScan('Murid sedang dalam izin, absensi tidak dapat disimpan. Silakan scan QR izin terlebih dahulu.');
-
-            return true;
+            $this->acceptMessage('Izin Berhasil Diperbarui', $message, 'success');
+            return false;
         }
 
         if ($izin && $this->isContainsIzin && $izin?->status === AttendanceStatus::Selesai->value) {
             // Izin selesai tidak dapat digunakan kembali untuk proses absensi.
-            $this->rejectScan('Murid sudah selesai izin, absensi tidak dapat disimpan. Silakan scan QR absensi.');
-
-            return true;
+            $this->rejectScan('Murid sudah selesai izin. Silakan scan QR absensi.');
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private function processAbsensi(Murid $murid, string $today, string $currentTime, array $jadwal): void
