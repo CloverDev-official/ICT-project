@@ -11,7 +11,7 @@
                     <div class="text-right text-xs opacity-80"><p>ID: <span data-scan-field="uuid">-</span></p></div>
                 </div>
                 <div class="px-6 pt-5">
-                    <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                    <div data-scan-success-notice class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
                         <p class="font-semibold" data-scan-field="message">Absensi berhasil disimpan.</p>
                         <p class="mt-1 hidden text-xs" data-scan-schedule>Jadwal: <span data-scan-field="jadwal-label">-</span><span data-scan-schedule-time></span></p>
                     </div>

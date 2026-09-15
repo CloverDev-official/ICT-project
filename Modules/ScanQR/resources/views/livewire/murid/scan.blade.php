@@ -345,6 +345,12 @@
 
                     if (!element) return null;
 
+                    const successNotice = element.querySelector('[data-scan-success-notice]');
+                    if (successNotice && result.status === 'late') {
+                        successNotice.classList.remove('border-green-200', 'bg-green-50', 'text-green-800');
+                        successNotice.classList.add('border-yellow-200', 'bg-yellow-50', 'text-yellow-800');
+                    }
+
                     const murid = modal.murid || {};
                     const jadwal = modal.jadwal || {};
                     element.dataset.scanResult = JSON.stringify(result);

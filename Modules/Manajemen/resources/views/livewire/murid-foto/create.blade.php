@@ -113,113 +113,132 @@
             wire:submit.prevent="store"
             class="space-y-8 p-6">
 
-            <!-- SELECT MURID -->
+            <!-- SEARCH MURID -->
+            @php
+                $muridSuggestions = collect($listMurid ?? [])->map(fn ($murid) => [
+                    'id' => (int) $murid->id,
+                    'nama' => $murid->nama,
+                    'nipd' => $murid->nipd,
+                    'label' => trim($murid->nama . ' - ' . $murid->nipd),
+                ])->values();
+            @endphp
+
             <div
                 x-data="{
                     open: false,
-                    selectedId: @entangle('murid_id'),
-                    selectedLabel: @entangle('selectedLabel'),
+                    query: @js($selectedLabel ?? ''),
+                    selectedId: @entangle('murid_id').live,
+                    students: @js($muridSuggestions),
+                    activeIndex: -1,
 
-                    toggle() {
-                        this.open = !this.open
+                    get suggestions() {
+                        const term = this.query.trim().toLocaleLowerCase()
+                        return this.students.filter(student =>
+                            student.label.toLocaleLowerCase().includes(term)
+                        ).slice(0, 20)
                     },
 
-                    select(id, label) {
-                        this.selectedId = id
-                        this.selectedLabel = label
+                    search() {
+                        this.selectedId = null
+                        this.open = true
+                        this.activeIndex = -1
+                    },
+
+                    select(student) {
+                        this.query = student.label
+                        this.selectedId = student.id
                         this.open = false
+                        this.activeIndex = -1
+                    },
+
+                    move(direction) {
+                        this.open = true
+                        const count = this.suggestions.length
+                        if (!count) return
+                        this.activeIndex = (this.activeIndex + direction + count) % count
+                        this.$nextTick(() => {
+                            document.getElementById('murid-option-' + this.activeIndex)?.scrollIntoView({ block: 'nearest' })
+                        })
+                    },
+
+                    chooseActive() {
+                        if (this.open && this.activeIndex >= 0) {
+                            this.select(this.suggestions[this.activeIndex])
+                        }
                     }
                 }"
+                @click.outside="open = false"
+                @focusout="if (!$el.contains($event.relatedTarget)) open = false"
                 class="relative">
 
-                <label class="{{ $labelClass }}">
+                <label for="murid-search" class="{{ $labelClass }}">
                     Nama Murid
                 </label>
 
-                <div
-                    @click="toggle()"
-                    class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition hover:border-blue-main hover:bg-white">
-
-                    <div class="flex items-center gap-3">
-
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
-
-                            <iconify-icon
-                                icon="solar:user-bold"
-                                width="22"
-                                height="22">
-                            </iconify-icon>
-
-                        </div>
-
-                        <span
-                            x-text="selectedLabel ?? 'Pilih nama murid'"
-                            class="line-clamp-1 text-gray-700">
-                        </span>
-
+                <div class="flex items-center gap-3 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 transition focus-within:border-blue-main focus-within:bg-white">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-main">
+                        <iconify-icon icon="solar:user-bold" width="22" height="22"></iconify-icon>
                     </div>
 
-                    <iconify-icon
-                        icon="lineicons:chevron-up"
-                        width="20"
-                        height="20"
-                        class="text-gray-400 transition-transform"
-                        :class="{ 'rotate-180': open }">
-                    </iconify-icon>
+                    <input
+                        id="murid-search"
+                        type="text"
+                        x-model="query"
+                        @input="search()"
+                        @focus="open = true"
+                        @keydown.arrow-down.prevent="move(1)"
+                        @keydown.arrow-up.prevent="move(-1)"
+                        @keydown.enter.prevent="chooseActive()"
+                        @keydown.escape.prevent.stop="open = false"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-controls="murid-suggestions"
+                        :aria-expanded="open"
+                        :aria-activedescendant="open && activeIndex >= 0 ? 'murid-option-' + activeIndex : null"
+                        aria-describedby="murid-search-help"
+                        autocomplete="off"
+                        placeholder="Cari nama atau NIPD murid..."
+                        class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-gray-700 outline-none focus:ring-0">
 
+                    <iconify-icon icon="solar:magnifer-linear" width="20" height="20" class="text-gray-400"></iconify-icon>
                 </div>
 
-                <!-- DROPDOWN -->
+                <p id="murid-search-help" class="mt-2 text-xs text-gray-500">
+                    Ketik nama atau NIPD, lalu pilih murid dari saran yang muncul. Maksimal 20 saran ditampilkan.
+                </p>
+
                 <div
                     x-show="open"
                     x-transition
-                    @click.outside="open = false"
                     style="display:none"
                     class="absolute z-50 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl scroll-thin">
-
-                    <div
-                        @click.prevent="select(null, 'Pilih nama murid')"
-                        class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
-
-                        <span>Pilih nama murid</span>
-
-                        <iconify-icon
-                            x-show="selectedId === null"
-                            icon="lineicons:check"
-                            width="18"
-                            height="18">
-                        </iconify-icon>
-
-                    </div>
-
-                    @foreach ($listMurid ?? [] as $murid)
-
-                        <div
-                            @click.prevent="select({{ (int) $murid->id }}, @js($murid->nama . ' - ' . $murid->nipd))"
-                            class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 transition hover:bg-blue-main hover:text-white">
-
-                            <div>
-                                <h4 class="font-semibold capitalize">
-                                    {{ $murid->nama }}
-                                </h4>
-
-                                <p class="text-xs opacity-70">
-                                    NIPD : {{ $murid->nipd }}
-                                </p>
-                            </div>
-
-                            <iconify-icon
-                                x-show="selectedId == {{ (int) $murid->id }}"
-                                icon="lineicons:check"
-                                width="18"
-                                height="18">
-                            </iconify-icon>
-
-                        </div>
-
-                    @endforeach
-
+                    <ul id="murid-suggestions" role="listbox" aria-label="Saran murid">
+                        <template x-for="(student, index) in suggestions" :key="student.id">
+                            <li
+                                :id="'murid-option-' + index"
+                                role="option"
+                                :aria-selected="selectedId === student.id"
+                                @mousedown.prevent
+                                @click="select(student)"
+                                @mouseenter="activeIndex = index"
+                                :class="activeIndex === index ? 'bg-blue-main text-white' : 'text-gray-700'"
+                                class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 transition">
+                                <div>
+                                    <h4 class="font-semibold capitalize" x-text="student.nama"></h4>
+                                    <p class="text-xs opacity-70" x-text="'NIPD : ' + (student.nipd ?? '-')"></p>
+                                </div>
+                                <iconify-icon
+                                    x-show="selectedId === student.id"
+                                    icon="lineicons:check"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
+                            </li>
+                        </template>
+                    </ul>
+                    <p x-show="suggestions.length === 0" role="status" class="px-4 py-4 text-sm text-gray-500">
+                        Murid tidak ditemukan.
+                    </p>
                 </div>
 
                 @error('murid_id')
