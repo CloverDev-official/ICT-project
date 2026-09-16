@@ -1,12 +1,21 @@
 <?php
 
 use App\Livewire\Auth\Login;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', Login::class)->name('login-page');
 });
+
+// Endpoint ini hanya tersedia untuk sesi login dan hanya mengirim UUID pada header.
+Route::match(['HEAD'], '/browser-refresh-version', function () {
+    return response()
+        ->noContent()
+        ->header('X-Browser-Refresh-Version', Setting::valueOf('system.browser_refresh_version', ''))
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+})->middleware(['auth', 'throttle:browser-refresh-version'])->name('browser-refresh-version');
 
 Route::get('/mpanel', function () {
     return to_route(request()->user()->defaultRouteName());

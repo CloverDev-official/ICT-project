@@ -1,4 +1,4 @@
-<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans">
+<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans" data-browser-refresh-via-ping>
     @php
         $serverPingUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
             'scan-qrcode.ping',
@@ -145,6 +145,7 @@
 @script
     <script>
         const serverPingUrl = @json($serverPingUrl);
+        let browserRefreshVersion = @json(($siteSettings['system.browser_refresh_version'] ?? ''));
         const connectionCheckInterval = 5000;
         const connectionTimeout = 4000;
         const serverTimeAtLoad = @json(now()->timestamp * 1000);
@@ -253,6 +254,13 @@
                 window.location.reload();
                 return;
             }
+
+            const refreshVersion = response.headers.get('X-Browser-Refresh-Version');
+            if (refreshVersion && refreshVersion !== browserRefreshVersion) {
+                window.location.reload();
+                return;
+            }
+            browserRefreshVersion = refreshVersion || browserRefreshVersion;
 
                 isServerConnected = response.ok;
             } catch {

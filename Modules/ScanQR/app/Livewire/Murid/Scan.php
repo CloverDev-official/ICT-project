@@ -91,11 +91,10 @@ class Scan extends Component
         // Hari libur dan PJJ tetap ditolak oleh aturan jadwal yang sama.
         if (! $jadwalService->bolehScan($jadwal)) {
             $this->rejectScan('Absensi Tidak Disimpan. Sistem mengecek jadwal kelas dari Manajemen Waktu.');
-
             return;
         }
 
-        // app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
+        //app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
 
         $this->processAbsensi($murid, $today, $currentTime, $jadwal);
     }

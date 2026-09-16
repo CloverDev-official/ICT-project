@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('browser-refresh-version', static function (Request $request) {
+            return Limit::perMinute(120)->by('browser-refresh:'.($request->user()?->id ?? 'guest').':'.$request->ip());
+        });
+
         if (\Schema::hasTable('setting')) {
             View::share('siteSettings', Setting::values());
         }

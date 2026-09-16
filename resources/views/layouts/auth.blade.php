@@ -3,6 +3,7 @@
     $siteSettings = $siteSettings ?? [];
     $siteLogo = \App\Models\Setting::resolveAssetUrl($siteSettings['logo'] ?? null, asset('assets/img/logo_smkn_2.png'));
     $siteName = $siteSettings['nama_website'] ?? config('app.name');
+    $browserRefreshVersion = $siteSettings['system.browser_refresh_version'] ?? '';
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -36,5 +37,9 @@
         @livewireScripts
 
         {!! ToastMagic::scripts() !!}
+
+        @auth
+            <x-browser-refresh-listener :version="$browserRefreshVersion" />
+        @endauth
     </body>
 </html>
