@@ -349,6 +349,7 @@
                     if (successNotice && result.status === 'late') {
                         successNotice.classList.remove('border-green-200', 'bg-green-50', 'text-green-800');
                         successNotice.classList.add('border-yellow-200', 'bg-yellow-50', 'text-yellow-800');
+                        element.querySelector('[data-scan-late-message]')?.classList.remove('hidden');
                     }
 
                     const murid = modal.murid || {};
