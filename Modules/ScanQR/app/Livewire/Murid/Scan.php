@@ -94,7 +94,7 @@ class Scan extends Component
             return;
         }
 
-        //app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
+        app(AutoAlpaMuridService::class)->syncForRombel($murid->rombel_id, $today, $jadwal, $now);
 
         $this->processAbsensi($murid, $today, $currentTime, $jadwal);
     }
