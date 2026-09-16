@@ -3,6 +3,10 @@ export const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
 export const scanAudioMap = {
     success: new URL('../audio/scan-success.mp3?no-inline', import.meta.url)
         .href,
+    permission_success: new URL(
+        '../audio/permission_success.mp3?no-inline',
+        import.meta.url,
+    ).href,
     late: new URL('../audio/scan-late.mp3?no-inline', import.meta.url).href,
     failed: new URL('../audio/scan-failed.mp3?no-inline', import.meta.url).href,
     already_recorded: new URL(

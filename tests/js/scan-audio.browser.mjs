@@ -86,7 +86,7 @@ const server = createServer(async (req, res) => {
         return;
     }
     if (
-        !/^(\/Modules\/ScanQR\/resources\/assets\/js\/(scan-audio|scan-result)\.js|\/Modules\/ScanQR\/resources\/assets\/audio\/(scan-success|scan-late|scan-failed|already-recorded|attendance-not-open)\.mp3)$/.test(
+        !/^(\/Modules\/ScanQR\/resources\/assets\/js\/(scan-audio|scan-result)\.js|\/Modules\/ScanQR\/resources\/assets\/audio\/(scan-success|permission_success|scan-late|scan-failed|already-recorded|attendance-not-open)\.mp3)$/.test(
             pathname,
         )
     ) {
@@ -115,17 +115,18 @@ try {
     assert.equal(requests.length, 0);
     await page.click('#start');
     await page.evaluate(() => ready);
-    assert.equal(requests.length, 5);
+    assert.equal(requests.length, 6);
     assert.equal(
         await page.evaluate(
             async () =>
                 (await (await caches.open('attendance-scan-audio-v2')).keys())
                     .length,
         ),
-        5,
+        6,
     );
     for (const [status, close] of [
         ['success', '#close'],
+        ['permission_success', '#close'],
         ['late', '#ok'],
         ['failed', '#backdrop'],
         ['already_recorded', 'Escape'],
@@ -147,31 +148,31 @@ try {
         assert.equal(await page.evaluate(() => stops), before.stops + 1);
     }
     await page.evaluate(() => openResult('success', 'same'));
-    await page.waitForFunction(() => plays === 6);
+    await page.waitForFunction(() => plays === 7);
     await page.evaluate(() =>
         modal.openScanResultModal(
             { id: 'same', status: 'success' },
             document.querySelector('#modal'),
         ),
     );
-    assert.equal(await page.evaluate(() => plays), 6);
+    assert.equal(await page.evaluate(() => plays), 7);
     await page.evaluate(() => openResult('late', 'next'));
-    await page.waitForFunction(() => plays === 7);
+    await page.waitForFunction(() => plays === 8);
     await page.evaluate(() => modal.dispose());
-    assert.equal(await page.evaluate(() => stops), 7);
+    assert.equal(await page.evaluate(() => stops), 8);
     await page.reload();
     await page.click('#start');
     await page.evaluate(() => ready);
     assert.equal(
         requests.length,
-        5,
+        6,
         'Warm cache produces zero Network requests',
     );
     await page.evaluate(() => caches.delete('attendance-scan-audio-v2'));
     await page.reload();
     await page.click('#start');
     await page.evaluate(() => ready);
-    assert.equal(requests.length, 10);
+    assert.equal(requests.length, 12);
     await page.route('**/Modules/ScanQR/resources/assets/js/scan-audio.js', async (route) => {
         const body = (
             await readFile(
@@ -186,7 +187,7 @@ try {
     await page.evaluate(() => ready);
     assert.equal(
         requests.length,
-        15,
+        18,
         'New cache version fetches each file once',
     );
     await page.unroute('**/Modules/ScanQR/resources/assets/js/scan-audio.js');
@@ -211,7 +212,7 @@ try {
                 (await (await caches.open('attendance-scan-audio-v2')).keys())
                     .length,
         ),
-        3,
+        4,
     );
     await page.evaluate(async () => {
         await audio.playScanAudio('failed');
@@ -226,7 +227,7 @@ try {
     await page.waitForFunction(
         async () =>
             (await (await caches.open('attendance-scan-audio-v2')).keys())
-                .length === 5,
+                .length === 6,
     );
     // Wait until all cached bytes have decoded in the actual Blade integration.
     await page.waitForTimeout(150);
@@ -273,18 +274,24 @@ try {
     await page.waitForFunction(
         () => !document.querySelector('[data-scan-result]'),
     );
-    await scan('success');
+    await scan('permission_success');
     await page.waitForFunction(() => plays === 6);
+    await page.click('#close');
+    await page.waitForFunction(
+        () => !document.querySelector('[data-scan-result]'),
+    );
+    await scan('success');
+    await page.waitForFunction(() => plays === 7);
     await page.evaluate(() =>
         document.dispatchEvent(new Event('livewire:navigating')),
     );
-    assert.equal(await page.evaluate(() => stops), 6);
+    assert.equal(await page.evaluate(() => stops), 7);
     await page.evaluate(() => cleanups.forEach((fn) => fn()));
     console.log(
         'Actual Blade script integration: close button, backdrop, Escape, auto-close, transport failure and SPA cleanup passed.',
     );
     console.log(
-        'Chromium DevTools Network: cold=5, warm reload=0 additional, deleted cache=5 additional. All MP3s decoded. Five statuses, button/OK/backdrop/Escape/automatic close, duplicate result, replacement, disposal passed.',
+        'Chromium DevTools Network: cold=6, warm reload=0 additional, deleted cache=6 additional. All MP3s decoded. Six statuses, button/OK/backdrop/Escape/automatic close, duplicate result, replacement, disposal passed.',
     );
 } finally {
     await browser?.close();

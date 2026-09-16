@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\AttendanceStatus;
 use App\Models\Murid\AbsenMurid;
+use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
@@ -39,6 +40,38 @@ class ScanAudioTest extends TestCase
         $last = end($events)->serialize();
         $this->assertSame('scanResult', $last['name']);
         $this->assertSame($scan->scanResult, $last['params']['result']);
+    }
+
+    public function test_completed_permission_uses_its_own_audio_without_recording_attendance(): void
+    {
+        $this->travelTo(now()->setDate(2026, 9, 8)->setTime(7, 0));
+        $student = $this->student();
+        $izin = IzinMurid::create([
+            'murid_id' => $student->id, 'tanggal' => '2026-09-08',
+            'alasan' => 'Keperluan keluarga', 'dari_jam' => '06:30:00',
+            'status' => AttendanceStatus::Izin->value,
+        ]);
+        $scan = new Scan;
+        $scan->verifiedQRCode($student->uuid.'>'.$izin->uuid);
+
+        $this->assertResult($scan, 'permission_success');
+        $this->assertSame(AttendanceStatus::Selesai->value, $izin->fresh()->status);
+        $this->assertSame([
+            'type' => 'message',
+            'message' => 'Izin telah diproses. Silakan gunakan QR code absensi untuk absensi.',
+            'title' => 'Izin Berhasil Diperbarui',
+        ], $scan->scanResult['modal']);
+        $this->assertTrue($scan->scanResult['autoClose']);
+        $this->assertFalse($scan->tersimpan);
+        $this->assertCount(1, \Livewire\store($scan)->get('dispatched'));
+        $this->assertDatabaseCount('absen_murid', 0);
+
+        $scan->verifiedQRCode($student->uuid.'>'.$izin->uuid);
+        $this->assertResult($scan, 'failed');
+        $this->assertDatabaseCount('absen_murid', 0);
+        $scan->verifiedQRCode($student->uuid);
+        $this->assertResult($scan, 'success');
+        $this->assertDatabaseCount('absen_murid', 1);
     }
 
     public function test_success_duplicate_and_close(): void

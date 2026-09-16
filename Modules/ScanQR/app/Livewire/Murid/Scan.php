@@ -216,7 +216,7 @@ class Scan extends Component
                 $message .= ' Silakan gunakan QR code absensi untuk absensi.';
             }
 
-            $this->acceptMessage('Izin Berhasil Diperbarui', $message, 'success');
+            $this->acceptMessage('Izin Berhasil Diperbarui', $message, 'permission_success');
             return false;
         }
 

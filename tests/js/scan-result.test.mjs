@@ -111,7 +111,7 @@ test('removed/hidden modal and SPA disposal stop sound', () => {
     }
 });
 
-for (const status of ['success', 'late']) {
+for (const status of ['success', 'permission_success', 'late']) {
     test(`${status} audio plays once per result and stops on manual close`, async () => {
         const f = fixture();
         const element = f.element();

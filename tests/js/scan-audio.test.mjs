@@ -10,6 +10,7 @@ import {
 import { createScanLock } from '../../Modules/ScanQR/resources/assets/js/scan-lock.js';
 
 const originalFetch = globalThis.fetch;
+const audioCount = Object.keys(scanAudioMap).length;
 afterEach(() => {
     globalThis.fetch = originalFetch;
     delete globalThis.caches;
@@ -51,12 +52,22 @@ function fixture(
     };
     return { entries, requests: () => requests, writes: () => writes };
 }
-test('empty cache downloads once; warm cache makes zero further requests', async () => {
-    const f = fixture();
-    await getCachedAudio('success');
-    await getCachedAudio('success');
-    assert.equal(f.requests(), 1);
-    assert.equal(f.writes(), 1);
+for (const status of ['success', 'permission_success']) {
+    test(`${status}: empty cache downloads once; warm cache makes zero further requests`, async () => {
+        const f = fixture();
+        await getCachedAudio(status);
+        await getCachedAudio(status);
+        assert.equal(f.requests(), 1);
+        assert.equal(f.writes(), 1);
+        assert.ok(f.entries.has(scanAudioMap[status]));
+    });
+}
+test('permission success uses its dedicated bundled MP3', () => {
+    assert.match(
+        scanAudioMap.permission_success,
+        /\/permission_success\.mp3\?no-inline$/,
+    );
+    assert.notEqual(scanAudioMap.permission_success, scanAudioMap.success);
 });
 test('invalid status, MIME, size and undecodable audio never enter cache', async () => {
     for (const response of [
@@ -170,21 +181,21 @@ for (const persistentCache of [true, false]) {
             audio.preloadScanAudios(),
             audio.preloadScanAudios(),
         ]);
-        assert.equal(f.requests(), 5);
+        assert.equal(f.requests(), audioCount);
         assert.equal(plays, 0);
         for (const status of Object.keys(scanAudioMap))
             await audio.playScanAudio(status);
-        assert.equal(plays, 5);
-        assert.equal(stops, 4);
-        assert.equal(f.requests(), 5);
+        assert.equal(plays, audioCount);
+        assert.equal(stops, audioCount - 1);
+        assert.equal(f.requests(), audioCount);
         audio.stopCurrentScanAudio();
-        assert.equal(stops, 5);
+        assert.equal(stops, audioCount);
         await audio.playScanAudio('late_pending');
-        assert.equal(plays, 5);
+        assert.equal(plays, audioCount);
         assert.equal(contexts, 1);
         audio.dispose();
         await audio.playScanAudio('success');
-        assert.equal(plays, 5);
+        assert.equal(plays, audioCount);
         assert.equal(closes, 1);
     });
 }
@@ -231,7 +242,7 @@ test('closing during preload cancels deferred playback', async () => {
     const preload = audio.preloadScanAudios();
     const play = audio.playScanAudio('success');
     audio.stopCurrentScanAudio();
-    while (decodes.length < 5)
+    while (decodes.length < audioCount)
         await new Promise((resolve) => setImmediate(resolve));
     decodes.forEach((resolve) => resolve({}));
     await preload;
