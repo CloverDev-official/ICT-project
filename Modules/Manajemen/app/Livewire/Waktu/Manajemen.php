@@ -85,6 +85,7 @@ class Manajemen extends Component
         $validated = validator($payload, [
             'scan_masuk_mulai' => ['required', 'date_format:H:i'],
             'scan_masuk_sampai' => ['required', 'date_format:H:i'],
+            'toleransi_masuk' => ['required', 'integer', 'min:0', 'max:720'],
             'scan_keluar_mulai' => ['required', 'date_format:H:i'],
             'scan_keluar_sampai' => ['required', 'date_format:H:i'],
             'scan_keluar_jumat_mulai' => ['required', 'date_format:H:i'],
@@ -92,6 +93,10 @@ class Manajemen extends Component
         ], [
             'scan_masuk_mulai.required' => 'Jam mulai scan masuk wajib diisi.',
             'scan_masuk_sampai.required' => 'Jam akhir scan masuk wajib diisi.',
+            'toleransi_masuk.required' => 'Toleransi masuk wajib diisi.',
+            'toleransi_masuk.integer' => 'Toleransi masuk harus berupa jumlah menit.',
+            'toleransi_masuk.min' => 'Toleransi masuk tidak boleh kurang dari 0 menit.',
+            'toleransi_masuk.max' => 'Toleransi masuk maksimal 720 menit.',
             'scan_keluar_mulai.required' => 'Jam mulai scan pulang wajib diisi.',
             'scan_keluar_sampai.required' => 'Jam akhir scan pulang wajib diisi.',
             'scan_keluar_jumat_mulai.required' => 'Jam mulai scan pulang Jumat wajib diisi.',
@@ -99,9 +104,14 @@ class Manajemen extends Component
         ])->validate();
 
         $now = now();
+        $toleransiMasuk = (int) $validated['toleransi_masuk'];
+        $scanMasukSampai = $this->addMinutes($validated['scan_masuk_sampai'], $toleransiMasuk);
+
         Setting::upsert([
             ['key' => 'jadwal.scan_masuk_mulai', 'value' => $validated['scan_masuk_mulai'], 'created_at' => $now, 'updated_at' => $now],
-            ['key' => 'jadwal.scan_masuk_sampai', 'value' => $validated['scan_masuk_sampai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_masuk_sampai', 'value' => $scanMasukSampai, 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.scan_masuk_sampai_dasar', 'value' => $validated['scan_masuk_sampai'], 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'jadwal.toleransi_masuk', 'value' => (string) $toleransiMasuk, 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_keluar_mulai', 'value' => $validated['scan_keluar_mulai'], 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_keluar_sampai', 'value' => $validated['scan_keluar_sampai'], 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'jadwal.scan_keluar_jumat_mulai', 'value' => $validated['scan_keluar_jumat_mulai'], 'created_at' => $now, 'updated_at' => $now],
@@ -111,7 +121,7 @@ class Manajemen extends Component
         $this->refreshState($this->state['selectedDate'] ?? now()->format('Y-m-d'));
         $this->dispatch('waktu-state-updated', state: $this->state);
 
-        ToastMagic::success('Jendela Scan Disimpan', 'Jendela scan masuk dan pulang berhasil diperbarui.');
+        ToastMagic::success('Jendela Scan Disimpan', "Batas scan masuk disimpan sampai {$scanMasukSampai} ({$toleransiMasuk} menit toleransi).");
 
         return $this->state;
     }
@@ -139,6 +149,7 @@ class Manajemen extends Component
             'detail_kelas.*.gunakan_window_scan' => ['nullable', 'boolean'],
             'detail_kelas.*.scan_masuk_mulai' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.scan_masuk_sampai' => ['nullable', 'date_format:H:i'],
+            'detail_kelas.*.toleransi_masuk' => ['nullable', 'integer', 'min:0', 'max:720'],
             'detail_kelas.*.scan_keluar_mulai' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.scan_keluar_sampai' => ['nullable', 'date_format:H:i'],
             'detail_kelas.*.keterangan' => ['nullable', 'string'],
@@ -215,6 +226,7 @@ class Manajemen extends Component
                 ->all();
 
             $supportsScanWindow = $this->supportsRombelScanWindow();
+            $supportsScanTolerance = $this->supportsRombelScanTolerance();
             $detailRows = [];
 
             foreach ($dates as $tanggal) {
@@ -243,14 +255,23 @@ class Manajemen extends Component
                     if ($supportsScanWindow) {
                         $gunakanWindowScan = $tipe !== 'libur'
                             && filter_var($row['gunakan_window_scan'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                        $toleransiMasuk = $this->normalizeTolerance($row['toleransi_masuk'] ?? null);
+                        $scanMasukSampaiDasar = $row['scan_masuk_sampai'] ?? null;
 
                         $detail = array_merge($detail, [
                             'gunakan_window_scan' => $gunakanWindowScan,
                             'scan_masuk_mulai' => $gunakanWindowScan ? ($row['scan_masuk_mulai'] ?? null) : null,
-                            'scan_masuk_sampai' => $gunakanWindowScan ? ($row['scan_masuk_sampai'] ?? null) : null,
+                            'scan_masuk_sampai' => $gunakanWindowScan && $scanMasukSampaiDasar
+                                ? $this->addMinutes($scanMasukSampaiDasar, $toleransiMasuk)
+                                : null,
                             'scan_keluar_mulai' => $gunakanWindowScan ? ($row['scan_keluar_mulai'] ?? null) : null,
                             'scan_keluar_sampai' => $gunakanWindowScan ? ($row['scan_keluar_sampai'] ?? null) : null,
                         ]);
+
+                        if ($supportsScanTolerance) {
+                            $detail['scan_masuk_sampai_dasar'] = $gunakanWindowScan ? $scanMasukSampaiDasar : null;
+                            $detail['toleransi_masuk'] = $gunakanWindowScan ? $toleransiMasuk : null;
+                        }
                     }
 
                     $detailRows[] = $detail;
@@ -268,6 +289,13 @@ class Manajemen extends Component
                         'scan_keluar_mulai',
                         'scan_keluar_sampai',
                     ]);
+
+                    if ($supportsScanTolerance) {
+                        $updateColumns = array_merge($updateColumns, [
+                            'scan_masuk_sampai_dasar',
+                            'toleransi_masuk',
+                        ]);
+                    }
                 }
 
                 DB::table('jadwal_absen_rombel')->upsert(
@@ -371,9 +399,14 @@ class Manajemen extends Component
 
     private function fallbackSettings(): array
     {
+        $toleransiMasuk = (int) config('waktu-absensi.scan.masuk.toleransi', 5);
+        $scanMasukSampaiDasar = config('waktu-absensi.scan.masuk.sampai');
+
         return [
             'scan_masuk_mulai' => config('waktu-absensi.scan.masuk.mulai'),
-            'scan_masuk_sampai' => config('waktu-absensi.scan.masuk.sampai'),
+            'scan_masuk_sampai' => $this->addMinutes($scanMasukSampaiDasar, $toleransiMasuk),
+            'scan_masuk_sampai_dasar' => $scanMasukSampaiDasar,
+            'toleransi_masuk' => $toleransiMasuk,
             'scan_keluar_mulai' => config('waktu-absensi.scan.pulang.mulai'),
             'scan_keluar_sampai' => config('waktu-absensi.scan.pulang.sampai'),
             'scan_keluar_jumat_mulai' => config('waktu-absensi.scan.jumat.pulang.mulai'),
@@ -386,15 +419,34 @@ class Manajemen extends Component
         $settings = Setting::whereIn('key', [
             'jadwal.scan_masuk_mulai',
             'jadwal.scan_masuk_sampai',
+            'jadwal.scan_masuk_sampai_dasar',
+            'jadwal.toleransi_masuk',
             'jadwal.scan_keluar_mulai',
             'jadwal.scan_keluar_sampai',
             'jadwal.scan_keluar_jumat_mulai',
             'jadwal.scan_keluar_jumat_sampai',
-        ])->pluck('value', 'key');
+        ])->pluck('value', 'key')->all();
+
+        $toleransiMasuk = $this->normalizeTolerance($settings['jadwal.toleransi_masuk'] ?? null);
+        $hasStoredScanMasukSampai = array_key_exists('jadwal.scan_masuk_sampai', $settings);
+        $scanMasukSampai = $this->formatTime(
+            $settings['jadwal.scan_masuk_sampai'] ?? $this->addMinutes(
+                config('waktu-absensi.scan.masuk.sampai'),
+                $toleransiMasuk,
+            ),
+        );
+        $scanMasukSampaiDasar = $this->formatTime(
+            $settings['jadwal.scan_masuk_sampai_dasar']
+                ?? ($hasStoredScanMasukSampai
+                    ? $this->addMinutes($scanMasukSampai, -$toleransiMasuk)
+                    : config('waktu-absensi.scan.masuk.sampai')),
+        );
 
         return [
             'scan_masuk_mulai' => $this->formatTime($settings['jadwal.scan_masuk_mulai'] ?? config('waktu-absensi.scan.masuk.mulai')),
-            'scan_masuk_sampai' => $this->formatTime($settings['jadwal.scan_masuk_sampai'] ?? config('waktu-absensi.scan.masuk.sampai')),
+            'scan_masuk_sampai' => $scanMasukSampai,
+            'scan_masuk_sampai_dasar' => $scanMasukSampaiDasar,
+            'toleransi_masuk' => $toleransiMasuk,
             'scan_keluar_mulai' => $this->formatTime($settings['jadwal.scan_keluar_mulai'] ?? config('waktu-absensi.scan.pulang.mulai')),
             'scan_keluar_sampai' => $this->formatTime($settings['jadwal.scan_keluar_sampai'] ?? config('waktu-absensi.scan.pulang.sampai')),
             'scan_keluar_jumat_mulai' => $this->formatTime($settings['jadwal.scan_keluar_jumat_mulai'] ?? config('waktu-absensi.scan.jumat.pulang.mulai')),
@@ -452,6 +504,11 @@ class Manajemen extends Component
                 'gunakan_window_scan' => (bool) ($detail->gunakan_window_scan ?? false),
                 'scan_masuk_mulai' => $this->formatTime($detail->scan_masuk_mulai ?? null),
                 'scan_masuk_sampai' => $this->formatTime($detail->scan_masuk_sampai ?? null),
+                'scan_masuk_sampai_dasar' => $this->formatTime($detail->scan_masuk_sampai_dasar ?? null)
+                    ?? ($detail->scan_masuk_sampai ?? null
+                        ? $this->addMinutes($this->formatTime($detail->scan_masuk_sampai), -$this->normalizeTolerance($detail->toleransi_masuk ?? null))
+                        : null),
+                'toleransi_masuk' => $this->normalizeTolerance($detail->toleransi_masuk ?? null),
                 'scan_keluar_mulai' => $this->formatTime($detail->scan_keluar_mulai ?? null),
                 'scan_keluar_sampai' => $this->formatTime($detail->scan_keluar_sampai ?? null),
                 'keterangan' => $detail->keterangan,
@@ -587,6 +644,15 @@ class Manajemen extends Component
         return $supported = true;
     }
 
+    private function supportsRombelScanTolerance(): bool
+    {
+        return Schema::hasTable('jadwal_absen_rombel')
+            && Schema::hasColumns('jadwal_absen_rombel', [
+                'scan_masuk_sampai_dasar',
+                'toleransi_masuk',
+            ]);
+    }
+
     private function dateRange(string $start, string $end): array
     {
         $dates = [];
@@ -640,6 +706,22 @@ class Manajemen extends Component
         }
 
         return substr((string) $time, 0, 5);
+    }
+
+    private function normalizeTolerance(mixed $value): int
+    {
+        if (! is_numeric($value)) {
+            return (int) config('waktu-absensi.scan.masuk.toleransi', 5);
+        }
+
+        return min(720, max(0, (int) $value));
+    }
+
+    private function addMinutes(string $time, int $minutes): string
+    {
+        return Carbon::createFromFormat('H:i', $this->formatTime($time))
+            ->addMinutes($minutes)
+            ->format('H:i');
     }
 
     private function normalizeTimeFields(array $payload, array $fields, bool $emptyAsNull = false): array

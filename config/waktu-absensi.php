@@ -16,6 +16,7 @@ return [
         'masuk' => [
             'mulai' => '06:00',
             'sampai' => '07:30',
+            'toleransi' => 5,
         ],
         'pulang' => [
             'mulai' => '16:30',

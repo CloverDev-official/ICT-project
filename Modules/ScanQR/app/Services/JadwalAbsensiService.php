@@ -222,9 +222,15 @@ class JadwalAbsensiService
 
     private function scanWindow(array $settings, bool $isFriday): array
     {
+        $scanMasukSampai = $settings['jadwal.scan_masuk_sampai']
+            ?? $this->addMinutes(
+                config('waktu-absensi.scan.masuk.sampai'),
+                (int) config('waktu-absensi.scan.masuk.toleransi', 5),
+            );
+
         return [
             'scan_masuk_mulai' => $settings['jadwal.scan_masuk_mulai'] ?? config('waktu-absensi.scan.masuk.mulai'),
-            'scan_masuk_sampai' => $settings['jadwal.scan_masuk_sampai'] ?? config('waktu-absensi.scan.masuk.sampai'),
+            'scan_masuk_sampai' => $scanMasukSampai,
             'scan_keluar_mulai' => $isFriday
                 ? ($settings['jadwal.scan_keluar_jumat_mulai'] ?? config('waktu-absensi.scan.jumat.pulang.mulai'))
                 : ($settings['jadwal.scan_keluar_mulai'] ?? config('waktu-absensi.scan.pulang.mulai')),
@@ -284,6 +290,13 @@ class JadwalAbsensiService
         }
 
         return substr((string) $time, 0, 5);
+    }
+
+    private function addMinutes(string $time, int $minutes): string
+    {
+        return Carbon::createFromFormat('H:i', $this->formatTime($time))
+            ->addMinutes($minutes)
+            ->format('H:i');
     }
 
     private function normalize(array $jadwal): array
