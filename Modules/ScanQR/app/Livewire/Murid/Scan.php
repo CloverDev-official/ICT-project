@@ -128,6 +128,9 @@ class Scan extends Component
             [
                 'waktu_masuk' => $currentTime,
                 'status' => AttendanceStatus::Terlambat->value,
+                // Keterangan Alpa otomatis tidak lagi relevan setelah murid
+                // berhasil scan dan statusnya berubah menjadi terlambat.
+                'keterangan' => null,
             ],
         );
 
@@ -257,8 +260,19 @@ class Scan extends Component
             ->where('tanggal', $today)
             ->first();
 
+        // Alpa dibuat otomatis setelah batas masuk. Apabila murid kemudian
+        // scan sebelum jendela pulang dimulai, catat sebagai terlambat.
+        if ($this->canReplaceAlpaWithLate($absen, $currentTime, $jadwal)) {
+            $this->saveLateAttendance($murid, $today, $currentTime);
+
+            return;
+        }
+
         // Cek apakah murid tidak absen masuk dan sudah melewati jendela scan masuk, tetapi belum waktunya pulang.
-        if (! $absen?->waktu_masuk && $absen?->status != AttendanceStatus::Terlambat->value && ! $this->dalamJendelaPulang($currentTime, $jadwal)) {
+        if (! $absen?->waktu_masuk
+            && $absen?->status !== AttendanceStatus::Alpa->value
+            && $absen?->status !== AttendanceStatus::Terlambat->value
+            && ! $this->dalamJendelaPulang($currentTime, $jadwal)) {
             $beradaSetelahScanMasuk = $currentTime > $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
             $belumScanKeluar = ! $this->isWindowStarted($currentTime, $jadwal['scan_keluar_mulai'] ?? null);
             if ($beradaSetelahScanMasuk && $belumScanKeluar) {
@@ -276,6 +290,19 @@ class Scan extends Component
         }
 
         $this->processAbsensiLanjutan($absen, $currentTime, $jadwal);
+    }
+
+    private function canReplaceAlpaWithLate(?AbsenMurid $absen, string $currentTime, array $jadwal): bool
+    {
+        $batasMasuk = $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
+        $mulaiPulang = $this->normalizeTime($jadwal['scan_keluar_mulai'] ?? null);
+
+        return $absen?->status === AttendanceStatus::Alpa->value
+            && ! $absen->waktu_masuk
+            && $batasMasuk !== null
+            && $mulaiPulang !== null
+            && $this->normalizeTime($currentTime) > $batasMasuk
+            && $this->normalizeTime($currentTime) < $mulaiPulang;
     }
 
     private function processAbsensiPertama(Murid $murid, string $today, string $currentTime, array $jadwal): void

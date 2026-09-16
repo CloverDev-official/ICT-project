@@ -146,6 +146,45 @@ class ScanAudioTest extends TestCase
         $this->assertDatabaseCount('absen_murid', 1);
     }
 
+    public function test_alpa_attendance_becomes_late_between_entry_and_exit_windows(): void
+    {
+        $this->travelTo(now()->setDate(2026, 9, 8)->setTime(8, 0));
+        $student = $this->student();
+        $absen = AbsenMurid::create([
+            'murid_id' => $student->id,
+            'tanggal' => '2026-09-08',
+            'status' => AttendanceStatus::Alpa->value,
+            'keterangan' => 'Otomatis alpa setelah batas scan masuk - Pulang Cepat - Wow',
+        ]);
+
+        $scan = new Scan;
+        $scan->verifiedQRCode($student->uuid);
+
+        $this->assertResult($scan, 'late');
+        $this->assertSame(AttendanceStatus::Terlambat->value, $absen->fresh()->status);
+        $this->assertSame('08:00:00', $absen->fresh()->waktu_masuk);
+        $this->assertNull($absen->fresh()->keterangan);
+        $this->assertDatabaseCount('absen_murid', 1);
+    }
+
+    public function test_alpa_attendance_is_not_changed_when_exit_window_has_started(): void
+    {
+        $this->travelTo(now()->setDate(2026, 9, 8)->setTime(16, 30));
+        $student = $this->student();
+        $absen = AbsenMurid::create([
+            'murid_id' => $student->id,
+            'tanggal' => '2026-09-08',
+            'status' => AttendanceStatus::Alpa->value,
+        ]);
+
+        $scan = new Scan;
+        $scan->verifiedQRCode($student->uuid);
+
+        $this->assertResult($scan, 'failed');
+        $this->assertSame(AttendanceStatus::Alpa->value, $absen->fresh()->status);
+        $this->assertNull($absen->fresh()->waktu_masuk);
+    }
+
     public function test_unopened_schedule_and_invalid_qr_do_not_save(): void
     {
         $this->travelTo(now()->setDate(2026, 9, 8)->setTime(5, 0));
