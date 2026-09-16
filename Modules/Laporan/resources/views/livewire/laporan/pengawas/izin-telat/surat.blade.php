@@ -128,7 +128,8 @@
                 <div class="w-28 text-center text-[8px]">
 
                     <p class="font-semibold mb-1">
-                        {{ now()->locale('id')->translatedFormat('d F Y, H:i:s') }} WITA
+                        {{ now()->locale('id')->locale('id')->translatedFormat('d F Y') }}<br>
+                        {{ now()->locale('id')->translatedFormat('H:i:s') }} WITA
                     </p>
                     <p class="font-semibold">
                         Pengawas
