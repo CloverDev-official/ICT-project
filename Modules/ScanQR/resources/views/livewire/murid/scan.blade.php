@@ -178,6 +178,7 @@
         let isServerConnected = true;
         let connectionCheckTimer = null;
         let connectionRequestController = null;
+        let connectionRetryAt = 0;
         let clockTimer = null;
 
         function renderServerStatus() {
@@ -219,13 +220,18 @@
                 return;
             }
 
-            connectionCheckTimer = setTimeout(checkServerConnection, delay);
+            connectionCheckTimer = setTimeout(checkServerConnection, Math.max(delay, connectionRetryAt - Date.now()));
         }
 
         async function checkServerConnection() {
             connectionCheckTimer = null;
 
             if (disposed || document.hidden || connectionRequestController) {
+                return;
+            }
+
+            if (Date.now() < connectionRetryAt) {
+                scheduleServerCheck();
                 return;
             }
 
@@ -255,8 +261,15 @@
                 return;
             }
 
+            if (response.status === 429) {
+                const seconds = Number(response.headers.get('Retry-After'));
+                connectionRetryAt = Date.now() + (Number.isFinite(seconds) && seconds > 0 ? seconds : 60) * 1000;
+                isServerConnected = true;
+                return;
+            }
+
             const refreshVersion = response.headers.get('X-Browser-Refresh-Version');
-            if (refreshVersion && refreshVersion !== browserRefreshVersion) {
+            if (response.ok && refreshVersion && refreshVersion !== browserRefreshVersion) {
                 window.location.reload();
                 return;
             }

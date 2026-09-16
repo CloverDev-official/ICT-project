@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('browser-refresh-version', static function (Request $request) {
-            return Limit::perMinute(120)->by('browser-refresh:'.($request->user()?->id ?? 'guest').':'.$request->ip());
+            return Limit::perMinute(120)->by('browser-refresh:'.$request->session()->getId());
         });
 
         if (\Schema::hasTable('setting')) {

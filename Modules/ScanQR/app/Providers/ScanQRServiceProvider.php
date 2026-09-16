@@ -46,7 +46,7 @@ class ScanQRServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         RateLimiter::for('scan-qrcode-ping', static function (Request $request) {
-            return Limit::perMinute(120)->by('ip:'.$request->ip());
+            return Limit::perMinute(120)->by('scan-ping:'.$request->session()->getId());
         });
 
         ModuleLivewireRegistrar::register($this->name);
