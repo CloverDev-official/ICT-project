@@ -39,12 +39,16 @@ class CreateNewUser implements CreatesNewUsers
             ),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'role_id' => $input['role_id'],
             'is_active' => $input['is_active'],
             'password' => Hash::make($input['password']),
         ]);
+
+        $user->roles()->sync([$user->role_id]);
+
+        return $user;
     }
 }

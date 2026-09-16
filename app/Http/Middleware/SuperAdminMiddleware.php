@@ -10,7 +10,7 @@ class SuperAdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless((int) $request->user()?->role_id === 1, 403);
+        abort_unless($request->user()?->isSuperAdmin(), 403);
 
         return $next($request);
     }

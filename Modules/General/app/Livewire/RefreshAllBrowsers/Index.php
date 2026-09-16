@@ -36,7 +36,7 @@ class Index extends Component
 
     private function ensureSuperAdmin(): void
     {
-        abort_unless((int) auth()->user()?->role_id === 1, 403);
+        abort_unless(auth()->user()?->isSuperAdmin(), 403);
     }
 
     public function render()

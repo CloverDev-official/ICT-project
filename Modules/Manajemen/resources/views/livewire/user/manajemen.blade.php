@@ -161,7 +161,7 @@
                                 default => 'bg-green-100 text-green-600',
                             };
 
-                            $isSuperAdmin = $user->role_id === 1;
+                            $isSuperAdmin = $user->isSuperAdmin();
                             $toggleLabel = $user->is_active ? 'Nonaktifkan user' : 'Aktifkan user';
                             $toggleIcon = $user->is_active ? 'lineicons:ban-2' : 'lineicons:checkmark';
                             $toggleClass = $user->is_active
@@ -210,10 +210,12 @@
                             <!-- role -->
                             <td class="px-6 py-5 text-center">
 
-                                <div
-                                    class="inline-flex rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold capitalize text-blue-600">
-
-                                    {{ $user->role->name }}
+                                <div class="flex flex-wrap justify-center gap-1">
+                                    @foreach ($user->assignedRoles() as $role)
+                                        <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold capitalize text-blue-600">
+                                            {{ $role->name }}
+                                        </span>
+                                    @endforeach
                                 </div>
 
                             </td>

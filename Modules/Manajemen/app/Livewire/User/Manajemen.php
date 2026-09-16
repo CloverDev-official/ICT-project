@@ -23,7 +23,7 @@ class Manajemen extends Component
     public function filterRole($query)
     {
         if ($this->roleId) {
-            $query->where('role_id', $this->roleId);
+            $query->whereHas('roles', fn ($roles) => $roles->whereKey($this->roleId));
         }
 
         return $query;
@@ -31,7 +31,7 @@ class Manajemen extends Component
 
     public function getUsers()
     {
-        $query = User::with('role')
+        $query = User::with(['role', 'roles'])
             ->where(function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%')
                     ->orWhere('email', 'like', '%'.$this->search.'%');
@@ -60,9 +60,9 @@ class Manajemen extends Component
 
     public function toggleStatus(int $userId): void
     {
-        $user = User::query()->with('role')->findOrFail($userId);
+        $user = User::query()->with(['role', 'roles'])->findOrFail($userId);
 
-        if ($user->role_id === 1) {
+        if ($user->isSuperAdmin()) {
             ToastMagic::warning('User super-admin tidak bisa dinonaktifkan.');
             return;
         }

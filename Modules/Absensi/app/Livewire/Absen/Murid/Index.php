@@ -78,8 +78,7 @@ class Index extends Component
             return;
         }
 
-        $roleSlug = Str::slug($user->role?->name ?? '');
-        $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
+        $this->isWaliKelas = $user->hasOnlyRoles(['Wali Kelas', 'Wali Murid']);
 
         if (! $this->isWaliKelas) {
             return;

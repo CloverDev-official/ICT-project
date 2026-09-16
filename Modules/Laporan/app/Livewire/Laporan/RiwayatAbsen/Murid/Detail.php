@@ -33,9 +33,7 @@ class Detail extends Component
             abort(403);
         }
 
-        $roleSlug = Str::slug($user->role?->name ?? '');
-
-        if ($roleSlug !== 'wali-kelas') {
+        if (! $user->hasOnlyRoles(['Wali Kelas', 'Wali Murid'])) {
             return;
         }
 
