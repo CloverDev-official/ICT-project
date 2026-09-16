@@ -13,6 +13,7 @@ class RoleSeeder extends Seeder
     private array $defaultPermissions = [
         'super-admin' => [
             'dashboard',
+            'scan-qrcode',
             'pilih-absen',
             'laporan',
             'rekap-absen',
@@ -54,11 +55,19 @@ class RoleSeeder extends Seeder
             'profil',
         ],
         'operator' => [
-            'manajemen',
-            'pilih-absen',
-            'generate-qr',
-            'manajemen-waktu',
-            'profil',
+            "pilih-absen",
+            "scan-qrcode",
+            "generate-qr",
+            "manajemen-waktu",
+            "profil",
+            "izin-keluar",
+            "izin-telat",
+            "laporan-pengawas"
+        ],
+        'scanner' => [
+            "pilih-absen",
+            "scan-qrcode",
+            "profil",
         ],
     ];
 
@@ -74,6 +83,7 @@ class RoleSeeder extends Seeder
             3 => 'Guru',
             4 => 'Wali Kelas',
             5 => 'Operator',
+            6 => 'scanner',
         ];
 
         foreach ($roles as $id => $nama) {
