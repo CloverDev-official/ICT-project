@@ -42,14 +42,21 @@ class ScanAudioTest extends TestCase
         $this->assertSame($scan->scanResult, $last['params']['result']);
     }
 
-    public function test_completed_permission_uses_its_own_audio_without_recording_attendance(): void
+    public function test_completed_permission_uses_its_own_audio_and_restores_attendance_status(): void
     {
         $this->travelTo(now()->setDate(2026, 9, 8)->setTime(7, 0));
         $student = $this->student();
+        $absen = AbsenMurid::create([
+            'murid_id' => $student->id,
+            'tanggal' => '2026-09-08',
+            'waktu_masuk' => '06:55:00',
+            'status' => AttendanceStatus::Terlambat->value,
+        ]);
         $izin = IzinMurid::create([
             'murid_id' => $student->id, 'tanggal' => '2026-09-08',
             'alasan' => 'Keperluan keluarga', 'dari_jam' => '06:30:00',
             'status' => AttendanceStatus::Izin->value,
+            'status_absensi_sebelumnya' => AttendanceStatus::Terlambat->value,
         ]);
         $scan = new Scan;
         $scan->verifiedQRCode($student->uuid.'>'.$izin->uuid);
@@ -58,20 +65,52 @@ class ScanAudioTest extends TestCase
         $this->assertSame(AttendanceStatus::Selesai->value, $izin->fresh()->status);
         $this->assertSame([
             'type' => 'message',
-            'message' => 'Izin telah diproses. Silakan gunakan QR code absensi untuk absensi.',
+            'message' => 'Izin telah diproses dan status absensi dikembalikan. Silakan gunakan QR code absensi untuk absensi.',
             'title' => 'Izin Berhasil Diperbarui',
         ], $scan->scanResult['modal']);
         $this->assertTrue($scan->scanResult['autoClose']);
         $this->assertFalse($scan->tersimpan);
         $this->assertCount(1, \Livewire\store($scan)->get('dispatched'));
-        $this->assertDatabaseCount('absen_murid', 0);
+        $this->assertSame(AttendanceStatus::Terlambat->value, $absen->fresh()->status);
+        $this->assertDatabaseCount('absen_murid', 1);
 
         $scan->verifiedQRCode($student->uuid.'>'.$izin->uuid);
         $this->assertResult($scan, 'failed');
-        $this->assertDatabaseCount('absen_murid', 0);
-        $scan->verifiedQRCode($student->uuid);
-        $this->assertResult($scan, 'success');
         $this->assertDatabaseCount('absen_murid', 1);
+        $scan->verifiedQRCode($student->uuid);
+        $this->assertResult($scan, 'already_recorded');
+        $this->assertDatabaseCount('absen_murid', 1);
+    }
+
+    public function test_completed_permission_after_its_date_does_not_restore_attendance_status(): void
+    {
+        $this->travelTo(now()->setDate(2026, 9, 9)->setTime(7, 0));
+        $student = $this->student();
+        $absen = AbsenMurid::create([
+            'murid_id' => $student->id,
+            'tanggal' => '2026-09-08',
+            'waktu_masuk' => '06:55:00',
+            'status' => AttendanceStatus::Izin->value,
+        ]);
+        $izin = IzinMurid::create([
+            'murid_id' => $student->id,
+            'tanggal' => '2026-09-08',
+            'alasan' => 'Keperluan keluarga',
+            'dari_jam' => '06:30:00',
+            'status' => AttendanceStatus::Izin->value,
+            'status_absensi_sebelumnya' => AttendanceStatus::Terlambat->value,
+        ]);
+
+        $scan = new Scan;
+        $scan->verifiedQRCode($student->uuid.'>'.$izin->uuid);
+
+        $this->assertResult($scan, 'permission_success');
+        $this->assertSame(AttendanceStatus::Selesai->value, $izin->fresh()->status);
+        $this->assertSame(AttendanceStatus::Izin->value, $absen->fresh()->status);
+        $this->assertSame(
+            'Izin telah diproses. Status absensi tidak diubah karena QR dipindai setelah tanggal izin. Silakan gunakan QR code absensi untuk absensi.',
+            $scan->scanResult['modal']['message'],
+        );
     }
 
     public function test_success_duplicate_and_close(): void

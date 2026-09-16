@@ -2,14 +2,17 @@
 
 namespace Modules\Laporan\Livewire\Laporan\Pengawas\IzinKeluar;
 
+use App\Enums\AttendanceStatus;
 use App\Helpers\ToastMagic;
 use App\Helpers\ValidateMagic;
+use App\Models\Murid\AbsenMurid;
 use App\Models\Murid\IzinMurid;
 use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Indeks;
 use App\Models\Murid\Rombel\Jurusan;
 use App\Models\Murid\Rombel\Tingkat;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Cetak extends Component
@@ -104,13 +107,57 @@ class Cetak extends Component
             return;
         }
 
-        $izinMurid = IzinMurid::create([
-            'murid_id' => $murid->id,
-            'alasan' => $this->alasan,
-            'tanggal' => now()->toDateString(),
-            'dari_jam' => $this->dariJam,
-            'sampai_jam' => $this->sampaiJam ?? null,
-        ]);
+        $today = now()->toDateString();
+        $reason = null;
+
+        $izinMurid = DB::transaction(function () use ($murid, $today, &$reason): ?IzinMurid {
+            $absen = AbsenMurid::query()
+                ->where('murid_id', $murid->id)
+                ->whereDate('tanggal', $today)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $absen || ! $absen->waktu_masuk || $absen->status === AttendanceStatus::Alpa->value) {
+                $reason = 'Murid belum melakukan scan masuk hari ini. Silakan scan masuk terlebih dahulu.';
+
+                return null;
+            }
+
+            if (IzinMurid::query()
+                ->where('murid_id', $murid->id)
+                ->whereDate('tanggal', $today)
+                ->where('status', AttendanceStatus::Izin->value)
+                ->lockForUpdate()
+                ->exists()) {
+                $reason = 'Murid masih memiliki izin yang belum selesai.';
+
+                return null;
+            }
+
+            $izin = IzinMurid::create([
+                'murid_id' => $murid->id,
+                'alasan' => $this->alasan,
+                'tanggal' => $today,
+                'dari_jam' => $this->dariJam,
+                'sampai_jam' => $this->sampaiJam ?? null,
+                'status' => AttendanceStatus::Izin->value,
+                'status_absensi_sebelumnya' => $absen->status,
+            ]);
+
+            if (! $absen->update(['status' => AttendanceStatus::Izin->value])) {
+                throw new \RuntimeException('Status absensi tidak dapat diubah menjadi izin.');
+            }
+
+            return $izin;
+        });
+
+        if (! $izinMurid) {
+            $message = $reason ?? 'Surat izin tidak dapat dibuat.';
+            $this->addError('muridId', $message);
+            ToastMagic::error('Surat izin tidak dapat dibuat.', $message);
+
+            return;
+        }
 
         $this->izinMuridId = $izinMurid->id;
 

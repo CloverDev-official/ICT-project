@@ -186,6 +186,7 @@ class Scan extends Component
         $izin = IzinMurid::query()
             ->where('murid_id', $murid->id)
             ->latest('created_at')
+            ->lockForUpdate()
             ->first();
 
         if ($izin && $izin?->status === AttendanceStatus::Izin->value && (!$this->isContainsIzin || $izin?->uuid !== $this->izinUuid)) {
@@ -196,17 +197,37 @@ class Scan extends Component
 
         // Jika QR izin cocok dengan izin yang sedang berlangsung, maka izin akan diperbarui menjadi selesai.
         if ($izin && $this->isContainsIzin && $izin?->uuid === $this->izinUuid && $izin?->status === AttendanceStatus::Izin->value) {
-            // QR hanya menutup proses izin. Status absensi telah diubah saat
-            // pengawas membuat izin, bukan ketika QR dipindai.
+            $isIzinHariIni = $izin->tanggal?->isSameDay(now());
+
+            if ($isIzinHariIni) {
+                $absen = AbsenMurid::query()
+                    ->where('murid_id', $murid->id)
+                    ->whereDate('tanggal', $izin->tanggal)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $absen || ! $izin->status_absensi_sebelumnya) {
+                    $this->rejectScan('Data absensi sebelum izin tidak ditemukan. Hubungi pengawas untuk memeriksa izin ini.');
+
+                    return false;
+                }
+
+                // QR izin di tanggal yang sama mengembalikan status sebelum
+                // izin dicetak, misalnya Terlambat.
+                if (! $absen->update(['status' => $izin->status_absensi_sebelumnya])) {
+                    throw new \RuntimeException('Status absensi gagal dipulihkan.');
+                }
+            }
+
             if (!$izin->update([
                 'status' => AttendanceStatus::Selesai->value,
             ])) {
-                $this->rejectScan('Izin gagal disimpan.');
-
-                return false;
+                throw new \RuntimeException('Izin gagal disimpan.');
             }
 
-            $message = 'Izin telah diproses.';
+            $message = $isIzinHariIni
+                ? 'Izin telah diproses dan status absensi dikembalikan.'
+                : 'Izin telah diproses. Status absensi tidak diubah karena QR dipindai setelah tanggal izin.';
             if ($this->withinWindow(
                 $currentTime,
                 $jadwal['scan_masuk_mulai'] ?? null,
