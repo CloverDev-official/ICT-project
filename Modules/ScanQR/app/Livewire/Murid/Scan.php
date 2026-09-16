@@ -233,7 +233,8 @@ class Scan extends Component
     {
         $absen = AbsenMurid::query()
             ->where('murid_id', $murid->id)
-            ->whereDate('tanggal', $today)
+            // tanggal bertipe DATE; perbandingan langsung dapat memakai indeks murid_id/tanggal.
+            ->where('tanggal', $today)
             ->first();
 
         // Cek apakah murid tidak absen masuk dan sudah melewati jendela scan masuk, tetapi belum waktunya pulang.
