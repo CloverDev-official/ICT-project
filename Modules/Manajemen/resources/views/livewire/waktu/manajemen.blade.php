@@ -416,7 +416,7 @@
                                         <input type="time" x-model="preset.scan_masuk_sampai" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
                                         <p class="mt-1 text-[11px] text-gray-400">Jam dasar sebelum toleransi.</p>
                                     </div>
-                                    <div>
+                                    <div class="col-span-2">
                                         <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Toleransi Masuk (Menit)</label>
                                         <input type="number" min="0" max="720" step="1" x-model.number="preset.toleransi_masuk" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
                                         <p class="mt-1 text-[11px] text-gray-400">Batas akhir = jam dasar + toleransi.</p>
