@@ -85,8 +85,6 @@
 @endassets
 
 <div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
-
-    @if ($siapCetak)
     <button type="button" onclick="window.print()" class="mb-5 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Cetak Ulang</button>
 
     <div
@@ -112,23 +110,9 @@
                 </div>
 
                 <div class="text-[8px]">
-                    <p class="font-semibold">NIPD :</p>
-                    <p>{{ $absen->murid->nipd }}</p>
-                </div>
-
-                <div class="text-[8px]">
-                    <p class="font-semibold">Tanggal :</p>
+                    <p class="font-semibold">Tanggal & Waktu :</p>
                     <p>{{ $absen->tanggal->locale('id')->translatedFormat('d F Y') }}</p>
-                </div>
-
-                <div class="text-[8px]">
-                    <p class="font-semibold">Jam Kedatangan :</p>
                     <p>{{ $absen->waktu_masuk }} WITA</p>
-                </div>
-
-                <div class="text-[8px]">
-                    <p class="font-semibold">Status :</p>
-                    <p>Terlambat</p>
                 </div>
 
                 <div class="text-[8px]">
@@ -144,7 +128,7 @@
                 <div class="w-28 text-center text-[8px]">
 
                     <p class="font-semibold mb-1">
-                        {{ now()->locale('id')->translatedFormat('d F Y, H:i:s') }}
+                        {{ now()->locale('id')->translatedFormat('d F Y, H:i:s') }} WITA
                     </p>
                     <p class="font-semibold">
                         Pengawas
@@ -162,8 +146,6 @@
         </div>
 
     </div>
-
-    @endif
 </div>
 
 @script
