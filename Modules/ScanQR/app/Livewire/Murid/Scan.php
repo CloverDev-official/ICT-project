@@ -318,7 +318,9 @@ class Scan extends Component
                 return;
             }
 
-            $this->acceptScan('Absensi pulang berhasil disimpan.', $status === AttendanceStatus::Terlambat->value ? 'late' : 'success');
+            // Status absensi tetap terlambat bila masuk terlambat, tetapi modal
+            // pulang adalah notifikasi normal—bukan peringatan keterlambatan lagi.
+            $this->acceptScan('Absensi pulang berhasil disimpan.');
 
             return;
         }
