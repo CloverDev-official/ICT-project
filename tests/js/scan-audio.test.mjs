@@ -65,7 +65,7 @@ for (const status of ['success', 'permission_success']) {
 test('permission success uses its dedicated bundled MP3', () => {
     assert.match(
         scanAudioMap.permission_success,
-        /\/permission_success\.mp3\?no-inline$/,
+        /\/permission-success\.mp3\?no-inline$/,
     );
     assert.notEqual(scanAudioMap.permission_success, scanAudioMap.success);
 });

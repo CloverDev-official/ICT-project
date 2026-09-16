@@ -86,7 +86,7 @@ const server = createServer(async (req, res) => {
         return;
     }
     if (
-        !/^(\/Modules\/ScanQR\/resources\/assets\/js\/(scan-audio|scan-result)\.js|\/Modules\/ScanQR\/resources\/assets\/audio\/(scan-success|permission_success|scan-late|scan-failed|already-recorded|attendance-not-open)\.mp3)$/.test(
+        !/^(\/Modules\/ScanQR\/resources\/assets\/js\/(scan-audio|scan-result)\.js|\/Modules\/ScanQR\/resources\/assets\/audio\/(scan-success|permission-success|scan-late|scan-failed|already-recorded|attendance-not-open)\.mp3)$/.test(
             pathname,
         )
     ) {

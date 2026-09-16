@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 
 const files = [
     'scan-success',
-    'permission_success',
+    'permission-success',
     'scan-late',
     'scan-failed',
     'already-recorded',
