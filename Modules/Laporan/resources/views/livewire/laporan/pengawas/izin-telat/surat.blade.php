@@ -93,18 +93,18 @@
 
         <div class="w-full">
 
-            <h1 class="mb-3 text-center text-[12px] font-bold uppercase">
+            <h1 class="mb-3 text-center text-[17px] font-bold uppercase">
                 Surat Izin Telat
             </h1>
 
             <div class="flex flex-col space-y-2">
 
-                <div class="text-[10px]">
+                <div class="text-[15px]">
                     <p class="font-semibold">Nama :</p>
                     <p>{{ $absen->murid->nama }}</p>
                 </div>
 
-                <div class="text-[10px]">
+                <div class="text-[15px]">
                     <p class="font-semibold">Alasan Terlambat :</p>
                     <p class="whitespace-pre-line break-words">{{ $absen->keterangan }}</p>
                 </div>
@@ -114,7 +114,7 @@
             <div class="my-4 border border-dotted"></div>
 
             <div class="flex justify-end">
-                <div class="w-28 text-center text-[8px]">
+                <div class="w-28 text-center text-[14px]">
 
                     <p class="font-semibold mb-1">
                         {{ now()->locale('id')->locale('id')->translatedFormat('d F Y') }}<br>
@@ -124,7 +124,7 @@
                         Pengawas
                     </p>
 
-                    <div class="h-14"></div>
+                    <div class="h-16"></div>
 
                     <div class="border-t border-black pt-1">
                         {{ auth()->user()->name }}

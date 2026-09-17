@@ -65,8 +65,8 @@
 
     /* QR */
     #qrcode {
-        width: 30mm !important;
-        height: 30mm !important;
+        width: 50mm !important;
+        height: 50mm !important;
 
         display: block !important;
 
@@ -83,7 +83,7 @@
 </style>
 @endassets
 
-<div class="flex flex-col items-center justify-center bg-gray-100 p-4">
+<div class="flex h-fit flex-col items-center justify-center bg-gray-100 p-4">
 
     <button
         type="button"
@@ -96,7 +96,7 @@
         id="printArea"
         class="w-[58mm] rounded bg-white p-3 shadow">
         <div class="flex w-full flex-col items-center gap-3">
-            <h1 class="text-center text-[10px] font-bold uppercase">
+            <h1 class="text-center text-[17px] font-bold uppercase">
                 Surat Izin Keluar
             </h1>
             <img
