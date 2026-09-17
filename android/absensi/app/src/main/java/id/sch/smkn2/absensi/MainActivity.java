@@ -11,6 +11,8 @@ import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
@@ -27,6 +29,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -215,15 +218,35 @@ public final class MainActivity extends Activity {
     }
 
     private void configureServer() {
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(24), 0, dp(24), 0);
         EditText address = new EditText(this);
         address.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         address.setSingleLine(true);
         address.setHint("https://absensi.sekolah.sch.id");
         address.setText(server == null ? "" : server.baseUrl());
+        form.addView(address);
+        CheckBox localCertificate = new CheckBox(this);
+        localCertificate.setText(R.string.local_certificate);
+        localCertificate.setChecked(server != null && server.baseUrl().equals(
+                preferences.getString("local_certificate_server", "")));
+        form.addView(localCertificate);
+        TextView certificateNotice = new TextView(this);
+        certificateNotice.setText(R.string.local_certificate_notice);
+        form.addView(certificateNotice);
+        // Editing the address must not silently carry the TLS exception to a new server.
+        address.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence value, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence value, int start, int before, int count) {
+                localCertificate.setChecked(false);
+            }
+            @Override public void afterTextChanged(Editable value) { }
+        });
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Alamat server Absensi")
                 .setMessage("Masukkan alamat HTTPS website sekolah. Halaman Scan QR akan dibuka otomatis.")
-                .setView(address)
+                .setView(form)
                 .setPositiveButton("Simpan", null)
                 .setNegativeButton("Batal", (ignored, which) -> {
                     if (server == null) finish();
@@ -235,8 +258,14 @@ public final class MainActivity extends Activity {
                 ServerAddress next = new ServerAddress(address.getText().toString());
                 boolean changed = server != null && !next.baseUrl().equals(server.baseUrl());
                 cancelCamera();
+                webView.stopLoading();
+                webView.clearSslPreferences();
+                webView.clearCache(true);
                 server = next;
-                preferences.edit().putString("server", server.baseUrl()).apply();
+                preferences.edit()
+                        .putString("server", server.baseUrl())
+                        .putString("local_certificate_server", localCertificate.isChecked() ? server.baseUrl() : "")
+                        .apply();
                 dialog.dismiss();
                 if (changed) {
                     webView.stopLoading();
@@ -353,8 +382,15 @@ public final class MainActivity extends Activity {
 
         @Override
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            // Explicit, per-server local TLS exception. Other origins still fail closed.
+            // No global TrustManager/hostname-verifier override is installed.
+            if (server != null && server.allowsLocalCertificate(error.getUrl(),
+                    preferences.getString("local_certificate_server", ""))) {
+                handler.proceed();
+                return;
+            }
             handler.cancel();
-            showError("Sertifikat HTTPS tidak valid. Hubungi pengelola server untuk memperbaikinya.");
+            showError("Sertifikat HTTPS tidak valid. Untuk server lokal, buka menu ⋮ → Alamat server, aktifkan Sertifikat lokal, lalu Simpan.");
         }
     }
 }

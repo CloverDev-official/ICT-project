@@ -37,6 +37,8 @@ bisa memakai identitas penandatanganan yang sama. Jangan commit keystore.
 2. Buka **Absensi** dan masukkan alamat HTTPS website sekolah, misalnya
    `https://absensi.sekolah.sch.id`. Alamat contoh ini harus diganti dengan server
    yang sebenarnya. Alamat lengkap `/mpanel/scan-qrcode` juga diterima.
+   Untuk HTTPS lokal dengan sertifikat self-signed/tidak valid, centang
+   **Sertifikat lokal (server ini saja)** sebelum menyimpan.
 3. Login menggunakan akun proyek yang memiliki akses menu Scan QR. Sesi WebView
    terpisah dari Chrome; pilih **Ingat saya** jika sesi perlu bertahan.
 4. Jika role akun mengarahkan login ke dashboard/menu lain, tekan menu aplikasi
@@ -62,9 +64,22 @@ Layar tetap menyala selama aplikasi aktif. Audio diatur agar tidak membutuhkan
 gesture melalui WebSettings; perangkat tetap harus memiliki volume media yang
 sesuai. Gunakan Android System WebView terbaru untuk kamera dan decoder QR/WASM.
 
-Website tetap harus tersedia lewat HTTPS dengan sertifikat valid. Aplikasi tidak
-mengabaikan kesalahan sertifikat, membuka URL file lokal, atau memberikan izin
-kamera ke origin lain. CDN yang dipakai proyek tetap membutuhkan koneksi internet.
+Website tetap harus tersedia lewat HTTPS. Validasi sertifikat aktif secara default.
+Untuk server lokal, menu **⋮ → Alamat server → Sertifikat lokal (server ini saja)**
+mengizinkan sertifikat HTTPS yang tidak valid pada host dan port server tersebut.
+Opsi disimpan sehingga tidak perlu diaktifkan lagi setelah refresh atau restart.
+Alamat lain, termasuk CDN, tetap memerlukan sertifikat valid. Mengedit alamat
+menghapus centang; aktifkan kembali hanya jika server pengganti juga server lokal
+tepercaya. Menonaktifkan opsi dan menyimpan akan menghapus keputusan SSL yang
+di-cache WebView sehingga validasi sertifikat kembali berlaku.
+
+Mode ini tidak memerlukan perbaikan sertifikat lokal, tetapi tidak memverifikasi
+identitas server dan rentan terhadap penyamaran server di jaringan. Server harus
+tetap menyediakan HTTPS; HTTP biasa dan kegagalan handshake TLS bukan masalah
+validasi sertifikat dan tidak diatasi oleh opsi ini.
+
+Aplikasi tidak membuka URL file lokal atau memberikan izin kamera ke origin lain.
+CDN yang dipakai proyek tetap membutuhkan koneksi internet.
 Login, otorisasi, dan penyimpanan absensi tetap dikelola Laravel yang sudah ada.
 
 Ini mode immersive, bukan penguncian perangkat: Android masih dapat menampilkan
@@ -80,6 +95,8 @@ tetapi tidak dipakai oleh APK.
 - Tutup/buka aplikasi, pindah aplikasi lalu kembali, dan putar layar.
 - Uji penolakan izin kamera, lalu izinkan dari pengaturan Android dan muat ulang.
 - Uji sesi kedaluwarsa, jaringan terputus, alamat salah, serta pemulihan lewat menu.
+- Untuk HTTPS lokal, uji opsi sertifikat lokal aktif/nonaktif, refresh, restart,
+  serta pergantian alamat agar pengecualian tidak terbawa ke server lain.
 
 Tes validasi URL dan origin tanpa SDK (jalankan dari root repository):
 

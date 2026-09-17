@@ -47,6 +47,10 @@ final class ServerAddress {
         }
     }
 
+    boolean allowsLocalCertificate(String url, String approvedServer) {
+        return baseUrl().equals(approvedServer) && trusts(url);
+    }
+
     private static int port(URI uri) {
         return uri.getPort() == -1 ? 443 : uri.getPort();
     }

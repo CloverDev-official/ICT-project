@@ -25,7 +25,20 @@ public final class ServerAddressTest {
                 throw new AssertionError("Accepted invalid address: " + invalid);
             } catch (IllegalArgumentException expected) { }
         }
+        ServerAddress local = new ServerAddress("https://192.168.1.10:8443");
+        check(!local.allowsLocalCertificate(local.scanUrl(), ""));
+        check(!local.allowsLocalCertificate(local.scanUrl(), null));
+        check(local.allowsLocalCertificate(local.scanUrl(), local.baseUrl()));
+        check(local.allowsLocalCertificate(local.baseUrl() + "/build/app.js", local.baseUrl()));
+        for (String other : new String[]{"https://192.168.1.11:8443/", "https://192.168.1.10/",
+                "http://192.168.1.10:8443/", "https://cdn.example/script.js",
+                "https://192.168.1.10.evil.example:8443/"}) {
+            check(!local.allowsLocalCertificate(other, local.baseUrl()));
+        }
+        check(!local.allowsLocalCertificate(local.scanUrl(), root.baseUrl()));
+        check(!root.allowsLocalCertificate(root.scanUrl(), local.baseUrl()));
         System.out.println("ServerAddress: route, subdirectory, HTTPS, and origin validation passed.");
+        System.out.println("Local TLS: explicit approval required; other servers, schemes, and ports rejected.");
     }
 
     private static void equal(String expected, String actual) {
