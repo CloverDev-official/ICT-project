@@ -10,26 +10,43 @@ Nama aplikasi **Absensi** dan ikonnya menggunakan file asli
 `public/assets/img/logo_smkn_2.png`, yang disalin otomatis ke resource Android
 saat build. URL scanner mengikuti route proyek: `/mpanel/scan-qrcode`.
 
-## Build APK
+## Build APK release universal
 
 Persyaratan: JDK 17, Android SDK Platform 35, Build Tools 35.0.0, dan akses internet
 untuk mengunduh dependensi Gradle. Minimum perangkat adalah Android 8.0 (API 26).
 
 1. Buka folder `android/absensi` dari checkout proyek ini di Android Studio.
 2. Atur Gradle JDK ke JDK 17, pasang SDK yang diminta, lalu lakukan Gradle Sync.
-3. Pilih **Build → Generate App Bundles or APKs → Generate APKs** untuk APK debug.
+3. Gunakan konfigurasi release dan kunci lokal seperti langkah terminal berikut.
 
 Alternatif terminal dari folder `android/absensi`, dengan SDK sudah dikonfigurasi
 melalui `ANDROID_HOME` atau `local.properties`:
 
 ```bash
-./gradlew assembleDebug lintDebug
+# Hanya sekali jika belum memiliki .signing/; jangan mengganti kunci yang sudah ada.
+java scripts/CreateReleaseSigning.java
+./gradlew assembleRelease lintRelease
 ```
 
-APK debug berada di `android/absensi/app/build/outputs/apk/debug/app-debug.apk`.
-Untuk distribusi permanen, gunakan **Generate Signed App Bundle or APK** di
-Android Studio dan simpan keystore dengan baik agar update aplikasi berikutnya
-bisa memakai identitas penandatanganan yang sama. Jangan commit keystore.
+APK release bertanda tangan berada di
+`android/absensi/app/build/outputs/apk/release/app-release.apk`. Build release
+menonaktifkan debugging. Aplikasi hanya memuat Java/DEX dan resource, tanpa library
+JNI `.so` atau pembagian APK berdasarkan ABI. Satu APK yang sama dapat dipasang
+pada Android 32-bit dan 64-bit (Android 8.0 ke atas); WebView disediakan sistem
+perangkat sesuai arsitekturnya. Kamera tetap memerlukan Android System WebView
+yang mendukung fitur web scanner.
+
+Kunci release tersimpan di `android/absensi/.signing/absensi-release.p12` dan
+konfigurasinya di `.signing/release.properties`. Keduanya dibuat secara lokal,
+tidak masuk Git, dan tidak dicetak ke output build. **Cadangkan kedua file itu
+secara aman**: semua update release harus memakai kunci yang sama. Jangan
+menjalankan pembuat kunci lagi untuk update; langsung jalankan Gradle.
+
+APK debug sebelumnya memakai kunci berbeda. Untuk pindah pertama kali ke release,
+hapus aplikasi debug dari HP lalu pasang release. Alamat server, opsi sertifikat
+lokal, sesi login, dan izin kamera perlu diatur ulang; data absensi pada server
+tidak terhapus. Update antar-release berikutnya bisa dipasang menimpa aplikasi
+selama kunci yang sama digunakan dan versionCode dinaikkan.
 
 ## Pengaturan awal sekali per perangkat
 
@@ -42,7 +59,7 @@ bisa memakai identitas penandatanganan yang sama. Jangan commit keystore.
 3. Login menggunakan akun proyek yang memiliki akses menu Scan QR. Sesi WebView
    terpisah dari Chrome; pilih **Ingat saya** jika sesi perlu bertahan.
 4. Jika role akun mengarahkan login ke dashboard/menu lain, tekan menu aplikasi
-   **⋮** di kanan atas lalu **Scan QR**.
+   tiga titik di kiri bawah lalu **Scan QR**.
 5. Izinkan kamera saat Android meminta. Izin mikrofon tidak diperlukan.
 
 Setelah pengaturan awal, pembukaan aplikasi langsung menuju scanner dalam
@@ -51,7 +68,9 @@ yang dicabut atau izin sekali pakai tetap mengikuti aturan Android.
 
 ## Kontrol aplikasi
 
-Menu **⋮** di kanan atas atau tombol Back Android menyediakan:
+Menu tiga titik berada di **kiri bawah** dengan lingkaran kecil dan transparansi
+65% saat tidak digunakan. Saat ditekan atau mendapat fokus, tombol terlihat jelas.
+Area sentuh tetap 48dp. Tombol Back Android juga membuka menu ini, yang menyediakan:
 
 - **Scan QR**: kembali ke scanner.
 - **Muat ulang**: refresh halaman tanpa keluar fullscreen.
@@ -90,6 +109,8 @@ tetapi tidak dipakai oleh APK.
 ## Verifikasi pada HP
 
 - Buka aplikasi dan periksa fullscreen sebelum menyentuh halaman.
+- Pastikan tombol kecil kiri bawah bisa disentuh, meredup saat tidak digunakan,
+  dan tidak tertutup setelah rotasi layar atau keyboard muncul.
 - Login, beri izin kamera, dan pindai QR yang valid; periksa hasil absensi dan audio.
 - Muat ulang melalui menu aplikasi dan melalui menu halaman; fullscreen tetap aktif.
 - Tutup/buka aplikasi, pindah aplikasi lalu kembali, dan putar layar.
@@ -97,6 +118,7 @@ tetapi tidak dipakai oleh APK.
 - Uji sesi kedaluwarsa, jaringan terputus, alamat salah, serta pemulihan lewat menu.
 - Untuk HTTPS lokal, uji opsi sertifikat lokal aktif/nonaktif, refresh, restart,
   serta pergantian alamat agar pengecualian tidak terbawa ke server lain.
+- Pasang APK release yang sama pada perangkat 32-bit dan 64-bit untuk uji perangkat.
 
 Tes validasi URL dan origin tanpa SDK (jalankan dari root repository):
 
@@ -108,4 +130,6 @@ java -cp /tmp/absensi-url-tests id.sch.smkn2.absensi.ServerAddressTest
 
 Referensi implementasi: [immersive mode Android](https://developer.android.com/develop/ui/views/layout/immersive),
 [izin WebView](https://developer.android.com/reference/android/webkit/PermissionRequest),
-dan [pengaturan media WebView](https://developer.android.com/reference/android/webkit/WebSettings#setMediaPlaybackRequiresUserGesture(boolean)).
+[pengaturan media WebView](https://developer.android.com/reference/android/webkit/WebSettings#setMediaPlaybackRequiresUserGesture(boolean)),
+[penandatanganan APK](https://developer.android.com/studio/publish/app-signing),
+dan [kompatibilitas 64-bit](https://developer.android.com/google/play/requirements/64-bit).

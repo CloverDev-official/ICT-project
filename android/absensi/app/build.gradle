@@ -2,6 +2,12 @@ plugins {
     id 'com.android.application'
 }
 
+def releasePropertiesFile = rootProject.file('.signing/release.properties')
+def releaseProperties = new Properties()
+if (releasePropertiesFile.exists()) {
+    releasePropertiesFile.withInputStream { releaseProperties.load(it) }
+}
+
 android {
     namespace 'id.sch.smkn2.absensi'
     compileSdk 35
@@ -10,8 +16,34 @@ android {
         applicationId 'id.sch.smkn2.absensi'
         minSdk 26
         targetSdk 35
-        versionCode 2
-        versionName '1.1'
+        versionCode 3
+        versionName '1.2'
+    }
+
+    signingConfigs {
+        release {
+            if (releasePropertiesFile.exists()) {
+                storeFile rootProject.file(releaseProperties.getProperty('storeFile'))
+                storePassword releaseProperties.getProperty('storePassword')
+                keyAlias releaseProperties.getProperty('keyAlias')
+                keyPassword releaseProperties.getProperty('keyPassword')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    // Java/DEX + system WebView: one APK for both 32-bit and 64-bit devices.
+    // No JNI libraries or ABI-specific APK splits are needed.
+    splits {
+        abi {
+            enable false
+        }
     }
 
     compileOptions {
@@ -30,4 +62,18 @@ tasks.register('copySchoolLogo', Copy) {
 
 tasks.named('preBuild').configure {
     dependsOn 'copySchoolLogo'
+}
+
+tasks.register('requireReleaseSigning') {
+    doLast {
+        if (!releasePropertiesFile.exists()) {
+            throw new GradleException('Release signing missing. Run: java scripts/CreateReleaseSigning.java (from android/absensi).')
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == 'preReleaseBuild') {
+        dependsOn 'requireReleaseSigning'
+    }
 }

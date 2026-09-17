@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Absensi</string>
+    <string name="app_menu">Menu aplikasi Absensi</string>
     <string name="retry">Coba lagi</string>
     <string name="local_certificate">Sertifikat lokal (server ini saja)</string>
     <string name="local_certificate_notice">Aktifkan hanya untuk server lokal tepercaya. HTTPS tetap digunakan, tetapi identitas sertifikat server tidak diverifikasi.</string>

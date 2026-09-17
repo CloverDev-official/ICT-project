@@ -32,6 +32,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -116,12 +117,19 @@ public final class MainActivity extends Activity {
         errorPanel.setVisibility(View.GONE);
         root.addView(errorPanel, new FrameLayout.LayoutParams(-1, -1));
 
-        Button menu = new Button(this);
-        menu.setText("⋮");
-        menu.setTextSize(24);
-        menu.setContentDescription("Menu aplikasi Absensi");
+        ImageButton menu = new ImageButton(this);
+        menu.setImageResource(R.drawable.ic_menu);
+        menu.setBackgroundResource(R.drawable.menu_background);
+        menu.setPadding(dp(14), dp(14), dp(14), dp(14));
+        menu.setAlpha(0.35f);
+        menu.setStateListAnimator(android.animation.AnimatorInflater.loadStateListAnimator(this, R.animator.menu_opacity));
+        menu.setContentDescription(getString(R.string.app_menu));
+        menu.setTooltipText(getString(R.string.app_menu));
         menu.setOnClickListener(view -> showMenu());
-        FrameLayout.LayoutParams menuParams = new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.TOP | Gravity.END);
+        // Keep a 48dp touch target around the smaller, subdued visual button.
+        FrameLayout.LayoutParams menuParams = new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.BOTTOM | Gravity.START);
+        menuParams.setMarginStart(dp(12));
+        menuParams.bottomMargin = dp(16);
         root.addView(menu, menuParams);
         setContentView(root);
 
