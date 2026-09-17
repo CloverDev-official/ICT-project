@@ -96,7 +96,7 @@
         id="printArea"
         class="w-[58mm] rounded bg-white p-3 shadow">
         <div class="flex w-full flex-col items-center gap-3">
-            <h1 class="text-center text-[17px] font-bold uppercase">
+            <h1 class="text-center text-lg font-bold uppercase">
                 Surat Izin Keluar
             </h1>
             <img

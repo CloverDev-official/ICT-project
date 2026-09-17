@@ -89,11 +89,11 @@
 
     <div
         id="printArea"
-        class="w-[58mm] rounded bg-white p-3 shadow">
+        class="w-[58mm] rounded bg-white p-3 border-2">
 
         <div class="w-full">
 
-            <h1 class="mb-3 text-center text-[17px] font-bold uppercase">
+            <h1 class="mb-3 text-center text-lg font-bold uppercase">
                 Surat Izin Telat
             </h1>
 
