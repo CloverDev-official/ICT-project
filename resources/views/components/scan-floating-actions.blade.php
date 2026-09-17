@@ -9,8 +9,9 @@
         autoFullscreenRequest: false,
         sync() {
             this.active = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            // Fullscreen aplikasi terpasang tidak mengisi document.fullscreenElement.
-            this.appFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+            // Fullscreen PWA/APK dikelola jendela aplikasi, bukan Fullscreen API.
+            this.appFullscreen = window.matchMedia('(display-mode: fullscreen)').matches
+                || /\bAbsensiAndroid\/1\b/.test(navigator.userAgent);
         },
         init() {
             const root = document.documentElement;

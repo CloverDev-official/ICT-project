@@ -1,42 +1,94 @@
-# Scan QR fullscreen di Chrome Android
+# Aplikasi Android Absensi
 
-Halaman `/mpanel/scan-qrcode` (named route `scan-qrcode`) menyediakan manifest aplikasi dengan `display: fullscreen`.
-Chrome Android memakai mode tersebut ketika aplikasi dibuka dari ikon aplikasi
-terpasang. Refresh halaman tetap berada dalam jendela aplikasi fullscreen.
+Pendekatan utama sekarang adalah APK native Android dengan WebView, di
+`android/absensi`. Fullscreen diatur oleh jendela Android saat aplikasi dibuka,
+kembali aktif, dan memuat halaman. Refresh tidak membutuhkan sentuhan untuk
+mengaktifkan fullscreen kembali. Ini tidak bergantung pada Fullscreen API Chrome
+atau pemasangan PWA.
 
-## Pemasangan sekali per perangkat
+Nama aplikasi **Absensi** dan ikonnya menggunakan file asli
+`public/assets/img/logo_smkn_2.png`, yang disalin otomatis ke resource Android
+saat build. URL scanner mengikuti route proyek: `/mpanel/scan-qrcode`.
 
-1. Gunakan alamat HTTPS dengan sertifikat valid, lalu login di Chrome Android.
-2. Buka halaman Scan QR di `/mpanel/scan-qrcode`.
-3. Dari menu Chrome, pilih **Tambahkan ke layar utama → Instal** (atau **Instal aplikasi**, sesuai versi Chrome).
-4. Buka **Absensi** dengan ikon logo SMKN 2 dari aplikasi yang terpasang, bukan dari tab Chrome.
-5. Izinkan kamera jika perangkat belum pernah memberikan izin.
+## Build APK
 
-Setelah pemasangan dan pemberian izin awal, tidak diperlukan sentuhan tambahan
-untuk mengaktifkan fullscreen. Untuk refresh, gunakan menu titik tiga di dalam
-halaman Scan QR lalu **Muat ulang**; fullscreen dikelola oleh jendela aplikasi.
+Persyaratan: JDK 17, Android SDK Platform 35, Build Tools 35.0.0, dan akses internet
+untuk mengunduh dependensi Gradle. Minimum perangkat adalah Android 8.0 (API 26).
 
-Membuka URL di tab Chrome biasa tetap tunduk pada aturan interaksi pengguna untuk
-Fullscreen API. Membuat pintasan biasa yang kembali membuka tab Chrome tidak sama
-dengan memasang aplikasi. HTTP melalui alamat IP lokal bukan HTTPS yang valid.
+1. Buka folder `android/absensi` dari checkout proyek ini di Android Studio.
+2. Atur Gradle JDK ke JDK 17, pasang SDK yang diminta, lalu lakukan Gradle Sync.
+3. Pilih **Build → Generate App Bundles or APKs → Generate APKs** untuk APK debug.
 
-Manifest memakai scope aplikasi agar alur login tetap berada di jendela aplikasi.
-Pemasangan tidak memberikan akses tambahan: pengguna tetap harus login dan memiliki
-izin Scan QR. Absensi tetap membutuhkan koneksi ke server.
+Alternatif terminal dari folder `android/absensi`, dengan SDK sudah dikonfigurasi
+melalui `ANDROID_HOME` atau `local.properties`:
 
-Prefix `mpanel` berasal dari `App\Providers\BaseRouteServiceProvider`. URL relatif
-`../mpanel/scan-qrcode` pada `id` dan `start_url` dihitung dari lokasi manifest
-`/scan-qr/manifest.webmanifest`. Jika aplikasi sudah dipasang menggunakan manifest
-lama yang mengarah ke `/scan-qrcode`, hapus aplikasi Scan QR lama lalu pasang ulang
-dari halaman yang benar.
+```bash
+./gradlew assembleDebug lintDebug
+```
 
-## Verifikasi pada perangkat
+APK debug berada di `android/absensi/app/build/outputs/apk/debug/app-debug.apk`.
+Untuk distribusi permanen, gunakan **Generate Signed App Bundle or APK** di
+Android Studio dan simpan keystore dengan baik agar update aplikasi berikutnya
+bisa memakai identitas penandatanganan yang sama. Jangan commit keystore.
 
-- Pastikan ikon Absensi membuka aplikasi tanpa bilah alamat Chrome.
-- Dari ikon tersebut, periksa fullscreen sebelum menyentuh halaman.
-- Gunakan **Muat ulang**, lalu periksa bahwa halaman kembali dalam fullscreen.
-- Tutup dan buka aplikasi kembali, lalu coba pemindaian QR dan suara hasilnya.
-- Uji login ulang ketika sesi berakhir dan pastikan dapat kembali ke Scan QR.
+## Pengaturan awal sekali per perangkat
 
-Referensi: [fullscreen aplikasi terpasang](https://web.dev/articles/fullscreen)
-dan [kriteria pemasangan Chrome](https://web.dev/articles/install-criteria).
+1. Pasang APK dan izinkan pemasangan dari sumber tersebut jika Android meminta.
+2. Buka **Absensi** dan masukkan alamat HTTPS website sekolah, misalnya
+   `https://absensi.sekolah.sch.id`. Alamat contoh ini harus diganti dengan server
+   yang sebenarnya. Alamat lengkap `/mpanel/scan-qrcode` juga diterima.
+3. Login menggunakan akun proyek yang memiliki akses menu Scan QR. Sesi WebView
+   terpisah dari Chrome; pilih **Ingat saya** jika sesi perlu bertahan.
+4. Jika role akun mengarahkan login ke dashboard/menu lain, tekan menu aplikasi
+   **⋮** di kanan atas lalu **Scan QR**.
+5. Izinkan kamera saat Android meminta. Izin mikrofon tidak diperlukan.
+
+Setelah pengaturan awal, pembukaan aplikasi langsung menuju scanner dalam
+fullscreen. Sesi login yang berakhir tetap membutuhkan login ulang. Izin kamera
+yang dicabut atau izin sekali pakai tetap mengikuti aturan Android.
+
+## Kontrol aplikasi
+
+Menu **⋮** di kanan atas atau tombol Back Android menyediakan:
+
+- **Scan QR**: kembali ke scanner.
+- **Muat ulang**: refresh halaman tanpa keluar fullscreen.
+- **Kembali ke halaman sebelumnya**: membuka riwayat halaman WebView.
+- **Alamat server**: mengganti alamat server; perubahan alamat membersihkan
+  cookie aplikasi dan membutuhkan login ulang.
+- **Keluar aplikasi**: menutup aplikasi.
+
+Layar tetap menyala selama aplikasi aktif. Audio diatur agar tidak membutuhkan
+gesture melalui WebSettings; perangkat tetap harus memiliki volume media yang
+sesuai. Gunakan Android System WebView terbaru untuk kamera dan decoder QR/WASM.
+
+Website tetap harus tersedia lewat HTTPS dengan sertifikat valid. Aplikasi tidak
+mengabaikan kesalahan sertifikat, membuka URL file lokal, atau memberikan izin
+kamera ke origin lain. CDN yang dipakai proyek tetap membutuhkan koneksi internet.
+Login, otorisasi, dan penyimpanan absensi tetap dikelola Laravel yang sudah ada.
+
+Ini mode immersive, bukan penguncian perangkat: Android masih dapat menampilkan
+bilah navigasi sementara saat pengguna menggeser dari tepi layar. Fullscreen tab
+Chrome biasa tidak berubah. Manifest PWA lama tetap tersedia untuk pengguna web,
+tetapi tidak dipakai oleh APK.
+
+## Verifikasi pada HP
+
+- Buka aplikasi dan periksa fullscreen sebelum menyentuh halaman.
+- Login, beri izin kamera, dan pindai QR yang valid; periksa hasil absensi dan audio.
+- Muat ulang melalui menu aplikasi dan melalui menu halaman; fullscreen tetap aktif.
+- Tutup/buka aplikasi, pindah aplikasi lalu kembali, dan putar layar.
+- Uji penolakan izin kamera, lalu izinkan dari pengaturan Android dan muat ulang.
+- Uji sesi kedaluwarsa, jaringan terputus, alamat salah, serta pemulihan lewat menu.
+
+Tes validasi URL dan origin tanpa SDK (jalankan dari root repository):
+
+```bash
+mkdir -p /tmp/absensi-url-tests
+javac -d /tmp/absensi-url-tests android/absensi/app/src/main/java/id/sch/smkn2/absensi/ServerAddress.java android/absensi/tests/ServerAddressTest.java
+java -cp /tmp/absensi-url-tests id.sch.smkn2.absensi.ServerAddressTest
+```
+
+Referensi implementasi: [immersive mode Android](https://developer.android.com/develop/ui/views/layout/immersive),
+[izin WebView](https://developer.android.com/reference/android/webkit/PermissionRequest),
+dan [pengaturan media WebView](https://developer.android.com/reference/android/webkit/WebSettings#setMediaPlaybackRequiresUserGesture(boolean)).

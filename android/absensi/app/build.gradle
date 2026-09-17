@@ -1,0 +1,33 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'id.sch.smkn2.absensi'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'id.sch.smkn2.absensi'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // Reuse the exact school logo, without modifying the source image.
+    sourceSets.main.res.srcDir layout.buildDirectory.dir('generated/schoolLogo')
+}
+
+tasks.register('copySchoolLogo', Copy) {
+    from rootProject.file('../../public/assets/img/logo_smkn_2.png')
+    into layout.buildDirectory.dir('generated/schoolLogo/drawable-nodpi')
+}
+
+tasks.named('preBuild').configure {
+    dependsOn 'copySchoolLogo'
+}
