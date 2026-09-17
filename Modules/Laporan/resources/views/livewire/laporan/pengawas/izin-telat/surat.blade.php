@@ -93,29 +93,18 @@
 
         <div class="w-full">
 
-            <h1 class="mb-3 text-center text-[10px] font-bold uppercase">
+            <h1 class="mb-3 text-center text-[12px] font-bold uppercase">
                 Surat Izin Telat
             </h1>
 
             <div class="flex flex-col space-y-2">
 
-                <div class="text-[8px]">
+                <div class="text-[10px]">
                     <p class="font-semibold">Nama :</p>
                     <p>{{ $absen->murid->nama }}</p>
                 </div>
 
-                <div class="text-[8px]">
-                    <p class="font-semibold">Kelas :</p>
-                    <p>{{ $absen->murid->rombel->nama_lengkap ?? 'N/A' }}</p>
-                </div>
-
-                <div class="text-[8px]">
-                    <p class="font-semibold">Tanggal & Waktu :</p>
-                    <p>{{ $absen->tanggal->locale('id')->translatedFormat('d F Y') }}</p>
-                    <p>{{ $absen->waktu_masuk }} WITA</p>
-                </div>
-
-                <div class="text-[8px]">
+                <div class="text-[10px]">
                     <p class="font-semibold">Alasan Terlambat :</p>
                     <p class="whitespace-pre-line break-words">{{ $absen->keterangan }}</p>
                 </div>

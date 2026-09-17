@@ -65,8 +65,8 @@
 
     /* QR */
     #qrcode {
-        width: 26mm !important;
-        height: 26mm !important;
+        width: 30mm !important;
+        height: 30mm !important;
 
         display: block !important;
 
@@ -83,7 +83,7 @@
 </style>
 @endassets
 
-<div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
+<div class="flex flex-col items-center justify-center bg-gray-100 p-4">
 
     <button
         type="button"
