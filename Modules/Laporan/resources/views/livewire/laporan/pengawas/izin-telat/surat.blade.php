@@ -40,7 +40,6 @@
             max-width: 58mm !important;
 
             margin: 0 !important;
-            padding: 3mm !important;
 
             box-sizing: border-box !important;
 
