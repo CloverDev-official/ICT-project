@@ -10,6 +10,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+        @if (request()->routeIs('scan-qrcode'))
+            <link rel="manifest" href="{{ url('scan-qr/manifest.webmanifest') }}">
+            <meta name="theme-color" content="#020617">
+        @endif
+
         <title>{{ $title ?? $siteName }}</title>
 
         <!-- favicon -->

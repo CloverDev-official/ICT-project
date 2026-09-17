@@ -2,30 +2,68 @@
     x-data="{
         mobile: /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
         active: false,
+        appFullscreen: false,
         open: false,
         error: '',
         supported: false,
+        autoFullscreenRequest: false,
         sync() {
             this.active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            // Fullscreen aplikasi terpasang tidak mengisi document.fullscreenElement.
+            this.appFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
         },
         init() {
             const root = document.documentElement;
             this.supported = !!((root.requestFullscreen && document.fullscreenEnabled !== false) || (root.webkitRequestFullscreen && document.webkitFullscreenEnabled !== false));
             this.sync();
+            this.enterFullscreen(false);
+        },
+        enterFullscreen(showError = true) {
+            this.sync();
+            if (!this.supported || this.active || this.appFullscreen) {
+                return;
+            }
+
+            const target = document.documentElement;
+            const action = target.requestFullscreen || target.webkitRequestFullscreen;
+
+            if (!action) {
+                if (showError) this.error = 'Browser ini tidak mendukung fullscreen.';
+                return;
+            }
+
+            try {
+                this.autoFullscreenRequest = !showError;
+                const result = action.call(target);
+                if (result && typeof result.catch === 'function') {
+                    result
+                        .catch(() => {
+                            if (showError) this.error = 'Fullscreen ditolak oleh browser. Silakan coba lagi.';
+                        })
+                        .finally(() => { this.autoFullscreenRequest = false; });
+                } else {
+                    this.autoFullscreenRequest = false;
+                }
+            } catch (error) {
+                this.autoFullscreenRequest = false;
+                if (showError) this.error = 'Fullscreen tidak dapat diaktifkan pada browser ini.';
+            }
         },
         toggle() {
             this.error = '';
             this.sync();
-            const target = this.active ? document : document.documentElement;
-            const action = this.active
-                ? (document.exitFullscreen || document.webkitExitFullscreen)
-                : (target.requestFullscreen || target.webkitRequestFullscreen);
+            if (!this.active) {
+                this.enterFullscreen();
+                return;
+            }
+
+            const action = document.exitFullscreen || document.webkitExitFullscreen;
             if (!action) {
                 this.error = 'Browser ini tidak mendukung fullscreen.';
                 return;
             }
             try {
-                const result = action.call(target);
+                const result = action.call(document);
                 if (result && typeof result.catch === 'function') {
                     result.catch(() => { this.error = 'Fullscreen ditolak oleh browser. Silakan coba lagi.'; });
                 }
@@ -36,8 +74,9 @@
     }"
     x-on:fullscreenchange.document="sync()"
     x-on:webkitfullscreenchange.document="sync()"
-    x-on:fullscreenerror.document="error = 'Fullscreen ditolak oleh browser. Silakan coba lagi.'"
-    x-on:webkitfullscreenerror.document="error = 'Fullscreen ditolak oleh browser. Silakan coba lagi.'"
+    x-on:fullscreenerror.document="if (!autoFullscreenRequest) error = 'Fullscreen ditolak oleh browser. Silakan coba lagi.'"
+    x-on:webkitfullscreenerror.document="if (!autoFullscreenRequest) error = 'Fullscreen ditolak oleh browser. Silakan coba lagi.'"
+    x-on:click.window.once="if (!$el.contains($event.target)) enterFullscreen(false)"
     x-on:click.outside="open = false"
     x-on:keydown.escape.stop="open = false; $refs.trigger.focus()"
     aria-label="Kontrol halaman scan"
@@ -69,7 +108,7 @@
         class="flex max-w-full origin-bottom-right flex-col items-end gap-2.5">
         <button
             type="button"
-            x-show="mobile && open"
+            x-show="mobile && open && !appFullscreen"
             x-transition:enter="transition ease-out duration-200 delay-75 motion-reduce:transition-none"
             x-transition:enter-start="opacity-0 translate-y-2 scale-95"
             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
@@ -84,6 +123,14 @@
             class="flex min-h-11 max-w-full items-center gap-2.5 rounded-full border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-medium text-gray-800 shadow-lg shadow-gray-900/10 backdrop-blur-xl transition duration-200 enabled:hover:bg-white/95 enabled:active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none dark:border-white/10 dark:bg-gray-900/85 dark:text-gray-100 dark:enabled:hover:bg-gray-800/95 dark:focus-visible:ring-offset-gray-900">
             <iconify-icon x-bind:icon="active ? 'solar:quit-full-screen-linear' : 'solar:full-screen-linear'" width="20" height="20" aria-hidden="true" class="shrink-0 text-blue-600 dark:text-blue-300"></iconify-icon>
             <span x-text="active ? 'Keluar Fullscreen' : 'Fullscreen'"></span>
+        </button>
+
+        <button
+            type="button"
+            x-on:click="window.location.reload()"
+            class="flex min-h-11 max-w-full items-center gap-2.5 rounded-full border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-medium text-gray-800 shadow-lg backdrop-blur-xl hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-gray-900/85 dark:text-gray-100">
+            <iconify-icon icon="solar:refresh-linear" width="20" height="20" aria-hidden="true" class="shrink-0 text-blue-600 dark:text-blue-300"></iconify-icon>
+            <span>Muat ulang</span>
         </button>
 
         <a href="{{ route('pilih-absen') }}"
