@@ -83,7 +83,7 @@
 </style>
 @endassets
 
-<div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
+<div class="flex min-h-screen flex-col items-center justify-center bg-gray-100">
     <button type="button" onclick="window.print()" class="mb-5 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Cetak Ulang</button>
 
     <div
