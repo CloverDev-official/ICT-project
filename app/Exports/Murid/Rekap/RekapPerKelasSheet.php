@@ -82,14 +82,20 @@ class RekapPerKelasSheet implements FromQuery, WithChunkReading, WithColumnWidth
             ->where('rombel.id', $this->rombelId)
             ->select('murid.id')
             ->select('murid.nama')
-            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as hadir', [AttendanceStatus::Hadir->value])
+            ->selectRaw(
+                'SUM(CASE WHEN absen_murid.status = ? OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NOT NULL) THEN 1 ELSE 0 END) as hadir',
+                [AttendanceStatus::Hadir->value, AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('SUM(CASE WHEN absen_murid.status IN (?, ?, ?) THEN 1 ELSE 0 END) as izin', [
                 AttendanceStatus::Izin->value,
                 AttendanceStatus::Sakit->value,
                 AttendanceStatus::Selesai->value,
             ])
             ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as alpa', [AttendanceStatus::Alpa->value])
-            ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) = 'masuk' THEN 1 ELSE 0 END) as tidak_absen_pulang")
+            ->selectRaw(
+                "SUM(CASE WHEN LOWER(absen_murid.status) = 'masuk' OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NULL) THEN 1 ELSE 0 END) as tidak_absen_pulang",
+                [AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('COUNT(absen_murid.id) as total')
             ->groupBy('murid.id', 'murid.nama')
             ->orderBy('murid.nama');
@@ -281,14 +287,20 @@ class RekapPerKelasSheet implements FromQuery, WithChunkReading, WithColumnWidth
                 }
             })
             ->where('rombel.id', $this->rombelId)
-            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as hadir', [AttendanceStatus::Hadir->value])
+            ->selectRaw(
+                'SUM(CASE WHEN absen_murid.status = ? OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NOT NULL) THEN 1 ELSE 0 END) as hadir',
+                [AttendanceStatus::Hadir->value, AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('SUM(CASE WHEN absen_murid.status IN (?, ?, ?) THEN 1 ELSE 0 END) as izin', [
                 AttendanceStatus::Izin->value,
                 AttendanceStatus::Sakit->value,
                 AttendanceStatus::Selesai->value,
             ])
             ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as alpa', [AttendanceStatus::Alpa->value])
-            ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) = 'masuk' THEN 1 ELSE 0 END) as tidak_absen_pulang")
+            ->selectRaw(
+                "SUM(CASE WHEN LOWER(absen_murid.status) = 'masuk' OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NULL) THEN 1 ELSE 0 END) as tidak_absen_pulang",
+                [AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('COUNT(absen_murid.id) as total')
             ->selectRaw('COUNT(DISTINCT murid.id) as jumlah_murid')
             ->first();

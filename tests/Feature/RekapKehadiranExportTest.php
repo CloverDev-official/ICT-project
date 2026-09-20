@@ -53,4 +53,46 @@ class RekapKehadiranExportTest extends TestCase
         $this->assertSame('95.00%', $perKelas->map($perKelas->query()->first())[6]);
         $this->assertSame('95.00%', $semuaKelas->map($semuaKelas->query()->first())[6]);
     }
+
+    public function test_late_attendance_is_present_only_when_entry_and_exit_are_recorded(): void
+    {
+        $rombel = Rombel::create([
+            'tahun_masuk' => '2026',
+            'tingkat_id' => Tingkat::create(['nama' => 'X'])->id,
+            'jurusan_id' => Jurusan::create(['nama' => 'RPL'])->id,
+            'indeks_id' => Indeks::create(['nama' => 'A'])->id,
+        ]);
+        $murid = Murid::create([
+            'nama' => 'Murid Terlambat', 'nipd' => '101', 'nisn' => '201', 'jk' => 'L',
+            'tempat_lahir' => 'Banjarmasin', 'tanggal_lahir' => '2010-01-01', 'rombel_id' => $rombel->id,
+        ]);
+
+        AbsenMurid::create([
+            'murid_id' => $murid->id,
+            'tanggal' => '2026-09-01',
+            'waktu_masuk' => '08:00:00',
+            'waktu_keluar' => '16:00:00',
+            'status' => AttendanceStatus::Terlambat->value,
+        ]);
+        AbsenMurid::create([
+            'murid_id' => $murid->id,
+            'tanggal' => '2026-09-02',
+            'waktu_masuk' => '08:00:00',
+            'status' => AttendanceStatus::Terlambat->value,
+        ]);
+        AbsenMurid::create([
+            'murid_id' => $murid->id,
+            'tanggal' => '2026-09-03',
+            'waktu_masuk' => '07:00:00',
+            'status' => AttendanceStatus::Masuk->value,
+        ]);
+
+        $perKelas = new RekapPerKelasSheet('2026-09-01', '2026-09-03', $rombel->id);
+        $semuaKelas = new RekapSemuaKelasSheet('2026-09-01', '2026-09-03');
+
+        $this->assertSame(1, $perKelas->map($perKelas->query()->first())[2]);
+        $this->assertSame(2, $perKelas->map($perKelas->query()->first())[5]);
+        $this->assertSame(1, $semuaKelas->map($semuaKelas->query()->first())[2]);
+        $this->assertSame(2, $semuaKelas->map($semuaKelas->query()->first())[5]);
+    }
 }
