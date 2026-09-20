@@ -72,15 +72,18 @@ class AutoAlpaMuridService
 
         $now ??= $date->isToday() ? now() : $date->copy()->endOfDay();
         $scanMasukSampai = $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
+        $scanKeluarSampai = $this->normalizeTime($jadwal['scan_keluar_sampai'] ?? null);
 
-        if (! $scanMasukSampai) {
+        if (! $scanMasukSampai || ! $scanKeluarSampai) {
             return 0;
         }
 
-        // Murid baru ditandai alpa setelah jendela scan masuk berakhir.
-        $autoAlpaStartsAt = $date->copy()->setTimeFromTimeString($scanMasukSampai)->addMinute();
+        // Auto alpa berjalan setelah batas scan masuk, selama jendela scan
+        // pulang belum berakhir.
+        $scanMasukBerakhirPada = $date->copy()->setTimeFromTimeString($scanMasukSampai)->addMinute();
+        $scanPulangBerakhirPada = $date->copy()->setTimeFromTimeString($scanKeluarSampai);
 
-        if ($now->lt($autoAlpaStartsAt)) {
+        if ($now->lt($scanMasukBerakhirPada) || $now->gte($scanPulangBerakhirPada)) {
             return 0;
         }
 

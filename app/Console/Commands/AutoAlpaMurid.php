@@ -15,7 +15,7 @@ class AutoAlpaMurid extends Command
                             {--date= : Tanggal absensi dengan format YYYY-MM-DD}
                             {--rombel_id= : ID rombel yang ingin diproses}';
 
-    protected $description = 'Tandai alpa setelah batas scan pulang lewat dan untuk izin keluar yang tidak diselesaikan.';
+    protected $description = 'Tandai alpa setelah batas scan masuk lewat sebelum scan pulang berakhir, serta izin keluar yang tidak diselesaikan.';
 
     public function handle(
         AutoAlpaMuridService $autoAlpaService,

@@ -63,6 +63,17 @@ class AutoAlpaMuridServiceTest extends TestCase
             $this->normalSchedule(),
             now(),
         ));
+
+        $afterPulangStudentId = $this->createStudent($rombelId, 'after-pulang');
+        Carbon::setTestNow('2026-09-16 16:00:00');
+
+        $this->assertSame(0, app(AutoAlpaMuridService::class)->syncForRombel(
+            $rombelId,
+            '2026-09-16',
+            $this->normalSchedule(),
+            now(),
+        ));
+        $this->assertDatabaseMissing('absen_murid', ['murid_id' => $afterPulangStudentId]);
     }
 
     public function test_it_skips_non_attendance_schedules_and_invalid_scan_end_times(): void
@@ -78,6 +89,10 @@ class AutoAlpaMuridServiceTest extends TestCase
 
         $invalidTimeSchedule = $this->normalSchedule();
         $invalidTimeSchedule['scan_masuk_sampai'] = '25:00';
+        $this->assertSame(0, $service->syncForRombel($rombelId, '2026-09-16', $invalidTimeSchedule, now()));
+
+        $invalidTimeSchedule = $this->normalSchedule();
+        $invalidTimeSchedule['scan_keluar_sampai'] = '25:00';
         $this->assertSame(0, $service->syncForRombel($rombelId, '2026-09-16', $invalidTimeSchedule, now()));
 
         $this->assertDatabaseMissing('absen_murid', ['murid_id' => $studentId]);
@@ -172,6 +187,7 @@ class AutoAlpaMuridServiceTest extends TestCase
         return [
             'tipe' => 'normal',
             'scan_masuk_sampai' => '07:30',
+            'scan_keluar_sampai' => '16:00',
             'label' => 'Jadwal reguler',
         ];
     }
