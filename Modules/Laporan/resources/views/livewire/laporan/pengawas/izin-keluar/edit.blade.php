@@ -92,6 +92,7 @@
                         <select wire:model.defer="status" class="{{ $inputClass }} pl-12">
                             <option value="selesai">Selesai</option>
                             <option value="izin">Izin</option>
+                            <option value="alpa">Alpa</option>
                         </select>
                     </div>
 
