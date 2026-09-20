@@ -4,12 +4,32 @@ namespace Modules\ScanQR\Services;
 
 use App\Enums\AttendanceStatus;
 use App\Enums\StudentStatus;
+use App\Models\Murid\AbsenMurid;
+use App\Models\Murid\IzinMurid;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class AutoAlpaMuridService
 {
+    public function syncExpiredIzinKeluar(?Carbon $now = null): int
+    {
+        $today = ($now ?? now())->toDateString();
+        $izinIds = IzinMurid::query()
+            ->where('status', AttendanceStatus::Izin->value)
+            ->where('tanggal', '<', $today)
+            ->orderBy('id')
+            ->pluck('id');
+
+        $totalUpdated = 0;
+
+        foreach ($izinIds as $izinId) {
+            $totalUpdated += $this->markExpiredIzinKeluarAsAlpa((int) $izinId, $today);
+        }
+
+        return $totalUpdated;
+    }
+
     public function syncForRombels(iterable $rombelIds, Carbon|string $tanggal, ?Carbon $now = null): int
     {
         $date = $tanggal instanceof Carbon
@@ -87,6 +107,53 @@ class AutoAlpaMuridService
                 [$tanggal, AttendanceStatus::Alpa->value, $keterangan, $timestamp, $timestamp],
             ),
         );
+    }
+
+    private function markExpiredIzinKeluarAsAlpa(int $izinId, string $today): int
+    {
+        return DB::transaction(function () use ($izinId, $today): int {
+            $izin = IzinMurid::query()
+                ->whereKey($izinId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $izin || $izin->status !== AttendanceStatus::Izin->value) {
+                return 0;
+            }
+
+            $tanggalIzin = $izin->tanggal?->toDateString();
+
+            if (! $tanggalIzin || $tanggalIzin >= $today) {
+                return 0;
+            }
+
+            // Hanya absensi yang masih terhubung dengan izin keluar aktif yang
+            // boleh menjadi alpa. Status Izin yang dicatat/manual di luar
+            // proses izin keluar tidak memiliki IzinMurid dan tidak tersentuh.
+            $absen = AbsenMurid::query()
+                ->where('murid_id', $izin->murid_id)
+                ->where('tanggal', $tanggalIzin)
+                ->where('status', AttendanceStatus::Izin->value)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $absen) {
+                return 0;
+            }
+
+            if (! $izin->update(['status' => AttendanceStatus::Alpa->value])) {
+                throw new \RuntimeException('Status izin keluar gagal diubah menjadi alpa.');
+            }
+
+            if (! $absen->update([
+                'status' => AttendanceStatus::Alpa->value,
+                'keterangan' => 'Izin keluar tidak diselesaikan dengan scan QR pada tanggal izin.',
+            ])) {
+                throw new \RuntimeException('Status absensi izin keluar gagal diubah menjadi alpa.');
+            }
+
+            return 1;
+        });
     }
 
     private function missingAbsenQuery(int $rombelId, string $tanggal)

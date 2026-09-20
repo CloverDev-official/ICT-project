@@ -14,7 +14,7 @@ class AutoAlpaMurid extends Command
                             {--date= : Tanggal absensi dengan format YYYY-MM-DD}
                             {--rombel_id= : ID rombel yang ingin diproses}';
 
-    protected $description = 'Tandai murid aktif yang belum scan masuk sebagai Alpa setelah batas scan masuk lewat.';
+    protected $description = 'Tandai alpa untuk murid yang belum scan masuk dan izin keluar yang tidak diselesaikan.';
 
     public function handle(
         AutoAlpaMuridService $autoAlpaService,
@@ -24,6 +24,8 @@ class AutoAlpaMurid extends Command
         if (! $date) {
             return self::FAILURE;
         }
+
+        $totalIzinKeluarUpdated = $autoAlpaService->syncExpiredIzinKeluar();
 
         $rombelId = $this->resolveRombelId();
 
@@ -47,8 +49,8 @@ class AutoAlpaMurid extends Command
         $totalCreated = $autoAlpaService->syncForRombels($rombelIds, $date, $now);
 
         $this->table(
-            ['Tanggal', 'Rombel diproses', 'Data alpa baru'],
-            [[$date->toDateString(), $rombelIds->count(), $totalCreated]],
+            ['Tanggal', 'Rombel diproses', 'Data alpa baru', 'Izin keluar jadi alpa'],
+            [[$date->toDateString(), $rombelIds->count(), $totalCreated, $totalIzinKeluarUpdated]],
         );
 
         return self::SUCCESS;

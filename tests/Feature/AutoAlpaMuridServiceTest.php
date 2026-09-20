@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\AttendanceStatus;
 use App\Enums\StudentStatus;
+use App\Models\Murid\AbsenMurid;
+use App\Models\Murid\IzinMurid;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +81,64 @@ class AutoAlpaMuridServiceTest extends TestCase
         $this->assertSame(0, $service->syncForRombel($rombelId, '2026-09-16', $invalidTimeSchedule, now()));
 
         $this->assertDatabaseMissing('absen_murid', ['murid_id' => $studentId]);
+    }
+
+    public function test_it_marks_only_expired_unscanned_izin_keluar_as_alpa(): void
+    {
+        Carbon::setTestNow('2026-09-17 00:01:00');
+        $rombelId = $this->createRombel();
+        $izinKeluarStudentId = $this->createStudent($rombelId, 'izin-keluar');
+        $manualIzinStudentId = $this->createStudent($rombelId, 'manual-izin');
+        $changedStudentId = $this->createStudent($rombelId, 'changed-izin');
+
+        $izinKeluarAbsen = AbsenMurid::create([
+            'murid_id' => $izinKeluarStudentId,
+            'tanggal' => '2026-09-16',
+            'waktu_masuk' => '07:00:00',
+            'status' => AttendanceStatus::Izin->value,
+        ]);
+        $izinKeluar = IzinMurid::create([
+            'murid_id' => $izinKeluarStudentId,
+            'tanggal' => '2026-09-16',
+            'alasan' => 'Keperluan keluarga',
+            'dari_jam' => '10:00:00',
+            'status' => AttendanceStatus::Izin->value,
+            'status_absensi_sebelumnya' => AttendanceStatus::Hadir->value,
+        ]);
+
+        AbsenMurid::create([
+            'murid_id' => $manualIzinStudentId,
+            'tanggal' => '2026-09-16',
+            'status' => AttendanceStatus::Izin->value,
+        ]);
+        $changedAbsen = AbsenMurid::create([
+            'murid_id' => $changedStudentId,
+            'tanggal' => '2026-09-16',
+            'status' => AttendanceStatus::Sakit->value,
+        ]);
+        $changedIzin = IzinMurid::create([
+            'murid_id' => $changedStudentId,
+            'tanggal' => '2026-09-16',
+            'alasan' => 'Status diubah manual',
+            'dari_jam' => '10:00:00',
+            'status' => AttendanceStatus::Izin->value,
+        ]);
+
+        $updated = app(AutoAlpaMuridService::class)->syncExpiredIzinKeluar(now());
+
+        $this->assertSame(1, $updated);
+        $this->assertSame(AttendanceStatus::Alpa->value, $izinKeluar->fresh()->status);
+        $this->assertSame(AttendanceStatus::Alpa->value, $izinKeluarAbsen->fresh()->status);
+        $this->assertSame(
+            'Izin keluar tidak diselesaikan dengan scan QR pada tanggal izin.',
+            $izinKeluarAbsen->fresh()->keterangan,
+        );
+        $this->assertDatabaseHas('absen_murid', [
+            'murid_id' => $manualIzinStudentId,
+            'status' => AttendanceStatus::Izin->value,
+        ]);
+        $this->assertSame(AttendanceStatus::Izin->value, $changedIzin->fresh()->status);
+        $this->assertSame(AttendanceStatus::Sakit->value, $changedAbsen->fresh()->status);
     }
 
     private function createRombel(): int

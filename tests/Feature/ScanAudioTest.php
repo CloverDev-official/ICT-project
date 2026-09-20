@@ -82,7 +82,7 @@ class ScanAudioTest extends TestCase
         $this->assertDatabaseCount('absen_murid', 1);
     }
 
-    public function test_completed_permission_after_its_date_does_not_restore_attendance_status(): void
+    public function test_unscanned_permission_after_its_date_becomes_alpa(): void
     {
         $this->travelTo(now()->setDate(2026, 9, 9)->setTime(7, 0));
         $student = $this->student();
@@ -104,11 +104,11 @@ class ScanAudioTest extends TestCase
         $scan = new Scan;
         $scan->verifiedQRCode($student->uuid.'>'.$izin->uuid);
 
-        $this->assertResult($scan, 'permission_success');
-        $this->assertSame(AttendanceStatus::Selesai->value, $izin->fresh()->status);
-        $this->assertSame(AttendanceStatus::Izin->value, $absen->fresh()->status);
+        $this->assertResult($scan, 'failed');
+        $this->assertSame(AttendanceStatus::Alpa->value, $izin->fresh()->status);
+        $this->assertSame(AttendanceStatus::Alpa->value, $absen->fresh()->status);
         $this->assertSame(
-            'Izin telah diproses. Status absensi tidak diubah karena QR dipindai setelah tanggal izin. Silakan gunakan QR code absensi untuk absensi.',
+            'Izin keluar telah berubah menjadi alpa karena QR izin tidak dipindai pada tanggal izin.',
             $scan->scanResult['modal']['message'],
         );
     }

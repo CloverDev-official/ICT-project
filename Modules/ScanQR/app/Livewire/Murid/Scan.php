@@ -84,6 +84,8 @@ class Scan extends Component
         $this->murid = $murid;
         $this->jadwalHariIni = $jadwal;
 
+        app(AutoAlpaMuridService::class)->syncExpiredIzinKeluar($now);
+
         if (!$this->processIzin($murid, $currentTime, $jadwal)) {
             return;
         }
@@ -246,6 +248,12 @@ class Scan extends Component
         if ($izin && $this->isContainsIzin && $izin?->status === AttendanceStatus::Selesai->value) {
             // Izin selesai tidak dapat digunakan kembali untuk proses absensi.
             $this->rejectScan('Murid sudah selesai izin. Silakan scan QR absensi.');
+            return false;
+        }
+
+        if ($izin && $this->isContainsIzin && $izin?->status === AttendanceStatus::Alpa->value) {
+            $this->rejectScan('Izin keluar telah berubah menjadi alpa karena QR izin tidak dipindai pada tanggal izin.');
+
             return false;
         }
 
