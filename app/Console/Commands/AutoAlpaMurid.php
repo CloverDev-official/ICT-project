@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Murid\Rombel\Rombel;
+use App\Support\TestDatetime;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Command;
@@ -14,18 +15,30 @@ class AutoAlpaMurid extends Command
                             {--date= : Tanggal absensi dengan format YYYY-MM-DD}
                             {--rombel_id= : ID rombel yang ingin diproses}';
 
-    protected $description = 'Tandai alpa untuk murid yang belum scan masuk dan izin keluar yang tidak diselesaikan.';
+    protected $description = 'Tandai alpa setelah batas scan pulang lewat dan untuk izin keluar yang tidak diselesaikan.';
 
     public function handle(
         AutoAlpaMuridService $autoAlpaService,
     ): int {
+        $now = TestDatetime::forScheduler() ?? now();
+        Carbon::setTestNow($now);
+
+        try {
+            return $this->handleAutoAlpa($autoAlpaService, $now);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    private function handleAutoAlpa(AutoAlpaMuridService $autoAlpaService, Carbon $now): int
+    {
         $date = $this->resolveDate();
 
         if (! $date) {
             return self::FAILURE;
         }
 
-        $totalIzinKeluarUpdated = $autoAlpaService->syncExpiredIzinKeluar();
+        $totalIzinKeluarUpdated = $autoAlpaService->syncExpiredIzinKeluar($now);
 
         $rombelId = $this->resolveRombelId();
 
@@ -33,7 +46,7 @@ class AutoAlpaMurid extends Command
             return self::FAILURE;
         }
 
-        $now = $date->isToday() ? now() : $date->copy()->endOfDay();
+        $now = $date->isToday() ? $now : $date->copy()->endOfDay();
 
         $rombelIds = Rombel::query()
             ->when($rombelId, fn ($query, $id) => $query->where('id', $id))
@@ -49,8 +62,14 @@ class AutoAlpaMurid extends Command
         $totalCreated = $autoAlpaService->syncForRombels($rombelIds, $date, $now);
 
         $this->table(
-            ['Tanggal', 'Rombel diproses', 'Data alpa baru', 'Izin keluar jadi alpa'],
-            [[$date->toDateString(), $rombelIds->count(), $totalCreated, $totalIzinKeluarUpdated]],
+            ['Tanggal', 'Jam digunakan', 'Rombel diproses', 'Data alpa baru', 'Izin keluar jadi alpa'],
+            [[
+                $date->toDateString(),
+                $now->format('H:i:s'),
+                $rombelIds->count(),
+                $totalCreated,
+                $totalIzinKeluarUpdated,
+            ]],
         );
 
         return self::SUCCESS;

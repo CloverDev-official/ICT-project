@@ -8,6 +8,10 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('absensi:auto-alpa-murid')
+$autoAlpaSchedule = Schedule::command('absensi:auto-alpa-murid')
     ->everyMinute()
     ->withoutOverlapping();
+
+if (app()->environment('local')) {
+    $autoAlpaSchedule->appendOutputTo(storage_path('logs/schedule-cron.log'));
+}
