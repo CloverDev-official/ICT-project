@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { parseAst } from 'rollup/parseAst';
 
 const buildRoot = new URL('../public/build/', import.meta.url);
@@ -17,4 +17,13 @@ const exports = ast.body
 for (const name of ['createScanAudio', 'createScanResultController']) {
     assert.ok(exports.includes(name), `Production scanner is missing ${name}`);
 }
+const assets = await readdir(new URL('assets/', buildRoot));
+assert.ok(
+    assets.some((file) => file.endsWith('.wasm')),
+    'ZXing WASM must be emitted as a local production asset',
+);
+assert.ok(
+    assets.some((file) => file.startsWith('qr-worker-') && file.endsWith('.js')),
+    'QR decoder worker must be emitted as a production asset',
+);
 console.log('Production scanner exports validated');

@@ -161,6 +161,10 @@
         let disposed = false;
         let scanAudio;
         let scanResults;
+        let isProcessingScan = false;
+        let processingQr = null;
+        let scanRequestTimer = null;
+        const scanRequestTimeout = 20000;
         const listen = (target, event, handler) => target.addEventListener(event, handler, {
             signal: lifecycle.signal
         });
@@ -169,6 +173,7 @@
             lifecycle.abort();
             clearInterval(clockTimer);
             clearTimeout(connectionCheckTimer);
+            clearTimeout(scanRequestTimer);
             connectionRequestController?.abort();
             scanResults?.dispose();
             window.destroyScanner?.();
@@ -323,14 +328,19 @@
                 const root = $wire.$el;
                 scanAudio = createScanAudio();
                 const pause = () => {
+                    window.pauseScanner?.();
                     window.scanned = true;
                 };
                 scanResults = createScanResultController({
                     audio: scanAudio,
                     pause,
                     resume: () => {
-                        // Allow the same stationary QR again after each modal closes.
-                        window.resetScannerQrLock();
+                        isProcessingScan = false;
+                        processingQr = null;
+                        // A completed/closed result is a deliberate re-arm,
+                        // including when the next card contains the same QR.
+                        window.resetScannerQrLock?.();
+                        window.resumeScanner?.();
                         window.scanned = false;
                         window.initScanner();
                     },
@@ -453,10 +463,38 @@
                     $wire.__instance.addCleanup(removeInterceptor);
                 }
                 listen(root, 'scanStarted', event => {
+                    const qr = event.detail.qr;
+                    if (disposed || isProcessingScan || qr === processingQr) return;
+                    isProcessingScan = true;
+                    processingQr = qr;
                     pause();
                     // Capture now, but serialize server state changes after modal close.
-                    scanResults.whenClosed().then(() => {
-                        if (!disposed) return $wire.verifiedQRCode(event.detail.qr);
+                    scanResults.whenClosed().then(async () => {
+                        if (disposed) return;
+                        const startedAt = performance.now();
+                        const request = $wire.verifiedQRCode(qr);
+                        const timeout = new Promise((_, reject) => {
+                            scanRequestTimer = setTimeout(
+                                () => reject(new Error('Scan request timeout')),
+                                scanRequestTimeout,
+                            );
+                        });
+                        try {
+                            await Promise.race([request, timeout]);
+                            await Promise.resolve();
+                            if (!scanResults.isOpen()) transportFailure();
+                        } catch {
+                            transportFailure();
+                        } finally {
+                            clearTimeout(scanRequestTimer);
+                            scanRequestTimer = null;
+                            if (window.SCAN_DEBUG === true) {
+                                console.debug('[ScanQR] Livewire request', {
+                                    duration: performance.now() - startedAt,
+                                    qr,
+                                });
+                            }
+                        }
                     }).catch(transportFailure);
                 });
                 // Capture close actions before Livewire sends its own duplicate request.

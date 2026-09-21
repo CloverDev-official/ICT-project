@@ -1,105 +1,308 @@
-// Modules/ScanQR/resources/assets/js/scanner.js
-
+import { createDecoderPipeline } from './decoder-pipeline.js';
+import { mapPointToSource } from './frame-utils.js';
 import { createScanAudio } from './scan-audio.js';
 import { createScanLock } from './scan-lock.js';
+import {
+    createAdaptiveScanScheduler,
+    isLowPowerDevice,
+} from './scan-scheduler.js';
+
 export { createScanAudio };
 export { createScanResultController } from './scan-result.js';
+
+const FULL_FRAME_EVERY = 4;
+const DEBUG_REPORT_INTERVAL = 5000;
 const qrLock = createScanLock();
+
 let generation = 0;
-let decoding = false;
-window.resetScannerQrLock = () => qrLock.reset();
+let scanner = null;
+let isStarting = false;
 
-import { readBarcodes } from 'zxing-wasm/reader';
-
-// =========================
-// MODULE STATE
-// =========================
-
-let animationFrame = null;
-let stream = null; // ← di-reuse, TIDAK di-stop saat destroy
-let videoEl = null;
-let overlayCanvas = null;
-let overlayCtx = null;
-let scanCanvas = null;
-let scanCtx = null;
-let resizeObserver = null;
-let isRunning = false;
-let lastScanTime = 0;
-let isDestroying = false; // ← guard double-call
-
-const SCAN_WIDTH = 640;
-const SCAN_HEIGHT = 480;
-
-const INTERVAL_IDLE = 100;
-const INTERVAL_ACTIVE = 50;
-let scanInterval = INTERVAL_IDLE;
-
-// =========================
-// INTERNAL CLEANUP
-// Tidak stop stream — reuse untuk reinit cepat
-// =========================
-
-function cleanup() {
-    isRunning = false;
-    generation++;
-
-    if (animationFrame !== null) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
-    }
-
-    if (videoEl !== null) {
-        videoEl.pause();
-        videoEl.srcObject = null;
-        videoEl = null;
-    }
-
-    if (resizeObserver !== null) {
-        resizeObserver.disconnect();
-        resizeObserver = null;
-    }
-
-    overlayCtx = null;
-    overlayCanvas = null;
-    scanCtx = null;
-    scanCanvas = null;
-    lastScanTime = 0;
-    scanInterval = INTERVAL_IDLE;
+function debugEnabled() {
+    return import.meta.env.DEV && globalThis.SCAN_DEBUG === true;
 }
 
-// =========================
-// DESTROY
-// =========================
+function stopStream(stream) {
+    stream?.getTracks().forEach((track) => {
+        track.onended = null;
+        track.stop();
+    });
+}
 
-window.destroyScanner = () => {
-    // Guard: cegah double-call
-    if (isDestroying) return;
-    isDestroying = true;
+async function enableContinuousFocus(stream) {
+    const track = stream?.getVideoTracks()[0];
+    if (!track?.getCapabilities || !track.applyConstraints) return;
+    try {
+        const capabilities = track.getCapabilities();
+        const continuous = {};
+        if (capabilities.focusMode?.includes('continuous')) {
+            continuous.focusMode = 'continuous';
+        }
+        if (capabilities.exposureMode?.includes('continuous')) {
+            continuous.exposureMode = 'continuous';
+        }
+        if (capabilities.whiteBalanceMode?.includes('continuous')) {
+            continuous.whiteBalanceMode = 'continuous';
+        }
+        if (!Object.keys(continuous).length) return;
+        await track.applyConstraints({ advanced: [continuous] });
+    } catch {
+        // Unsupported focus constraints must never prevent camera startup.
+    }
+}
 
-    cleanup();
+function teardown({ clearReader = true } = {}) {
+    const current = scanner;
+    scanner = null;
+    isStarting = false;
+    generation++;
+    if (!current) {
+        if (clearReader) document.getElementById('reader')?.replaceChildren();
+        return;
+    }
 
-    const reader = document.getElementById('reader');
-    if (reader) reader.innerHTML = '';
+    current.running = false;
+    cancelAnimationFrame(current.animationFrame);
+    current.lifecycle.abort();
+    current.resizeObserver?.disconnect();
+    current.pipeline?.dispose();
+    current.video.pause();
+    current.video.srcObject = null;
+    stopStream(current.stream);
+    current.overlayContext = null;
+    if (clearReader) current.reader.replaceChildren();
+}
 
-    isDestroying = false;
+function showCameraError(reader, message) {
+    reader.replaceChildren();
+    const notice = document.createElement('div');
+    notice.className =
+        'flex h-full min-h-64 items-center justify-center p-6 text-center text-sm text-red-300';
+    notice.textContent = message;
+    reader.appendChild(notice);
+    reader.dispatchEvent(
+        new CustomEvent('scanError', {
+            bubbles: true,
+            detail: { message },
+        }),
+    );
+}
+
+function cameraErrorMessage(error) {
+    if (error?.name === 'NotAllowedError') {
+        return 'Izin kamera ditolak. Izinkan akses kamera lalu muat ulang halaman.';
+    }
+    if (error?.name === 'NotFoundError') {
+        return 'Kamera tidak ditemukan pada perangkat ini.';
+    }
+    return 'Kamera tidak dapat digunakan. Periksa kamera lalu coba lagi.';
+}
+
+function scalePoint(point, frame, overlay) {
+    const source = mapPointToSource(point, frame);
+    const videoRatio = frame.sourceWidth / frame.sourceHeight;
+    const canvasRatio = overlay.width / overlay.height;
+    let drawWidth;
+    let drawHeight;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    if (canvasRatio > videoRatio) {
+        drawWidth = overlay.width;
+        drawHeight = overlay.width / videoRatio;
+        offsetY = (overlay.height - drawHeight) / 2;
+    } else {
+        drawHeight = overlay.height;
+        drawWidth = overlay.height * videoRatio;
+        offsetX = (overlay.width - drawWidth) / 2;
+    }
+
+    return {
+        x: (source.x / frame.sourceWidth) * drawWidth + offsetX,
+        y: (source.y / frame.sourceHeight) * drawHeight + offsetY,
+    };
+}
+
+function drawBox(state, position, frame) {
+    const points = [
+        position.topLeft,
+        position.topRight,
+        position.bottomRight,
+        position.bottomLeft,
+    ].map((point) => scalePoint(point, frame, state.overlay));
+    const context = state.overlayContext;
+    context.strokeStyle = '#00FF66';
+    context.lineWidth = 3;
+    context.lineJoin = 'round';
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+    points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+    context.closePath();
+    context.stroke();
+}
+
+function syncOverlaySize(state) {
+    const rect = state.reader.getBoundingClientRect();
+    state.overlay.width = Math.max(
+        1,
+        Math.round(rect.width || state.reader.offsetWidth),
+    );
+    state.overlay.height = Math.max(
+        1,
+        Math.round(rect.height || state.reader.offsetHeight),
+    );
+}
+
+function reportDebug(state) {
+    if (!debugEnabled()) return;
+    const timestamp = performance.now();
+    if (timestamp - state.lastDebugReport < DEBUG_REPORT_INTERVAL) return;
+    state.lastDebugReport = timestamp;
+    console.debug('[ScanQR]', {
+        decoder: state.pipeline.usesWorker() ? 'worker' : 'main-thread fallback',
+        profile: state.lowPower ? 'low-power' : 'standard',
+        cameraReduced: state.cameraReduced,
+        ...state.scheduler.snapshot(true),
+    });
+}
+
+function startLoop(state, currentGeneration) {
+    const onDecode = ({ duration, frame, code }) => {
+        if (
+            !state.running ||
+            scanner !== state ||
+            currentGeneration !== generation
+        ) {
+            return;
+        }
+        state.scheduler.recordDecode(duration);
+        if (!state.cameraReduced) {
+            state.slowDecodes =
+                duration > 250
+                    ? state.slowDecodes + 1
+                    : Math.max(0, state.slowDecodes - 1);
+            if (state.slowDecodes >= 3) {
+                state.cameraReduced = true;
+                const track = state.stream.getVideoTracks()[0];
+                if (track?.applyConstraints) {
+                    void track
+                        .applyConstraints({
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                            frameRate: { ideal: 10, max: 15 },
+                        })
+                        .then(() => enableContinuousFocus(state.stream))
+                        .catch(() => {});
+                }
+            }
+        }
+        state.overlayContext.clearRect(
+            0,
+            0,
+            state.overlay.width,
+            state.overlay.height,
+        );
+        reportDebug(state);
+
+        if (!code?.text || !code.position) {
+            qrLock.observe(null, performance.now());
+            return;
+        }
+
+        drawBox(state, code.position, frame);
+        const timestamp = performance.now();
+        if (window.scanned || !qrLock.observe(code.text, timestamp)) return;
+
+        window.scanned = true;
+        state.reader.dispatchEvent(
+            new CustomEvent('scanStarted', {
+                bubbles: true,
+                detail: { qr: code.text },
+            }),
+        );
+    };
+
+    state.pipeline = createDecoderPipeline({
+        onResult: onDecode,
+        onError: (error, { fallback }) => {
+            if (debugEnabled()) {
+                console.warn(
+                    fallback
+                        ? '[ScanQR] Worker gagal; memakai fallback.'
+                        : '[ScanQR] Decode gagal.',
+                    error,
+                );
+            }
+        },
+    });
+
+    function scan(timestamp) {
+        if (!state.running || scanner !== state) return;
+        state.animationFrame = requestAnimationFrame(scan);
+
+        if (
+            document.hidden ||
+            window.scanned ||
+            state.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA ||
+            !state.pipeline.isReady()
+        ) {
+            return;
+        }
+
+        const interval = state.scheduler.getInterval();
+        if (timestamp - state.lastScanAt < interval) return;
+        state.lastScanAt = timestamp;
+
+        if (state.pipeline.isBusy()) {
+            state.scheduler.recordSkipped();
+            return;
+        }
+
+        const fullFrame =
+            (state.submittedFrames + 1) % FULL_FRAME_EVERY === 0;
+        if (state.pipeline.submit(state.video, fullFrame)) {
+            state.submittedFrames++;
+        }
+    }
+
+    state.animationFrame = requestAnimationFrame(scan);
+}
+
+window.destroyScanner = () => teardown();
+window.resetScannerQrLock = () => qrLock.reset();
+window.pauseScanner = () => {
+    window.scanned = true;
+};
+window.resumeScanner = () => {
+    window.scanned = false;
+    if (scanner) scanner.lastScanAt = 0;
 };
 
-// =========================
-// INIT
-// =========================
-
 window.initScanner = async () => {
-    // Guard: jangan init kalau masih running
-    if (isRunning) return;
-
+    if (scanner?.running || isStarting) return;
     const reader = document.getElementById('reader');
-    if (!reader) return;
+    if (!reader || !navigator.mediaDevices?.getUserMedia) {
+        if (reader) {
+            showCameraError(reader, 'Browser ini tidak mendukung akses kamera.');
+        }
+        return;
+    }
+
+    isStarting = true;
     const currentGeneration = ++generation;
-
-    // =========================
-    // READER CONTAINER
-    // =========================
-
+    const lowPower = isLowPowerDevice();
+    const camera = lowPower
+        ? {
+              width: { ideal: 800, max: 960 },
+              height: { ideal: 600, max: 720 },
+              frameRate: { ideal: 12, max: 15 },
+          }
+        : {
+              width: { ideal: 960, max: 1280 },
+              height: { ideal: 720, max: 960 },
+              frameRate: { ideal: 15, max: 20 },
+          };
+    reader.replaceChildren();
     Object.assign(reader.style, {
         position: 'relative',
         width: '100%',
@@ -108,238 +311,127 @@ window.initScanner = async () => {
         background: '#000',
     });
 
-    // =========================
-    // VIDEO
-    // =========================
-
-    videoEl = document.createElement('video');
-    videoEl.autoplay = true;
-    videoEl.playsInline = true;
-    videoEl.muted = true;
-
-    Object.assign(videoEl.style, {
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+    Object.assign(video.style, {
         position: 'absolute',
-        top: '0',
-        left: '0',
+        inset: '0',
         width: '100%',
         height: '100%',
         objectFit: 'cover',
     });
 
-    // =========================
-    // OVERLAY CANVAS
-    // =========================
-
-    overlayCanvas = document.createElement('canvas');
-
-    Object.assign(overlayCanvas.style, {
+    const overlay = document.createElement('canvas');
+    Object.assign(overlay.style, {
         position: 'absolute',
-        top: '0',
-        left: '0',
+        inset: '0',
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
         zIndex: '10',
     });
+    reader.append(video, overlay);
 
-    reader.appendChild(videoEl);
-    reader.appendChild(overlayCanvas);
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { ideal: 'environment' },
+                ...camera,
+            },
+            audio: false,
+        });
+    } catch (error) {
+        isStarting = false;
+        if (currentGeneration === generation) {
+            showCameraError(reader, cameraErrorMessage(error));
+        }
+        return;
+    }
 
-    // =========================
-    // SCAN CANVAS (hidden)
-    // =========================
+    if (currentGeneration !== generation || !reader.isConnected) {
+        stopStream(stream);
+        isStarting = false;
+        return;
+    }
 
-    scanCanvas = document.createElement('canvas');
-    scanCanvas.width = SCAN_WIDTH;
-    scanCanvas.height = SCAN_HEIGHT;
+    await enableContinuousFocus(stream);
 
-    scanCtx = scanCanvas.getContext('2d', {
-        willReadFrequently: true,
-        alpha: false,
+    if (currentGeneration !== generation || !reader.isConnected) {
+        stopStream(stream);
+        isStarting = false;
+        return;
+    }
+
+    const lifecycle = new AbortController();
+    const state = {
+        reader,
+        video,
+        overlay,
+        overlayContext: overlay.getContext('2d'),
+        stream,
+        lifecycle,
+        resizeObserver: null,
+        pipeline: null,
+        scheduler: createAdaptiveScanScheduler(undefined, { lowPower }),
+        lowPower,
+        slowDecodes: 0,
+        cameraReduced: false,
+        animationFrame: null,
+        running: false,
+        lastScanAt: 0,
+        submittedFrames: 0,
+        lastDebugReport: performance.now(),
+    };
+    scanner = state;
+    syncOverlaySize(state);
+    if (typeof ResizeObserver === 'function') {
+        state.resizeObserver = new ResizeObserver(() => syncOverlaySize(state));
+        state.resizeObserver.observe(reader);
+    } else {
+        window.addEventListener('resize', () => syncOverlaySize(state), {
+            signal: lifecycle.signal,
+        });
+    }
+
+    const handleTrackEnded = () => {
+        if (!state.running || scanner !== state) return;
+        teardown({ clearReader: false });
+        showCameraError(
+            reader,
+            'Kamera terputus. Sambungkan kamera lalu muat ulang halaman.',
+        );
+    };
+    stream.getVideoTracks().forEach((track) => {
+        track.onended = handleTrackEnded;
     });
 
-    overlayCtx = overlayCanvas.getContext('2d');
-
-    // =========================
-    // RESIZE OVERLAY
-    // =========================
-
-    function syncOverlaySize() {
-        if (!overlayCanvas || !reader) return;
-        const rect = reader.getBoundingClientRect();
-        overlayCanvas.width = rect.width || reader.offsetWidth;
-        overlayCanvas.height = rect.height || reader.offsetHeight;
-    }
-
-    syncOverlaySize();
-
-    resizeObserver = new ResizeObserver(syncOverlaySize);
-    resizeObserver.observe(reader);
-
-    // =========================
-    // CAMERA — reuse stream kalau masih aktif
-    // Ini yang bikin reinit cepat di webcam murah
-    // =========================
-
+    video.srcObject = stream;
     try {
-        const streamOk =
-            stream !== null &&
-            stream.active &&
-            stream.getTracks().every((t) => t.readyState === 'live');
-
-        if (!streamOk) {
-            // Stream belum ada atau sudah mati — minta baru
-            if (stream !== null) {
-                stream.getTracks().forEach((t) => t.stop());
-            }
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    // "user" memilih kamera depan pada perangkat mobile.
-                    // ideal tetap memberi fallback pada perangkat yang hanya
-                    // menyediakan satu kamera.
-                    facingMode: { ideal: 'user' },
-                    width: { ideal: SCAN_WIDTH },
-                    height: { ideal: SCAN_HEIGHT },
-                },
-                audio: false,
-            });
+        await video.play();
+    } catch (error) {
+        if (scanner === state) {
+            teardown({ clearReader: false });
+            showCameraError(reader, cameraErrorMessage(error));
         }
-    } catch (err) {
-        console.error('[scanner] Gagal akses kamera:', err);
         return;
     }
 
-    if (currentGeneration !== generation || !reader.isConnected) return;
-    videoEl.srcObject = stream;
-
-    try {
-        await videoEl.play();
-    } catch (err) {
-        console.error('[scanner] Gagal play video:', err);
+    if (currentGeneration !== generation || scanner !== state) {
+        stopStream(stream);
         return;
     }
 
-    if (currentGeneration !== generation || !reader.isConnected) return;
-
-    // =========================
-    // SCALE POINT
-    // =========================
-
-    function scalePoint(point) {
-        const vRatio = SCAN_WIDTH / SCAN_HEIGHT;
-        const cRatio = overlayCanvas.width / overlayCanvas.height;
-
-        let dw,
-            dh,
-            ox = 0,
-            oy = 0;
-
-        if (cRatio > vRatio) {
-            dw = overlayCanvas.width;
-            dh = overlayCanvas.width / vRatio;
-            oy = (overlayCanvas.height - dh) / 2;
-        } else {
-            dh = overlayCanvas.height;
-            dw = overlayCanvas.height * vRatio;
-            ox = (overlayCanvas.width - dw) / 2;
-        }
-
-        return {
-            x: (point.x / SCAN_WIDTH) * dw + ox,
-            y: (point.y / SCAN_HEIGHT) * dh + oy,
-        };
-    }
-
-    // =========================
-    // DRAW BOX
-    // =========================
-
-    function drawBox(location) {
-        const pts = [
-            scalePoint(location.topLeftCorner),
-            scalePoint(location.topRightCorner),
-            scalePoint(location.bottomRightCorner),
-            scalePoint(location.bottomLeftCorner),
-        ];
-
-        overlayCtx.strokeStyle = '#00FF66';
-        overlayCtx.lineWidth = 3;
-        overlayCtx.lineJoin = 'round';
-
-        overlayCtx.beginPath();
-        overlayCtx.moveTo(pts[0].x, pts[0].y);
-        pts.slice(1).forEach((p) => overlayCtx.lineTo(p.x, p.y));
-        overlayCtx.closePath();
-        overlayCtx.stroke();
-    }
-
-    // =========================
-    // SCAN LOOP
-    // =========================
-
-    isRunning = true;
-
-    async function scan(timestamp) {
-        if (!isRunning) return;
-
-        animationFrame = requestAnimationFrame(scan);
-
-        if (timestamp - lastScanTime < scanInterval) return;
-        if (window.scanned || !videoEl || videoEl.readyState < 4 || decoding) return;
-
-        lastScanTime = timestamp;
-
-        scanCtx.drawImage(videoEl, 0, 0, SCAN_WIDTH, SCAN_HEIGHT);
-
-        const imageData = scanCtx.getImageData(0, 0, SCAN_WIDTH, SCAN_HEIGHT);
-
-        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
-        decoding = true;
-        let results;
-        try {
-            results = await readBarcodes(imageData, {
-                tryHarder: true,
-                tryDenoise: true,
-                tryDownscale: true,
-                tryInvert: true,
-                tryRotate: true,
-                formats: ['QRCode'],
-                maxNumberOfSymbols: 1,
-            });
-        } catch {
-            return;
-        } finally {
-            decoding = false;
-        }
-        if (!isRunning || window.scanned || currentGeneration !== generation) return;
-        const code = results?.[0];
-
-        if (!code || !code.position) {
-            qrLock.observe(null, timestamp);
-            scanInterval = INTERVAL_IDLE;
-            return;
-        }
-
-        scanInterval = INTERVAL_ACTIVE;
-
-        drawBox({
-            topLeftCorner: code.position.topLeft,
-            topRightCorner: code.position.topRight,
-            bottomRightCorner: code.position.bottomRight,
-            bottomLeftCorner: code.position.bottomLeft,
-        });
-
-        if (!window.scanned && qrLock.observe(code.text, timestamp)) {
-            window.scanned = true;
-            reader.dispatchEvent(
-                new CustomEvent('scanStarted', {
-                    bubbles: true,
-                    detail: { qr: code.text },
-                }),
-            );
-        }
-    }
-
-    animationFrame = requestAnimationFrame(scan);
+    isStarting = false;
+    state.running = true;
+    document.addEventListener(
+        'visibilitychange',
+        () => {
+            if (!document.hidden) state.lastScanAt = 0;
+        },
+        { signal: lifecycle.signal },
+    );
+    startLoop(state, currentGeneration);
 };
