@@ -12,6 +12,24 @@ import {
 import { createScanLock } from '../../Modules/ScanQR/resources/assets/js/scan-lock.js';
 import { createDecoderPipeline } from '../../Modules/ScanQR/resources/assets/js/decoder-pipeline.js';
 
+test('slow frames receive actual rest beyond the interval ceiling', () => {
+    const scheduler = createAdaptiveScanScheduler(() => 0, { lowPower: true });
+    for (const duration of [100, 300, 900, 1600]) {
+        scheduler.recordDecode(duration);
+        assert.ok(scheduler.getRest(duration) >= duration);
+    }
+    const standard = createAdaptiveScanScheduler(() => 0);
+    assert.ok(standard.getRest(50, true) >= 250);
+    assert.ok(standard.getRest(900, true) >= 900);
+});
+
+test('main-thread fallback caps pixels without upscaling small frames', () => {
+    const frame = createFramePlan(800, 600, true, 480);
+    assert.equal(frame.outputWidth, 480);
+    assert.equal(frame.outputHeight, 360);
+    assert.equal(createFramePlan(320, 240, true, 480).outputWidth, 320);
+});
+
 test('adaptive scan interval reduces decode rate as devices get slower', () => {
     assert.equal(intervalForDecode(50), 125);
     assert.equal(intervalForDecode(100), 167);
@@ -108,6 +126,9 @@ test('decoder pipeline allows one frame only and transfers pixels to worker fall
     const listeners = new Map();
     let terminated = false;
     let posted;
+    let resizes = 0;
+    let canvasWidth = 0;
+    let canvasHeight = 0;
     class FakeWorker {
         addEventListener(name, handler) {
             listeners.set(name, handler);
@@ -124,6 +145,20 @@ test('decoder pipeline allows one frame only and transfers pixels to worker fall
     globalThis.Worker = FakeWorker;
     globalThis.document = {
         createElement: () => ({
+            get width() {
+                return canvasWidth;
+            },
+            set width(value) {
+                canvasWidth = value;
+                resizes++;
+            },
+            get height() {
+                return canvasHeight;
+            },
+            set height(value) {
+                canvasHeight = value;
+                resizes++;
+            },
             getContext: () => ({
                 drawImage() {},
                 getImageData: (_x, _y, width, height) => ({
@@ -145,6 +180,8 @@ test('decoder pipeline allows one frame only and transfers pixels to worker fall
         const video = { videoWidth: 640, videoHeight: 480 };
         assert.equal(pipeline.submit(video), true);
         assert.equal(pipeline.submit(video), false);
+        assert.equal(posted.message.intensive, false);
+        assert.equal(resizes, 2);
         assert.equal(posted.message.type, 'decode');
         assert.ok(posted.message.pixels instanceof ArrayBuffer);
         assert.equal(posted.transfers.length, 1);
@@ -159,6 +196,25 @@ test('decoder pipeline allows one frame only and transfers pixels to worker fall
         });
         assert.equal(results, 1);
         assert.equal(pipeline.submit(video), true);
+        assert.equal(
+            resizes,
+            2,
+            'same-size frames must reuse canvas dimensions',
+        );
+        listeners.get('message')({ data: { type: 'result', code: null } });
+        assert.equal(pipeline.submit(video), true);
+        assert.equal(
+            posted.message.intensive,
+            true,
+            'periodic intensive center scan',
+        );
+        listeners.get('message')({ data: { type: 'result', code: null } });
+        assert.equal(pipeline.submit(video, true), true);
+        assert.equal(
+            posted.message.intensive,
+            true,
+            'full frame keeps difficult QR search',
+        );
         pipeline.dispose();
         assert.equal(terminated, true);
     } finally {
@@ -195,5 +251,74 @@ test('worker startup error switches the pipeline to main-thread fallback', () =>
         pipeline.dispose();
     } finally {
         globalThis.Worker = originalWorker;
+    }
+});
+
+test('bitmap capture has a watchdog and late worker output is ignored after timeout', async () => {
+    const originals = {
+        Worker: globalThis.Worker,
+        createImageBitmap: globalThis.createImageBitmap,
+        setTimeout: globalThis.setTimeout,
+        clearTimeout: globalThis.clearTimeout,
+    };
+    const listeners = new Map();
+    const timers = new Map();
+    let timerId = 0;
+    let finishCapture;
+    let closed = 0;
+    let results = 0;
+    let errors = 0;
+    let pipeline;
+    globalThis.Worker = class {
+        addEventListener(name, callback) {
+            listeners.set(name, callback);
+        }
+        postMessage() {
+            assert.fail('stale bitmap must not be sent');
+        }
+        terminate() {}
+    };
+    globalThis.createImageBitmap = () =>
+        new Promise((resolve) => {
+            finishCapture = resolve;
+        });
+    globalThis.setTimeout = (callback, delay) => {
+        timers.set(++timerId, { callback, delay });
+        return timerId;
+    };
+    globalThis.clearTimeout = (id) => timers.delete(id);
+    try {
+        pipeline = createDecoderPipeline({
+            onResult: () => results++,
+            onError: () => errors++,
+        });
+        listeners.get('message')({
+            data: { type: 'ready', offscreenCanvas: true },
+        });
+        pipeline.submit({ videoWidth: 800, videoHeight: 600 });
+        assert.equal(pipeline.isBusy(), true);
+        assert.equal(timers.size, 1);
+        const watchdog = [...timers.values()][0];
+        assert.equal(watchdog.delay, 5000);
+        watchdog.callback();
+        assert.equal(pipeline.usesWorker(), false);
+        assert.equal(pipeline.isBusy(), false);
+        assert.equal(errors, 1);
+        listeners.get('message')({
+            data: { type: 'result', code: { text: 'stale' } },
+        });
+        assert.equal(results, 0);
+        finishCapture({
+            close() {
+                closed++;
+            },
+        });
+        await Promise.resolve();
+        await Promise.resolve();
+        assert.equal(closed, 1);
+        assert.equal(errors, 1);
+    } finally {
+        pipeline?.dispose();
+        Object.assign(globalThis, originals);
     }
 });

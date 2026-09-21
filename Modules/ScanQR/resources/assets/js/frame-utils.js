@@ -5,6 +5,7 @@ export function createFramePlan(
     sourceWidth,
     sourceHeight,
     fullFrame = false,
+    maxDimension = MAX_DECODE_DIMENSION,
 ) {
     const centerSize = Math.max(
         1,
@@ -12,7 +13,7 @@ export function createFramePlan(
     );
     const width = fullFrame ? sourceWidth : centerSize;
     const height = fullFrame ? sourceHeight : centerSize;
-    const scale = Math.min(1, MAX_DECODE_DIMENSION / Math.max(width, height));
+    const scale = Math.min(1, maxDimension / Math.max(width, height));
 
     return {
         crop: {
@@ -30,11 +31,7 @@ export function createFramePlan(
 
 export function mapPointToSource(point, frame) {
     return {
-        x:
-            frame.crop.x +
-            (point.x / frame.outputWidth) * frame.crop.width,
-        y:
-            frame.crop.y +
-            (point.y / frame.outputHeight) * frame.crop.height,
+        x: frame.crop.x + (point.x / frame.outputWidth) * frame.crop.width,
+        y: frame.crop.y + (point.y / frame.outputHeight) * frame.crop.height,
     };
 }

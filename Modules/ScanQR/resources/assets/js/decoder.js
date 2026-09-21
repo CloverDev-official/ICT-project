@@ -17,14 +17,14 @@ export function prepareDecoder() {
     return decoderReady;
 }
 
-export async function decodeQRCode(imageData) {
+export async function decodeQRCode(imageData, intensive = true) {
     await prepareDecoder();
     return readBarcodes(imageData, {
         formats: ['QRCode'],
         maxNumberOfSymbols: 1,
-        tryHarder: true,
+        tryHarder: intensive,
         tryRotate: true,
-        tryInvert: true,
+        tryInvert: intensive,
         // Crop/resize is already handled before ZXing receives the pixels.
         tryDownscale: false,
         tryDenoise: false,

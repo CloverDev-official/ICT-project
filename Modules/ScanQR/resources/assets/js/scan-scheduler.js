@@ -59,6 +59,14 @@ export function createAdaptiveScanScheduler(
             skippedFrames++;
         },
         getInterval: () => interval,
+        // Rest after completion, even if one frame exceeds the interval ceiling.
+        getRest: (duration, mainThread = false) =>
+            Math.max(
+                0,
+                interval - duration,
+                lowPower || mainThread ? duration : 0,
+                mainThread ? 250 : 0,
+            ),
         snapshot(reset = false) {
             const timestamp = now();
             const elapsed = Math.max(1, timestamp - startedAt);

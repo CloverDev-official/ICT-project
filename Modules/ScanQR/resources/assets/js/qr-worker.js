@@ -17,8 +17,9 @@ function serializePosition(position) {
 function pixelsFromBitmap(bitmap, fullFrame) {
     const frame = createFramePlan(bitmap.width, bitmap.height, fullFrame);
     canvas ??= new OffscreenCanvas(frame.outputWidth, frame.outputHeight);
-    canvas.width = frame.outputWidth;
-    canvas.height = frame.outputHeight;
+    if (canvas.width !== frame.outputWidth) canvas.width = frame.outputWidth;
+    if (canvas.height !== frame.outputHeight)
+        canvas.height = frame.outputHeight;
     context ??= canvas.getContext('2d', {
         alpha: false,
         willReadFrequently: true,
@@ -74,14 +75,17 @@ self.addEventListener('message', async ({ data }) => {
             };
         }
 
-        const results = await decodeQRCode(imageData);
+        const results = await decodeQRCode(imageData, data.intensive);
         const code = results?.[0];
         self.postMessage({
             type: 'result',
             duration: performance.now() - startedAt,
             frame,
             code: code
-                ? { text: code.text, position: serializePosition(code.position) }
+                ? {
+                      text: code.text,
+                      position: serializePosition(code.position),
+                  }
                 : null,
         });
     } catch (error) {

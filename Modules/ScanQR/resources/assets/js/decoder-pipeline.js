@@ -13,6 +13,8 @@ export function createDecoderPipeline({ onResult, onError }) {
     let timeout = null;
     let fallbackCanvas = null;
     let fallbackContext = null;
+    let submittedAt = 0;
+    let submissions = 0;
 
     function clearDecodeTimeout() {
         clearTimeout(timeout);
@@ -35,8 +37,9 @@ export function createDecoderPipeline({ onResult, onError }) {
                 type: 'module',
                 name: 'scanqr-decoder',
             });
+            const activeWorker = worker;
             worker.addEventListener('message', ({ data }) => {
-                if (disposed) return;
+                if (disposed || worker !== activeWorker) return;
                 if (data?.type === 'ready') {
                     clearDecodeTimeout();
                     workerReady = true;
@@ -63,16 +66,23 @@ export function createDecoderPipeline({ onResult, onError }) {
                         }
                     } else {
                         workerErrors = 0;
-                        onResult(data);
+                        onResult({
+                            ...data,
+                            duration: performance.now() - submittedAt,
+                        });
                     }
                 }
             });
             worker.addEventListener('error', (event) => {
                 event.preventDefault?.();
+                if (disposed || worker !== activeWorker) return;
                 failWorker(event.error || new Error(event.message));
             });
             worker.addEventListener('messageerror', () => {
-                failWorker(new Error('Worker tidak dapat membaca frame kamera.'));
+                if (disposed || worker !== activeWorker) return;
+                failWorker(
+                    new Error('Worker tidak dapat membaca frame kamera.'),
+                );
             });
             timeout = setTimeout(
                 () => failWorker(new Error('QR worker gagal dimulai.')),
@@ -88,10 +98,13 @@ export function createDecoderPipeline({ onResult, onError }) {
             video.videoWidth || video.width,
             video.videoHeight || video.height,
             fullFrame,
+            worker ? 640 : 480,
         );
         fallbackCanvas ??= document.createElement('canvas');
-        fallbackCanvas.width = frame.outputWidth;
-        fallbackCanvas.height = frame.outputHeight;
+        if (fallbackCanvas.width !== frame.outputWidth)
+            fallbackCanvas.width = frame.outputWidth;
+        if (fallbackCanvas.height !== frame.outputHeight)
+            fallbackCanvas.height = frame.outputHeight;
         fallbackContext ??= fallbackCanvas.getContext('2d', {
             alpha: false,
             willReadFrequently: true,
@@ -122,48 +135,52 @@ export function createDecoderPipeline({ onResult, onError }) {
     function armWorkerTimeout() {
         clearDecodeTimeout();
         timeout = setTimeout(
-            () => failWorker(new Error('QR worker melewati batas waktu decode.')),
+            () =>
+                failWorker(new Error('QR worker melewati batas waktu decode.')),
             WORKER_TIMEOUT,
         );
     }
 
-    async function submitToWorker(video, fullFrame) {
+    async function submitToWorker(video, fullFrame, intensive) {
+        const activeWorker = worker;
+        // Cover capture as well as decoding, so a stuck bitmap cannot lock scanning.
+        armWorkerTimeout();
         if (bitmapSupported && workerOffscreenCanvas) {
             let bitmap;
             try {
                 bitmap = await createImageBitmap(video);
-                if (disposed || !worker) {
+                if (disposed || worker !== activeWorker) {
                     bitmap.close?.();
-                    busy = false;
                     return;
                 }
                 worker.postMessage(
-                    { type: 'decode', bitmap, fullFrame },
+                    { type: 'decode', bitmap, fullFrame, intensive },
                     [bitmap],
                 );
                 bitmap = null;
-                armWorkerTimeout();
                 return;
             } catch {
                 bitmap?.close?.();
+                if (disposed || worker !== activeWorker) return;
                 bitmapSupported = false;
             }
         }
 
         const { frame, imageData } = capturePixels(video, fullFrame);
         worker.postMessage(
-            { type: 'decode', frame, pixels: imageData.data.buffer },
+            { type: 'decode', frame, pixels: imageData.data.buffer, intensive },
             [imageData.data.buffer],
         );
-        armWorkerTimeout();
     }
 
-    async function submitToMainThread(video, fullFrame) {
+    async function submitToMainThread(video, fullFrame, intensive) {
         const startedAt = performance.now();
         try {
             const { frame, imageData } = capturePixels(video, fullFrame);
             const { decodeQRCode } = await import('./decoder.js');
-            const results = await decodeQRCode(imageData);
+            if (disposed) return;
+            const results = await decodeQRCode(imageData, intensive);
+            if (disposed) return;
             const code = results?.[0];
             onResult({
                 duration: performance.now() - startedAt,
@@ -173,7 +190,7 @@ export function createDecoderPipeline({ onResult, onError }) {
                     : null,
             });
         } catch (error) {
-            onError?.(error, { fallback: false });
+            if (!disposed) onError?.(error, { fallback: false });
         } finally {
             busy = false;
         }
@@ -186,12 +203,18 @@ export function createDecoderPipeline({ onResult, onError }) {
         submit(video, fullFrame = false) {
             if (disposed || busy || (worker && !workerReady)) return false;
             busy = true;
+            submittedAt = performance.now();
+            // Alternate light and intensive center scans; retain intensive full scans.
+            submissions++;
+            const intensive = fullFrame || submissions % 3 === 0;
             if (worker) {
-                void submitToWorker(video, fullFrame).catch((error) => {
-                    failWorker(error);
-                });
+                void submitToWorker(video, fullFrame, intensive).catch(
+                    (error) => {
+                        failWorker(error);
+                    },
+                );
             } else {
-                void submitToMainThread(video, fullFrame);
+                void submitToMainThread(video, fullFrame, intensive);
             }
             return true;
         },

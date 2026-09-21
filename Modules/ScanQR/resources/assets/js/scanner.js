@@ -62,7 +62,7 @@ function teardown({ clearReader = true } = {}) {
     }
 
     current.running = false;
-    cancelAnimationFrame(current.animationFrame);
+    clearTimeout(current.animationFrame);
     current.lifecycle.abort();
     current.resizeObserver?.disconnect();
     current.pipeline?.dispose();
@@ -159,9 +159,10 @@ function reportDebug(state) {
     if (timestamp - state.lastDebugReport < DEBUG_REPORT_INTERVAL) return;
     state.lastDebugReport = timestamp;
     console.debug('[ScanQR]', {
-        decoder: state.pipeline.usesWorker() ? 'worker' : 'main-thread fallback',
+        decoder: state.pipeline.usesWorker()
+            ? 'worker'
+            : 'main-thread fallback',
         profile: state.lowPower ? 'low-power' : 'standard',
-        cameraReduced: state.cameraReduced,
         ...state.scheduler.snapshot(true),
     });
 }
@@ -176,26 +177,17 @@ function startLoop(state, currentGeneration) {
             return;
         }
         state.scheduler.recordDecode(duration);
-        if (!state.cameraReduced) {
-            state.slowDecodes =
-                duration > 250
-                    ? state.slowDecodes + 1
-                    : Math.max(0, state.slowDecodes - 1);
-            if (state.slowDecodes >= 3) {
-                state.cameraReduced = true;
-                const track = state.stream.getVideoTracks()[0];
-                if (track?.applyConstraints) {
-                    void track
-                        .applyConstraints({
-                            width: { ideal: 640 },
-                            height: { ideal: 480 },
-                            frameRate: { ideal: 10, max: 15 },
-                        })
-                        .then(() => enableContinuousFocus(state.stream))
-                        .catch(() => {});
-                }
-            }
+        state.nextScanAt =
+            performance.now() +
+            state.scheduler.getRest(duration, !state.pipeline.usesWorker());
+        clearTimeout(state.animationFrame);
+        if (!document.hidden && !window.scanned) {
+            state.animationFrame = setTimeout(
+                scan,
+                Math.max(0, state.nextScanAt - performance.now()),
+            );
         }
+        if (document.hidden || window.scanned) return;
         state.overlayContext.clearRect(
             0,
             0,
@@ -225,6 +217,12 @@ function startLoop(state, currentGeneration) {
     state.pipeline = createDecoderPipeline({
         onResult: onDecode,
         onError: (error, { fallback }) => {
+            if (!state.running || scanner !== state) return;
+            state.nextScanAt = performance.now() + 1000;
+            clearTimeout(state.animationFrame);
+            if (!document.hidden && !window.scanned) {
+                state.animationFrame = setTimeout(scan, 1000);
+            }
             if (debugEnabled()) {
                 console.warn(
                     fallback
@@ -236,9 +234,19 @@ function startLoop(state, currentGeneration) {
         },
     });
 
-    function scan(timestamp) {
+    function scan() {
+        state.animationFrame = null;
         if (!state.running || scanner !== state) return;
-        state.animationFrame = requestAnimationFrame(scan);
+        if (document.hidden || window.scanned) return;
+        const timestamp = performance.now();
+        state.animationFrame = setTimeout(
+            scan,
+            Math.max(
+                50,
+                state.nextScanAt - timestamp,
+                state.scheduler.getInterval(),
+            ),
+        );
 
         if (
             document.hidden ||
@@ -249,33 +257,47 @@ function startLoop(state, currentGeneration) {
             return;
         }
 
-        const interval = state.scheduler.getInterval();
-        if (timestamp - state.lastScanAt < interval) return;
-        state.lastScanAt = timestamp;
+        if (timestamp < state.nextScanAt) return;
 
         if (state.pipeline.isBusy()) {
             state.scheduler.recordSkipped();
+            clearTimeout(state.animationFrame);
+            state.animationFrame = null;
             return;
         }
 
-        const fullFrame =
-            (state.submittedFrames + 1) % FULL_FRAME_EVERY === 0;
+        // A stalled/slow camera can expose the same frame across several ticks.
+        const videoTime = state.video.currentTime;
+        if (Number.isFinite(videoTime) && videoTime === state.lastVideoTime)
+            return;
+        const fullFrame = (state.submittedFrames + 1) % FULL_FRAME_EVERY === 0;
         if (state.pipeline.submit(state.video, fullFrame)) {
             state.submittedFrames++;
+            state.lastVideoTime = videoTime;
+            // Result/error callbacks re-arm the loop; no polling during decoding.
+            clearTimeout(state.animationFrame);
+            state.animationFrame = null;
         }
     }
 
-    state.animationFrame = requestAnimationFrame(scan);
+    state.wake = () => {
+        clearTimeout(state.animationFrame);
+        state.nextScanAt = 0;
+        state.lastVideoTime = null;
+        scan();
+    };
+    state.wake();
 }
 
 window.destroyScanner = () => teardown();
 window.resetScannerQrLock = () => qrLock.reset();
 window.pauseScanner = () => {
     window.scanned = true;
+    if (scanner) clearTimeout(scanner.animationFrame);
 };
 window.resumeScanner = () => {
     window.scanned = false;
-    if (scanner) scanner.lastScanAt = 0;
+    scanner?.wake?.();
 };
 
 window.initScanner = async () => {
@@ -283,7 +305,10 @@ window.initScanner = async () => {
     const reader = document.getElementById('reader');
     if (!reader || !navigator.mediaDevices?.getUserMedia) {
         if (reader) {
-            showCameraError(reader, 'Browser ini tidak mendukung akses kamera.');
+            showCameraError(
+                reader,
+                'Browser ini tidak mendukung akses kamera.',
+            );
         }
         return;
     }
@@ -377,11 +402,11 @@ window.initScanner = async () => {
         pipeline: null,
         scheduler: createAdaptiveScanScheduler(undefined, { lowPower }),
         lowPower,
-        slowDecodes: 0,
-        cameraReduced: false,
         animationFrame: null,
+        nextScanAt: 0,
+        lastVideoTime: null,
+        wake: null,
         running: false,
-        lastScanAt: 0,
         submittedFrames: 0,
         lastDebugReport: performance.now(),
     };
@@ -429,7 +454,8 @@ window.initScanner = async () => {
     document.addEventListener(
         'visibilitychange',
         () => {
-            if (!document.hidden) state.lastScanAt = 0;
+            if (document.hidden) clearTimeout(state.animationFrame);
+            else state.wake?.();
         },
         { signal: lifecycle.signal },
     );
