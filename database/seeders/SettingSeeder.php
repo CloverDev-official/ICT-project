@@ -61,6 +61,16 @@ class SettingSeeder extends Seeder
             ['key' => 'jadwal.scan_masuk_sampai'], 
             ['value' => '07:35:00']
         );
+
+        Setting::updateOrCreate(
+            ['key' => 'jadwal.scan_masuk_sampai_dasar'],
+            ['value' => '07:30:00']
+        );
+
+        Setting::updateOrCreate(
+            ['key' => 'jadwal.toleransi_masuk'],
+            ['value' => '5']
+        );
         
         Setting::updateOrCreate(
             ['key' => 'jadwal.scan_keluar_mulai'], 

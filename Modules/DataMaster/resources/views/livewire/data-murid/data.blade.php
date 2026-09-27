@@ -397,12 +397,7 @@
 
                             <div class="flex items-center gap-4">
 
-                                <div
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
-
-                                    {{ substr($murid->nama, 0, 1) }}
-
-                                </div>
+                                <x-murid-avatar :murid="$murid" class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main" />
 
                                 <div>
 

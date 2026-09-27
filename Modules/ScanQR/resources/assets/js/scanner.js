@@ -1,29 +1,38 @@
-// resources/js/scanner.js
+// Modules/ScanQR/resources/assets/js/scanner.js
 
-import { readBarcodes } from "zxing-wasm/reader";
+import { createScanAudio } from './scan-audio.js';
+import { createScanLock } from './scan-lock.js';
+export { createScanAudio };
+export { createScanResultController } from './scan-result.js';
+const qrLock = createScanLock();
+let generation = 0;
+let decoding = false;
+window.resetScannerQrLock = () => qrLock.reset();
+
+import { readBarcodes } from 'zxing-wasm/reader';
 
 // =========================
 // MODULE STATE
 // =========================
 
 let animationFrame = null;
-let stream         = null; // ← di-reuse, TIDAK di-stop saat destroy
-let videoEl        = null;
-let overlayCanvas  = null;
-let overlayCtx     = null;
-let scanCanvas     = null;
-let scanCtx        = null;
+let stream = null; // ← di-reuse, TIDAK di-stop saat destroy
+let videoEl = null;
+let overlayCanvas = null;
+let overlayCtx = null;
+let scanCanvas = null;
+let scanCtx = null;
 let resizeObserver = null;
-let isRunning      = false;
-let lastScanTime   = 0;
-let isDestroying   = false; // ← guard double-call
+let isRunning = false;
+let lastScanTime = 0;
+let isDestroying = false; // ← guard double-call
 
-const SCAN_WIDTH  = 640;
+const SCAN_WIDTH = 640;
 const SCAN_HEIGHT = 480;
 
-const INTERVAL_IDLE   = 100;
+const INTERVAL_IDLE = 100;
 const INTERVAL_ACTIVE = 50;
-let   scanInterval    = INTERVAL_IDLE;
+let scanInterval = INTERVAL_IDLE;
 
 // =========================
 // INTERNAL CLEANUP
@@ -32,6 +41,7 @@ let   scanInterval    = INTERVAL_IDLE;
 
 function cleanup() {
     isRunning = false;
+    generation++;
 
     if (animationFrame !== null) {
         cancelAnimationFrame(animationFrame);
@@ -49,12 +59,12 @@ function cleanup() {
         resizeObserver = null;
     }
 
-    overlayCtx    = null;
+    overlayCtx = null;
     overlayCanvas = null;
-    scanCtx       = null;
-    scanCanvas    = null;
-    lastScanTime  = 0;
-    scanInterval  = INTERVAL_IDLE;
+    scanCtx = null;
+    scanCanvas = null;
+    lastScanTime = 0;
+    scanInterval = INTERVAL_IDLE;
 }
 
 // =========================
@@ -68,8 +78,8 @@ window.destroyScanner = () => {
 
     cleanup();
 
-    const reader = document.getElementById("reader");
-    if (reader) reader.innerHTML = "";
+    const reader = document.getElementById('reader');
+    if (reader) reader.innerHTML = '';
 
     isDestroying = false;
 };
@@ -79,57 +89,57 @@ window.destroyScanner = () => {
 // =========================
 
 window.initScanner = async () => {
-
     // Guard: jangan init kalau masih running
     if (isRunning) return;
 
-    const reader = document.getElementById("reader");
+    const reader = document.getElementById('reader');
     if (!reader) return;
+    const currentGeneration = ++generation;
 
     // =========================
     // READER CONTAINER
     // =========================
 
     Object.assign(reader.style, {
-        position  : "relative",
-        width     : "100%",
-        height    : "100%",
-        overflow  : "hidden",
-        background: "#000"
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        background: '#000',
     });
 
     // =========================
     // VIDEO
     // =========================
 
-    videoEl = document.createElement("video");
-    videoEl.autoplay    = true;
+    videoEl = document.createElement('video');
+    videoEl.autoplay = true;
     videoEl.playsInline = true;
-    videoEl.muted       = true;
+    videoEl.muted = true;
 
     Object.assign(videoEl.style, {
-        position : "absolute",
-        top      : "0",
-        left     : "0",
-        width    : "100%",
-        height   : "100%",
-        objectFit: "cover"
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
     });
 
     // =========================
     // OVERLAY CANVAS
     // =========================
 
-    overlayCanvas = document.createElement("canvas");
+    overlayCanvas = document.createElement('canvas');
 
     Object.assign(overlayCanvas.style, {
-        position     : "absolute",
-        top          : "0",
-        left         : "0",
-        width        : "100%",
-        height       : "100%",
-        pointerEvents: "none",
-        zIndex       : "10"
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: '10',
     });
 
     reader.appendChild(videoEl);
@@ -139,16 +149,16 @@ window.initScanner = async () => {
     // SCAN CANVAS (hidden)
     // =========================
 
-    scanCanvas        = document.createElement("canvas");
-    scanCanvas.width  = SCAN_WIDTH;
+    scanCanvas = document.createElement('canvas');
+    scanCanvas.width = SCAN_WIDTH;
     scanCanvas.height = SCAN_HEIGHT;
 
-    scanCtx = scanCanvas.getContext("2d", {
+    scanCtx = scanCanvas.getContext('2d', {
         willReadFrequently: true,
-        alpha             : false
+        alpha: false,
     });
 
-    overlayCtx = overlayCanvas.getContext("2d");
+    overlayCtx = overlayCanvas.getContext('2d');
 
     // =========================
     // RESIZE OVERLAY
@@ -156,8 +166,8 @@ window.initScanner = async () => {
 
     function syncOverlaySize() {
         if (!overlayCanvas || !reader) return;
-        const rect           = reader.getBoundingClientRect();
-        overlayCanvas.width  = rect.width  || reader.offsetWidth;
+        const rect = reader.getBoundingClientRect();
+        overlayCanvas.width = rect.width || reader.offsetWidth;
         overlayCanvas.height = rect.height || reader.offsetHeight;
     }
 
@@ -172,50 +182,57 @@ window.initScanner = async () => {
     // =========================
 
     try {
-        const streamOk = stream !== null
-            && stream.active
-            && stream.getTracks().every(t => t.readyState === "live");
+        const streamOk =
+            stream !== null &&
+            stream.active &&
+            stream.getTracks().every((t) => t.readyState === 'live');
 
         if (!streamOk) {
             // Stream belum ada atau sudah mati — minta baru
             if (stream !== null) {
-                stream.getTracks().forEach(t => t.stop());
+                stream.getTracks().forEach((t) => t.stop());
             }
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     // "user" memilih kamera depan pada perangkat mobile.
                     // ideal tetap memberi fallback pada perangkat yang hanya
                     // menyediakan satu kamera.
-                    facingMode: { ideal: "user" },
-                    width     : { ideal: SCAN_WIDTH },
-                    height    : { ideal: SCAN_HEIGHT }
+                    facingMode: { ideal: 'user' },
+                    width: { ideal: SCAN_WIDTH },
+                    height: { ideal: SCAN_HEIGHT },
                 },
-                audio: false
+                audio: false,
             });
         }
     } catch (err) {
-        console.error("[scanner] Gagal akses kamera:", err);
+        console.error('[scanner] Gagal akses kamera:', err);
         return;
     }
 
+    if (currentGeneration !== generation || !reader.isConnected) return;
     videoEl.srcObject = stream;
 
     try {
         await videoEl.play();
     } catch (err) {
-        console.error("[scanner] Gagal play video:", err);
+        console.error('[scanner] Gagal play video:', err);
         return;
     }
+
+    if (currentGeneration !== generation || !reader.isConnected) return;
 
     // =========================
     // SCALE POINT
     // =========================
 
     function scalePoint(point) {
-        const vRatio = SCAN_WIDTH  / SCAN_HEIGHT;
+        const vRatio = SCAN_WIDTH / SCAN_HEIGHT;
         const cRatio = overlayCanvas.width / overlayCanvas.height;
 
-        let dw, dh, ox = 0, oy = 0;
+        let dw,
+            dh,
+            ox = 0,
+            oy = 0;
 
         if (cRatio > vRatio) {
             dw = overlayCanvas.width;
@@ -228,8 +245,8 @@ window.initScanner = async () => {
         }
 
         return {
-            x: (point.x / SCAN_WIDTH)  * dw + ox,
-            y: (point.y / SCAN_HEIGHT) * dh + oy
+            x: (point.x / SCAN_WIDTH) * dw + ox,
+            y: (point.y / SCAN_HEIGHT) * dh + oy,
         };
     }
 
@@ -242,16 +259,16 @@ window.initScanner = async () => {
             scalePoint(location.topLeftCorner),
             scalePoint(location.topRightCorner),
             scalePoint(location.bottomRightCorner),
-            scalePoint(location.bottomLeftCorner)
+            scalePoint(location.bottomLeftCorner),
         ];
 
-        overlayCtx.strokeStyle = "#00FF66";
-        overlayCtx.lineWidth   = 3;
-        overlayCtx.lineJoin    = "round";
+        overlayCtx.strokeStyle = '#00FF66';
+        overlayCtx.lineWidth = 3;
+        overlayCtx.lineJoin = 'round';
 
         overlayCtx.beginPath();
         overlayCtx.moveTo(pts[0].x, pts[0].y);
-        pts.slice(1).forEach(p => overlayCtx.lineTo(p.x, p.y));
+        pts.slice(1).forEach((p) => overlayCtx.lineTo(p.x, p.y));
         overlayCtx.closePath();
         overlayCtx.stroke();
     }
@@ -268,7 +285,7 @@ window.initScanner = async () => {
         animationFrame = requestAnimationFrame(scan);
 
         if (timestamp - lastScanTime < scanInterval) return;
-        if (!videoEl || videoEl.readyState < 4) return;
+        if (window.scanned || !videoEl || videoEl.readyState < 4 || decoding) return;
 
         lastScanTime = timestamp;
 
@@ -278,19 +295,28 @@ window.initScanner = async () => {
 
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-        const results = await readBarcodes(imageData, {
-            tryHarder: true,
-            tryDenoise: true,
-            tryDownscale: true,
-            tryInvert: true,
-            tryRotate: true,
-            formats: ["QRCode"],
-            maxNumberOfSymbols: 1
-        });
-
+        decoding = true;
+        let results;
+        try {
+            results = await readBarcodes(imageData, {
+                tryHarder: true,
+                tryDenoise: true,
+                tryDownscale: true,
+                tryInvert: true,
+                tryRotate: true,
+                formats: ['QRCode'],
+                maxNumberOfSymbols: 1,
+            });
+        } catch {
+            return;
+        } finally {
+            decoding = false;
+        }
+        if (!isRunning || window.scanned || currentGeneration !== generation) return;
         const code = results?.[0];
 
         if (!code || !code.position) {
+            qrLock.observe(null, timestamp);
             scanInterval = INTERVAL_IDLE;
             return;
         }
@@ -301,12 +327,17 @@ window.initScanner = async () => {
             topLeftCorner: code.position.topLeft,
             topRightCorner: code.position.topRight,
             bottomRightCorner: code.position.bottomRight,
-            bottomLeftCorner: code.position.bottomLeft
+            bottomLeftCorner: code.position.bottomLeft,
         });
 
-        if (!window.scanned) {
+        if (!window.scanned && qrLock.observe(code.text, timestamp)) {
             window.scanned = true;
-            Livewire.dispatch("verifiedQRCode", code.text);
+            reader.dispatchEvent(
+                new CustomEvent('scanStarted', {
+                    bubbles: true,
+                    detail: { qr: code.text },
+                }),
+            );
         }
     }
 

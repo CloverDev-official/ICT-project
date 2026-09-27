@@ -252,7 +252,8 @@
                         <div class="mb-3"><p class="font-bold text-gray-800">Senin–Kamis</p><p class="text-xs text-gray-500">Jendela scan masuk dan pulang reguler.</p></div>
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Mulai</label><input type="time" x-model="defaultForm.scan_masuk_mulai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
-                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Sampai</label><input type="time" x-model="defaultForm.scan_masuk_sampai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
+                            <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Masuk Sampai</label><input type="time" x-model="defaultForm.scan_masuk_sampai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"><p class="mt-1 text-[11px] text-gray-500">Jam dasar sebelum toleransi.</p></div>
+                            <div class="col-span-2"><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Toleransi Masuk (Menit)</label><input type="number" min="0" max="720" step="1" x-model.number="defaultForm.toleransi_masuk" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"><p class="mt-1 text-[11px] text-gray-500">Batas scan disimpan sebagai jam dasar + toleransi.</p></div>
                             <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Mulai</label><input type="time" x-model="defaultForm.scan_keluar_mulai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
                             <div><label class="mb-1 block text-xs font-bold uppercase text-gray-400">Scan Pulang Sampai</label><input type="time" x-model="defaultForm.scan_keluar_sampai" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-main focus:outline-none focus:ring-2 focus:ring-blue-main/10"></div>
                         </div>
@@ -413,7 +414,12 @@
                                     <div>
                                         <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Masuk Sampai</label>
                                         <input type="time" x-model="preset.scan_masuk_sampai" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
-                                        <p class="mt-1 text-[11px] text-gray-400">Batas akhir scan masuk.</p>
+                                        <p class="mt-1 text-[11px] text-gray-400">Jam dasar sebelum toleransi.</p>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Toleransi Masuk (Menit)</label>
+                                        <input type="number" min="0" max="720" step="1" x-model.number="preset.toleransi_masuk" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                        <p class="mt-1 text-[11px] text-gray-400">Batas akhir = jam dasar + toleransi.</p>
                                     </div>
                                     <div>
                                         <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Pulang Mulai</label>
@@ -521,7 +527,12 @@
                                                 <div>
                                                     <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Masuk Sampai</label>
                                                     <input type="time" x-model="eventForm.detail_kelas[String(rombel.id)].scan_masuk_sampai" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
-                                                    <p class="mt-1 text-[11px] text-gray-400">Batas scan masuk.</p>
+                                                    <p class="mt-1 text-[11px] text-gray-400">Jam dasar sebelum toleransi.</p>
+                                                </div>
+                                                <div class="col-span-2">
+                                                    <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Toleransi Masuk (Menit)</label>
+                                                    <input type="number" min="0" max="720" step="1" x-model.number="eventForm.detail_kelas[String(rombel.id)].toleransi_masuk" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-blue-main focus:outline-none">
+                                                    <p class="mt-1 text-[11px] text-gray-400">Batas akhir = jam dasar + toleransi.</p>
                                                 </div>
                                                 <div>
                                                     <label class="mb-1 block text-[11px] font-bold uppercase text-gray-400">Scan Pulang Mulai</label>
@@ -599,7 +610,10 @@
                     selectedDate: initialState.selectedDate,
                     eventForm: {},
                     preset: {},
-                    defaultForm: JSON.parse(JSON.stringify(initialState.settings)),
+                    defaultForm: {
+                        ...JSON.parse(JSON.stringify(initialState.settings)),
+                        scan_masuk_sampai: initialState.settings.scan_masuk_sampai_dasar || initialState.settings.scan_masuk_sampai,
+                    },
                     rombelSearch: '',
                     isReady: Boolean(initialState.ready),
                     bootingInitial: false,
@@ -651,6 +665,7 @@
 
                         if (this.state.settings) {
                             this.defaultForm = JSON.parse(JSON.stringify(this.state.settings));
+                            this.defaultForm.scan_masuk_sampai = this.state.settings.scan_masuk_sampai_dasar || this.state.settings.scan_masuk_sampai;
                         }
 
                         this.resetFormFromDate(this.selectedDate);
@@ -808,7 +823,8 @@
                             tipe: defaultType,
                             gunakan_window_scan: defaultType !== 'libur',
                             scan_masuk_mulai: defaultType === 'libur' ? '' : (defaults.scan_masuk_mulai || this.state.settings.scan_masuk_mulai),
-                            scan_masuk_sampai: defaultType === 'libur' ? '' : (defaults.scan_masuk_sampai || this.state.settings.scan_masuk_sampai),
+                            scan_masuk_sampai: defaultType === 'libur' ? '' : this.state.settings.scan_masuk_sampai_dasar,
+                            toleransi_masuk: this.state.settings.toleransi_masuk,
                             scan_keluar_mulai: defaultType === 'libur' ? '' : (defaults.scan_keluar_mulai || this.state.settings.scan_keluar_mulai),
                             scan_keluar_sampai: defaultType === 'libur' ? '' : (defaults.scan_keluar_sampai || this.state.settings.scan_keluar_sampai),
                             keterangan: '',
@@ -829,7 +845,8 @@
                                     tipe: item.tipe,
                                     gunakan_window_scan: item.tipe !== 'libur',
                                     scan_masuk_mulai: item.scan_masuk_mulai || defaults.scan_masuk_mulai || '',
-                                    scan_masuk_sampai: item.scan_masuk_sampai || defaults.scan_masuk_sampai || '',
+                                    scan_masuk_sampai: item.scan_masuk_sampai_dasar || this.state.settings.scan_masuk_sampai_dasar || '',
+                                    toleransi_masuk: item.toleransi_masuk ?? this.state.settings.toleransi_masuk,
                                     scan_keluar_mulai: item.scan_keluar_mulai || defaults.scan_keluar_mulai || '',
                                     scan_keluar_sampai: item.scan_keluar_sampai || defaults.scan_keluar_sampai || '',
                                     keterangan: item.keterangan || '',
@@ -843,6 +860,7 @@
                             this.preset.gunakan_window_scan = false;
                             this.preset.scan_masuk_mulai = '';
                             this.preset.scan_masuk_sampai = '';
+                            this.preset.toleransi_masuk = this.state.settings.toleransi_masuk;
                             this.preset.scan_keluar_mulai = '';
                             this.preset.scan_keluar_sampai = '';
                             return;
@@ -860,7 +878,11 @@
                         }
 
                         if (!this.preset.scan_masuk_sampai) {
-                            this.preset.scan_masuk_sampai = defaults.scan_masuk_sampai;
+                            this.preset.scan_masuk_sampai = this.state.settings.scan_masuk_sampai_dasar;
+                        }
+
+                        if (!Number.isInteger(this.preset.toleransi_masuk)) {
+                            this.preset.toleransi_masuk = this.state.settings.toleransi_masuk;
                         }
 
                         if (!this.preset.scan_keluar_mulai) {
@@ -882,6 +904,7 @@
                             gunakan_window_scan: gunakanWindowScan,
                             scan_masuk_mulai: gunakanWindowScan ? this.preset.scan_masuk_mulai : '',
                             scan_masuk_sampai: gunakanWindowScan ? this.preset.scan_masuk_sampai : '',
+                            toleransi_masuk: gunakanWindowScan ? this.preset.toleransi_masuk : null,
                             scan_keluar_mulai: gunakanWindowScan ? this.preset.scan_keluar_mulai : '',
                             scan_keluar_sampai: gunakanWindowScan ? this.preset.scan_keluar_sampai : '',
                             keterangan: this.preset.keterangan || '',
@@ -938,6 +961,7 @@
                             detail.gunakan_window_scan = false;
                             detail.scan_masuk_mulai = '';
                             detail.scan_masuk_sampai = '';
+                            detail.toleransi_masuk = this.state.settings.toleransi_masuk;
                             detail.scan_keluar_mulai = '';
                             detail.scan_keluar_sampai = '';
                             return;
@@ -955,7 +979,11 @@
                         }
 
                         if (!detail.scan_masuk_sampai) {
-                            detail.scan_masuk_sampai = defaults.scan_masuk_sampai;
+                            detail.scan_masuk_sampai = this.state.settings.scan_masuk_sampai_dasar;
+                        }
+
+                        if (!Number.isInteger(detail.toleransi_masuk)) {
+                            detail.toleransi_masuk = this.state.settings.toleransi_masuk;
                         }
 
                         if (!detail.scan_keluar_mulai) {
@@ -1097,12 +1125,20 @@
                                 gunakan_window_scan: detail.tipe !== 'libur',
                                 scan_masuk_mulai: detail.scan_masuk_mulai || '',
                                 scan_masuk_sampai: detail.scan_masuk_sampai || '',
+                                toleransi_masuk: Number(detail.toleransi_masuk),
                                 scan_keluar_mulai: detail.scan_keluar_mulai || '',
                                 scan_keluar_sampai: detail.scan_keluar_sampai || '',
                                 keterangan: detail.keterangan || '',
                             };
 
                             if (payload.detail_kelas[key].gunakan_window_scan) {
+                                if (!Number.isInteger(payload.detail_kelas[key].toleransi_masuk)
+                                    || payload.detail_kelas[key].toleransi_masuk < 0
+                                    || payload.detail_kelas[key].toleransi_masuk > 720) {
+                                    this.formError = 'Toleransi masuk setiap kelas harus berupa bilangan bulat antara 0 sampai 720 menit.';
+                                    return;
+                                }
+
                                 const scanFields = [
                                     payload.detail_kelas[key].scan_masuk_mulai,
                                     payload.detail_kelas[key].scan_masuk_sampai,
@@ -1144,6 +1180,12 @@
                                 this.formError = message;
                                 return;
                             }
+                        }
+
+                        payload.toleransi_masuk = Number(payload.toleransi_masuk);
+                        if (!Number.isInteger(payload.toleransi_masuk) || payload.toleransi_masuk < 0 || payload.toleransi_masuk > 720) {
+                            this.formError = 'Toleransi masuk harus berupa bilangan bulat antara 0 sampai 720 menit.';
+                            return;
                         }
 
                         this.beginRequest('savingDefault');

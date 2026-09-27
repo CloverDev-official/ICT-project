@@ -183,9 +183,9 @@ class Create extends Component
 
         if ($user) {
             $user->update([
-                'role_id' => $roleId,
                 'is_active' => true,
             ]);
+            $user->roles()->syncWithoutDetaching([$roleId]);
 
             if (! $guru->user_id) {
                 $guru->update(['user_id' => $user->id]);
@@ -210,6 +210,7 @@ class Create extends Component
             'role_id' => $roleId,
             'is_active' => true,
         ]);
+        $user->roles()->sync([$roleId]);
 
         $guru->update(['user_id' => $user->id]);
 

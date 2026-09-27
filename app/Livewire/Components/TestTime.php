@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Components;
 
+use App\Models\Setting;
+use App\Support\TestDatetime;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cookie;
 use Livewire\Component;
@@ -38,6 +40,10 @@ class TestTime extends Component
 
         Cookie::queue(Cookie::make('test_datetime', $testDatetime, 60 * 24 * 365));
 
+        if (app()->environment('local')) {
+            Setting::upsertValue(TestDatetime::SETTING_KEY, $testDatetime);
+        }
+
         $this->redirect(url()->previous());
     }
 
@@ -46,6 +52,10 @@ class TestTime extends Component
         session()->forget('test_datetime');
 
         Cookie::queue(Cookie::forget('test_datetime'));
+
+        if (app()->environment('local')) {
+            Setting::query()->where('key', TestDatetime::SETTING_KEY)->delete();
+        }
 
         $this->redirect(url()->previous());
     }

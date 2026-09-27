@@ -1,0 +1,21 @@
+{
+    "id": "../mpanel/scan-qrcode",
+    "name": "Absensi",
+    "short_name": "Absensi",
+    "description": "Scanner absensi QR dalam mode layar penuh.",
+    "lang": "id",
+    "start_url": "../mpanel/scan-qrcode",
+    "scope": "../",
+    "display": "fullscreen",
+    "background_color": "#020617",
+    "theme_color": "#020617",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "../assets/img/logo_smkn_2.png",
+            "sizes": "500x500",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}

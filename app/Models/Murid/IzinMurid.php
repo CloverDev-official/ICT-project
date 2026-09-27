@@ -21,6 +21,7 @@ class IzinMurid extends Model
         'dari_jam',
         'sampai_jam',
         'status',
+        'status_absensi_sebelumnya',
     ];
 
     protected $casts = [

@@ -161,6 +161,9 @@ class DataMuridImport implements ShouldQueue, ToCollection, WithCalculatedFormul
         }
 
         $updateColumns = [
+            // `uuid` dan `image_path` sengaja tidak diperbarui saat NIPD sudah
+            // ada. UUID dipakai oleh QR/route, sedangkan foto dikelola dari
+            // manajemen foto murid dan tidak tersedia dalam berkas import.
             'nama',
             'jk',
             'nisn',
@@ -177,7 +180,6 @@ class DataMuridImport implements ShouldQueue, ToCollection, WithCalculatedFormul
             'nama_ayah',
             'nama_ibu',
             'nama_wali',
-            'image_path',
             'rombel_id',
             'updated_at',
         ];

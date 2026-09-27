@@ -259,21 +259,19 @@
             <div
                 x-data="{
                     open: false,
-                    selectedId: null,
-                    selectedLabel: 'Pilih Role',
+                    selectedIds: @entangle('roleIds').live,
+                    roleNames: @js($roles->mapWithKeys(fn ($role) => [$role->id => $role->name])),
 
-                    init(){
-                        // Inisialisasi nilai selectedId dan selectedLabel berdasarkan data yang sudah ada
-                        this.selectedId = @js($selectedRole?->id);
-                        this.selectedLabel = @js($selectedRole?->name ?? 'Pilih Role');
+                    select(id){
+                        id = Number(id)
+                        this.selectedIds = this.selectedIds.includes(id)
+                            ? this.selectedIds.filter((selectedId) => selectedId !== id)
+                            : [...this.selectedIds, id]
                     },
 
-                    select(id, label){
-                        this.selectedId = id
-                        this.selectedLabel = label
-                        this.open = false
-
-                        $wire.set('roleId', id) // Update properti Livewire saat memilih role
+                    label() {
+                        const names = this.selectedIds.map((id) => this.roleNames[id]).filter(Boolean)
+                        return names.length ? names.join(', ') : 'Pilih role'
                     },
 
                     toggle(){
@@ -305,7 +303,7 @@
                         </div>
 
                         <span
-                            x-text="selectedLabel"
+                            x-text="label()"
                             class="text-gray-700">
                         </span>
 
@@ -330,13 +328,13 @@
                     class="absolute z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
 
                     <div
-                        @click.prevent="select(null, 'Pilih role')"
+                        @click.prevent="selectedIds = []"
                         class="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-blue-main hover:text-white">
 
                         <span>Pilih role</span>
 
                         <iconify-icon
-                            x-show="selectedId === null"
+                            x-show="selectedIds.length === 0"
                             icon="lineicons:check"
                             width="18">
                         </iconify-icon>
@@ -346,13 +344,13 @@
                     @foreach ($roles as $role)
 
                     <div
-                        @click.prevent="select('{{ $role->id }}', '{{ $role->name }}')"
+                        @click.prevent="select({{ $role->id }})"
                         class="flex cursor-pointer items-center justify-between px-4 py-3 capitalize transition hover:bg-blue-main hover:text-white">
 
                         <span>{{ $role->name }}</span>
 
                         <iconify-icon
-                            x-show="selectedId === '{{ $role->id }}'" 
+                            x-show="selectedIds.includes({{ $role->id }})"
                             icon="lineicons:check"
                             width="18">
                         </iconify-icon>
@@ -363,7 +361,7 @@
 
                 </div>
 
-                @error('roleId')
+                @error('roleIds')
                 <p class="mt-2 text-sm text-rose-500">
                     {{ $message }}
                 </p>

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -79,22 +80,46 @@ class User extends Authenticatable
 
     public function hasRole(string $role): bool
     {
-        return $this->role?->name === $role;
+        return $this->assignedRoles()->contains(
+            fn (Role $assignedRole) => Str::slug($assignedRole->name) === Str::slug($role),
+        );
+    }
+
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->assignedRoles()->contains(
+            fn (Role $assignedRole) => collect($roles)->contains(
+                fn (string $role) => Str::slug($assignedRole->name) === Str::slug($role),
+            ),
+        );
+    }
+
+    public function hasOnlyRoles(array $roles): bool
+    {
+        $assignedRoles = $this->assignedRoles();
+
+        return $assignedRoles->isNotEmpty()
+            && $assignedRoles->every(
+                fn (Role $assignedRole) => collect($roles)->contains(
+                    fn (string $role) => Str::slug($assignedRole->name) === Str::slug($role),
+                ),
+            );
     }
 
     public function canAccess(string $permission): bool
     {
-        if ($this->role?->id === 1) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 
-        $permissions = $this->role?->permissions;
+        return $this->assignedRoles()
+            ->flatMap(fn (Role $role) => $role->permissions ?? [])
+            ->contains($permission);
+    }
 
-        if (is_array($permissions)) {
-            return in_array($permission, $permissions, true);
-        }
-
-        return false;
+    public function isSuperAdmin(): bool
+    {
+        return $this->assignedRoles()->contains(fn (Role $role) => (int) $role->id === 1);
     }
 
     public function defaultRouteName(): string
@@ -137,5 +162,24 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
+    }
+
+    /** @return \Illuminate\Support\Collection<int, Role> */
+    public function assignedRoles()
+    {
+        $roles = $this->relationLoaded('roles')
+            ? $this->roles
+            : $this->roles()->get();
+
+        if ($this->role && ! $roles->contains('id', $this->role->id)) {
+            $roles->push($this->role);
+        }
+
+        return $roles->unique('id')->values();
     }
 }

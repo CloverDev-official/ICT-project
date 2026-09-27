@@ -3,11 +3,17 @@
     $siteSettings = $siteSettings ?? [];
     $siteLogo = \App\Models\Setting::resolveAssetUrl($siteSettings['logo'] ?? null, asset('assets/img/logo_smkn_2.png'));
     $siteName = $siteSettings['nama_website'] ?? config('app.name');
+    $browserRefreshVersion = $siteSettings['system.browser_refresh_version'] ?? '';
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        @if (request()->routeIs('scan-qrcode'))
+            <link rel="manifest" href="{{ url('scan-qr/manifest.webmanifest') }}">
+            <meta name="theme-color" content="#020617">
+        @endif
 
         <title>{{ $title ?? $siteName }}</title>
 
@@ -36,5 +42,9 @@
         @livewireScripts
 
         {!! ToastMagic::scripts() !!}
+
+        @auth
+            <x-browser-refresh-listener :version="$browserRefreshVersion" />
+        @endauth
     </body>
 </html>

@@ -47,7 +47,7 @@ class Profil extends Component
             return;
         }
 
-        $this->roleName = $this->user->role?->name;
+        $this->roleName = $this->user->assignedRoles()->pluck('name')->implode(', ');
         $this->profilePhotoPreview = $this->user->profile_photo_url;
     }
 

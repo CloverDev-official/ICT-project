@@ -510,6 +510,14 @@
                     </x-nav-link>
                 </li>
             @endif
+
+            @if ((int) $user?->role_id === 1)
+                <li>
+                    <x-nav-link href="{{ route('refresh-all-browsers') }}" icon="pengaturan">
+                        Refresh Semua Browser
+                    </x-nav-link>
+                </li>
+            @endif
         </ul>
 
         <!-- footer -->

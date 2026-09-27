@@ -27,11 +27,11 @@
                     <div class="mb-10 text-center">
 
                         <div
-                            class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 shadow-sm">
+                            class="mx-auto mb-5 flex h-20 w-20 items-center justify-center">
 
                             <img
                                 src="{{ $siteLogo }}"
-                                class="w-14"
+                                class="w-20"
                                 alt="Logo SMKN 2 Banjarmasin">
 
                         </div>
@@ -218,7 +218,7 @@
 
                     <!-- overlay -->
                     <div
-                        class="absolute inset-0 bg-gradient-to-t from-blue-deep/90 via-blue-deep/30 to-transparent">
+                        class="absolute inset-0 bg-gradient-to-t from-blue-deep via-blue-deep/50 to-transparent">
                     </div>
 
                     <!-- content -->

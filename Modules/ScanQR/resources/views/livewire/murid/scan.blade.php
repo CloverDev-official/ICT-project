@@ -1,8 +1,5 @@
-<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans">
+<div class="fixed inset-0 bg-blue-dark flex flex-col overflow-y-auto scroll-hidden font-sans" data-browser-refresh-via-ping>
     @php
-        $labelClass = 'mb-2 block text-sm font-semibold text-gray-700';
-        $inputClass = 'w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition placeholder:text-gray-400 hover:border-blue-main focus:border-blue-main focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100';
-        $errorClass = 'mt-2 text-sm text-rose-500';
         $serverPingUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
             'scan-qrcode.ping',
             now()->addMinutes(10),
@@ -53,30 +50,13 @@
 
             </div>
 
-            <!-- back -->
-            <a href="{{ route('pilih-absen') }}">
-
-                <button
-                    class="group flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20 active:scale-95">
-
-                    <iconify-icon
-                        icon="lineicons:chevron-left"
-                        width="18"
-                        height="18"
-                        class="transition group-hover:-translate-x-1">
-                    </iconify-icon>
-
-                    Kembali
-
-                </button>
-
-            </a>
-
         </div>
 
     </header>
 
-    <main class="flex items-center justify-center p-4">
+    @include('components.scan-floating-actions')
+
+    <main class="flex items-center justify-center p-4 pb-40">
         <!-- SCANNER AREA -->
         <div class="w-full max-w-2xl">
 
@@ -153,339 +133,120 @@
         </div>
     </main>
 
-    {{-- @if ($tersimpan)
-        <p>murid: {{ $murid->nama }}</p>
-    <p>Kelas: {{ $murid->rombel->nama_lengkap }}</p>
-    @endif --}}
-
-    @if($tersimpan)
-    <div id="success-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-        <!-- overlay -->
-        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-
-        <!-- container -->
-        <div wire:click.self="closeModal" class="relative flex items-center justify-center min-h-screen p-4">
-
-            <!-- CARD -->
-            <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
-
-                <!-- HEADER -->
-                <div class="bg-linear-to-r from-blue-deep to-blue-deep-solid text-white px-6 py-3 flex items-center justify-between">
-                    <div class="flex items-center justify-start gap-2">
-                        <img src="{{ asset('assets/img/logo_smkn_2.png') }}" class="w-10 h-10" alt="">
-                        <div>
-                            <h2 class="font-bold leading-tight">Absensi Murid</h2>
-                            <p class="text-xs opacity-80">SMKN 2 Banjarmasin</p>
-                        </div>
-                    </div>
-                    <div class="text-right text-xs opacity-80">
-                        <p>ID: {{ $murid->uuid }}</p>
-                    </div>
-                </div>
-
-                <!-- BODY -->
-                <div class="px-6 pt-5">
-                    <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-                        <p class="font-semibold">{{ $scanMessage ?? 'Absensi berhasil disimpan.' }}</p>
-                        @if(!empty($jadwalHariIni))
-                        <p class="mt-1 text-xs">
-                            Jadwal: {{ $jadwalHariIni['label'] ?? '-' }}
-                            @if(!empty($jadwalHariIni['jam_masuk']) || !empty($jadwalHariIni['jam_pulang']))
-                            · {{ $jadwalHariIni['jam_masuk'] ?? '-' }} - {{ $jadwalHariIni['jam_pulang'] ?? '-' }}
-                            @endif
-                        </p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="p-6 flex gap-6">
-
-                    <!-- FOTO -->
-                    <div class="flex-shrink-0">
-                        <img src="{{ $murid->image_path }}"
-                            class="w-32 h-40 object-cover rounded-xl border shadow">
-                    </div>
-
-                    <!-- DATA -->
-                    <div class="flex-1 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Nama</p>
-                            <p class="font-semibold text-gray-900">{{ $murid->nama }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Kelas</p>
-                            <p class="font-semibold text-gray-900">
-                                {{ $murid->rombel->nama_lengkap ?? '-' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">NISN</p>
-                            <p class="font-semibold">{{ $murid->nisn }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">NIPD</p>
-                            <p class="font-semibold">{{ $murid->nipd }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Tempat, Tanggal Lahir</p>
-                            <p class="font-semibold">
-                                {{ $murid->tempat_lahir }},
-                                {{ \Carbon\Carbon::parse($murid->tanggal_lahir)->format('d M Y') }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Jenis Kelamin</p>
-                            <p class="font-semibold">{{ $murid->jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">Agama</p>
-                            <p class="font-semibold">{{ $murid->agama ?? '-' }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-500 text-xs">No HP</p>
-                            <p class="font-semibold">{{ $murid->hp ?? '-' }}</p>
-                        </div>
-
-                        <!-- FULL WIDTH -->
-                        <div class="col-span-2">
-                            <p class="text-gray-500 text-xs">Alamat</p>
-                            <p class="font-semibold leading-snug">
-                                {{ $murid->alamat ?? '-' }}
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- FOOTER -->
-                <div class="bg-gray-100 px-6 py-2 flex justify-between text-xs text-gray-600">
-                    <p>Dicetak oleh sistem</p>
-                    <p>{{ now()->format('d M Y') }}</p>
-                </div>
-
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if($scanStatus === 'message' && $scanMessage && $scanTitle)
-    <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-        <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
-            <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                <div class="bg-yellow-600 px-6 py-4 text-white">
-                    <h2 class="text-lg font-bold">{{ $scanTitle }}</h2>
-                </div>
-                <div class="p-6 text-sm text-gray-700">
-                    <p class="font-semibold text-gray-900">{{ $scanMessage }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if ($scanStatus === 'terlambat')
-        <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-            <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-            <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
-                <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                    <div class="bg-red-600 px-6 py-4 text-white">
-                        <h2 class="text-lg font-bold">Terlambat</h2>
-                        <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
-                    </div>
-                    <div class="p-6 text-sm text-gray-700">
-                        <form wire:submit.prevent class="space-y-4" >
-                            <!-- keterangan atau alasan terlambat -->
-                            <div>
-                                <label class="{{ $labelClass }}">
-                                    Alasan terlambat
-                                </label>
-                                
-                                {{-- input alasan --}}
-                                <input
-                                    type="text"
-                                    required
-                                    wire:model.defer="keterangan"
-                                    placeholder="Masukkan Alasan Anda Terlambat"
-                                    class="{{ $inputClass }}" />
-
-                                @error('keterangan')
-                                <p class="{{ $errorClass }}">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            
-                            <div>
-                                <button
-                                    type="submit"
-                                    wire:click="konfirmasiTerlambat"
-                                    wire:loading.attr="disabled"
-                                    wire:target="store"
-                                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-main to-blue-deep px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70">
-        
-                                    <iconify-icon
-                                        wire:loading.remove
-                                        wire:target="store,image"
-                                        icon="lineicons:save"
-                                        width="20"
-                                        height="20"
-                                        class="transition group-hover:scale-110">
-                                    </iconify-icon>
-        
-                                    <iconify-icon
-                                        wire:loading
-                                        wire:target="store,image"
-                                        icon="line-md:loading-twotone-loop"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
-        
-                                    <span wire:loading.remove wire:target="store,image">
-                                        Kirim Alasan
-                                    </span>
-        
-                                    <span wire:loading wire:target="store,image">
-                                        Mengirim...
-                                    </span>
-        
-                                </button>
-                            </div>
-
-                            
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-
-    @if($scanStatus === 'error' && $scanMessage)
-    <div id="error-modal" wire:click.self="closeModal" class="fixed inset-0 z-50">
-        <div wire:click="closeModal" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-        <div wire:click.self="closeModal" class="relative flex min-h-screen items-center justify-center p-4">
-            <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-                <div class="bg-red-600 px-6 py-4 text-white">
-                    <h2 class="text-lg font-bold">Absensi Tidak Disimpan</h2>
-                    <p class="text-xs opacity-80">Sistem mengecek jadwal kelas dari Manajemen Waktu.</p>
-                </div>
-                <div class="p-6 text-sm text-gray-700">
-                    <p class="font-semibold text-gray-900">{{ $scanMessage }}</p>
-
-                    @if($murid)
-                    <div class="mt-4 rounded-2xl bg-gray-50 p-4">
-                        <p><span class="text-gray-500">Nama:</span> <span class="font-semibold">{{ $murid->nama }}</span></p>
-                        <p><span class="text-gray-500">Kelas:</span> <span class="font-semibold">{{ $murid->rombel->nama_lengkap ?? '-' }}</span></p>
-                    </div>
-                    @endif
-
-                    @if(!empty($jadwalHariIni))
-                    <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800">
-                        <p class="font-semibold">{{ $jadwalHariIni['label'] ?? '-' }}</p>
-                        @if(!empty($jadwalHariIni['nama_acara']))
-                        <p class="text-xs">{{ $jadwalHariIni['nama_acara'] }}</p>
-                        @endif
-                        @if(!empty($jadwalHariIni['keterangan']))
-                        <p class="text-xs">{{ $jadwalHariIni['keterangan'] }}</p>
-                        @endif
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+    <div wire:ignore data-scan-transport-host></div>
+    @include('scanqr::components.modal.success')
+    @include('scanqr::components.modal.message')
+    @include('scanqr::components.modal.error')
+    @include('scanqr::components.modal.transport-error')
 
 </div>
 
 
 @script
-<script>
-    const serverPingUrl = @json($serverPingUrl);
-    const connectionCheckInterval = 5000;
-    const connectionTimeout = 4000;
-    const serverTimeAtLoad = @json(now()->timestamp * 1000);
-    const clientTimeAtLoad = Date.now();
-    const clockFormatter = new Intl.DateTimeFormat('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-    });
+    <script>
+        const serverPingUrl = @json($serverPingUrl);
+        let browserRefreshVersion = @json(($siteSettings['system.browser_refresh_version'] ?? ''));
+        const connectionCheckInterval = 5000;
+        const connectionTimeout = 4000;
+        const serverTimeAtLoad = @json(now()->timestamp * 1000);
+        const clientTimeAtLoad = Date.now();
+        const clockFormatter = new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+        });
 
-    let isServerConnected = true;
-    let connectionCheckTimer = null;
-    let connectionRequestController = null;
-    let clockTimer = null;
+        const lifecycle = new AbortController();
+        let disposed = false;
+        let scanAudio;
+        let scanResults;
+        const listen = (target, event, handler) => target.addEventListener(event, handler, {
+            signal: lifecycle.signal
+        });
+        $wire.__instance.addCleanup(() => {
+            disposed = true;
+            lifecycle.abort();
+            clearInterval(clockTimer);
+            clearTimeout(connectionCheckTimer);
+            connectionRequestController?.abort();
+            scanResults?.dispose();
+            window.destroyScanner?.();
+            window.resetScannerQrLock?.();
+            window.scanned = false;
+        });
+        let isServerConnected = true;
+        let connectionCheckTimer = null;
+        let connectionRequestController = null;
+        let connectionRetryAt = 0;
+        let clockTimer = null;
 
-    function renderServerStatus() {
-        const statusElement = document.getElementById('server-status');
+        function renderServerStatus() {
+            const statusElement = document.getElementById('server-status');
 
-        if (!statusElement) {
-            return;
+            if (!statusElement) {
+                return;
+            }
+
+            if (isServerConnected) {
+                statusElement.classList.add('hidden');
+                return;
+            }
+
+            statusElement.classList.remove('hidden');
         }
 
-        if (isServerConnected) {
-            statusElement.classList.add('hidden');
-            return;
+        function updateClock() {
+            const clockElement = document.getElementById('clock');
+
+            if (clockElement) {
+                const elapsedTime = Date.now() - clientTimeAtLoad;
+                clockElement.textContent = clockFormatter.format(
+                    new Date(serverTimeAtLoad + elapsedTime),
+                );
+            }
         }
 
-        statusElement.classList.remove('hidden');
-    }
+        function startClock() {
+            clearInterval(clockTimer);
+            updateClock();
+            clockTimer = setInterval(updateClock, 1000);
+        }
 
-    function updateClock() {
-        const clockElement = document.getElementById('clock');
+        function scheduleServerCheck(delay = connectionCheckInterval) {
+            clearTimeout(connectionCheckTimer);
 
-        if (clockElement) {
-            const elapsedTime = Date.now() - clientTimeAtLoad;
-            clockElement.textContent = clockFormatter.format(
-                new Date(serverTimeAtLoad + elapsedTime),
+            if (disposed || document.hidden || connectionRequestController) {
+                return;
+            }
+
+            connectionCheckTimer = setTimeout(checkServerConnection, Math.max(delay, connectionRetryAt - Date.now()));
+        }
+
+        async function checkServerConnection() {
+            connectionCheckTimer = null;
+
+            if (disposed || document.hidden || connectionRequestController) {
+                return;
+            }
+
+            if (Date.now() < connectionRetryAt) {
+                scheduleServerCheck();
+                return;
+            }
+
+            if (!navigator.onLine) {
+                isServerConnected = false;
+                renderServerStatus();
+                return;
+            }
+
+            const checkStartedAt = performance.now();
+            connectionRequestController = new AbortController();
+            const timeout = setTimeout(
+                () => connectionRequestController?.abort(),
+                connectionTimeout,
             );
-        }
-    }
-
-    function startClock() {
-        clearInterval(clockTimer);
-        updateClock();
-        clockTimer = setInterval(updateClock, 1000);
-    }
-
-    function scheduleServerCheck(delay = connectionCheckInterval) {
-        clearTimeout(connectionCheckTimer);
-
-        if (document.hidden || connectionRequestController) {
-            return;
-        }
-
-        connectionCheckTimer = setTimeout(checkServerConnection, delay);
-    }
-
-    async function checkServerConnection() {
-        connectionCheckTimer = null;
-
-        if (document.hidden || connectionRequestController) {
-            return;
-        }
-
-        if (!navigator.onLine) {
-            isServerConnected = false;
-            renderServerStatus();
-            return;
-        }
-
-        const checkStartedAt = performance.now();
-        connectionRequestController = new AbortController();
-        const timeout = setTimeout(
-            () => connectionRequestController?.abort(),
-            connectionTimeout,
-        );
 
         try {
             const response = await fetch(serverPingUrl, {
@@ -500,103 +261,228 @@
                 return;
             }
 
-            isServerConnected = response.ok;
-        } catch {
-            isServerConnected = false;
-        } finally {
-            clearTimeout(timeout);
-            connectionRequestController = null;
-            renderServerStatus();
+            if (response.status === 429) {
+                const seconds = Number(response.headers.get('Retry-After'));
+                connectionRetryAt = Date.now() + (Number.isFinite(seconds) && seconds > 0 ? seconds : 60) * 1000;
+                isServerConnected = true;
+                return;
+            }
 
-            const elapsedTime = performance.now() - checkStartedAt;
-            scheduleServerCheck(Math.max(0, connectionCheckInterval - elapsedTime));
+            const refreshVersion = response.headers.get('X-Browser-Refresh-Version');
+            if (response.ok && refreshVersion && refreshVersion !== browserRefreshVersion) {
+                window.location.reload();
+                return;
+            }
+            browserRefreshVersion = refreshVersion || browserRefreshVersion;
+
+                isServerConnected = response.ok;
+            } catch {
+                isServerConnected = false;
+            } finally {
+                clearTimeout(timeout);
+                connectionRequestController = null;
+                renderServerStatus();
+
+                const elapsedTime = performance.now() - checkStartedAt;
+                scheduleServerCheck(Math.max(0, connectionCheckInterval - elapsedTime));
+            }
         }
-    }
 
-    function handleVisibilityChange() {
-        if (document.hidden) {
-            clearInterval(clockTimer);
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                clearInterval(clockTimer);
+                clearTimeout(connectionCheckTimer);
+                connectionRequestController?.abort();
+                return;
+            }
+
+            startClock();
+            scheduleServerCheck(0);
+        }
+
+        listen(window, 'offline', () => {
             clearTimeout(connectionCheckTimer);
             connectionRequestController?.abort();
-            return;
-        }
+            isServerConnected = false;
+            renderServerStatus();
+        });
+
+        listen(window, 'online', () => scheduleServerCheck(0));
+        listen(document, 'visibilitychange', handleVisibilityChange);
 
         startClock();
         scheduleServerCheck(0);
-    }
-
-    window.addEventListener('offline', () => {
-        clearTimeout(connectionCheckTimer);
-        connectionRequestController?.abort();
-        isServerConnected = false;
-        renderServerStatus();
-    });
-
-    window.addEventListener('online', () => scheduleServerCheck(0));
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    startClock();
-    scheduleServerCheck(0);
 
 
-    import('{{ Vite::asset('resources/js/scanner.js') }}')
-    .then(() => {
-        window.initScanner()
-        document.addEventListener('scanSuccess', () => {
-            window.destroyScanner();
+        import('{{ Vite::asset('Modules/ScanQR/resources/assets/js/scanner.js') }}')
+            .then(({
+                createScanAudio,
+                createScanResultController
+            }) => {
+                if (disposed) return;
+                const root = $wire.$el;
+                scanAudio = createScanAudio();
+                const pause = () => {
+                    window.scanned = true;
+                };
+                scanResults = createScanResultController({
+                    audio: scanAudio,
+                    pause,
+                    resume: () => {
+                        // Allow the same stationary QR again after each modal closes.
+                        window.resetScannerQrLock();
+                        window.scanned = false;
+                        window.initScanner();
+                    },
+                    closeBackend: async result => {
+                        if (result.transport) {
+                            root.querySelector('[data-scan-transport-host]').replaceChildren();
+                        } else {
+                            try {
+                                await $wire.closeModal(result.id);
+                            } finally {
+                                root.querySelector('[data-scan-transport-host]').replaceChildren();
+                            }
+                        }
+                    },
+                });
+                // Kiosk browsers with autoplay permission can start without a gesture.
+                void scanAudio.preloadScanAudios();
+                const preload = () => {
+                    void scanAudio.preloadScanAudios();
+                };
+                listen(document, 'pointerdown', preload);
+                listen(document, 'keydown', preload);
+                const setField = (element, name, value) => {
+                    const field = element.querySelector(`[data-scan-field="${name}"]`);
+                    if (field) field.textContent = value || '-';
+                };
+                const renderScanModal = result => {
+                    const modal = result.modal || {};
+                    const template = root.querySelector(
+                        `[data-scan-modal-template="${modal.type || 'error'}"]`,
+                    );
+                    const element = template?.content.firstElementChild.cloneNode(true);
 
-            setTimeout(() => {
-                $wire.set('tersimpan', false);
-                $wire.set('murid', null);
-                window.scanned = false;
-                window.initScanner();
-            }, 2000);
-        });
+                    if (!element) return null;
 
-        document.addEventListener('scanNotFound', () => {
-            window.scanned = false;
-        });
+                    const successNotice = element.querySelector('[data-scan-success-notice]');
+                    if (successNotice && result.status === 'late') {
+                        successNotice.classList.remove('border-green-200', 'bg-green-50', 'text-green-800');
+                        successNotice.classList.add('border-yellow-200', 'bg-yellow-50', 'text-yellow-800');
+                        element.querySelector('[data-scan-field="message"]')?.classList.add('hidden');
+                        element.querySelector('[data-scan-late-message]')?.classList.remove('hidden');
+                    }
 
-        document.addEventListener('scanRejected', () => {
-            window.destroyScanner();
+                    const murid = modal.murid || {};
+                    const jadwal = modal.jadwal || {};
+                    element.dataset.scanResult = JSON.stringify(result);
+                    for (const [name, value] of Object.entries({
+                        message: modal.message,
+                        title: modal.title,
+                        ...murid,
+                        'jadwal-label': jadwal.label,
+                        'jadwal-nama-acara': jadwal.nama_acara,
+                        'jadwal-keterangan': jadwal.keterangan,
+                        lahir: [murid.tempatLahir, murid.tanggalLahir].filter(Boolean).join(', '),
+                    })) setField(element, name, value);
 
-            setTimeout(() => {
-                $wire.set('scanStatus', null);
-                $wire.set('scanMessage', null);
-                $wire.set('murid', null);
-                window.scanned = false;
-                window.initScanner();
-            }, 2000);
-        });
+                    const avatarInitial = element.querySelector('[data-scan-avatar-initial]');
+                    if (avatarInitial) avatarInitial.textContent = (murid.nama || '-').trim().charAt(0).toUpperCase();
+                    const avatarImage = element.querySelector('[data-scan-avatar-image]');
+                    if (avatarImage && murid.imagePath) {
+                        avatarImage.src = murid.imagePath;
+                        avatarImage.classList.remove('hidden');
+                    }
 
-        document.addEventListener('lateMessage', () => {
-            window.destroyScanner();
-        });
+                    const schedule = element.querySelector('[data-scan-schedule]');
+                    if (schedule && Object.keys(jadwal).length) {
+                        schedule.classList.remove('hidden');
+                        const time = [jadwal.jam_masuk, jadwal.jam_pulang].filter(Boolean).join(' - ');
+                        if (time) element.querySelector('[data-scan-schedule-time]').textContent = ` · ${time}`;
+                    }
+                    const muridDetail = element.querySelector('[data-scan-murid]');
+                    if (muridDetail && modal.murid) muridDetail.classList.remove('hidden');
+                    const jadwalDetail = element.querySelector('[data-scan-jadwal]');
+                    if (jadwalDetail && Object.keys(jadwal).length) {
+                        jadwalDetail.classList.remove('hidden');
+                        for (const name of ['jadwal-nama-acara', 'jadwal-keterangan']) {
+                            if (jadwal[name.replace('jadwal-', '').replaceAll('-', '_')]) {
+                                element.querySelector(`[data-scan-field="${name}"]`).classList.remove('hidden');
+                            }
+                        }
+                    }
+                    const date = element.querySelector('[data-scan-date]');
+                    if (date) date.textContent = new Intl.DateTimeFormat('id-ID', {
+                        day: '2-digit', month: 'short', year: 'numeric',
+                    }).format(new Date());
 
-        document.addEventListener('lateConfirm', () => {
-            $wire.set('scanStatus', null);
-            $wire.set('scanMessage', null);
-            $wire.set('murid', null);
-            window.scanned = false;
-            window.initScanner();
-        });
-
-        document.addEventListener('scanModalClosed', () => {
-            window.scanned = false;
-            window.initScanner();
-        });
-
-        document.addEventListener('scanMessage', () => {
-            window.destroyScanner();
-
-            setTimeout(() => {
-                $wire.set('scanStatus', null);
-                $wire.set('scanMessage', null);
-                $wire.set('murid', null);
-                window.scanned = false;
-                window.initScanner();
-            }, 2000);
-        });
-    });
-</script>
+                    root.querySelector('[data-scan-transport-host]').replaceChildren(element);
+                    return element;
+                };
+                listen(root, 'scanResult', event => {
+                    const result = event.detail.result;
+                    const element = renderScanModal(result);
+                    if (element) scanResults.openScanResultModal(result, element);
+                });
+                const transportFailure = () => {
+                    if (disposed || root.querySelector('[data-scan-transport-host]').firstElementChild) return;
+                    const result = {
+                        id: crypto.randomUUID(),
+                        status: 'failed',
+                        autoClose: true,
+                        transport: true,
+                        modal: { type: 'transport' },
+                    };
+                    const element = renderScanModal(result);
+                    if (element) scanResults.openScanResultModal(result, element);
+                };
+                for (const action of ['verifiedQRCode']) {
+                    const removeInterceptor = $wire.$interceptRequest(action, ({
+                        onError,
+                        onFailure
+                    }) => {
+                        onError(({
+                            preventDefault
+                        }) => {
+                            preventDefault();
+                            transportFailure();
+                        });
+                        onFailure(transportFailure);
+                    });
+                    $wire.__instance.addCleanup(removeInterceptor);
+                }
+                listen(root, 'scanStarted', event => {
+                    pause();
+                    // Capture now, but serialize server state changes after modal close.
+                    scanResults.whenClosed().then(() => {
+                        if (!disposed) return $wire.verifiedQRCode(event.detail.qr);
+                    }).catch(transportFailure);
+                });
+                // Capture close actions before Livewire sends its own duplicate request.
+                root.addEventListener('click', event => {
+                    const closeTarget = event.composedPath().find(element => element?.getAttribute && (
+                        element.hasAttribute('data-close-scan') ||
+                        element.getAttribute('wire:click') === 'closeModal' ||
+                        (element.getAttribute('wire:click.self') === 'closeModal' && element === event
+                            .target)
+                    ));
+                    if (!closeTarget) return;
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    void scanResults.closeScanResultModal();
+                }, {
+                    capture: true,
+                    signal: lifecycle.signal
+                });
+                listen(document, 'keydown', event => {
+                    if (event.key === 'Escape' && scanResults.isOpen()) {
+                        event.preventDefault();
+                        void scanResults.closeScanResultModal();
+                    }
+                });
+                listen(document, 'livewire:navigating', () => scanResults.dispose());
+                if (!scanResults.isOpen()) window.initScanner();
+            });
+    </script>
 @endscript

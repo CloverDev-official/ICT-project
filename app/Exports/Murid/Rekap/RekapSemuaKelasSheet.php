@@ -71,7 +71,8 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
             ->leftJoin('indeks', 'indeks.id', '=', 'rombel.indeks_id')
             ->leftJoin('murid', 'murid.rombel_id', '=', 'rombel.id')
             ->leftJoin('absen_murid', function ($join) use ($startDate, $endDate) {
-                $join->on('absen_murid.murid_id', '=', 'murid.id');
+                $join->on('absen_murid.murid_id', '=', 'murid.id')
+                    ->whereNull('absen_murid.deleted_at');
 
                 if ($startDate && $endDate) {
                     $join->whereBetween('absen_murid.tanggal', [$startDate, $endDate]);
@@ -79,15 +80,22 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
             })
             ->select('rombel.id')
             ->selectRaw("{$rombelNamaExpr} as kelas")
-            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as hadir', [AttendanceStatus::Hadir->value])
+            ->selectRaw(
+                'SUM(CASE WHEN absen_murid.status = ? OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NOT NULL) THEN 1 ELSE 0 END) as hadir',
+                [AttendanceStatus::Hadir->value, AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('SUM(CASE WHEN absen_murid.status IN (?, ?, ?) THEN 1 ELSE 0 END) as izin', [
                 AttendanceStatus::Izin->value,
                 AttendanceStatus::Sakit->value,
                 AttendanceStatus::Selesai->value,
             ])
             ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as alpa', [AttendanceStatus::Alpa->value])
-            ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) IN ('masuk','terlambat') THEN 1 ELSE 0 END) as tidak_absen_pulang")
+            ->selectRaw(
+                "SUM(CASE WHEN LOWER(absen_murid.status) = 'masuk' OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NULL) THEN 1 ELSE 0 END) as tidak_absen_pulang",
+                [AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('COUNT(absen_murid.id) as total')
+            ->selectRaw('COUNT(DISTINCT murid.id) as jumlah_murid')
             ->groupBy('rombel.id', DB::raw($rombelNamaExpr))
             ->orderBy(DB::raw($rombelNamaExpr));
     }
@@ -99,6 +107,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
         $alpa = (int) $row->alpa;
         $tidakAbsenPulang = (int) ($row->tidak_absen_pulang ?? 0);
         $total = (int) $row->total;
+        $jumlahMurid = (int) ($row->jumlah_murid ?? 0);
 
         return [
             '',
@@ -107,7 +116,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
             $this->displayValue($izin, $total),
             $this->displayValue($alpa, $total),
             $this->displayValue($tidakAbsenPulang, $total),
-            $this->formatAttendanceRateOrDash($hadir, $izin, $alpa),
+            $this->formatAttendanceRateOrDash($hadir, $jumlahMurid),
         ];
     }
 
@@ -256,20 +265,28 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
         $row = DB::table('rombel')
             ->leftJoin('murid', 'murid.rombel_id', '=', 'rombel.id')
             ->leftJoin('absen_murid', function ($join) use ($startDate, $endDate) {
-                $join->on('absen_murid.murid_id', '=', 'murid.id');
+                $join->on('absen_murid.murid_id', '=', 'murid.id')
+                    ->whereNull('absen_murid.deleted_at');
 
                 if ($startDate && $endDate) {
                     $join->whereBetween('absen_murid.tanggal', [$startDate, $endDate]);
                 }
             })
-            ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as hadir', [AttendanceStatus::Hadir->value])
+            ->selectRaw(
+                'SUM(CASE WHEN absen_murid.status = ? OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NOT NULL) THEN 1 ELSE 0 END) as hadir',
+                [AttendanceStatus::Hadir->value, AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('SUM(CASE WHEN absen_murid.status IN (?, ?) THEN 1 ELSE 0 END) as izin', [
                 AttendanceStatus::Izin->value,
                 AttendanceStatus::Sakit->value,
             ])
             ->selectRaw('SUM(CASE WHEN absen_murid.status = ? THEN 1 ELSE 0 END) as alpa', [AttendanceStatus::Alpa->value])
-            ->selectRaw("SUM(CASE WHEN LOWER(absen_murid.status) IN ('masuk','terlambat') THEN 1 ELSE 0 END) as tidak_absen_pulang")
+            ->selectRaw(
+                "SUM(CASE WHEN LOWER(absen_murid.status) = 'masuk' OR (absen_murid.status = ? AND absen_murid.waktu_masuk IS NOT NULL AND absen_murid.waktu_keluar IS NULL) THEN 1 ELSE 0 END) as tidak_absen_pulang",
+                [AttendanceStatus::Terlambat->value],
+            )
             ->selectRaw('COUNT(absen_murid.id) as total')
+            ->selectRaw('COUNT(DISTINCT murid.id) as jumlah_murid')
             ->first();
 
         $hadir = (int) ($row->hadir ?? 0);
@@ -277,6 +294,7 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
         $alpa = (int) ($row->alpa ?? 0);
         $tidakAbsenPulang = (int) ($row->tidak_absen_pulang ?? 0);
         $total = (int) ($row->total ?? 0);
+        $jumlahMurid = (int) ($row->jumlah_murid ?? 0);
 
         return [
             'hadir' => $hadir,
@@ -288,19 +306,20 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
             'persen_izin' => $this->formatPercent($izin, $total),
             'persen_alpa' => $this->formatPercent($alpa, $total),
             'komposisi' => $this->formatPresenceCompositionOrDash($hadir, $izin, $alpa, $total),
-            'persen_kehadiran' => $this->formatPercent($hadir, $hadir + $izin + $alpa),
+            'persen_kehadiran' => $this->formatPercent($hadir, $jumlahMurid * $this->attendanceDayCount()),
         ];
     }
 
-    private function formatAttendanceRateOrDash(int $hadir, int $izin, int $alpa): string
+    private function formatAttendanceRateOrDash(int $hadir, int $jumlahMurid): string
     {
-        $meetings = $hadir + $izin + $alpa;
+        $attendanceDays = $this->attendanceDayCount();
+        $possibleAttendances = $jumlahMurid * $attendanceDays;
 
-        if ($meetings === 0) {
+        if ($possibleAttendances === 0) {
             return '0%';
         }
 
-        return number_format((($hadir) / $meetings) * 100, 2).'%';
+        return $this->formatPercent($hadir, $possibleAttendances);
     }
 
     private function formatPresenceCompositionOrDash(int $hadir, int $izin, int $alpa, int $total): string
@@ -390,5 +409,16 @@ class RekapSemuaKelasSheet implements FromQuery, WithChunkReading, WithColumnWid
         }
 
         return [$start->toDateString(), $end->toDateString()];
+    }
+
+    private function attendanceDayCount(): int
+    {
+        [$startDate, $endDate] = $this->dateRange();
+
+        if (! $startDate || ! $endDate) {
+            return 0;
+        }
+
+        return Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate)) + 1;
     }
 }

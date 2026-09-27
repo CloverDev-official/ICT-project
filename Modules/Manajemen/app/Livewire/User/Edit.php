@@ -18,18 +18,18 @@ class Edit extends Component
     public ?string $password = '';
     public ?string $password_confirmation = '';
 
-    public ?int $roleId = null;
+    public array $roleIds = [];
     public ?int $guruId = null;
 
     public function mount(int $userId)
     {
-        $this->user = User::findOrFail($userId);
+        $this->user = User::with('roles')->findOrFail($userId);
         $selectedGuru = Guru::query()->where('user_id', $this->user->id)->first();
 
         $this->fill([
             'name' => $this->user->name,
             'email' => $this->user->email,
-            'roleId' => $this->user->role_id,
+            'roleIds' => $this->user->assignedRoles()->pluck('id')->all(),
             'guruId' => $selectedGuru?->id,
         ]);
     }
@@ -55,7 +55,8 @@ class Edit extends Component
             'email' => 'required|email|unique:users,email,' . $this->user->id,
             'password' => 'nullable|string|min:8',
             'password_confirmation' => 'required_with:password|string|same:password',
-            'roleId' => 'required|exists:role,id',
+            'roleIds' => ['required', 'array', 'min:1'],
+            'roleIds.*' => ['integer', 'exists:role,id'],
             'guruId' => 'nullable|exists:guru,id',
         ],
         [
@@ -68,8 +69,9 @@ class Edit extends Component
             'password.min' => 'Password minimal 8 karakter.',
             'password_confirmation.required_with' => 'Konfirmasi password wajib diisi jika password diisi.',
             'password_confirmation.same' => 'Konfirmasi password harus sama dengan password.',
-            'roleId.required' => 'Role wajib dipilih.',
-            'roleId.exists' => 'Role yang dipilih tidak valid.',
+            'roleIds.required' => 'Minimal satu role wajib dipilih.',
+            'roleIds.min' => 'Minimal satu role wajib dipilih.',
+            'roleIds.*.exists' => 'Role yang dipilih tidak valid.',
             'guruId.exists' => 'Guru yang dipilih tidak valid.',
         ]);
 
@@ -80,7 +82,7 @@ class Edit extends Component
         $payload = [
             'name' => $this->name,
             'email' => $this->email,
-            'role_id' => $this->roleId,
+            'role_id' => $this->roleIds[0],
         ];
 
         if ($this->password) {
@@ -88,6 +90,7 @@ class Edit extends Component
         }
 
         $this->user->update($payload);
+        $this->user->roles()->sync($this->roleIds);
 
         $currentGuru = Guru::query()->where('user_id', $this->user->id)->first();
 
@@ -118,13 +121,11 @@ class Edit extends Component
 
     public function render()
     {
-        $selectedRole = Role::select('id', 'name')->find($this->roleId);
         $selectedGuru = Guru::select('id', 'nama')->find($this->guruId);
 
         return view('manajemen::livewire.user.edit', [
             'roles' => $this->getRoles(),
             'guru' => $this->getGuru(),
-            'selectedRole' => $selectedRole,
             'selectedGuru' => $selectedGuru,
         ]);
     }

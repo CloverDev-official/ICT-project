@@ -18,7 +18,7 @@ class Create extends Component
     public $email = '';
     public $password = '';
     public $password_confirmation = '';
-    public $roleId = null;
+    public array $roleIds = [];
     public $guruId = null;
 
     public function getRoles()
@@ -38,7 +38,8 @@ class Create extends Component
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'password_confirmation' => 'required|string|same:password',
-            'roleId' => 'required|exists:role,id',
+            'roleIds' => ['required', 'array', 'min:1'],
+            'roleIds.*' => ['integer', 'exists:role,id'],
             'guruId' => 'nullable|exists:guru,id',
         ],
         [
@@ -51,8 +52,9 @@ class Create extends Component
             'password.required' => 'Password wajib diisi.',
             'password.string' => 'Password harus berupa teks.',
             'password.min' => 'Password minimal 8 karakter.',
-            'roleId.required' => 'Role wajib dipilih.',
-            'roleId.exists' => 'Role yang dipilih tidak valid.',
+            'roleIds.required' => 'Minimal satu role wajib dipilih.',
+            'roleIds.min' => 'Minimal satu role wajib dipilih.',
+            'roleIds.*.exists' => 'Role yang dipilih tidak valid.',
             'guruId.exists' => 'Guru yang dipilih tidak valid.',
             'password_confirmation.required' => 'Konfirmasi password wajib diisi.',
             'password_confirmation.same' => 'Konfirmasi password harus sama dengan password.',
@@ -65,9 +67,11 @@ class Create extends Component
             'email' => $this->email,
             'password' => $this->password,
             'password_confirmation' => $this->password_confirmation,
-            'role_id' => $this->roleId,
+            'role_id' => $this->roleIds[0],
             'is_active' => true,
         ]);
+
+        $user->roles()->sync($this->roleIds);
 
         if($this->guruId) {
             Guru::find($this->guruId)->update([
@@ -83,7 +87,7 @@ class Create extends Component
 
         ToastMagic::success('Success', 'User berhasil dibuat.');
 
-        $this->reset(['name', 'email', 'password', 'password_confirmation', 'roleId', 'guruId']);
+        $this->reset(['name', 'email', 'password', 'password_confirmation', 'roleIds', 'guruId']);
     }
 
 

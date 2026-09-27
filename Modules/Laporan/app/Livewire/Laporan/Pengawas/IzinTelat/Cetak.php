@@ -9,6 +9,7 @@ use App\Models\Murid\Murid;
 use App\Models\Murid\Rombel\Rombel;
 use App\Services\Rombel\RombelFilterService;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -20,6 +21,62 @@ class Cetak extends Component
     public int $perPage = 20;
 
     public bool $showDelete = false;
+
+    public bool $showAlasan = false;
+
+    public string $alasan = '';
+
+    #[Locked]
+    public ?AbsenMurid $absenCetak = null;
+
+    public function bukaAlasan(int $id): void
+    {
+        $this->resetValidation('alasan');
+        $this->absenCetak = $this->findAbsenCetak($id);
+        $this->alasan = $this->absenCetak->keterangan ?? '';
+        $this->showAlasan = true;
+    }
+
+    public function tutupAlasan(): void
+    {
+        $this->reset('showAlasan', 'alasan', 'absenCetak');
+        $this->resetValidation('alasan');
+    }
+
+    public function simpanDanCetak(): void
+    {
+        abort_unless($this->showAlasan && $this->absenCetak, 404);
+        $this->alasan = trim($this->alasan);
+        $this->validate([
+            'alasan' => ['required', 'string', 'max:191'],
+        ], [
+            'alasan.required' => 'Alasan keterlambatan wajib diisi.',
+            'alasan.max' => 'Alasan keterlambatan maksimal 191 karakter.',
+        ]);
+
+        $absen = $this->findAbsenCetak($this->absenCetak->id);
+        if (! $absen->update(['keterangan' => $this->alasan])) {
+            $this->addError('alasan', 'Alasan gagal disimpan. Silakan coba lagi.');
+
+            return;
+        }
+
+        $this->tutupAlasan();
+        $this->redirectRoute('surat-izin-telat', ['id' => $absen->id], navigate: true);
+    }
+
+    private function findAbsenCetak(int $id): AbsenMurid
+    {
+        $this->applyWaliKelasLock();
+
+        return AbsenMurid::query()
+            ->where('status', AttendanceStatus::Terlambat->value)
+            ->when($this->isWaliKelas, fn ($query) => $query->whereHas(
+                'murid', fn ($murid) => $murid->whereIn('rombel_id', $this->waliRombelIds ?? []),
+            ))
+            ->with('murid.rombel')
+            ->findOrFail($id);
+    }
 
     public $listRombel;
 
@@ -62,8 +119,7 @@ class Cetak extends Component
             return;
         }
 
-        $roleSlug = Str::slug($user->role?->name ?? '');
-        $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
+        $this->isWaliKelas = $user->hasOnlyRoles(['Wali Kelas', 'Wali Murid']);
 
         if (! $this->isWaliKelas) {
             return;
@@ -158,7 +214,7 @@ class Cetak extends Component
                 $search = trim($this->search);
 
                 $query->where(function ($q) use ($search) {
-                    $q->where('alasan', 'like', '%'.$search.'%')
+                    $q->where('keterangan', 'like', '%'.$search.'%')
                         ->orWhereHas('murid', function ($muridQuery) use ($search) {
                             $muridQuery->where('nama', 'like', '%'.$search.'%')
                                 ->orWhere('nipd', 'like', '%'.$search.'%')

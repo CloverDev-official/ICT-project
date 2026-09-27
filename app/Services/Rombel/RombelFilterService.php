@@ -103,8 +103,8 @@ class RombelFilterService
         ?array $waliRombelIds,
     ): Builder {
         return Rombel::query()
+            // IN hanya mengecek keanggotaan; duplikat tidak menggandakan hasil query luar.
             ->select($column)
-            ->distinct()
             ->tap(fn ($q) => $this->applyRombelFilters($q, $tingkatId, $jurusanId, $indeksId, $waliRombelIds));
     }
 }

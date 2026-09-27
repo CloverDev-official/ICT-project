@@ -6,6 +6,12 @@ import collectModuleAssetsPaths from './vite-module-loader.js';
 const moduleAssets = await collectModuleAssetsPaths([], 'Modules');
 
 export default defineConfig({
+    build: {
+        rollupOptions: {
+            // Blade dynamically imports scanner.js outside Vite's module graph.
+            preserveEntrySignatures: 'strict',
+        },
+    },
     plugins: [
         laravel({
             input: [
@@ -13,7 +19,6 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/generateCard.js',
                 'resources/js/generateQR.js',
-                'resources/js/scanner.js',
                 ...moduleAssets,
             ],
             refresh: true,

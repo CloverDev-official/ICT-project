@@ -79,8 +79,7 @@ class Rekap extends Component
             return;
         }
 
-        $roleSlug = Str::slug($user->role?->name ?? '');
-        $this->isWaliKelas = in_array($roleSlug, ['wali-kelas', 'wali-murid'], true);
+        $this->isWaliKelas = $user->hasOnlyRoles(['Wali Kelas', 'Wali Murid']);
 
         if (! $this->isWaliKelas) {
             return;
@@ -308,7 +307,7 @@ class Rekap extends Component
     {
         return $this->absenBaseQuery()
             ->with([
-                'murid:id,nama,rombel_id,nipd,nisn',
+                'murid:id,nama,rombel_id,nipd,nisn,image_path',
                 'murid.rombel:id,tingkat_id,jurusan_id,indeks_id',
                 'murid.rombel.tingkat:id,nama',
                 'murid.rombel.jurusan:id,nama',

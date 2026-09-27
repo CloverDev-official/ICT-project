@@ -4,7 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "postbuild": "node scripts/validate-scanner-build.mjs",
+        "dev": "vite",
+        "prebuild": "node scripts/validate-scan-audio.mjs",
+        "predev": "node scripts/validate-scan-audio.mjs",
+        "test:scanner": "node --test --test-isolation=none tests/js/*.test.mjs"
     },
     "devDependencies": {
         "@prettier/plugin-php": "^0.25.0",

@@ -65,8 +65,8 @@
 
     /* QR */
     #qrcode {
-        width: 26mm !important;
-        height: 26mm !important;
+        width: 40mm !important;
+        height: 40mm !important;
 
         display: block !important;
 
@@ -76,31 +76,6 @@
         object-fit: contain;
     }
 
-    /* Informasi */
-    #printArea > div > div:last-child {
-        width: 100px !important;
-        min-width: 100px !important;
-        max-width: 100px !important;
-
-        margin-left: auto !important;
-        margin-right: auto !important;
-
-        flex: none !important;
-    }
-
-    #printArea table {
-        width: 100%;
-        table-layout: fixed;
-        border-collapse: collapse;
-    }
-
-    #printArea td {
-        vertical-align: top;
-        white-space: normal;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-    }
-
     button {
         display: none !important;
     }
@@ -108,7 +83,7 @@
 </style>
 @endassets
 
-<div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
+<div class="flex h-fit flex-col items-center justify-center bg-gray-100 p-4">
 
     <button
         type="button"
@@ -118,58 +93,18 @@
     </button>
 
     <div
-    id="printArea"
-    class="mx-auto w-full max-w-[58mm] rounded bg-white p-3 shadow">
-
-    <div class="flex flex-col justify-center items-center gap-3">
-
-        <!-- QR -->
-        <div class="flex shrink-0 items-center justify-center">
-            <img
-                id="qrcode"
-                class="h-[98px] w-[98px] object-contain"
-                alt="QR Code">
-        </div>
-
-        <!-- Informasi -->
-        <div class="min-w-0 w-[100px] max-w-[100px] flex-1 overflow-hidden">
-
-            <div class="border border-dotted w-full mb-4"></div>
-
-            <h1 class="mb-2 text-center text-[10px] font-bold uppercase leading-none">
+        id="printArea"
+        class="w-[58mm] rounded bg-white p-3 shadow">
+        <div class="flex w-full flex-col items-center gap-3">
+            <h1 class="text-center text-lg font-bold uppercase">
                 Surat Izin Keluar
             </h1>
-
-            <div class="flex flex-col space-y-2">
-
-                <div class="flex flex-col text-[8px]">
-                    <p class="text-start whitespace-nowrap font-semibold">Nama :</p>
-                    <p class="text-start">{{ $izin->murid->nama }}</p>
-                </div>
-
-                <div class="flex flex-col text-[8px]">
-                    <p class="text-start whitespace-nowrap font-semibold">Kelas :</p>
-                    <p class="text-start">
-                        {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
-                    </p>
-                </div>
-
-                <div class="flex flex-col text-[8px]">
-                    <p class="text-start whitespace-nowrap font-semibold">NIPD :</p>
-                    <p class="text-start">{{ $izin->murid->nipd }}</p>
-                </div>
-
-                <div class="flex flex-col text-[8px]">
-                    <p class="text-start whitespace-nowrap font-semibold">Keperluan :</p>
-                    <p class="text-start">{{ $izin->alasan }}</p>
-                </div>
-
-            </div>
+            <img
+                id="qrcode"
+                class="object-contain"
+                alt="QR Code Surat Izin Keluar">
         </div>
-
     </div>
-</div>
-
 </div>
 
 @script

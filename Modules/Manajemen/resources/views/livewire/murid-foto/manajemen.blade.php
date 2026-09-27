@@ -251,15 +251,7 @@
 
                                 <div class="flex justify-center">
 
-                                    <div
-                                        class="relative h-16 w-16 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100 shadow-sm">
-
-                                        <img
-                                            src="{{ $murid->image_path ?: asset('assets/img/default-avatar.png') }}"
-                                            alt="Foto {{ $murid->nama }}"
-                                            class="h-full w-full object-cover">
-
-                                    </div>
+                                    <x-murid-avatar :murid="$murid" class="h-16 w-16 rounded-2xl border border-gray-200 bg-gray-100 text-xl font-bold text-blue-main shadow-sm" />
 
                                 </div>
 

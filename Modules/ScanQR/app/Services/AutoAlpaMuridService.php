@@ -4,19 +4,41 @@ namespace Modules\ScanQR\Services;
 
 use App\Enums\AttendanceStatus;
 use App\Enums\StudentStatus;
+use App\Models\Murid\AbsenMurid;
+use App\Models\Murid\IzinMurid;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class AutoAlpaMuridService
 {
+    public function syncExpiredIzinKeluar(?Carbon $now = null): int
+    {
+        $today = ($now ?? now())->toDateString();
+        $izinIds = IzinMurid::query()
+            ->where('status', AttendanceStatus::Izin->value)
+            ->where('tanggal', '<', $today)
+            ->orderBy('id')
+            ->pluck('id');
+
+        $totalUpdated = 0;
+
+        foreach ($izinIds as $izinId) {
+            $totalUpdated += $this->markExpiredIzinKeluarAsAlpa((int) $izinId, $today);
+        }
+
+        return $totalUpdated;
+    }
+
     public function syncForRombels(iterable $rombelIds, Carbon|string $tanggal, ?Carbon $now = null): int
     {
         $date = $tanggal instanceof Carbon
             ? $tanggal->copy()
             : Carbon::parse($tanggal);
 
-        if ($date->isFuture()) {
+        $date->startOfDay();
+
+        if ($date->isAfter(today())) {
             return 0;
         }
 
@@ -42,30 +64,37 @@ class AutoAlpaMuridService
 
     public function syncForRombel(int $rombelId, string $tanggal, array $jadwal, ?Carbon $now = null): int
     {
-        $now ??= now();
-        $jamMasuk = $this->normalizeTime($jadwal['jam_masuk'] ?? null);
+        $date = Carbon::parse($tanggal)->startOfDay();
 
-        if (! $jamMasuk) {
+        if ($date->isAfter(today()) || ! app(JadwalAbsensiService::class)->bolehScan($jadwal)) {
             return 0;
         }
 
-        $autoAlpaStartsAt = Carbon::parse("{$tanggal} {$jamMasuk}")->addMinute();
+        $now ??= $date->isToday() ? now() : $date->copy()->endOfDay();
+        $scanMasukSampai = $this->normalizeTime($jadwal['scan_masuk_sampai'] ?? null);
+        $scanKeluarSampai = $this->normalizeTime($jadwal['scan_keluar_sampai'] ?? null);
 
-        if ($now->lt($autoAlpaStartsAt)) {
+        if (! $scanMasukSampai || ! $scanKeluarSampai) {
             return 0;
         }
 
-        $timestamp = now()->toDateTimeString();
+        // Auto alpa berjalan setelah batas scan masuk, selama jendela scan
+        // pulang belum berakhir.
+        $scanMasukBerakhirPada = $date->copy()->setTimeFromTimeString($scanMasukSampai)->addMinute();
+        $scanPulangBerakhirPada = $date->copy()->setTimeFromTimeString($scanKeluarSampai);
+
+        if ($now->lt($scanMasukBerakhirPada) || $now->gte($scanPulangBerakhirPada)) {
+            return 0;
+        }
+
+        $timestamp = $now->copy()->toDateTimeString();
         $keterangan = $this->autoAlpaKeterangan($jadwal);
 
         $query = $this->missingAbsenQuery($rombelId, $tanggal);
-        $total = (clone $query)->count('murid.id');
 
-        if ($total === 0) {
-            return 0;
-        }
-
-        $inserted = DB::table('absen_murid')->insertUsing(
+        // insertUsing() returns the actual affected-row count. This avoids a
+        // separate COUNT query for every rombel while keeping the report exact.
+        return DB::table('absen_murid')->insertUsing(
             [
                 'murid_id',
                 'tanggal',
@@ -81,8 +110,53 @@ class AutoAlpaMuridService
                 [$tanggal, AttendanceStatus::Alpa->value, $keterangan, $timestamp, $timestamp],
             ),
         );
+    }
 
-        return is_int($inserted) ? $inserted : $total;
+    private function markExpiredIzinKeluarAsAlpa(int $izinId, string $today): int
+    {
+        return DB::transaction(function () use ($izinId, $today): int {
+            $izin = IzinMurid::query()
+                ->whereKey($izinId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $izin || $izin->status !== AttendanceStatus::Izin->value) {
+                return 0;
+            }
+
+            $tanggalIzin = $izin->tanggal?->toDateString();
+
+            if (! $tanggalIzin || $tanggalIzin >= $today) {
+                return 0;
+            }
+
+            // Hanya absensi yang masih terhubung dengan izin keluar aktif yang
+            // boleh menjadi alpa. Status Izin yang dicatat/manual di luar
+            // proses izin keluar tidak memiliki IzinMurid dan tidak tersentuh.
+            $absen = AbsenMurid::query()
+                ->where('murid_id', $izin->murid_id)
+                ->where('tanggal', $tanggalIzin)
+                ->where('status', AttendanceStatus::Izin->value)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $absen) {
+                return 0;
+            }
+
+            if (! $izin->update(['status' => AttendanceStatus::Alpa->value])) {
+                throw new \RuntimeException('Status izin keluar gagal diubah menjadi alpa.');
+            }
+
+            if (! $absen->update([
+                'status' => AttendanceStatus::Alpa->value,
+                'keterangan' => 'Izin keluar tidak diselesaikan dengan scan QR pada tanggal izin.',
+            ])) {
+                throw new \RuntimeException('Status absensi izin keluar gagal diubah menjadi alpa.');
+            }
+
+            return 1;
+        });
     }
 
     private function missingAbsenQuery(int $rombelId, string $tanggal)
@@ -114,7 +188,7 @@ class AutoAlpaMuridService
     private function autoAlpaKeterangan(array $jadwal): string
     {
         $parts = array_filter([
-            'Otomatis alpa setelah melewati jam masuk',
+            'Otomatis alpa setelah batas scan masuk',
             $jadwal['label'] ?? null,
             $jadwal['nama_acara'] ?? null,
             $jadwal['keterangan'] ?? null,
@@ -125,10 +199,10 @@ class AutoAlpaMuridService
 
     private function normalizeTime(?string $time): ?string
     {
-        if (! $time) {
+        if (! is_string($time) || ! preg_match('/^(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/', $time)) {
             return null;
         }
 
-        return strlen($time) === 5 ? $time.':00' : substr($time, 0, 8);
+        return strlen($time) === 5 ? "{$time}:00" : $time;
     }
 }

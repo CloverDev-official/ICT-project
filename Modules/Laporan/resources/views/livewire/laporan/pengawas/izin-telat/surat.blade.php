@@ -40,7 +40,6 @@
             max-width: 58mm !important;
 
             margin: 0 !important;
-            padding: 3mm !important;
 
             box-sizing: border-box !important;
 
@@ -84,45 +83,29 @@
 </style>
 @endassets
 
-<div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
-
-    <button
-        type="button"
-        onclick="window.print()"
-        class="mb-5 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-        Print
-    </button>
+<div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-2">
+    <button type="button" onclick="window.print()" class="mb-5 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Cetak Ulang</button>
 
     <div
         id="printArea"
-        class="w-[58mm] rounded bg-white p-3 shadow">
+        class="w-[58mm] rounded bg-white">
 
-        <div class="w-full">
+        <div class="w-full border-2 p-3">
 
-            <h1 class="mb-3 text-center text-[10px] font-bold uppercase">
+            <h1 class="mb-3 text-center text-[12px] font-bold uppercase">
                 Surat Izin Telat
             </h1>
 
             <div class="flex flex-col space-y-2">
 
-                <div class="text-[8px]">
+                <div class="text-[12px]">
                     <p class="font-semibold">Nama :</p>
                     <p>{{ $absen->murid->nama }}</p>
                 </div>
 
-                <div class="text-[8px]">
-                    <p class="font-semibold">Kelas :</p>
-                    <p>{{ $absen->murid->rombel->nama_lengkap ?? 'N/A' }}</p>
-                </div>
-
-                <div class="text-[8px]">
-                    <p class="font-semibold">NIPD :</p>
-                    <p>{{ $absen->murid->nipd }}</p>
-                </div>
-
-                <div class="text-[8px]">
-                    <p class="font-semibold">Keperluan :</p>
-                    <p>{{ $absen->alasan }}</p>
+                <div class="text-[12px]">
+                    <p class="font-semibold">Alasan Terlambat :</p>
+                    <p class="whitespace-pre-line break-words">{{ $absen->keterangan }}</p>
                 </div>
 
             </div>
@@ -130,13 +113,17 @@
             <div class="my-4 border border-dotted"></div>
 
             <div class="flex justify-end">
-                <div class="w-28 text-center text-[8px]">
+                <div class="w-28 text-center text-[12px]">
 
+                    <p class="font-semibold mb-1">
+                        {{ now()->locale('id')->locale('id')->translatedFormat('d F Y') }}<br>
+                        {{ now()->locale('id')->translatedFormat('H:i:s') }} WITA
+                    </p>
                     <p class="font-semibold">
                         Pengawas
                     </p>
 
-                    <div class="h-14"></div>
+                    <div class="h-16"></div>
 
                     <div class="border-t border-black pt-1">
                         {{ auth()->user()->name }}
@@ -148,12 +135,15 @@
         </div>
 
     </div>
-
 </div>
 
 @script
 <script>
-    window.print();
-    Livewire.navigate('{{ route('cetak-izin-telat') }}');
+    if (@js($siapCetak)) {
+        requestAnimationFrame(() => {
+            window.print();
+            Livewire.navigate(@js(route('cetak-izin-telat')));
+        });
+    }
 </script>
 @endscript

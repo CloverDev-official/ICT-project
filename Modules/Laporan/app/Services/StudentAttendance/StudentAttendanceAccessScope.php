@@ -17,9 +17,7 @@ class StudentAttendanceAccessScope
      */
     public function accessibleRombelIds(User $user): ?array
     {
-        $roleSlug = Str::slug($user->role?->name ?? '');
-
-        if (! in_array($roleSlug, ['wali-kelas', 'wali-murid'], true)) {
+        if (! $user->hasOnlyRoles(['Wali Kelas', 'Wali Murid'])) {
             return null;
         }
 

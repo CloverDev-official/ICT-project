@@ -47,50 +47,29 @@
             <div class="relative space-y-6">
                 <!-- filter rombel -->
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div>
-                        <label class="{{ $labelClass }}">
-                            Kelas
-                        </label>
+                    <livewire:components.searchable-select
+                    wire:model.live="tingkatId"
+                    :options="$tingkatList"
+                    value-key="id" label-key="nama"
+                    label="Tingkat" placeholder="Cari tingkat..."
+                    all-label="Semua tingkat"
+                    not-found-text="Pilihan tidak ditemukan." />
 
-                        <select
-                            wire:model.live="tingkatId"
-                            class="{{ $inputClass }}">
-                            <option value="">Semua kelas</option>
-                            @foreach ($tingkatList as $tingkat)
-                            <option value="{{ $tingkat->id }}">{{ $tingkat->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <livewire:components.searchable-select
+                    wire:model.live="jurusanId"
+                    :options="$jurusanList"
+                    value-key="id" label-key="nama"
+                    label="Jurusan" placeholder="Cari jurusan..."
+                    all-label="Semua jurusan"
+                    not-found-text="Pilihan tidak ditemukan." />
 
-                    <div>
-                        <label class="{{ $labelClass }}">
-                            Jurusan
-                        </label>
-
-                        <select
-                            wire:model.live="jurusanId"
-                            class="{{ $inputClass }}">
-                            <option value="">Semua jurusan</option>
-                            @foreach ($jurusanList as $jurusan)
-                            <option value="{{ $jurusan->id }}">{{ $jurusan->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="{{ $labelClass }}">
-                            Indeks
-                        </label>
-
-                        <select
-                            wire:model.live="indeksId"
-                            class="{{ $inputClass }}">
-                            <option value="">Semua indeks</option>
-                            @foreach ($indeksList as $indeks)
-                            <option value="{{ $indeks->id }}">{{ $indeks->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <livewire:components.searchable-select
+                    wire:model.live="indeksId"
+                    :options="$indeksList"
+                    value-key="id" label-key="nama"
+                    label="Indeks" placeholder="Cari indeks..."
+                    all-label="Semua indeks"
+                    not-found-text="Pilihan tidak ditemukan." />
                 </div>
 
                 <!-- cari murid -->
