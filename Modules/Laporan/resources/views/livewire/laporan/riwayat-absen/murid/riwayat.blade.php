@@ -166,13 +166,12 @@
 
         </div>
 
-        <!-- table -->
-        <div class="overflow-x-auto">
+        {{-- DESKTOP: TABLE --}}
+        <div class="hidden overflow-x-auto lg:block">
 
             <table class="min-w-full text-sm">
 
                 <thead class="bg-gray-100 text-gray-700">
-
                     <tr>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -196,55 +195,42 @@
                         </th>
 
                     </tr>
-
                 </thead>
 
                 <tbody>
 
                     @forelse ($listMurid as $item)
 
-                        <tr
-                            class="border-t border-gray-100 transition hover:bg-gray-50">
+                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                            <!-- no -->
-                            <td
-                                class="px-5 py-5 text-center font-medium text-gray-700">
-
+                            {{-- No --}}
+                            <td class="px-5 py-5 text-center font-medium text-gray-700">
                                 {{ $loop->iteration }}
-
                             </td>
 
-                            <!-- nipd -->
-                            <td
-                                class="px-5 py-5 text-center text-gray-600">
-
+                            {{-- NIPD --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
                                 {{ $item->nipd }}
-
                             </td>
 
-                            <!-- murid -->
+                            {{-- Nama Murid --}}
                             <td class="px-5 py-5">
 
                                 <div class="flex items-center gap-4">
 
-                                    <!-- avatar -->
-                                    <x-murid-avatar :murid="$item" class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main" />
+                                    <x-murid-avatar
+                                        :murid="$item"
+                                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main"
+                                    />
 
-                                    <!-- name -->
                                     <div>
 
-                                        <h2
-                                            class="font-semibold capitalize text-gray-800">
-
+                                        <h2 class="font-semibold capitalize text-gray-800">
                                             {{ $item->nama }}
-
                                         </h2>
 
-                                        <p
-                                            class="mt-1 text-xs text-gray-400">
-
+                                        <p class="mt-1 text-xs text-gray-400">
                                             Data murid aktif
-
                                         </p>
 
                                     </div>
@@ -253,38 +239,33 @@
 
                             </td>
 
-                            <!-- nisn -->
-                            <td
-                                class="px-5 py-5 text-center text-gray-600">
-
+                            {{-- NISN --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
                                 {{ $item->nisn }}
-
                             </td>
 
-                            <!-- action -->
+                            {{-- Detail --}}
                             <td class="px-5 py-5">
 
-                                <div
-                                    class="flex items-center justify-center">
+                                <div class="flex items-center justify-center">
 
                                     <a
                                         href="{{ route('riwayat-detail-absen-murid', $item->uuid) }}"
-                                        wire:navigate>
-
+                                        wire:navigate
+                                    >
                                         <button
-                                            class="group flex items-center gap-2 rounded-2xl bg-blue-main px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
-
+                                            type="button"
+                                            class="group flex items-center gap-2 rounded-2xl bg-blue-main px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid"
+                                        >
                                             <iconify-icon
                                                 icon="mdi:eye"
                                                 width="18"
                                                 height="18"
-                                                class="transition group-hover:scale-110">
-                                            </iconify-icon>
+                                                class="transition group-hover:scale-110"
+                                            ></iconify-icon>
 
                                             Detail
-
                                         </button>
-
                                     </a>
 
                                 </div>
@@ -294,16 +275,176 @@
                         </tr>
 
                     @empty
+
                         <tr>
-                            <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-400">
+
+                            <td
+                                colspan="5"
+                                class="px-5 py-8 text-center text-sm text-gray-400"
+                            >
                                 Data murid belum tersedia.
                             </td>
+
                         </tr>
+
                     @endforelse
 
                 </tbody>
 
             </table>
+
+        </div>
+
+        {{-- MOBILE + TABLET: COLLAPSED CARD --}}
+        <div class="space-y-3 lg:hidden">
+
+            @forelse ($listMurid as $item)
+
+                <div
+                    x-data="{ open: false }"
+                    class="overflow-hidden border border-t-0 border-gray-200 bg-white"
+                >
+
+                    {{-- SUMMARY --}}
+                    <div class="flex items-center gap-3 p-4">
+
+                        {{-- No --}}
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-sm font-semibold text-gray-600"
+                        >
+                            {{ $loop->iteration }}
+                        </div>
+
+                        {{-- Avatar --}}
+                        <x-murid-avatar
+                            :murid="$item"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 font-bold uppercase text-blue-main"
+                        />
+
+                        {{-- Informasi utama --}}
+                        <div class="min-w-0 flex-1">
+
+                            <h3 class="truncate font-semibold capitalize text-gray-800">
+                                {{ $item->nama }}
+                            </h3>
+
+                            <p class="mt-0.5 truncate text-xs text-gray-500">
+                                NIPD: {{ $item->nipd }}
+                            </p>
+
+                        </div>
+
+                        {{-- Chevron --}}
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            :aria-expanded="open"
+                            aria-label="Lihat detail murid"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                        >
+                            <iconify-icon
+                                icon="lineicons:chevron-down"
+                                width="20"
+                                height="20"
+                                class="transition-transform duration-200"
+                                :class="{ 'rotate-180': open }"
+                            ></iconify-icon>
+                        </button>
+
+                    </div>
+
+
+                    {{-- DETAIL --}}
+                    <div
+                        x-show="open"
+                        x-collapse
+                        class="border-t border-gray-200 bg-gray-50"
+                    >
+
+                        <div class="space-y-4 p-4">
+
+                            {{-- Nama Murid --}}
+                            <div>
+
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Nama Murid
+                                </p>
+
+                                <p class="font-semibold capitalize text-gray-800">
+                                    {{ $item->nama }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- NIPD --}}
+                            <div>
+
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    NIPD
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ $item->nipd }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- NISN --}}
+                            <div>
+
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    NISN
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ $item->nisn }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ACTION --}}
+                        <div
+                            class="flex items-center justify-end border-t border-gray-200 bg-gray-50 p-4"
+                        >
+
+                            <a
+                                href="{{ route('riwayat-detail-absen-murid', $item->uuid) }}"
+                                wire:navigate
+                            >
+                                <button
+                                    type="button"
+                                    class="group flex items-center gap-2 rounded-xl bg-blue-main px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid"
+                                >
+                                    <iconify-icon
+                                        icon="mdi:eye"
+                                        width="18"
+                                        height="18"
+                                        class="transition group-hover:scale-110"
+                                    ></iconify-icon>
+
+                                    Detail
+                                </button>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                {{-- EMPTY STATE MOBILE + TABLET --}}
+                <div class="px-5 py-8 text-center text-sm text-gray-400">
+                    Data murid belum tersedia.
+                </div>
+
+            @endforelse
 
         </div>
 

@@ -36,7 +36,7 @@
                     </p>
 
                 </div>
-            </div>        
+            </div>
         </div>
     </div>
 
@@ -112,7 +112,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-            
+
             <!-- jurusan -->
             <livewire:components.searchable-select
                 wire:model.live="filterJurusan"
@@ -137,7 +137,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-                
+
             <!-- kelas / indexs -->
             <livewire:components.searchable-select
                 wire:model.live="filterIndeks"
@@ -201,8 +201,8 @@
 
         </div>
 
-        <!-- table -->
-        <div class="overflow-x-auto">
+        {{-- DESKTOP TABLE --}}
+        <div class="hidden overflow-x-auto lg:block">
 
             <table class="min-w-full text-sm">
 
@@ -210,20 +210,20 @@
 
                     <tr>
 
-                        <th class="px-5 py-4 text-center font-semibold w-10">
+                        <th class="w-10 px-5 py-4 text-center font-semibold">
                             No
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
                             Nama
                         </th>
-                        
+
                         <th class="px-5 py-4 text-center font-semibold">
                             Kelas
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            Nipd
+                            NIPD
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -231,11 +231,11 @@
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            tanggal
+                            Tanggal
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            waktu
+                            Waktu
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -243,7 +243,7 @@
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            aksi
+                            Aksi
                         </th>
 
                     </tr>
@@ -254,91 +254,114 @@
 
                     @forelse ($dataIzin as $izin)
 
-                    <tr class="border-t border-gray-100 transition hover:bg-gray-50">
+                        <tr
+                            class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                        <!-- nomor -->
-                        <td class="px-5 py-5 text-center font-medium text-gray-700">
-                            {{ $dataIzin->firstItem() + $loop->index }}
-                        </td>
+                            {{-- nomor --}}
+                            <td class="px-5 py-5 text-center font-medium text-gray-700">
 
-                        <!-- nama -->
-                        <td class="px-5 py-5">
+                                {{ $dataIzin->firstItem() + $loop->index }}
 
-                            <h2 class="font-semibold text-center text-gray-800 capitalize">
-                                {{ $izin->murid->nama ?? '-' }}
-                            </h2>
+                            </td>
 
-                        </td>
+                            {{-- nama --}}
+                            <td class="px-5 py-5">
 
-                        <!-- kelas -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
-                        </td>
+                                <h2 class="text-center font-semibold capitalize text-gray-800">
 
-                        <!-- nipd -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->murid->nipd ?? '-' }}
-                        </td>
+                                    {{ $izin->murid->nama ?? '-' }}
 
-                        <!-- keperluan -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->alasan }}
-                        </td>
+                                </h2>
 
-                        <!--tanggal -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ optional($izin->tanggal)->format('d - m - Y') ?? '-' }}
-                        </td>
+                            </td>
 
-                        <!-- waktu -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->dari_jam }}{{ $izin->sampai_jam ? ' - ' . $izin->sampai_jam : '' }}
-                        </td>
+                            {{-- kelas --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
 
-                        <!-- status -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $izin->status ?? '-' }}
-                        </td>
+                                {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
 
-                        <!-- aksi button -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            <div class="flex items-center justify-center gap-2">
-                                <!-- edit -->
-                                <a
-                                    href="{{ route('edit-izin-keluar', $izin->id) }}"
-                                    wire:navigate>
+                            </td>
 
-                                    <button
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+                            {{-- nipd --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
 
-                                        <iconify-icon
-                                            icon="lineicons:pencil-1"
-                                            width="20"
-                                            height="20">
-                                        </iconify-icon>
+                                {{ $izin->murid->nipd ?? '-' }}
 
-                                    </button>
+                            </td>
 
-                                </a>
+                            {{-- keperluan --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
 
-                                <!-- cetak ulang izin -->
-                                <a href="{{ route('surat-izin-keluar', $izin->id) }}" wire:navigate>
-                                    <button 
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
+                                {{ $izin->alasan }}
 
-                                    <iconify-icon
-                                        icon="solar:printer-bold"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
+                            </td>
 
-                                    </button>
-                                </a>
+                            {{-- tanggal --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
 
-                                <!-- delete -->
-                                <div
-                                    x-data="{ openModalDelete: false }"
-                                >
+                                {{ optional($izin->tanggal)->format('d - m - Y') ?? '-' }}
+
+                            </td>
+
+                            {{-- waktu --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+
+                                {{ $izin->dari_jam }}
+                                {{ $izin->sampai_jam ? ' - ' . $izin->sampai_jam : '' }}
+
+                            </td>
+
+                            {{-- status --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+
+                                {{ $izin->status ?? '-' }}
+
+                            </td>
+
+                            {{-- aksi --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+
+                                <div class="flex items-center justify-center gap-2">
+
+                                    {{-- edit --}}
+                                    <a
+                                        href="{{ route('edit-izin-keluar', $izin->id) }}"
+                                        wire:navigate>
+
+                                        <button
+                                            type="button"
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+
+                                            <iconify-icon
+                                                icon="lineicons:pencil-1"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
+                                        </button>
+
+                                    </a>
+
+                                    {{-- cetak ulang --}}
+                                    <a
+                                        href="{{ route('surat-izin-keluar', $izin->id) }}"
+                                        wire:navigate>
+
+                                        <button
+                                            type="button"
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
+
+                                            <iconify-icon
+                                                icon="solar:printer-bold"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
+                                        </button>
+
+                                    </a>
+
+                                    {{-- delete --}}
                                     <button
                                         type="button"
                                         @click="$dispatch('open-delete-izin', { id: {{ $izin->id }} })"
@@ -350,61 +373,328 @@
                                             height="20">
                                         </iconify-icon>
 
-                                        
                                     </button>
-                                </div>
-                            </div>
-                        </td>
 
-                    </tr>
+                                </div>
+
+                            </td>
+
+                        </tr>
 
                     @empty
 
-                    <tr>
+                        <tr>
 
-                        <td
-                            colspan="10"
-                            class="px-6 py-14 text-center">
+                            <td
+                                colspan="9"
+                                class="px-6 py-14 text-center">
 
-                            <div
-                                class="flex flex-col items-center justify-center">
+                                <div class="flex flex-col items-center justify-center">
 
-                                <div
-                                    class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+                                    <div
+                                        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
 
-                                    <iconify-icon
-                                        icon="solar:user-cross-bold"
-                                        width="38"
-                                        height="38">
-                                    </iconify-icon>
+                                        <iconify-icon
+                                            icon="solar:user-cross-bold"
+                                            width="38"
+                                            height="38">
+                                        </iconify-icon>
+
+                                    </div>
+
+                                    <h2 class="text-lg font-bold text-gray-700">
+                                        Data izin kosong
+                                    </h2>
+
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Belum ada data izin yang tersedia.
+                                    </p>
 
                                 </div>
 
-                                <h2
-                                    class="text-lg font-bold text-gray-700">
+                            </td>
 
-                                    Data izin kosong
-
-                                </h2>
-
-                                <p
-                                    class="mt-1 text-sm text-gray-500">
-
-                                    Belum ada data izin yang tersedia.
-
-                                </p>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
+                        </tr>
 
                     @endforelse
 
                 </tbody>
 
             </table>
+
+        </div>
+
+        {{-- MOBILE + TABLET COLLAPSIBLE --}}
+        <div class="space-y-3 lg:hidden">
+
+            @forelse ($dataIzin as $izin)
+
+                <div
+                    x-data="{ open: false }"
+                    class="overflow-hidden border border-t-0 border-gray-200 bg-white">
+
+                    {{-- SUMMARY --}}
+                    <div class="flex items-center gap-3 p-4">
+
+                        {{-- no --}}
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-sm font-semibold text-gray-600">
+
+                            {{ $dataIzin->firstItem() + $loop->index }}
+
+                        </div>
+
+                        {{-- information --}}
+                        <div class="min-w-0 flex-1">
+
+                            <h2 class="truncate font-semibold capitalize text-gray-800">
+
+                                {{ $izin->murid->nama ?? '-' }}
+
+                            </h2>
+
+                            <div class="mt-1 flex flex-wrap items-center gap-2">
+
+                                {{-- kelas --}}
+                                <span
+                                    class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-600">
+
+                                    {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
+
+                                </span>
+
+                                {{-- status --}}
+                                <span
+                                    class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold capitalize text-gray-600">
+
+                                    {{ $izin->status ?? '-' }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        {{-- expand --}}
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                            :aria-expanded="open">
+
+                            <iconify-icon
+                                icon="lineicons:chevron-down"
+                                width="20"
+                                height="20"
+                                class="transition-transform duration-200"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </button>
+
+                    </div>
+
+                    {{-- COLLAPSED DETAIL --}}
+                    <div
+                        x-show="open"
+                        x-collapse
+                        class="border-t border-gray-200 bg-gray-50">
+
+                        <div class="grid gap-5 p-5 grid-cols-2">
+
+                            {{-- no --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    No
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $dataIzin->firstItem() + $loop->index }}
+                                </p>
+
+                            </div>
+
+                            {{-- nama --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Nama
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold capitalize text-gray-700">
+                                    {{ $izin->murid->nama ?? '-' }}
+                                </p>
+
+                            </div>
+
+                            {{-- kelas --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Kelas
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $izin->murid->rombel->nama_lengkap ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+                            {{-- nipd --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    NIPD
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $izin->murid->nipd ?? '-' }}
+                                </p>
+
+                            </div>
+
+                            {{-- keperluan --}}
+                            <div class="sm:col-span-2">
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Keperluan
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $izin->alasan ?: '-' }}
+                                </p>
+
+                            </div>
+
+                            {{-- tanggal --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Tanggal
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ optional($izin->tanggal)->format('d - m - Y') ?? '-' }}
+                                </p>
+
+                            </div>
+
+                            {{-- waktu --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Waktu
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+
+                                    {{ $izin->dari_jam }}
+                                    {{ $izin->sampai_jam ? ' - ' . $izin->sampai_jam : '' }}
+
+                                </p>
+
+                            </div>
+
+                            {{-- status --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Status
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold capitalize text-gray-700">
+                                    {{ $izin->status ?? '-' }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        {{-- ACTIONS --}}
+                        <div class="flex items-center gap-2 border-t border-gray-200 p-4">
+
+                            {{-- edit --}}
+                            <a
+                                href="{{ route('edit-izin-keluar', $izin->id) }}"
+                                wire:navigate
+                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-500">
+
+                                <iconify-icon
+                                    icon="lineicons:pencil-1"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
+
+                                Edit
+
+                            </a>
+
+                            {{-- cetak --}}
+                            <a
+                                href="{{ route('surat-izin-keluar', $izin->id) }}"
+                                wire:navigate
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-main text-white transition hover:bg-blue-deep-solid">
+
+                                <iconify-icon
+                                    icon="solar:printer-bold"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
+
+                            </a>
+
+                            {{-- delete --}}
+                            <button
+                                type="button"
+                                @click="$dispatch('open-delete-izin', { id: {{ $izin->id }} })"
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-500 text-white transition hover:bg-rose-600">
+
+                                <iconify-icon
+                                    icon="lineicons:trash-3"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                {{-- empty state --}}
+                <div class="px-6 py-14 text-center">
+
+                    <div class="flex flex-col items-center justify-center">
+
+                        <div
+                            class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+
+                            <iconify-icon
+                                icon="solar:user-cross-bold"
+                                width="38"
+                                height="38">
+                            </iconify-icon>
+
+                        </div>
+
+                        <h2 class="text-lg font-bold text-gray-700">
+                            Data izin kosong
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Belum ada data izin yang tersedia.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            @endforelse
 
         </div>
 

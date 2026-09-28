@@ -173,8 +173,11 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            {{-- DESKTOP: TABLE --}}
+            <div class="hidden overflow-x-auto lg:block">
+
                 <table class="w-full text-sm">
+
                     <thead class="bg-gray-100 text-gray-700">
                         <tr>
                             <th class="px-6 py-4 text-center font-semibold">No</th>
@@ -186,15 +189,23 @@
                     </thead>
 
                     <tbody>
+
                         @foreach ($roles as $role)
+
                             <tr class="border-t border-gray-100 transition hover:bg-gray-50">
+
+                                {{-- No --}}
                                 <td class="px-6 py-5 text-center font-medium text-gray-700">
                                     {{ $loop->iteration }}
                                 </td>
 
+                                {{-- Role --}}
                                 <td class="px-6 py-5">
                                     <div class="flex items-center gap-3">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main">
+
+                                        <div
+                                            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main"
+                                        >
                                             {{ substr($role->name, 0, 1) }}
                                         </div>
 
@@ -209,55 +220,301 @@
                                                 </p>
                                             @endif
                                         </div>
+
                                     </div>
                                 </td>
 
+                                {{-- Hak Akses --}}
                                 <td class="px-6 py-5">
                                     <div class="flex flex-wrap gap-2">
+
                                         @foreach (array_slice($role->permissions ?? [], 0, 3) as $permission)
-                                            <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold capitalize text-blue-700">
+
+                                            <span
+                                                class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold capitalize text-blue-700"
+                                            >
                                                 {{ \Illuminate\Support\Str::headline($permission) }}
                                             </span>
+
                                         @endforeach
 
                                         @if (count($role->permissions ?? []) > 3)
-                                            <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+
+                                            <span
+                                                class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600"
+                                            >
                                                 +{{ count($role->permissions ?? []) - 3 }}
                                             </span>
+
                                         @endif
+
                                     </div>
                                 </td>
 
+                                {{-- User --}}
                                 <td class="px-6 py-5 text-center">
-                                    <span class="inline-flex rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold text-emerald-700">
+                                    <span
+                                        class="inline-flex rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold text-emerald-700"
+                                    >
                                         {{ $role->users_count }} user
                                     </span>
                                 </td>
 
+                                {{-- Aksi --}}
                                 <td class="px-6 py-5">
                                     <div class="flex items-center justify-center gap-2">
+
+                                        {{-- Edit --}}
                                         <button
                                             type="button"
                                             wire:click="editRole({{ $role->id }})"
                                             @disabled($role->id === 1)
-                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50">
-                                            <iconify-icon icon="lineicons:pencil-1" width="20" height="20"></iconify-icon>
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <iconify-icon
+                                                icon="lineicons:pencil-1"
+                                                width="20"
+                                                height="20"
+                                            ></iconify-icon>
                                         </button>
 
+                                        {{-- Delete --}}
                                         <button
                                             type="button"
                                             @click="$dispatch('open-delete-role', { id: {{ $role->id }} })"
                                             @disabled($role->id === 1 || $role->users_count > 0)
-                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50">
-                                            <iconify-icon icon="lineicons:trash-3" width="20" height="20"></iconify-icon>
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <iconify-icon
+                                                icon="lineicons:trash-3"
+                                                width="20"
+                                                height="20"
+                                            ></iconify-icon>
                                         </button>
+
                                     </div>
                                 </td>
+
                             </tr>
+
                         @endforeach
+
                     </tbody>
+
                 </table>
+
             </div>
+
+            {{-- MOBILE + TABLET: COLLAPSED CARD --}}
+            <div class="space-y-3 lg:hidden">
+
+                @foreach ($roles as $role)
+
+                    <div
+                        x-data="{ open: false }"
+                        class="overflow-hidden border border-t-0 border-gray-200 bg-white"
+                    >
+
+                        {{-- SUMMARY --}}
+                        <div class="flex items-center gap-3 p-4">
+
+                            {{-- No --}}
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-sm font-semibold text-gray-600"
+                            >
+                                {{ $loop->iteration }}
+                            </div>
+
+                            {{-- Role --}}
+                            <div class="min-w-0 flex-1">
+
+                                <div class="flex items-center gap-2">
+
+                                    <div
+                                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 font-bold uppercase text-blue-main"
+                                    >
+                                        {{ substr($role->name, 0, 1) }}
+                                    </div>
+
+                                    <div class="min-w-0">
+
+                                        <h3 class="truncate font-semibold capitalize text-gray-800">
+                                            {{ $role->name }}
+                                        </h3>
+
+                                        @if ($role->id === 1)
+                                            <p class="text-xs text-amber-600">
+                                                Role sistem dilindungi
+                                            </p>
+                                        @else
+                                            <p class="text-xs text-gray-500">
+                                                {{ $role->users_count }} user
+                                            </p>
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {{-- Chevron --}}
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                :aria-expanded="open"
+                                aria-label="Lihat detail role"
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                            >
+                                <iconify-icon
+                                    icon="lineicons:chevron-down"
+                                    width="20"
+                                    height="20"
+                                    class="transition-transform duration-200"
+                                    :class="{ 'rotate-180': open }"
+                                ></iconify-icon>
+                            </button>
+
+                        </div>
+
+
+                        {{-- DETAIL --}}
+                        <div
+                            x-show="open"
+                            x-collapse
+                            class="border-t border-gray-200 bg-gray-50"
+                        >
+
+                            <div class="space-y-4 p-4">
+
+                                {{-- Role --}}
+                                <div>
+
+                                    <p class="mb-1 text-xs font-medium text-gray-500">
+                                        Role
+                                    </p>
+
+                                    <p class="font-semibold capitalize text-gray-800">
+                                        {{ $role->name }}
+                                    </p>
+
+                                </div>
+
+
+                                {{-- Hak Akses --}}
+                                <div>
+
+                                    <p class="mb-2 text-xs font-medium text-gray-500">
+                                        Hak Akses
+                                    </p>
+
+                                    <div class="flex flex-wrap gap-2">
+
+                                        @forelse ($role->permissions ?? [] as $permission)
+
+                                            <span
+                                                class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold capitalize text-blue-700"
+                                            >
+                                                {{ \Illuminate\Support\Str::headline($permission) }}
+                                            </span>
+
+                                        @empty
+
+                                            <span class="text-sm text-gray-400">
+                                                Tidak ada hak akses
+                                            </span>
+
+                                        @endforelse
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- User --}}
+                                <div>
+
+                                    <p class="mb-1 text-xs font-medium text-gray-500">
+                                        User
+                                    </p>
+
+                                    <span
+                                        class="inline-flex rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold text-emerald-700"
+                                    >
+                                        {{ $role->users_count }} user
+                                    </span>
+
+                                </div>
+
+
+                                {{-- Status Sistem --}}
+                                @if ($role->id === 1)
+
+                                    <div class="rounded-xl bg-amber-50 px-3 py-2.5">
+
+                                        <div class="flex items-center gap-2">
+
+                                            <iconify-icon
+                                                icon="lineicons:lock-2"
+                                                width="16"
+                                                height="16"
+                                                class="text-amber-600"
+                                            ></iconify-icon>
+
+                                            <p class="text-xs font-medium text-amber-700">
+                                                Role sistem dilindungi dan tidak dapat diubah.
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                @endif
+
+                            </div>
+
+
+                            {{-- ACTIONS --}}
+                            <div class="flex items-center justify-end gap-2 border-t border-gray-200 bg-gray-50 p-4">
+
+                                {{-- Edit --}}
+                                <button
+                                    type="button"
+                                    wire:click="editRole({{ $role->id }})"
+                                    @disabled($role->id === 1)
+                                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <iconify-icon
+                                        icon="lineicons:pencil-1"
+                                        width="20"
+                                        height="20"
+                                    ></iconify-icon>
+                                </button>
+
+                                {{-- Delete --}}
+                                <button
+                                    type="button"
+                                    @click="$dispatch('open-delete-role', { id: {{ $role->id }} })"
+                                    @disabled($role->id === 1 || $role->users_count > 0)
+                                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <iconify-icon
+                                        icon="lineicons:trash-3"
+                                        width="20"
+                                        height="20"
+                                    ></iconify-icon>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                @endforeach
+
+            </div>
+
         </div>
     </div>
 

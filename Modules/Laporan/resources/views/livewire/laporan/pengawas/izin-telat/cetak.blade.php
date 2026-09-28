@@ -36,7 +36,7 @@
                     </p>
 
                 </div>
-            </div>        
+            </div>
         </div>
     </div>
 
@@ -112,7 +112,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-            
+
             <!-- jurusan -->
             <livewire:components.searchable-select
                 wire:model.live="filterJurusan"
@@ -137,7 +137,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-                
+
             <!-- kelas / indexs -->
             <livewire:components.searchable-select
                 wire:model.live="filterIndeks"
@@ -161,8 +161,8 @@
                 option-class="font-medium"
                 check-icon="mdi:check"
                 check-icon-size="20"
-                check-icon-class="text-black-500" />      
-                
+                check-icon-class="text-black-500" />
+
             <!-- tanggal absen -->
             <div>
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
@@ -201,41 +201,39 @@
 
         </div>
 
-        <!-- table -->
-        <div class="overflow-x-auto">
+        {{-- DESKTOP: TABLE --}}
+        <div class="hidden overflow-x-auto lg:block">
 
             <table class="min-w-full text-sm">
 
                 <thead class="bg-gray-100 text-gray-700">
-
                     <tr>
-
-                        <th class="px-5 py-4 text-center font-semibold w-10">
+                        <th class="w-10 px-5 py-4 text-center font-semibold">
                             No
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
                             Nama
                         </th>
-                        
+
                         <th class="px-5 py-4 text-center font-semibold">
                             Kelas
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            Nipd
+                            NIPD
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            alasan 
+                            Alasan
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            tanggal
+                            Tanggal
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            waktu
+                            Waktu
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -243,150 +241,350 @@
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            aksi
+                            Aksi
                         </th>
-
                     </tr>
-
                 </thead>
 
                 <tbody>
 
                     @forelse ($listMuridTerlambat as $terlambat)
 
-                    <tr class="border-t border-gray-100 transition hover:bg-gray-50">
+                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                        <!-- nomor -->
-                        <td class="px-5 py-5 text-center font-medium text-gray-700">
-                            {{ $listMuridTerlambat->firstItem() + $loop->index }}
-                        </td>
+                            {{-- Nomor --}}
+                            <td class="px-5 py-5 text-center font-medium text-gray-700">
+                                {{ $listMuridTerlambat->firstItem() + $loop->index }}
+                            </td>
 
-                        <!-- nama -->
-                        <td class="px-5 py-5">
+                            {{-- Nama --}}
+                            <td class="px-5 py-5">
+                                <h2 class="text-center font-semibold capitalize text-gray-800">
+                                    {{ $terlambat->murid->nama ?? '-' }}
+                                </h2>
+                            </td>
 
-                            <h2 class="font-semibold text-center text-gray-800 capitalize">
-                                {{ $terlambat->murid->nama ?? '-' }}
-                            </h2>
+                            {{-- Kelas --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                {{ $terlambat->murid->rombel->nama_lengkap ?? 'N/A' }}
+                            </td>
 
-                        </td>
+                            {{-- NIPD --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                {{ $terlambat->murid->nipd ?? '-' }}
+                            </td>
 
-                        <!-- kelas -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->murid->rombel->nama_lengkap ?? 'N/A' }}
-                        </td>
+                            {{-- Alasan --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                {{ $terlambat->keterangan }}
+                            </td>
 
-                        <!-- nipd -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->murid->nipd ?? '-' }}
-                        </td>
+                            {{-- Tanggal --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                {{ optional($terlambat->tanggal)->format('d - m - Y') ?? '-' }}
+                            </td>
 
-                        <!-- keperluan -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->keterangan }}
-                        </td>
+                            {{-- Waktu --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                {{ $terlambat->waktu_masuk ?? '-' }}
+                            </td>
 
-                        <!--tanggal -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ optional($terlambat->tanggal)->format('d - m - Y') ?? '-' }}
-                        </td>
+                            {{-- Status --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                {{ $terlambat->status ?? '-' }}
+                            </td>
 
-                        <!-- waktu -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->waktu_masuk ?? '-' }}
-                        </td>
+                            {{-- Aksi --}}
+                            <td class="px-5 py-5 text-center text-gray-700">
+                                <div class="flex items-center justify-center gap-2">
 
-                        <!-- status -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            {{ $terlambat->status ?? '-' }}
-                        </td>
-
-                        <!-- aksi button -->
-                        <td class="px-5 py-5 text-center text-gray-700">
-                            <div class="flex items-center justify-center gap-2">
-                                
-                                <!-- cetak ulang izin -->
-                                <button type="button" wire:click="bukaAlasan({{ $terlambat->id }})"
-                                    wire:loading.attr="disabled" wire:target="bukaAlasan"
-                                    aria-haspopup="dialog" aria-controls="modal-alasan-telat"
-                                    aria-label="Cetak Surat Keterlambatan" title="Cetak Surat Keterlambatan"
-                                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
-
-                                    <iconify-icon
-                                        icon="solar:printer-bold"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
-
-                                </button>
-
-                                <!-- delete -->
-                                <!-- <div
-                                    x-data="{ openModalDelete: false }"
-                                >
                                     <button
                                         type="button"
-                                        @click="$dispatch('open-delete-izin', { id: {{ $terlambat->id }} })"
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
-
+                                        wire:click="bukaAlasan({{ $terlambat->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="bukaAlasan"
+                                        aria-haspopup="dialog"
+                                        aria-controls="modal-alasan-telat"
+                                        aria-label="Cetak Surat Keterlambatan"
+                                        title="Cetak Surat Keterlambatan"
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid"
+                                    >
                                         <iconify-icon
-                                            icon="lineicons:trash-3"
+                                            icon="solar:printer-bold"
                                             width="20"
-                                            height="20">
-                                        </iconify-icon>
+                                            height="20"
+                                        ></iconify-icon>
                                     </button>
-                                </div> -->
-                            </div>
-                        </td>
 
-                    </tr>
+                                </div>
+                            </td>
+
+                        </tr>
 
                     @empty
 
-                    <tr>
+                        <tr>
+                            <td colspan="9" class="px-6 py-14 text-center">
 
-                        <td
-                            colspan="10"
-                            class="px-6 py-14 text-center">
+                                <div class="flex flex-col items-center justify-center">
 
-                            <div
-                                class="flex flex-col items-center justify-center">
+                                    <div
+                                        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400"
+                                    >
+                                        <iconify-icon
+                                            icon="solar:user-cross-bold"
+                                            width="38"
+                                            height="38"
+                                        ></iconify-icon>
+                                    </div>
 
-                                <div
-                                    class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+                                    <h2 class="text-lg font-bold text-gray-700">
+                                        Data izin kosong
+                                    </h2>
 
-                                    <iconify-icon
-                                        icon="solar:user-cross-bold"
-                                        width="38"
-                                        height="38">
-                                    </iconify-icon>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Belum ada data izin yang tersedia.
+                                    </p>
 
                                 </div>
 
-                                <h2
-                                    class="text-lg font-bold text-gray-700">
-
-                                    Data izin kosong
-
-                                </h2>
-
-                                <p
-                                    class="mt-1 text-sm text-gray-500">
-
-                                    Belum ada data izin yang tersedia.
-
-                                </p>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
+                            </td>
+                        </tr>
 
                     @endforelse
 
                 </tbody>
 
             </table>
+
+        </div>
+
+        {{-- MOBILE + TABLET: COLLAPSED CARD --}}
+        <div class="space-y-3 lg:hidden">
+
+            @forelse ($listMuridTerlambat as $terlambat)
+
+                <div
+                    x-data="{ open: false }"
+                    class="overflow-hidden border border-t-0 border-gray-200 bg-white"
+                >
+
+                    {{-- SUMMARY --}}
+                    <div class="flex items-center gap-3 p-4">
+
+                        {{-- Nomor --}}
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-sm font-semibold text-gray-600"
+                        >
+                            {{ $listMuridTerlambat->firstItem() + $loop->index }}
+                        </div>
+
+                        {{-- Informasi utama --}}
+                        <div class="min-w-0 flex-1">
+
+                            <h3 class="truncate font-semibold capitalize text-gray-800">
+                                {{ $terlambat->murid->nama ?? '-' }}
+                            </h3>
+
+                            <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
+
+                                <span>
+                                    {{ $terlambat->murid->rombel->nama_lengkap ?? 'N/A' }}
+                                </span>
+
+                                <span class="text-gray-300">•</span>
+
+                                <span>
+                                    {{ $terlambat->waktu_masuk ?? '-' }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="hidden shrink-0 sm:block">
+                            <span
+                                class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600"
+                            >
+                                {{ $terlambat->status ?? '-' }}
+                            </span>
+                        </div>
+
+                        {{-- Chevron --}}
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            :aria-expanded="open"
+                            aria-label="Lihat detail keterlambatan"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                        >
+                            <iconify-icon
+                                icon="lineicons:chevron-down"
+                                width="20"
+                                height="20"
+                                class="transition-transform duration-200"
+                                :class="{ 'rotate-180': open }"
+                            ></iconify-icon>
+                        </button>
+
+                    </div>
+
+
+                    {{-- DETAIL --}}
+                    <div
+                        x-show="open"
+                        x-collapse
+                        class="border-t border-gray-200 bg-gray-50"
+                    >
+
+                        <div class="space-y-4 p-4">
+
+                            {{-- Nama --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Nama
+                                </p>
+
+                                <p class="font-semibold capitalize text-gray-800">
+                                    {{ $terlambat->murid->nama ?? '-' }}
+                                </p>
+                            </div>
+
+
+                            {{-- Kelas --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Kelas
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ $terlambat->murid->rombel->nama_lengkap ?? 'N/A' }}
+                                </p>
+                            </div>
+
+
+                            {{-- NIPD --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    NIPD
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ $terlambat->murid->nipd ?? '-' }}
+                                </p>
+                            </div>
+
+
+                            {{-- Alasan --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Alasan
+                                </p>
+
+                                <p class="text-sm leading-relaxed text-gray-700">
+                                    {{ $terlambat->keterangan ?? '-' }}
+                                </p>
+                            </div>
+
+
+                            {{-- Tanggal --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Tanggal
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ optional($terlambat->tanggal)->format('d - m - Y') ?? '-' }}
+                                </p>
+                            </div>
+
+
+                            {{-- Waktu --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Waktu
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ $terlambat->waktu_masuk ?? '-' }}
+                                </p>
+                            </div>
+
+
+                            {{-- Status --}}
+                            <div>
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Status
+                                </p>
+
+                                <span
+                                    class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600"
+                                >
+                                    {{ $terlambat->status ?? '-' }}
+                                </span>
+                            </div>
+
+                        </div>
+
+
+                        {{-- ACTION --}}
+                        <div class="flex items-center justify-end border-t border-gray-200 bg-gray-50 p-4">
+
+                            <button
+                                type="button"
+                                wire:click="bukaAlasan({{ $terlambat->id }})"
+                                wire:loading.attr="disabled"
+                                wire:target="bukaAlasan"
+                                aria-haspopup="dialog"
+                                aria-controls="modal-alasan-telat"
+                                aria-label="Cetak Surat Keterlambatan"
+                                title="Cetak Surat Keterlambatan"
+                                class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid"
+                            >
+                                <iconify-icon
+                                    icon="solar:printer-bold"
+                                    width="20"
+                                    height="20"
+                                ></iconify-icon>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                {{-- EMPTY STATE MOBILE + TABLET --}}
+                <div class="px-6 py-14 text-center">
+
+                    <div class="flex flex-col items-center justify-center">
+
+                        <div
+                            class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400"
+                        >
+                            <iconify-icon
+                                icon="solar:user-cross-bold"
+                                width="38"
+                                height="38"
+                            ></iconify-icon>
+                        </div>
+
+                        <h2 class="text-lg font-bold text-gray-700">
+                            Data izin kosong
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Belum ada data izin yang tersedia.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            @endforelse
 
         </div>
 

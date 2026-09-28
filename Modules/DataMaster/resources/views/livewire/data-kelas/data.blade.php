@@ -231,11 +231,10 @@
 
     </div>
 
-    <!-- TABLE -->
-    <div
-        class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+    {{-- TABLE CONTAINER --}}
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
-        <!-- top -->
+        {{-- top --}}
         <div
             class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 md:flex-row md:items-center md:justify-between">
 
@@ -251,10 +250,10 @@
 
             </div>
 
-            <!-- action -->
+            {{-- action --}}
             <div class="flex items-center gap-3">
 
-                <!-- menu -->
+                {{-- menu --}}
                 <div
                     class="relative"
                     x-data="{ openModalColon: false }">
@@ -273,11 +272,12 @@
 
                 </div>
 
-                <!-- selected -->
+                {{-- selected --}}
                 <div
                     class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-main">
 
                     <span x-text="selected.length"></span>
+
                     dipilih
 
                 </div>
@@ -286,8 +286,8 @@
 
         </div>
 
-        <!-- table -->
-        <div class="overflow-x-auto">
+        {{-- DESKTOP TABLE --}}
+        <div class="hidden overflow-x-auto lg:block">
 
             <table class="min-w-full text-sm">
 
@@ -296,7 +296,9 @@
                     <tr>
 
                         <th class="px-5 py-4 text-center">
-                            <input type="checkbox" @click="toggleAll">
+                            <input
+                                type="checkbox"
+                                @click="toggleAll">
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -327,146 +329,141 @@
 
                     @forelse ($listRombel as $index => $rombel)
 
-                    <tr
-                        class="border-t border-gray-100 transition hover:bg-gray-50">
+                        <tr
+                            class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                        <!-- checkbox -->
-                        <td class="px-5 py-5 text-center">
+                            {{-- checkbox --}}
+                            <td class="px-5 py-5 text-center">
 
-                            <input
-                                type="checkbox"
-                                class="kelas-row-checkbox rounded border-gray-300"
-                                value="{{ $rombel->id }}"
-                                x-model="selected">
+                                <input
+                                    type="checkbox"
+                                    class="kelas-row-checkbox rounded border-gray-300"
+                                    value="{{ $rombel->id }}"
+                                    x-model="selected">
 
-                        </td>
+                            </td>
 
-                        <!-- no -->
-                        <td class="px-5 py-5 text-center font-medium text-gray-700">
-                            {{ $index + 1 }}
-                        </td>
+                            {{-- no --}}
+                            <td class="px-5 py-5 text-center font-medium text-gray-700">
 
-                        <!-- tingkat -->
-                        <td class="px-5 py-5 text-center">
+                                {{ $index + 1 }}
 
-                            <div
-                                class="inline-flex rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-600">
+                            </td>
 
-                                {{ $rombel->tingkat?->nama ?? '-' }}
+                            {{-- tingkat --}}
+                            <td class="px-5 py-5 text-center">
 
-                            </div>
+                                <div
+                                    class="inline-flex rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-600">
 
-                        </td>
+                                    {{ $rombel->tingkat?->nama ?? '-' }}
 
-                        <!-- jurusan -->
-                        <td class="px-5 py-5 text-center">
+                                </div>
 
-                            <div
-                                class="inline-flex rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold text-emerald-600">
+                            </td>
 
-                                {{ $rombel->jurusan?->nama ?? '-' }}
+                            {{-- jurusan --}}
+                            <td class="px-5 py-5 text-center">
 
-                            </div>
+                                <div
+                                    class="inline-flex rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold text-emerald-600">
 
-                        </td>
+                                    {{ $rombel->jurusan?->nama ?? '-' }}
 
-                        <!-- kelas -->
-                        <td class="px-5 py-5 text-center">
+                                </div>
 
-                            <div
-                                class="inline-flex rounded-full bg-amber-100 px-4 py-1 text-xs font-semibold uppercase text-amber-600">
+                            </td>
 
-                                {{ $rombel->indeks?->nama ?? '-' }}
+                            {{-- kelas --}}
+                            <td class="px-5 py-5 text-center">
 
-                            </div>
+                                <div
+                                    class="inline-flex rounded-full bg-amber-100 px-4 py-1 text-xs font-semibold uppercase text-amber-600">
 
-                        </td>
+                                    {{ $rombel->indeks?->nama ?? '-' }}
 
-                        <!-- aksi -->
-                        <td class="px-5 py-5">
+                                </div>
 
-                            <div
-                                class="flex items-center justify-center gap-2">
+                            </td>
 
-                                <!-- edit -->
-                                <a
-                                    href="{{ route('edit-kelas', $rombel->id) }}"
-                                    wire:navigate>
+                            {{-- aksi --}}
+                            <td class="px-5 py-5">
 
+                                <div class="flex items-center justify-center gap-2">
+
+                                    {{-- edit --}}
+                                    <a
+                                        href="{{ route('edit-kelas', $rombel->id) }}"
+                                        wire:navigate>
+
+                                        <button
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+
+                                            <iconify-icon
+                                                icon="lineicons:pencil-1"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
+                                        </button>
+
+                                    </a>
+
+                                    {{-- delete --}}
                                     <button
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+                                        type="button"
+                                        @click="$dispatch('open-delete-kelas', { id: {{ (int) $rombel->id }} })"
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
 
                                         <iconify-icon
-                                            icon="lineicons:pencil-1"
+                                            icon="lineicons:trash-3"
                                             width="20"
                                             height="20">
                                         </iconify-icon>
 
                                     </button>
 
-                                </a>
+                                </div>
 
-                                <!-- delete -->
-                                <button
-                                    type="button"
-                                    @click="$dispatch('open-delete-kelas', { id: {{ (int) $rombel->id }} })"
-                                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
+                            </td>
 
-                                    <iconify-icon
-                                        icon="lineicons:trash-3"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
-
-                                </button>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
+                        </tr>
 
                     @empty
 
-                    <tr>
+                        <tr>
 
-                        <td
-                            colspan="6"
-                            class="px-6 py-14 text-center">
-
-                            <div
-                                class="flex flex-col items-center justify-center">
+                            <td
+                                colspan="6"
+                                class="px-6 py-14 text-center">
 
                                 <div
-                                    class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+                                    class="flex flex-col items-center justify-center">
 
-                                    <iconify-icon
-                                        icon="solar:box-bold"
-                                        width="38"
-                                        height="38">
-                                    </iconify-icon>
+                                    <div
+                                        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+
+                                        <iconify-icon
+                                            icon="solar:box-bold"
+                                            width="38"
+                                            height="38">
+                                        </iconify-icon>
+
+                                    </div>
+
+                                    <h2 class="text-lg font-bold text-gray-700">
+                                        Data kelas kosong
+                                    </h2>
+
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Belum ada data kelas yang tersedia.
+                                    </p>
 
                                 </div>
 
-                                <h2
-                                    class="text-lg font-bold text-gray-700">
+                            </td>
 
-                                    Data kelas kosong
-
-                                </h2>
-
-                                <p
-                                    class="mt-1 text-sm text-gray-500">
-
-                                    Belum ada data kelas yang tersedia.
-
-                                </p>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
+                        </tr>
 
                     @endforelse
 
@@ -476,7 +473,226 @@
 
         </div>
 
-        <!-- pagination -->
+        {{-- MOBILE + TABLET COLLAPSIBLE --}}
+        <div class="space-y-3 lg:hidden">
+
+            @forelse ($listRombel as $index => $rombel)
+
+                <div
+                    x-data="{ open: false }"
+                    class="overflow-hidden  border border-t-0 border-gray-200 bg-white">
+
+                    {{-- SUMMARY --}}
+                    <div class="flex items-center gap-3 p-4">
+
+                        {{-- checkbox --}}
+                        <input
+                            type="checkbox"
+                            class="kelas-row-checkbox shrink-0 rounded border-gray-300"
+                            value="{{ $rombel->id }}"
+                            x-model="selected">
+
+                        {{-- number --}}
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-sm font-semibold text-gray-600">
+
+                            {{ $index + 1 }}
+
+                        </div>
+
+                        {{-- information --}}
+                        <div class="min-w-0 flex-1">
+
+                            <div class="flex flex-wrap items-center gap-2">
+
+                                {{-- tingkat --}}
+                                <span
+                                    class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-600">
+
+                                    {{ $rombel->tingkat?->nama ?? '-' }}
+
+                                </span>
+
+                                {{-- jurusan --}}
+                                <span
+                                    class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-600">
+
+                                    {{ $rombel->jurusan?->nama ?? '-' }}
+
+                                </span>
+
+                            </div>
+
+                            {{-- kelas --}}
+                            <p class="mt-1 truncate text-sm font-semibold uppercase text-gray-800">
+
+                                {{ $rombel->indeks?->nama ?? '-' }}
+
+                            </p>
+
+                        </div>
+
+                        {{-- expand --}}
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                            :aria-expanded="open">
+
+                            <iconify-icon
+                                icon="lineicons:chevron-down"
+                                width="20"
+                                height="20"
+                                class="transition-transform duration-200"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </button>
+
+                    </div>
+
+                    {{-- COLLAPSED DETAIL --}}
+                    <div
+                        x-show="open"
+                        x-collapse
+                        class="border-t border-gray-200 bg-gray-50">
+
+                        <div class="grid gap-5 p-5 grid-cols-3">
+
+                            {{-- no --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    No
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $index + 1 }}
+                                </p>
+
+                            </div>
+
+                            {{-- tingkat --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Tingkat
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $rombel->tingkat?->nama ?? '-' }}
+                                </p>
+
+                            </div>
+
+                            {{-- jurusan --}}
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Jurusan
+                                </p>
+
+                                <p class="mt-1 text-sm font-semibold text-gray-700">
+                                    {{ $rombel->jurusan?->nama ?? '-' }}
+                                </p>
+
+                            </div>
+
+                            {{-- kelas --}}
+                            <div class="sm:col-span-3">
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Kelas
+                                </p>
+
+                                <div class="mt-1">
+
+                                    <span
+                                        class="inline-flex rounded-full bg-amber-100 px-4 py-1 text-xs font-semibold uppercase text-amber-600">
+
+                                        {{ $rombel->indeks?->nama ?? '-' }}
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {{-- ACTIONS --}}
+                        <div class="flex items-center gap-2 border-t border-gray-200 p-4">
+
+                            {{-- edit --}}
+                            <a
+                                href="{{ route('edit-kelas', $rombel->id) }}"
+                                wire:navigate
+                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-500">
+
+                                <iconify-icon
+                                    icon="lineicons:pencil-1"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
+
+                                Edit
+
+                            </a>
+
+                            {{-- delete --}}
+                            <button
+                                type="button"
+                                @click="$dispatch('open-delete-kelas', { id: {{ (int) $rombel->id }} })"
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-500 text-white transition hover:bg-rose-600">
+
+                                <iconify-icon
+                                    icon="lineicons:trash-3"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                <div class="px-6 py-14 text-center">
+
+                    <div class="flex flex-col items-center justify-center">
+
+                        <div
+                            class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
+
+                            <iconify-icon
+                                icon="solar:box-bold"
+                                width="38"
+                                height="38">
+                            </iconify-icon>
+
+                        </div>
+
+                        <h2 class="text-lg font-bold text-gray-700">
+                            Data kelas kosong
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Belum ada data kelas yang tersedia.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            @endforelse
+
+        </div>
+
+        {{-- PAGINATION --}}
         <div
             class="border-t border-gray-200 bg-gray-50 px-6 py-4">
 
