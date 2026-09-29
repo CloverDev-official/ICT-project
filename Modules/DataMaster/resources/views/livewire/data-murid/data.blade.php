@@ -160,7 +160,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-            
+
             <!-- jurusan -->
             <livewire:components.searchable-select
                 wire:model.live="filterJurusan"
@@ -185,7 +185,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-                
+
             <!-- kelas / indexs -->
             <livewire:components.searchable-select
                 wire:model.live="filterIndeks"
@@ -278,8 +278,10 @@
 
         </div>
 
-        <!-- table -->
-        <div class="overflow-x-auto">
+
+        {{-- DESKTOP TABLE --}}
+
+        <div class="hidden lg:block overflow-x-auto">
 
             <table class="min-w-full text-sm">
 
@@ -288,7 +290,9 @@
                     <tr>
 
                         <th class="px-5 py-4 text-center">
-                            <input type="checkbox" @click="toggleAll">
+                            <input
+                                type="checkbox"
+                                @click="toggleAll">
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -340,7 +344,7 @@
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
-                            Keluarahan
+                            Kelurahan
                         </th>
 
                         <th class="px-5 py-4 text-center font-semibold">
@@ -350,6 +354,7 @@
                         <th class="px-5 py-4 text-center font-semibold">
                             Kontak
                         </th>
+
                         <th class="px-5 py-4 text-center font-semibold">
                             Nama Ayah
                         </th>
@@ -374,179 +379,172 @@
 
                     @foreach ($listMurid as $index => $murid)
 
-                    <tr
-                        class="border-t border-gray-100 transition hover:bg-gray-50">
+                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                        <!-- checkbox -->
-                        <td class="px-5 py-5 text-center">
+                            {{-- checkbox --}}
+                            <td class="px-5 py-5 text-center">
 
-                            <input
-                                type="checkbox"
-                                class="murid-row-checkbox rounded border-gray-300"
-                                value="{{ $murid->uuid }}"
-                                x-model="selected">
+                                <input
+                                    type="checkbox"
+                                    class="murid-row-checkbox rounded border-gray-300"
+                                    value="{{ $murid->uuid }}"
+                                    x-model="selected">
 
-                        </td>
+                            </td>
 
-                        <td class="px-5 py-5 text-center">
-                            {{ $index + 1 }}
-                        </td>
+                            {{-- no --}}
+                            <td class="px-5 py-5 text-center">
+                                {{ $index + 1 }}
+                            </td>
 
-                        <!-- user -->
-                        <td class="px-5 py-5">
+                            {{-- murid --}}
+                            <td class="px-5 py-5">
 
-                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-4">
 
-                                <x-murid-avatar :murid="$murid" class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main" />
+                                    <x-murid-avatar
+                                        :murid="$murid"
+                                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main" />
 
-                                <div>
+                                    <div>
 
-                                    <h2
-                                        class="font-semibold capitalize text-gray-800">
+                                        <h2 class="font-semibold capitalize text-gray-800">
+                                            {{ $murid->nama }}
+                                        </h2>
 
-                                        {{ $murid->nama }}
+                                        <p class="text-xs text-gray-400">
+                                            {{ $murid->email }}
+                                        </p>
 
-                                    </h2>
-
-                                    <p
-                                        class="text-xs text-gray-400">
-
-                                        {{ $murid->email }}
-
-                                    </p>
+                                    </div>
 
                                 </div>
 
-                            </div>
+                            </td>
 
-                        </td>
+                            {{-- nipd --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->nipd }}
+                            </td>
 
-                        <!-- nipd -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->nipd }}
-                        </td>
+                            {{-- nisn --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->nisn }}
+                            </td>
 
-                        <!-- nisn -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->nisn }}
-                        </td>
+                            {{-- kelas --}}
+                            <td class="px-5 py-5 text-center">
 
-                        <!-- kelas -->
-                        <td class="px-5 py-5 text-center">
+                                <div class="inline-flex w-24 items-center justify-center rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-600">
 
-                            <div
-                                class="inline-flex rounded-full bg-blue-100 px-4 py-1 flex items-center justify-center text-xs font-semibold text-blue-600 w-24">
+                                    {{ $murid->rombel?->nama_lengkap ?? '-' }}
 
-                                {{ $murid->rombel?->nama_lengkap ?? '-' }}
+                                </div>
 
-                            </div>
+                            </td>
 
-                        </td>
+                            {{-- gender --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->jk }}
+                            </td>
 
-                        <!-- gender -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->jk }}
-                        </td>
+                            {{-- tempat lahir --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->tempat_lahir }}
+                            </td>
 
-                        <!-- tempat lahir -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->tempat_lahir }}
-                        </td>
+                            {{-- tanggal lahir --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->tanggal_lahir->format('d-m-Y') }}
+                            </td>
 
-                        <!-- tanggal lahir -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->tanggal_lahir->format('d-m-Y') }}
-                        </td>
+                            {{-- agama --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->agama }}
+                            </td>
 
-                        <!-- agama -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->agama }}
-                        </td>
+                            {{-- alamat --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->alamat }}
+                            </td>
 
-                        <!-- alamat -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->alamat }}
-                        </td>
+                            {{-- rt --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->rt }}
+                            </td>
 
-                        <!-- rt -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->rt }}
-                        </td>
+                            {{-- rw --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->rw }}
+                            </td>
 
-                        <!-- rt -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->rw }}
-                        </td>
+                            {{-- kelurahan --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->kelurahan }}
+                            </td>
 
-                        <!-- kelurahan -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->kelurahan }}
-                        </td>
+                            {{-- kecamatan --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->kecamatan }}
+                            </td>
 
-                        <!-- kecamatan -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->kecamatan }}
-                        </td>
+                            {{-- kontak --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->hp }}
+                            </td>
 
-                        <!-- kontak -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->hp }}
-                        </td>
+                            {{-- ayah --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->nama_ayah }}
+                            </td>
 
-                        <!-- nama ayah -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->nama_ayah }}
-                        </td>
+                            {{-- ibu --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->nama_ibu }}
+                            </td>
 
-                        <!-- nama ibu -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->nama_ibu }}
-                        </td>
+                            {{-- wali --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $murid->nama_wali }}
+                            </td>
 
-                        <!-- nama wali -->
-                        <td class="px-5 py-5 text-center text-gray-600">
-                            {{ $murid->nama_wali }}
-                        </td>
+                            {{-- aksi --}}
+                            <td class="px-5 py-5">
 
-                        <!-- aksi -->
-                        <td class="px-5 py-5">
+                                <div class="flex items-center justify-center gap-2">
 
-                            <div
-                                class="flex items-center justify-center gap-2">
+                                    {{-- edit --}}
+                                    <a
+                                        href="{{ route('edit-murid', $murid->uuid) }}"
+                                        wire:navigate>
 
-                                <!-- edit -->
-                                <a
-                                    href="{{ route('edit-murid', $murid->uuid) }}"
-                                    wire:navigate>
+                                        <button
+                                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
 
+                                            <iconify-icon
+                                                icon="lineicons:pencil-1"
+                                                width="20"
+                                                height="20">
+                                            </iconify-icon>
+
+                                        </button>
+
+                                    </a>
+
+                                    {{-- qr --}}
                                     <button
-                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-500">
+                                        @click="$dispatch('open-download-modal', { id: {{ $murid->id }} })"
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
 
                                         <iconify-icon
-                                            icon="lineicons:pencil-1"
+                                            icon="la:qrcode"
                                             width="20"
                                             height="20">
                                         </iconify-icon>
 
                                     </button>
 
-                                </a>
-
-                                <!-- qr -->
-                                <button
-                                    @click="$dispatch('open-download-modal', { id: {{ $murid->id }} })"
-                                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-main text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-deep-solid">
-
-                                    <iconify-icon
-                                        icon="la:qrcode"
-                                        width="20"
-                                        height="20">
-                                    </iconify-icon>
-
-                                </button>       
-                                
-                                <!-- delete -->
-                                <div>
+                                    {{-- delete --}}
                                     <button
                                         @click="$dispatch('open-delete-murid', { id: {{ $murid->id }} })"
                                         class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-rose-600">
@@ -557,35 +555,345 @@
                                             height="20">
                                         </iconify-icon>
 
-                                        
                                     </button>
-                                    
+
                                 </div>
-                                
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {{-- MOBILE + TABLET COLLAPSIBLE --}}
+
+        <div class="space-y-3 lg:hidden">
+
+            @foreach ($listMurid as $index => $murid)
+
+                <div
+                    x-data="{ open: false }"
+                    class="overflow-hidden border border-gray-100 border-t-0 bg-white">
+
+                    {{-- SUMMARY --}}
+                    <div class="flex items-center gap-3 p-4">
+
+                        {{-- checkbox --}}
+                        <input
+                            type="checkbox"
+                            class="murid-row-checkbox shrink-0 rounded border-gray-300"
+                            value="{{ $murid->uuid }}"
+                            x-model="selected">
+
+                        {{-- avatar --}}
+                        <x-murid-avatar
+                            :murid="$murid"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 font-bold uppercase text-blue-main" />
+
+                        {{-- identity --}}
+                        <div class="min-w-0 flex-1">
+
+                            <h2 class="truncate font-semibold capitalize text-gray-800">
+                                {{ $murid->nama }}
+                            </h2>
+
+                            <p class="truncate text-xs text-gray-400">
+                                {{ $murid->email }}
+                            </p>
+
+                            <div class="mt-1">
+
+                                <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-600">
+                                    {{ $murid->rombel?->nama_lengkap ?? '-' }}
+                                </span>
+
                             </div>
 
-                        </td>
+                        </div>
 
-                    </tr>
-                    
-                    @endforeach
-                    
-                </tbody>
-                
-            </table>
-            
+                        {{-- expand --}}
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                            :aria-expanded="open">
+
+                            <iconify-icon
+                                icon="lineicons:chevron-down"
+                                width="20"
+                                height="20"
+                                class="transition-transform duration-200"
+                                :class="{ 'rotate-180': open }">
+                            </iconify-icon>
+
+                        </button>
+
+                    </div>
+
+                    {{-- COLLAPSED CONTENT --}}
+                    <div
+                        x-show="open"
+                        x-collapse
+                        class="border-t border-gray-100 bg-gray-50">
+
+                        <div class="grid gap-x-6 gap-y-5 p-5 grid-cols-2">
+
+                            {{-- no --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    No
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $index + 1 }}
+                                </p>
+                            </div>
+
+                            {{-- nipd --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    NIPD
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->nipd ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- nisn --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    NISN
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->nisn ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- gender --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Gender
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->jk ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- tempat lahir --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Tempat Lahir
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->tempat_lahir ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- tanggal lahir --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Tanggal Lahir
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->tanggal_lahir?->format('d-m-Y') ?? '-' }}
+                                </p>
+                            </div>
+
+                            {{-- agama --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Agama
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->agama ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- kontak --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Kontak
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->hp ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- alamat --}}
+                            <div class="sm:col-span-2">
+                                <p class="text-xs font-medium text-gray-400">
+                                    Alamat
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->alamat ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- rt --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    RT
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->rt ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- rw --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    RW
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->rw ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- kelurahan --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Kelurahan
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->kelurahan ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- kecamatan --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Kecamatan
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->kecamatan ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- ayah --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Nama Ayah
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->nama_ayah ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- ibu --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Nama Ibu
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->nama_ibu ?: '-' }}
+                                </p>
+                            </div>
+
+                            {{-- wali --}}
+                            <div>
+                                <p class="text-xs font-medium text-gray-400">
+                                    Nama Wali
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-gray-700">
+                                    {{ $murid->nama_wali ?: '-' }}
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        {{-- ACTIONS --}}
+
+                        <div class="flex items-center gap-2 border-t border-gray-100 p-4">
+
+                            {{-- edit --}}
+                            <a
+                                href="{{ route('edit-murid', $murid->uuid) }}"
+                                wire:navigate
+                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-500">
+
+                                <iconify-icon
+                                    icon="lineicons:pencil-1"
+                                    width="18"
+                                    height="18">
+                                </iconify-icon>
+
+                                Edit
+
+                            </a>
+
+
+                            {{-- QR --}}
+                            <button
+                                type="button"
+                                @click="$dispatch('open-download-modal', { id: {{ $murid->id }} })"
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-main text-white transition hover:bg-blue-deep-solid">
+
+                                <iconify-icon
+                                    icon="la:qrcode"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
+
+                            </button>
+
+
+                            {{-- delete --}}
+                            <button
+                                type="button"
+                                @click="$dispatch('open-delete-murid', { id: {{ $murid->id }} })"
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-500 text-white transition hover:bg-rose-600">
+
+                                <iconify-icon
+                                    icon="lineicons:trash-3"
+                                    width="20"
+                                    height="20">
+                                </iconify-icon>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @endforeach
+
         </div>
-        
+
         <!-- pagination -->
         <div
         class="border-t border-gray-200 bg-gray-50 px-6 py-4">
 
             {{ $listMurid->links('livewire.components.pagination') }}
-            
+
         </div>
-        
+
     </div>
-    
+
     <!-- modal pilih download qr -->
     <livewire:datamaster.data-murid.components.modal.pilih-qr />
 

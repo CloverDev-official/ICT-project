@@ -352,7 +352,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-            
+
             <!-- jurusan -->
             <livewire:components.searchable-select
                 wire:model.live="filterJurusan"
@@ -377,7 +377,7 @@
                 check-icon="mdi:check"
                 check-icon-size="20"
                 check-icon-class="text-black-500" />
-                
+
             <!-- kelas / indexs -->
             <livewire:components.searchable-select
                 wire:model.live="filterIndeks"
@@ -401,7 +401,7 @@
                 option-class="font-medium"
                 check-icon="mdi:check"
                 check-icon-size="20"
-                check-icon-class="text-black-500" />            
+                check-icon-class="text-black-500" />
         </div>
     </div>
 
@@ -596,15 +596,13 @@
 
         </div>
 
-        <!-- table -->
-        <div class="overflow-x-auto">
+        {{-- DESKTOP: TABLE --}}
+        <div class="hidden overflow-x-auto lg:block">
 
             <table class="min-w-full text-sm">
 
                 <thead class="bg-gray-100 text-gray-700">
-
                     <tr>
-
                         <th class="px-5 py-4 text-center font-semibold">
                             No
                         </th>
@@ -620,136 +618,289 @@
                         <th class="px-5 py-4 text-center font-semibold">
                             Status
                         </th>
-
                     </tr>
-
                 </thead>
 
                 <tbody>
 
                     @forelse ($listAbsen as $index => $item)
 
-                    @php
-                    $statusValue = strtolower((string) $item->status);
+                        @php
+                            $statusValue = strtolower((string) $item->status);
 
-                    $statusClass = match ($statusValue) {
-                    'sakit' => 'text-amber-600 bg-amber-100',
-                    'izin' => 'text-blue-600 bg-blue-100',
-                    'alpa' => 'text-rose-600 bg-rose-100',
-                    default => 'text-green-600 bg-green-100',
-                    };
-                    @endphp
+                            $statusClass = match ($statusValue) {
+                                'sakit' => 'text-amber-600 bg-amber-100',
+                                'izin' => 'text-blue-600 bg-blue-100',
+                                'alpa' => 'text-rose-600 bg-rose-100',
+                                default => 'text-green-600 bg-green-100',
+                            };
+                        @endphp
 
-                    <tr
-                        class="border-t border-gray-100 transition hover:bg-gray-50">
+                        <tr class="border-t border-gray-100 transition hover:bg-gray-50">
 
-                        <td
-                            class="px-5 py-5 text-center font-medium text-gray-700">
+                            {{-- No --}}
+                            <td class="px-5 py-5 text-center font-medium text-gray-700">
+                                {{ $index + 1 }}
+                            </td>
 
-                            {{ $index + 1 }}
+                            {{-- Nama Murid --}}
+                            <td class="px-5 py-5">
 
-                        </td>
+                                <div class="flex items-center gap-4">
 
-                        <td class="px-5 py-5">
+                                    <x-murid-avatar
+                                        :murid="$item->murid"
+                                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main"
+                                    />
 
-                            <div class="flex items-center gap-4">
+                                    <div>
 
-                                <!-- avatar -->
-                                <x-murid-avatar :murid="$item->murid" class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 font-bold uppercase text-blue-main" />
+                                        <h2 class="font-semibold text-gray-800">
+                                            {{ $item->murid->nama }}
+                                        </h2>
 
-                                <div>
+                                        <p class="mt-1 text-xs text-gray-400">
+                                            Murid aktif
+                                        </p>
 
-                                    <h2
-                                        class="font-semibold text-gray-800">
+                                    </div>
 
-                                        {{ $item->murid->nama }}
+                                </div>
 
+                            </td>
+
+                            {{-- Kelas --}}
+                            <td class="px-5 py-5 text-center text-gray-600">
+                                {{ $item->murid->rombel->nama_lengkap ?? '-' }}
+                            </td>
+
+                            {{-- Status --}}
+                            <td class="px-5 py-5 text-center">
+
+                                <div
+                                    class="{{ $statusClass }} inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize"
+                                >
+
+                                    <div class="h-2 w-2 rounded-full bg-current"></div>
+
+                                    {{ $item->status }}
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+
+                            <td colspan="4" class="px-6 py-14 text-center">
+
+                                <div class="flex flex-col items-center justify-center">
+
+                                    <div
+                                        class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400"
+                                    >
+                                        <iconify-icon
+                                            icon="solar:box-bold"
+                                            width="38"
+                                            height="38"
+                                        ></iconify-icon>
+                                    </div>
+
+                                    <h2 class="text-lg font-bold text-gray-700">
+                                        Data tidak ditemukan
                                     </h2>
 
-                                    <p
-                                        class="mt-1 text-xs text-gray-400">
-
-                                        Murid aktif
-
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Tidak ada data murid yang tersedia.
                                     </p>
 
                                 </div>
 
-                            </div>
+                            </td>
 
-                        </td>
-
-                        <td
-                            class="px-5 py-5 text-center text-gray-600">
-
-                            {{ $item->murid->rombel->nama_lengkap ?? '-' }}
-
-                        </td>
-
-                        <td class="px-5 py-5 text-center">
-
-                            <div
-                                class="{{ $statusClass }} inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize">
-
-                                <div
-                                    class="h-2 w-2 rounded-full bg-current">
-                                </div>
-
-                                {{ $item->status }}
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    @empty
-
-                    <tr>
-
-                        <td
-                            colspan="4"
-                            class="px-6 py-14 text-center">
-
-                            <div
-                                class="flex flex-col items-center justify-center">
-
-                                <div
-                                    class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
-
-                                    <iconify-icon
-                                        icon="solar:box-bold"
-                                        width="38"
-                                        height="38">
-                                    </iconify-icon>
-
-                                </div>
-
-                                <h2
-                                    class="text-lg font-bold text-gray-700">
-
-                                    Data tidak ditemukan
-
-                                </h2>
-
-                                <p
-                                    class="mt-1 text-sm text-gray-500">
-
-                                    Tidak ada data murid yang tersedia.
-
-                                </p>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
+                        </tr>
 
                     @endforelse
 
                 </tbody>
 
             </table>
+
+        </div>
+
+        {{-- MOBILE + TABLET: COLLAPSED CARD --}}
+        <div class="space-y-3 lg:hidden">
+
+            @forelse ($listAbsen as $index => $item)
+
+                @php
+                    $statusValue = strtolower((string) $item->status);
+
+                    $statusClass = match ($statusValue) {
+                        'sakit' => 'text-amber-600 bg-amber-100',
+                        'izin' => 'text-blue-600 bg-blue-100',
+                        'alpa' => 'text-rose-600 bg-rose-100',
+                        default => 'text-green-600 bg-green-100',
+                    };
+                @endphp
+
+                <div
+                    x-data="{ open: false }"
+                    class="overflow-hidden border border-t-0 border-gray-200 bg-white"
+                >
+
+                    {{-- SUMMARY --}}
+                    <div class="flex items-center gap-3 p-4">
+
+                        {{-- No --}}
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-sm font-semibold text-gray-600"
+                        >
+                            {{ $index + 1 }}
+                        </div>
+
+                        {{-- Avatar --}}
+                        <x-murid-avatar
+                            :murid="$item->murid"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 font-bold uppercase text-blue-main"
+                        />
+
+                        {{-- Informasi utama --}}
+                        <div class="min-w-0 flex-1">
+
+                            <h3 class="truncate font-semibold text-gray-800">
+                                {{ $item->murid->nama }}
+                            </h3>
+
+                            <p class="mt-0.5 truncate text-xs text-gray-500">
+                                {{ $item->murid->rombel->nama_lengkap ?? '-' }}
+                            </p>
+
+                        </div>
+
+                        {{-- Status --}}
+                        <span
+                            class="{{ $statusClass }} hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold capitalize sm:inline-flex"
+                        >
+                            <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                            {{ $item->status }}
+                        </span>
+
+                        {{-- Chevron --}}
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            :aria-expanded="open"
+                            aria-label="Lihat detail absensi"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                        >
+                            <iconify-icon
+                                icon="lineicons:chevron-down"
+                                width="20"
+                                height="20"
+                                class="transition-transform duration-200"
+                                :class="{ 'rotate-180': open }"
+                            ></iconify-icon>
+                        </button>
+
+                    </div>
+
+
+                    {{-- DETAIL --}}
+                    <div
+                        x-show="open"
+                        x-collapse
+                        class="border-t border-gray-200 bg-gray-50"
+                    >
+
+                        <div class="space-y-4 p-4">
+
+                            {{-- Nama Murid --}}
+                            <div>
+
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Nama Murid
+                                </p>
+
+                                <p class="font-semibold text-gray-800">
+                                    {{ $item->murid->nama }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- Kelas --}}
+                            <div>
+
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Kelas
+                                </p>
+
+                                <p class="text-sm text-gray-700">
+                                    {{ $item->murid->rombel->nama_lengkap ?? '-' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- Status --}}
+                            <div>
+
+                                <p class="mb-1 text-xs font-medium text-gray-500">
+                                    Status
+                                </p>
+
+                                <span
+                                    class="{{ $statusClass }} inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold capitalize"
+                                >
+
+                                    <span class="h-2 w-2 rounded-full bg-current"></span>
+
+                                    {{ $item->status }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                {{-- EMPTY STATE MOBILE + TABLET --}}
+                <div class="px-6 py-14 text-center">
+
+                    <div class="flex flex-col items-center justify-center">
+
+                        <div
+                            class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400"
+                        >
+                            <iconify-icon
+                                icon="solar:box-bold"
+                                width="38"
+                                height="38"
+                            ></iconify-icon>
+                        </div>
+
+                        <h2 class="text-lg font-bold text-gray-700">
+                            Data tidak ditemukan
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Tidak ada data murid yang tersedia.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            @endforelse
 
         </div>
 
